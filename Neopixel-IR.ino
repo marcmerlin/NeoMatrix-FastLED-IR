@@ -5,6 +5,11 @@
     #include <avr/power.h>
 #endif
 
+// neopixel + IR is hard, neopixel disables interrups while IR is trying to 
+// receive, and bad things happen :(
+// https://github.com/z3t0/Arduino-IRremote/issues/314
+// strip.show takes 1 to 3ms
+
 #define RECV_PIN 2
 #define NEOPIXEL_PIN 6
 
@@ -20,14 +25,99 @@ IRrecv irrecv(RECV_PIN);
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
+typedef enum {
+    f_nothing = 0,
+    f_colorWipe = 1,
+    f_rainbow = 2,
+    f_rainbowCycle = 3,
+    f_theaterChase = 4,
+    f_theaterChaseRainbow = 5,
+} StripDemo;
+
+StripDemo nextdemo = f_theaterChaseRainbow;
+int32_t nextdemo_color = 0;
+int8_t nextdemo_wait = 50;
+
+// The IR ISR does not work correctly when strip.show() is
+// running itself (as it does disable interrupts to get precise
+// timing), so we sample IR at the same time we run delay
+bool handle_IR(uint32_t delay_time) {
+    decode_results IR_result;
+
+    delay(delay_time);
+    
+    if (irrecv.decode(&IR_result)) {
+    	irrecv.resume(); // Receive the next value
+	switch (IR_result.value) {
+	case IR_RGBZONE_POWER:
+	    nextdemo = f_colorWipe;
+	    nextdemo_color = strip.Color(0, 0, 0);
+	    nextdemo_wait = 1;
+	    Serial.println("Got IR: Power");
+	    return 1;
+
+	case IR_RGBZONE_BRIGHT:
+	    change_brightness(+1);
+	    Serial.println("Got IR: Bright");
+	    return 0;
+
+	case IR_RGBZONE_DIM:
+	    change_brightness(-1);
+	    Serial.println("Got IR: Dim");
+	    return 0;
+
+	case IR_RGBZONE_RED:
+	    nextdemo = f_colorWipe;
+	    nextdemo_color = strip.Color(255, 0, 0); // Red
+	    nextdemo_wait = 50;
+	    Serial.println("Got IR: Red");
+	    return 1;
+
+	case IR_RGBZONE_BLUE:
+	    nextdemo = f_colorWipe;
+	    nextdemo_color = strip.Color(0, 255, 0); // Blue
+	    nextdemo_wait = 50;
+	    Serial.println("Got IR: Blue");
+	    return 1;
+
+	case IR_RGBZONE_GREEN:
+	    nextdemo = f_colorWipe;
+	    nextdemo_color = strip.Color(0, 0, 255); // Green
+	    nextdemo_wait = 50;
+	    Serial.println("Got IR: Green");
+	    return 1;
+
+	case IR_RGBZONE_AUTO:
+	    nextdemo = f_rainbow;
+	    nextdemo_wait = 50;
+	    Serial.println("Got IR: Auto");
+	    return 1;
+
+	case IR_RGBZONE_FLASH:
+	    nextdemo = f_theaterChaseRainbow;
+	    nextdemo_wait = 50;
+	    Serial.println("Got IR: Flash");
+	    return 1;
+
+	case IR_JUNK:
+	    return 0;
+
+	default:
+	    Serial.print("Got unknown IR value: ");
+	    Serial.println(IR_result.value, HEX);
+	    return 0;
+	}
+    }
+    return 0;
+}
 
 
 // Fill the dots one after the other with a color
 void colorWipe(uint32_t c, uint8_t wait) {
     for(uint16_t i=0; i<strip.numPixels(); i++) {
 	strip.setPixelColor(i, c);
-	strip.show();
-	delay(wait);
+	uint32_t before=millis(); strip.show(); Serial.print("strip.show took "); Serial.println(millis() - before);
+	if (handle_IR(wait)) return;
     }
 }
 
@@ -38,8 +128,8 @@ void rainbow(uint8_t wait) {
 	for(i=0; i<strip.numPixels(); i++) {
 	    strip.setPixelColor(i, Wheel((i+j) & 255));
 	}
-	strip.show();
-	delay(wait);
+	uint32_t before=millis(); strip.show(); Serial.print("strip.show took "); Serial.println(millis() - before);
+	if (handle_IR(wait)) return;
     }
 }
 
@@ -51,8 +141,8 @@ void rainbowCycle(uint8_t wait) {
 	for(i=0; i< strip.numPixels(); i++) {
 	    strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
 	}
-	strip.show();
-	delay(wait);
+	uint32_t before=millis(); strip.show(); Serial.print("strip.show took "); Serial.println(millis() - before);
+	if (handle_IR(wait)) return;
     }
 }
 
@@ -63,9 +153,9 @@ void theaterChase(uint32_t c, uint8_t wait) {
 	    for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
 		strip.setPixelColor(i+q, c);    //turn every third pixel on
 	    }
-	    strip.show();
+	    uint32_t before=millis(); strip.show(); Serial.print("strip.show took "); Serial.println(millis() - before);
 
-	    delay(wait);
+	    if (handle_IR(wait)) return;
 
 	    for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
 		strip.setPixelColor(i+q, 0);        //turn every third pixel off
@@ -81,9 +171,9 @@ void theaterChaseRainbow(uint8_t wait) {
 	    for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
 		strip.setPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
 	    }
-	    strip.show();
+	    uint32_t before=millis(); strip.show(); Serial.print("strip.show took "); Serial.println(millis() - before);
 
-	    delay(wait);
+	    if (handle_IR(wait)) return;
 
 	    for (uint16_t i=0; i < strip.numPixels(); i=i+3) {
 		strip.setPixelColor(i+q, 0);        //turn every third pixel off
@@ -112,7 +202,7 @@ void change_brightness(int8_t change) {
     static uint32_t last_brightness_change = 0 ;
     uint8_t bright_value;
 
-    if (millis() - last_brightness_change < 3000) {
+    if (millis() - last_brightness_change < 300) {
 	Serial.print("Too soon... Ignoring brightness change from ");
 	Serial.println(brightness);
 	return;
@@ -128,68 +218,51 @@ void change_brightness(int8_t change) {
     Serial.print(" value ");
     Serial.println(bright_value);
     strip.setBrightness(bright_value);
-    strip.show();
+    uint32_t before=millis(); strip.show(); Serial.print("strip.show took "); Serial.println(millis() - before);
 }
 
-void setup()
-{
+void setup() {
     Serial.begin(115200);
     Serial.println("Enabling IRin");
     irrecv.enableIRIn(); // Start the receiver
+    irrecv.blink13(true); // Start the receiver
     Serial.println("Enabled IRin, turn on LEDs");
     strip.begin();
-    strip.show(); // Initialize all pixels to 'off'
+    uint32_t before=millis(); strip.show(); Serial.print("strip.show took "); Serial.println(millis() - before); // Initialize all pixels to 'off'
     Serial.println("LEDs on");
     colorWipe(strip.Color(255, 255, 255), 10);
 }
 
 void loop() {
-    decode_results IR_result;
-
-    if (irrecv.decode(&IR_result)) {
-	irrecv.resume(); // Receive the next value
-	switch (IR_result.value) {
-	case IR_RGBZONE_POWER:
-	    colorWipe(strip.Color(0, 0, 0), 0);
-	    break;
-
-	case IR_RGBZONE_BRIGHT:
-	    change_brightness(+1);
-	    break;
-
-	case IR_RGBZONE_DIM:
-	    change_brightness(-1);
-	    break;
-
-	case IR_RGBZONE_RED:
-	    colorWipe(strip.Color(255, 0, 0), 50); // Red
-	    break;
-
-	case IR_RGBZONE_BLUE:
-	    colorWipe(strip.Color(0, 0, 255), 50); // Blue
-	    break;
-
-	case IR_RGBZONE_GREEN:
-	    colorWipe(strip.Color(0, 255, 0), 50); // Green
-	    break;
-
-	case IR_JUNK:
-	    break;
-
-	default:
-	    Serial.print("Got unknown IR value: ");
-	    Serial.println(IR_result.value, HEX);
-	    #if 0
-	    theaterChase(strip.Color(127, 127, 127), 50); // White
-	    theaterChase(strip.Color(127, 0, 0), 50); // Red
-	    theaterChase(strip.Color(0, 0, 127), 50); // Blue
-
-	    rainbow(20);
-	    rainbowCycle(20);
-	    theaterChaseRainbow(50);
-	    #endif
-	}
+    if ((uint8_t) nextdemo > 0) {
+	Serial.print("Running demo: ");
+	Serial.println((uint8_t) nextdemo);
     }
-    delay(10);
+    switch (nextdemo) {
+    case f_colorWipe:
+	colorWipe(nextdemo_color, nextdemo_wait);
+	break;
+    case f_rainbow:
+	rainbow(nextdemo_wait);
+	break;
+    case f_rainbowCycle:
+	rainbowCycle(nextdemo_wait);
+	break;
+    case f_theaterChase:
+	theaterChase(nextdemo_color, nextdemo_wait);
+	break;
+    case f_theaterChaseRainbow:
+	theaterChaseRainbow(nextdemo_wait);
+	break;
+    default:
+	break;
+    }
+
+    Serial.println("Loop done, listening for IR and restarting demo");
+    // delay 80ms may work rarely
+    // delay 200ms works 60-90% of the time
+    // delay 500ms works no more reliably.
+    if (handle_IR(50)) return;
+    Serial.println("No IR");
 }
 // vim;sts=4:sw=4
