@@ -1,3 +1,4 @@
+//#define FASTLED
 #ifdef FASTLED
 #include <FastLED.h>
 #else
@@ -26,7 +27,6 @@ IRrecv irrecv(RECV_PIN);
 
 #ifdef FASTLED
 CRGB leds[NUM_LEDS];
-FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS);
 #else
 // Parameter 1 = number of pixels in leds
 // Parameter 2 = Arduino pin number (most are valid)
@@ -48,7 +48,7 @@ typedef enum {
     f_theaterChaseRainbow = 5,
 } StripDemo;
 
-StripDemo nextdemo = f_colorWipe;
+StripDemo nextdemo = f_theaterChaseRainbow;
 int32_t nextdemo_color = 0x00FF00; // Green
 int8_t nextdemo_wait = 50;
 
@@ -75,7 +75,11 @@ void change_brightness(int8_t change) {
     Serial.print(brightness);
     Serial.print(" value ");
     Serial.println(bright_value);
+#ifdef FASTLED
+    FastLED.setBrightness(bright_value);
+#else
     leds.setBrightness(bright_value);
+#endif
     leds_show_time();
 }
 
@@ -177,14 +181,17 @@ void leds_setcolor(uint16_t i, uint32_t c) {
 uint32_t Wheel(byte WheelPos) {
     WheelPos = 255 - WheelPos;
     if(WheelPos < 85) {
-	return leds.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+	//return leds.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+	return ((((uint32_t)(255 - WheelPos * 3)) << 16) + (WheelPos * 3));
     }
     if(WheelPos < 170) {
 	WheelPos -= 85;
-	return leds.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+	//return leds.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+	return ((((uint32_t)(WheelPos * 3)) << 8) + (255 - WheelPos * 3));
     }
     WheelPos -= 170;
-    return leds.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+    //return leds.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+    return ((((uint32_t)(WheelPos * 3)) << 16) + ((uint32_t)(255 - WheelPos * 3)) << 8);
 }
 
 
@@ -298,14 +305,16 @@ void setup() {
     irrecv.blink13(true); // Start the receiver
     Serial.println("Enabled IRin, turn on LEDs");
 
-#ifndef FASTLED
+#ifdef FASTLED
+    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS);
+    FastLED.setBrightness(15);
+#else
     leds.begin();
+    leds.setBrightness(15);
 #endif
     leds_show_time(); // Initialize all pixels to 'off'
     Serial.println("LEDs on");
-    colorWipe(leds.Color(255, 255, 255), 10);
-    // Brightness compatible with both libraries.
-    leds.setBrightness(15);
+    colorWipe(0x00FFFFFF, 10);
 }
 
 // vim;sts=4:sw=4
