@@ -22,7 +22,7 @@
 // leds.show takes 1 to 3ms
 
 
-#define RECV_PIN 2
+#define RECV_PIN 11
 #define NEOPIXEL_PIN 6
 #define NUM_LEDS 60
 
@@ -54,7 +54,7 @@ typedef enum {
 
 StripDemo nextdemo = f_theaterChaseRainbow;
 int32_t nextdemo_color = 0x00FF00; // Green
-int8_t nextdemo_wait = 50;
+int16_t nextdemo_wait = 50;
 
 
 // --------------------------------------------------------------------------- 
@@ -87,10 +87,32 @@ void change_brightness(int8_t change) {
     leds_show_time();
 }
 
+void change_speed(int8_t change) {
+    static uint16_t speed = nextdemo_wait;
+    static uint32_t last_speed_change = 0 ;
+    uint8_t bright_value;
 
-// The IR ISR does not work correctly when leds.show() is
-// running itself (as it does disable interrupts to get precise
-// timing), so we sample IR at the same time we run delay
+    if (millis() - last_speed_change < 200) {
+	Serial.print("Too soon... Ignoring speed change from ");
+	Serial.println(speed);
+	return;
+    }
+    last_speed_change = millis();
+    speed = constrain(speed + change, 1, 100);
+    
+    if (speed) {
+	Serial.print("Changing speed ");
+	Serial.print(change);
+	Serial.print(" to level ");
+	Serial.print(speed);
+	Serial.print(" value ");
+	Serial.println(bright_value);
+    }
+    nextdemo_wait = speed;
+}
+
+
+
 bool handle_IR(uint32_t delay_time) {
     decode_results IR_result;
 
@@ -102,6 +124,7 @@ bool handle_IR(uint32_t delay_time) {
 	case IR_RGBZONE_POWER:
 	    nextdemo = f_colorWipe;
 	    nextdemo_color = 0x000000;
+	    // Changing the speed value will 
 	    nextdemo_wait = 1;
 	    Serial.println("Got IR: Power");
 	    return 1;
@@ -116,37 +139,52 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.println("Got IR: Dim");
 	    return 0;
 
+	case IR_RGBZONE_QUICK:
+	    change_speed(-10);
+	    Serial.println("Got IR: Quick");
+	    return 0;
+
+	case IR_RGBZONE_SLOW:
+	    change_speed(+10);
+	    Serial.println("Got IR: Slow");
+	    return 0;
+
 	case IR_RGBZONE_RED:
 	    nextdemo = f_colorWipe;
 	    nextdemo_color = 0xFF0000; // Red
-	    nextdemo_wait = 50;
 	    Serial.println("Got IR: Red");
 	    return 1;
 
 	case IR_RGBZONE_GREEN:
 	    nextdemo = f_colorWipe;
 	    nextdemo_color = 0x00FF00; // Green
-	    nextdemo_wait = 50;
 	    Serial.println("Got IR: Green");
 	    return 1;
 
 	case IR_RGBZONE_BLUE:
 	    nextdemo = f_colorWipe;
 	    nextdemo_color = 0x0000FF; // Blue
-	    nextdemo_wait = 50;
 	    Serial.println("Got IR: Blue");
 	    return 1;
 
-	case IR_RGBZONE_AUTO:
+	case IR_RGBZONE_DIY1:
 	    nextdemo = f_rainbow;
-	    nextdemo_wait = 50;
-	    Serial.println("Got IR: Auto");
+	    Serial.println("Got IR: DIY1/rainbow");
 	    return 1;
 
-	case IR_RGBZONE_FLASH:
+	case IR_RGBZONE_DIY2:
+	    nextdemo = f_rainbowCycle;
+	    Serial.println("Got IR: DIY2/rainbowCycle");
+	    return 1;
+
+	case IR_RGBZONE_DIY3:
+	    nextdemo = f_theaterChase;
+	    Serial.println("Got IR: DIY3/theaterChase");
+	    return 1;
+
+	case IR_RGBZONE_DIY4:
 	    nextdemo = f_theaterChaseRainbow;
-	    nextdemo_wait = 50;
-	    Serial.println("Got IR: Flash");
+	    Serial.println("Got IR: DIY4/theaterChaseRainbow");
 	    return 1;
 
 	case IR_JUNK:
@@ -293,6 +331,11 @@ void loop() {
     default:
 	break;
     }
+
+    // In case a specific demo was run with an overridden speed
+    // reset the speed for the next one to the value stored in our
+    // speed changing function.
+    //change_speed(0);
 
     Serial.println("Loop done, listening for IR and restarting demo");
     // delay 80ms may work rarely
