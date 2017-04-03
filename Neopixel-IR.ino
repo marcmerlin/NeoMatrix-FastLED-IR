@@ -1,4 +1,8 @@
-//#define FASTLED
+#define FASTLED
+// Using FASTLED with FASTLED_ALLOW_INTERRUPTS does not seem to help, sadly, it seems ignored.
+// however commenting out cli in ./platforms/avr/clockless_trinket.h gives broken colors and 
+// allows IR to work again.
+
 #ifdef FASTLED
 #include <FastLED.h>
 #else
@@ -191,7 +195,7 @@ uint32_t Wheel(byte WheelPos) {
     }
     WheelPos -= 170;
     //return leds.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-    return ((((uint32_t)(WheelPos * 3)) << 16) + ((uint32_t)(255 - WheelPos * 3)) << 8);
+    return ((((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8));
 }
 
 
