@@ -9,9 +9,20 @@
 #include <Adafruit_NeoPixel.h>
 #endif
 
+#define RECV_PIN 11
+#define NEOPIXEL_PIN 6
+#define NUM_LEDS 60
 
-#include <IRremote.h>
+#ifdef ESP8266
+    #include <IRremoteESP8266.h>
+    // D4 is also the system LED, causing it to blink on IR receive, which is great.
+    #define RECV_PIN D4     // GPIO2
+    #define NEOPIXEL_PIN D6 // GPIO12
+#else
+    #include <IRremote.h>
+#endif
 #include "IRcodes.h"
+
 #ifdef __AVR__
     #include <avr/power.h>
 #endif
@@ -21,10 +32,6 @@
 // https://github.com/z3t0/Arduino-IRremote/issues/314
 // leds.show takes 1 to 3ms
 
-
-#define RECV_PIN 11
-#define NEOPIXEL_PIN 6
-#define NUM_LEDS 60
 
 
 IRrecv irrecv(RECV_PIN);
@@ -148,6 +155,12 @@ bool handle_IR(uint32_t delay_time) {
 	    change_speed(+10);
 	    Serial.println("Got IR: Slow");
 	    return 0;
+
+	case IR_RGBZONE_WHITE:
+	    nextdemo = f_colorWipe;
+	    nextdemo_color = 0xFFFFFF; // White
+	    Serial.println("Got IR: White");
+	    return 1;
 
 	case IR_RGBZONE_RED:
 	    nextdemo = f_colorWipe;
@@ -345,11 +358,17 @@ void loop() {
     Serial.println("No IR");
 }
 
+
+
 void setup() {
     Serial.begin(115200);
     Serial.println("Enabling IRin");
     irrecv.enableIRIn(); // Start the receiver
-    irrecv.blink13(true); // Start the receiver
+#ifndef ESP8266
+    // this doesn't exist in the ESP8266 IR library, but by using pin D4
+    // IR receive happens to make the system LED blink, so it's all good
+    irrecv.blink13(true);
+#endif
     Serial.println("Enabled IRin, turn on LEDs");
 
 #ifdef FASTLED
