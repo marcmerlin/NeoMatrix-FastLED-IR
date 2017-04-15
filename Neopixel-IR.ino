@@ -4,15 +4,15 @@
 // leds.show takes 1 to 3ms
 // The adafruit lib is inferior to fastled since it doesn't re-enable interrupts mid update
 // on chips that are capable of it. But you can enable it here anyway:
+// Please note that enabling the adafruit driver will prevent IR interrupts from working, unless
+// you edit the adafruit driver and remove the noInterrupts call.
 //#define ADAFRUIT
 
 // ESP8266 will work with FASTLED, but there is a better lib that uses I2S support to get 
 // perfect signalling without stopping interrupts at all. The FASTLED lib works well enough
 // but does result in occasional glitching for me.
-// https://github.com/JoDaNl/esp8266_ws2812_i2s.git
-//#define ESP8266I2S
-
-
+// https://github.com/JoDaNl/esp8266_ws2812_i2s/
+#define ESP8266I2S
 
 #define RECV_PIN 11
 #define NEOPIXEL_PIN 6
@@ -36,7 +36,17 @@
     //#define NEOPIXEL_PIN D2 // GPIO4
     #define NEOPIXEL_PIN RX
     #endif
+#elif defined(ESP32)
+    #include <IRremote.h>
+    // ESP32 is not yet supported by FastLED. It does work with Adafruit, but 
+    #include "esp32_ws2812.h"
+    #define RECV_PIN 2
+    #define NEOPIXEL_PIN 0
+    #define ESP32RMT
+    #undef ESP8266I2S
 #else
+    #include <IRremote.h>
+    #undef ESP8266I2S
     #ifndef ADAFRUIT
     #define FASTLED
     #include <FastLED.h>
@@ -44,7 +54,6 @@
     #include <Adafruit_NeoPixel.h>
     #endif
 
-    #include <IRremote.h>
 #endif
 #include "IRcodes.h"
 
@@ -56,11 +65,7 @@
 
 IRrecv irrecv(RECV_PIN);
 
-#if defined(ESP8266I2S)
-WS2812 esp8266i2s;
-Pixel_t leds[NUM_LEDS];
-uint8_t esp8266i2s_brightness;
-#elif defined(FASTLED)
+#if defined(FASTLED)
 CRGB leds[NUM_LEDS];
 #elif defined(ADAFRUIT)
 // Parameter 1 = number of pixels in leds
@@ -72,6 +77,13 @@ CRGB leds[NUM_LEDS];
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel leds = Adafruit_NeoPixel(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+#elif defined(ESP8266I2S)
+WS2812 esp8266i2s;
+Pixel_t leds[NUM_LEDS];
+uint8_t esp_brightness;
+#elif defined(ESP32RMT)
+rgbVal leds[NUM_LEDS];
+uint8_t esp_brightness;
 #else
 #error No neopixel library defined
 #endif
@@ -116,12 +128,12 @@ void change_brightness(int8_t change) {
     Serial.print(brightness);
     Serial.print(" value ");
     Serial.println(bright_value);
-#ifdef FASTLED
+#if defined(FASTLED)
     FastLED.setBrightness(bright_value);
 #elif defined(ADAFRUIT)
     leds.setBrightness(bright_value);
 #else
-    esp8266i2s_brightness = bright_value;
+    esp_brightness = bright_value;
 #endif
     leds_show_time();
 }
@@ -252,6 +264,8 @@ void leds_show_time() {
     leds.show();
 #elif defined(ESP8266I2S)
     esp8266i2s.show(leds);
+#elif defined(ESP32)
+    ws2812_setColors(NUM_LEDS, leds);
 #endif
     //Serial.print("leds.show took ");
     //Serial.println(millis() - before);
@@ -262,10 +276,18 @@ void leds_setcolor(uint16_t i, uint32_t c) {
     leds[i] = c;
 #elif defined(ADAFRUIT)
     leds.setPixelColor(i, c);
-#elif defined(ESP8266I2S)
-    leds[i].R = ((c & 0xFF0000) >> 16) * esp8266i2s_brightness/255.0;
-    leds[i].G = ((c & 0x00FF00) >>  8) * esp8266i2s_brightness/255.0;
-    leds[i].B = ((c & 0x0000FF) >>  0) * esp8266i2s_brightness/255.0;
+#else
+    uint8_t r,g,b;
+    r = ((c & 0xFF0000) >> 16) * esp_brightness/255.0;
+    g = ((c & 0x00FF00) >>  8) * esp_brightness/255.0;
+    b = ((c & 0x0000FF) >>  0) * esp_brightness/255.0;
+    #if defined(ESP8266I2S)
+	leds[i].R = r;
+	leds[i].G = g;
+	leds[i].B = b;
+    #elif defined(ESP32RMT)
+	leds[i] = makeRGBVal(r, g, b);
+    #endif
 #endif
 }
 
@@ -410,15 +432,23 @@ void setup() {
     Serial.println("Enabled IRin, turn on LEDs");
 
 #if defined(FASTLED)
+    Serial.print("Using FastLED to drive these LEDs: ");
     FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS);
     FastLED.setBrightness(15);
 #elif defined(ADAFRUIT)
+    Serial.print("Using Adafruit_Neopixel to drive these LEDs: ");
     leds.begin();
     leds.setBrightness(15);
 #elif defined(ESP8266I2S)
+    Serial.print("Using ESP8266I2S to drive these LEDs: ");
     esp8266i2s.init(NUM_LEDS);
-    esp8266i2s_brightness = 63;
+    esp_brightness = 63;
+#elif defined(ESP32)
+    Serial.print("Using ESP32 RMT to drive these LEDs: ");
+    ws2812_init(NEOPIXEL_PIN, LED_WS2812B);
+    esp_brightness = 63;
 #endif
+    Serial.println(NUM_LEDS);
     leds_show_time(); // Initialize all pixels to 'off'
     Serial.println("LEDs on");
     colorWipe(0x00FFFFFF, 10);
