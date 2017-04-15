@@ -1,24 +1,49 @@
-#define FASTLED
-// Using FASTLED with FASTLED_ALLOW_INTERRUPTS does not seem to help, sadly, it seems ignored.
-// however commenting out cli in ./platforms/avr/clockless_trinket.h gives broken colors and 
-// allows IR to work again.
+// neopixel + IR is hard, neopixel disables interrups while IR is trying to 
+// receive, and bad things happen :(
+// https://github.com/z3t0/Arduino-IRremote/issues/314
+// leds.show takes 1 to 3ms
+// The adafruit lib is inferior to fastled since it doesn't re-enable interrupts mid update
+// on chips that are capable of it. But you can enable it here anyway:
+//#define ADAFRUIT
 
-#ifdef FASTLED
-#include <FastLED.h>
-#else
-#include <Adafruit_NeoPixel.h>
-#endif
+// ESP8266 will work with FASTLED, but there is a better lib that uses I2S support to get 
+// perfect signalling without stopping interrupts at all. The FASTLED lib works well enough
+// but does result in occasional glitching for me.
+// https://github.com/JoDaNl/esp8266_ws2812_i2s.git
+//#define ESP8266I2S
+
+
 
 #define RECV_PIN 11
 #define NEOPIXEL_PIN 6
-#define NUM_LEDS 60
+#define NUM_LEDS 48
 
+// ESP8266 runs under an RTOS and doens't have precise interrupts, so it has its
+// separate IR library and a custom I2S based neopixel library
 #ifdef ESP8266
     #include <IRremoteESP8266.h>
     // D4 is also the system LED, causing it to blink on IR receive, which is great.
     #define RECV_PIN D4     // GPIO2
-    #define NEOPIXEL_PIN D6 // GPIO12
+
+    #ifdef ESP8266I2S
+    // Neopixel strip must be plugged into RX pin (RXD0 / GPIO3)
+    #include <ws2812_i2s.h>
+    #else
+    #define FASTLED
+    #include <FastLED.h>
+    // When choosing pins, please see
+    // https://github.com/FastLED/FastLED/wiki/ESP8266-notes
+    //#define NEOPIXEL_PIN D2 // GPIO4
+    #define NEOPIXEL_PIN RX
+    #endif
 #else
+    #ifndef ADAFRUIT
+    #define FASTLED
+    #include <FastLED.h>
+    #else
+    #include <Adafruit_NeoPixel.h>
+    #endif
+
     #include <IRremote.h>
 #endif
 #include "IRcodes.h"
@@ -27,18 +52,17 @@
     #include <avr/power.h>
 #endif
 
-// neopixel + IR is hard, neopixel disables interrups while IR is trying to 
-// receive, and bad things happen :(
-// https://github.com/z3t0/Arduino-IRremote/issues/314
-// leds.show takes 1 to 3ms
-
 
 
 IRrecv irrecv(RECV_PIN);
 
-#ifdef FASTLED
+#if defined(ESP8266I2S)
+WS2812 esp8266i2s;
+Pixel_t leds[NUM_LEDS];
+uint8_t esp8266i2s_brightness;
+#elif defined(FASTLED)
 CRGB leds[NUM_LEDS];
-#else
+#elif defined(ADAFRUIT)
 // Parameter 1 = number of pixels in leds
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:
@@ -48,6 +72,8 @@ CRGB leds[NUM_LEDS];
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 Adafruit_NeoPixel leds = Adafruit_NeoPixel(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+#else
+#error No neopixel library defined
 #endif
 
 typedef enum {
@@ -67,7 +93,11 @@ int16_t nextdemo_wait = 50;
 // --------------------------------------------------------------------------- 
 
 void change_brightness(int8_t change) {
+#if defined(ESP8266I2S)
+    static uint8_t brightness = 6;
+#else
     static uint8_t brightness = 4;
+#endif
     static uint32_t last_brightness_change = 0 ;
     uint8_t bright_value;
 
@@ -88,8 +118,10 @@ void change_brightness(int8_t change) {
     Serial.println(bright_value);
 #ifdef FASTLED
     FastLED.setBrightness(bright_value);
-#else
+#elif defined(ADAFRUIT)
     leds.setBrightness(bright_value);
+#else
+    esp8266i2s_brightness = bright_value;
 #endif
     leds_show_time();
 }
@@ -214,20 +246,26 @@ bool handle_IR(uint32_t delay_time) {
 
 void leds_show_time() {
     uint32_t before=millis();
-#ifdef FASTLED
+#if defined(FASTLED)
     FastLED.show();
-#else
+#elif defined(ADAFRUIT)
     leds.show();
+#elif defined(ESP8266I2S)
+    esp8266i2s.show(leds);
 #endif
     //Serial.print("leds.show took ");
     //Serial.println(millis() - before);
 }
 
 void leds_setcolor(uint16_t i, uint32_t c) {
-#ifdef FASTLED
+#if defined(FASTLED)
     leds[i] = c;
-#else
+#elif defined(ADAFRUIT)
     leds.setPixelColor(i, c);
+#elif defined(ESP8266I2S)
+    leds[i].R = ((c & 0xFF0000) >> 16) * esp8266i2s_brightness/255.0;
+    leds[i].G = ((c & 0x00FF00) >>  8) * esp8266i2s_brightness/255.0;
+    leds[i].B = ((c & 0x0000FF) >>  0) * esp8266i2s_brightness/255.0;
 #endif
 }
 
@@ -371,12 +409,15 @@ void setup() {
 #endif
     Serial.println("Enabled IRin, turn on LEDs");
 
-#ifdef FASTLED
+#if defined(FASTLED)
     FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS);
     FastLED.setBrightness(15);
-#else
+#elif defined(ADAFRUIT)
     leds.begin();
     leds.setBrightness(15);
+#elif defined(ESP8266I2S)
+    esp8266i2s.init(NUM_LEDS);
+    esp8266i2s_brightness = 63;
 #endif
     leds_show_time(); // Initialize all pixels to 'off'
     Serial.println("LEDs on");
