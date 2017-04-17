@@ -17,8 +17,9 @@ Supported/tested chips are:
 - ESP8266 - also allows both thanks to esp8266_ws2812_i2s which doesn't tie up the CPU
 - ESP32 - also allows both thanks to ESP32-Digital-RGB-LED-Drivers/RMT which also doesn't tie up the CPU.
 
-See a few screenshots and videos:
-
+Photos and videos:
+![image](https://cloud.githubusercontent.com/assets/1369412/25098004/bbe92cee-235b-11e7-81b5-a4c092a7ce67.png)
+![image](https://cloud.githubusercontent.com/assets/1369412/25097971/9cf96b3c-235b-11e7-9b45-fa712eea9b67.png)
 
 Quick video showing the problem of running Neopixels or IR: https://www.youtube.com/watch?v=62-nEJtm070
 
