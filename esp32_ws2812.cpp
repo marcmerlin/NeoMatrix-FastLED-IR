@@ -30,6 +30,7 @@
  * THE SOFTWARE.
  */
 
+#ifdef ESP32
 #include "esp32_ws2812.h"
 
 #ifdef __cplusplus
@@ -291,3 +292,4 @@ void ws2812_setColors(uint16_t length, rgbVal *array)
 
   return;
 }
+#endif // ESP32

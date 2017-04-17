@@ -1,18 +1,33 @@
-// neopixel + IR is hard, neopixel disables interrups while IR is trying to 
+// By Marc MERLIN <marc_soft@merlins.org>
+// License: Apache v2.0
+//
+// Portions of demo code from Adafruit_NeoPixel/examples/strandtest apparently
+// licensed under LGPLv3 as per the top level license file in there.
+
+// Neopixel + IR is hard because the neopixel libs disable interrups while IR is trying to 
 // receive, and bad things happen :(
 // https://github.com/z3t0/Arduino-IRremote/issues/314
-// leds.show takes 1 to 3ms
-// The adafruit lib is inferior to fastled since it doesn't re-enable interrupts mid update
-// on chips that are capable of it. But you can enable it here anyway:
-// Please note that enabling the adafruit driver will prevent IR interrupts from working, unless
-// you edit the adafruit driver and remove the noInterrupts call.
+//
+// leds.show takes 1 to 3ms during which IR cannot run and codes get dropped, but it's more 
+// a problem if you constantly update for pixel animations and in that case the IR ISR gets
+// almost no chance to run.
+// The FastLED library is super since it re-enable interrupts mid update
+// on chips that are capable of it. This allows IR + Neopixel to work on Teensy v3.1 and most
+// other 32bit CPUs.
+
+// I've left the adafruit lib here as an option but please note that
+// enabling the adafruit driver will prevent IR interrupts from working, unless
+// you edit the adafruit driver and remove the noInterrupts call (this will then
+// cause neopixels to glitch).
 //#define ADAFRUIT
 
 // ESP8266 will work with FASTLED, but there is a better lib that uses I2S support to get 
 // perfect signalling without stopping interrupts at all. The FASTLED lib works well enough
 // but does result in occasional glitching for me.
 // https://github.com/JoDaNl/esp8266_ws2812_i2s/
+// Comment this out to force FastLED support on ESP8266.
 #define ESP8266I2S
+
 
 #define RECV_PIN 11
 #define NEOPIXEL_PIN 6
@@ -38,7 +53,8 @@
     #endif
 #elif defined(ESP32)
     #include <IRremote.h>
-    // ESP32 is not yet supported by FastLED. It does work with Adafruit, but 
+    // ESP32 is not yet supported by FastLED. It does work with Adafruit, but that
+    // support is glitchy, so use the RMT code instead:
     #include "esp32_ws2812.h"
     #define RECV_PIN 2
     #define NEOPIXEL_PIN 0
@@ -53,15 +69,16 @@
     #else
     #include <Adafruit_NeoPixel.h>
     #endif
-
 #endif
+
+// This file contains codes I captured and mapped myself
+// using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
 
+// From Adafruit lib
 #ifdef __AVR__
     #include <avr/power.h>
 #endif
-
-
 
 IRrecv irrecv(RECV_PIN);
 
@@ -166,7 +183,6 @@ void change_speed(int8_t change) {
 
 bool handle_IR(uint32_t delay_time) {
     decode_results IR_result;
-
     delay(delay_time);
     
     if (irrecv.decode(&IR_result)) {
@@ -309,6 +325,7 @@ uint32_t Wheel(byte WheelPos) {
     return ((((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8));
 }
 
+// The animations below are from Adafruit_NeoPixel/examples/strandtest
 
 // Fill the dots one after the other with a color
 void colorWipe(uint32_t c, uint8_t wait) {
@@ -454,4 +471,4 @@ void setup() {
     colorWipe(0x00FFFFFF, 10);
 }
 
-// vim;sts=4:sw=4
+// vim:sts=4:sw=4
