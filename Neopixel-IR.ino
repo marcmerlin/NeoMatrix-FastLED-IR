@@ -4,11 +4,11 @@
 // Portions of demo code from Adafruit_NeoPixel/examples/strandtest apparently
 // licensed under LGPLv3 as per the top level license file in there.
 
-// Neopixel + IR is hard because the neopixel libs disable interrups while IR is trying to 
+// Neopixel + IR is hard because the neopixel libs disable interrups while IR is trying to
 // receive, and bad things happen :(
 // https://github.com/z3t0/Arduino-IRremote/issues/314
 //
-// leds.show takes 1 to 3ms during which IR cannot run and codes get dropped, but it's more 
+// leds.show takes 1 to 3ms during which IR cannot run and codes get dropped, but it's more
 // a problem if you constantly update for pixel animations and in that case the IR ISR gets
 // almost no chance to run.
 // The FastLED library is super since it re-enable interrupts mid update
@@ -21,7 +21,7 @@
 // cause neopixels to glitch).
 //#define ADAFRUIT
 
-// ESP8266 will work with FASTLED, but there is a better lib that uses I2S support to get 
+// ESP8266 will work with FASTLED, but there is a better lib that uses I2S support to get
 // perfect signalling without stopping interrupts at all. The FASTLED lib works well enough
 // but does result in occasional glitching for me.
 // https://github.com/JoDaNl/esp8266_ws2812_i2s/
@@ -71,6 +71,7 @@
     #endif
 #endif
 
+
 // This file contains codes I captured and mapped myself
 // using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
@@ -112,14 +113,18 @@ typedef enum {
     f_rainbowCycle = 3,
     f_theaterChase = 4,
     f_theaterChaseRainbow = 5,
+    f_cylon = 6,
+    f_cylonTrail = 7,
+    f_doubleConverge = 8,
+    f_doubleConvergeTrail = 9,
 } StripDemo;
 
 StripDemo nextdemo = f_theaterChaseRainbow;
-int32_t nextdemo_color = 0x00FF00; // Green
-int16_t nextdemo_wait = 50;
+int32_t demo_color = 0x00FF00; // Green
+int16_t speed = 50;
 
 
-// --------------------------------------------------------------------------- 
+// ---------------------------------------------------------------------------
 
 void change_brightness(int8_t change) {
 #if defined(ESP8266I2S)
@@ -138,27 +143,35 @@ void change_brightness(int8_t change) {
     last_brightness_change = millis();
     brightness = constrain(brightness + change, 1, 8);
     bright_value = (1 << brightness) - 1;
-    
+
+#if defined(FASTLED)
+    FastLED.setBrightness(bright_value);
+#elif defined(ADAFRUIT)
+    leds.setBrightness(bright_value);
+#else
+    bright_value = 255;
+    if (brightness == 7) bright_value = 224;
+    else if (brightness == 6) bright_value = 176;
+    else if (brightness == 5) bright_value = 128;
+    else if (brightness == 4) bright_value = 96;
+    else if (brightness == 3) bright_value = 64;
+    else if (brightness == 2) bright_value = 32;
+    else if (brightness == 1) bright_value = 16;
+    else if (brightness == 0) bright_value = 0;
+    esp_brightness = bright_value;
+#endif
+
     Serial.print("Changing brightness ");
     Serial.print(change);
     Serial.print(" to level ");
     Serial.print(brightness);
     Serial.print(" value ");
     Serial.println(bright_value);
-#if defined(FASTLED)
-    FastLED.setBrightness(bright_value);
-#elif defined(ADAFRUIT)
-    leds.setBrightness(bright_value);
-#else
-    esp_brightness = bright_value;
-#endif
-    leds_show_time();
+    leds_show();
 }
 
 void change_speed(int8_t change) {
-    static uint16_t speed = nextdemo_wait;
     static uint32_t last_speed_change = 0 ;
-    uint8_t bright_value;
 
     if (millis() - last_speed_change < 200) {
 	Serial.print("Too soon... Ignoring speed change from ");
@@ -166,17 +179,12 @@ void change_speed(int8_t change) {
 	return;
     }
     last_speed_change = millis();
+
+    Serial.print("Changing speed ");
+    Serial.print(speed);
     speed = constrain(speed + change, 1, 100);
-    
-    if (speed) {
-	Serial.print("Changing speed ");
-	Serial.print(change);
-	Serial.print(" to level ");
-	Serial.print(speed);
-	Serial.print(" value ");
-	Serial.println(bright_value);
-    }
-    nextdemo_wait = speed;
+    Serial.print(" to new speed ");
+    Serial.println(speed);
 }
 
 
@@ -184,15 +192,15 @@ void change_speed(int8_t change) {
 bool handle_IR(uint32_t delay_time) {
     decode_results IR_result;
     delay(delay_time);
-    
+
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
 	switch (IR_result.value) {
 	case IR_RGBZONE_POWER:
 	    nextdemo = f_colorWipe;
-	    nextdemo_color = 0x000000;
-	    // Changing the speed value will 
-	    nextdemo_wait = 1;
+	    demo_color = 0x000000;
+	    // Changing the speed value will
+	    speed = 1;
 	    Serial.println("Got IR: Power");
 	    return 1;
 
@@ -218,47 +226,70 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_WHITE:
 	    nextdemo = f_colorWipe;
-	    nextdemo_color = 0xFFFFFF; // White
+	    demo_color = 0xFFFFFF; // White
 	    Serial.println("Got IR: White");
 	    return 1;
 
 	case IR_RGBZONE_RED:
 	    nextdemo = f_colorWipe;
-	    nextdemo_color = 0xFF0000; // Red
+	    demo_color = 0xFF0000; // Red
 	    Serial.println("Got IR: Red");
 	    return 1;
 
 	case IR_RGBZONE_GREEN:
 	    nextdemo = f_colorWipe;
-	    nextdemo_color = 0x00FF00; // Green
+	    demo_color = 0x00FF00; // Green
 	    Serial.println("Got IR: Green");
 	    return 1;
 
 	case IR_RGBZONE_BLUE:
 	    nextdemo = f_colorWipe;
-	    nextdemo_color = 0x0000FF; // Blue
+	    demo_color = 0x0000FF; // Blue
 	    Serial.println("Got IR: Blue");
 	    return 1;
 
 	case IR_RGBZONE_DIY1:
-	    nextdemo = f_rainbow;
-	    Serial.println("Got IR: DIY1/rainbow");
+	    // this uses the last color set
+	    nextdemo = f_theaterChase;
+	    Serial.println("Got IR: DIY1/theaterChase");
 	    return 1;
 
 	case IR_RGBZONE_DIY2:
-	    nextdemo = f_rainbowCycle;
-	    Serial.println("Got IR: DIY2/rainbowCycle");
+	    nextdemo = f_rainbow;
+	    Serial.println("Got IR: DIY2/rainbow");
 	    return 1;
 
 	case IR_RGBZONE_DIY3:
-	    nextdemo = f_theaterChase;
-	    Serial.println("Got IR: DIY3/theaterChase");
+	    nextdemo = f_rainbowCycle;
+	    Serial.println("Got IR: DIY3/rainbowCycle");
 	    return 1;
 
 	case IR_RGBZONE_DIY4:
 	    nextdemo = f_theaterChaseRainbow;
 	    Serial.println("Got IR: DIY4/theaterChaseRainbow");
 	    return 1;
+
+	case IR_RGBZONE_JUMP3:
+	    nextdemo = f_cylon;
+	    Serial.println("Got IR: JUMP3/Cylon");
+	    return 1;
+
+	case IR_RGBZONE_JUMP7:
+	    nextdemo = f_cylonTrail;
+	    Serial.println("Got IR: JUMP7/CylonWithTrail");
+	    return 1;
+
+	case IR_RGBZONE_FADE3:
+	    nextdemo = f_doubleConverge;
+	    Serial.println("Got IR: FADE3/DoubleConverge");
+	    return 1;
+
+	case IR_RGBZONE_FADE7:
+	    nextdemo = f_doubleConvergeTrail;
+	    Serial.println("Got IR: FADE7/DoubleConvergeTrail");
+	    return 1;
+
+//    case f_doubleConverge:
 
 	case IR_JUNK:
 	    return 0;
@@ -272,8 +303,7 @@ bool handle_IR(uint32_t delay_time) {
     return 0;
 }
 
-void leds_show_time() {
-    uint32_t before=millis();
+void leds_show() {
 #if defined(FASTLED)
     FastLED.show();
 #elif defined(ADAFRUIT)
@@ -283,8 +313,6 @@ void leds_show_time() {
 #elif defined(ESP32)
     ws2812_setColors(NUM_LEDS, leds);
 #endif
-    //Serial.print("leds.show took ");
-    //Serial.println(millis() - before);
 }
 
 void leds_setcolor(uint16_t i, uint32_t c) {
@@ -325,13 +353,70 @@ uint32_t Wheel(byte WheelPos) {
     return ((((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8));
 }
 
+// Demos from FastLED
+
+void fadeall() {
+#ifdef FASTLED
+    for(int i = 0; i < NUM_LEDS; i++) {  leds[i].nscale8(250); }
+#endif
+}
+
+void cylon(bool trail, uint8_t wait) {
+    static uint8_t hue = 0;
+    // First slide the led in one direction
+    for(uint16_t i = 0; i < NUM_LEDS; i++) {
+	// Set the i'th led to red
+	leds_setcolor(i, Wheel(hue++));
+	// Show the leds
+	leds_show();
+	// now that we've shown the leds, reset the i'th led to black
+	if (!trail) leds_setcolor(i, 0);
+	fadeall();
+	// Wait a little bit before we loop around and do it again
+	delay(wait/2);
+    }
+
+    // Now go in the other direction.
+    for(uint16_t i = (NUM_LEDS)-1; i > 0; i--) {
+	// Set the i'th led to red
+	leds_setcolor(i, Wheel(hue++));
+	// Show the leds
+	leds_show();
+	// now that we've shown the leds, reset the i'th led to black
+	if (!trail) leds_setcolor(i, 0);
+	fadeall();
+	// Wait a little bit before we loop around and do it again
+	delay(wait/2);
+    }
+}
+
+void doubleConverge(bool trail, uint8_t wait) {
+    static uint8_t hue;
+    for(uint16_t i = 0; i < NUM_LEDS/2 + 4; i++) {
+	// fade everything out
+	//leds.fadeToBlackBy(60);
+
+	if (i < NUM_LEDS/2) {
+	    leds_setcolor(i, Wheel(hue++));
+	    leds_setcolor(NUM_LEDS - 1 - i, Wheel(hue++));
+	}
+	if (!trail && i>4) {
+	    leds_setcolor(i - 4, 0);
+	    leds_setcolor(NUM_LEDS - 1 - i + 4, 0);
+	}
+
+	leds_show();
+	delay(wait);
+    }
+}
+
 // The animations below are from Adafruit_NeoPixel/examples/strandtest
 
 // Fill the dots one after the other with a color
 void colorWipe(uint32_t c, uint8_t wait) {
     for(uint16_t i=0; i<NUM_LEDS; i++) {
 	leds_setcolor(i, c);
-	leds_show_time();
+	leds_show();
 	if (handle_IR(wait)) return;
     }
 }
@@ -343,7 +428,7 @@ void rainbow(uint8_t wait) {
 	for(i=0; i<NUM_LEDS; i++) {
 	    leds_setcolor(i, Wheel((i+j) & 255));
 	}
-	leds_show_time();
+	leds_show();
 	if (handle_IR(wait)) return;
     }
 }
@@ -356,7 +441,7 @@ void rainbowCycle(uint8_t wait) {
 	for(i=0; i< NUM_LEDS; i++) {
 	    leds_setcolor(i, Wheel(((i * 256 / NUM_LEDS) + j) & 255));
 	}
-	leds_show_time();
+	leds_show();
 	if (handle_IR(wait)) return;
     }
 }
@@ -368,7 +453,7 @@ void theaterChase(uint32_t c, uint8_t wait) {
 	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
 		leds_setcolor(i+q, c);    //turn every third pixel on
 	    }
-	    leds_show_time();
+	    leds_show();
 
 	    if (handle_IR(wait)) return;
 
@@ -386,7 +471,7 @@ void theaterChaseRainbow(uint8_t wait) {
 	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
 		leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
 	    }
-	    leds_show_time();
+	    leds_show();
 
 	    if (handle_IR(wait)) return;
 
@@ -404,19 +489,32 @@ void loop() {
     }
     switch (nextdemo) {
     case f_colorWipe:
-	colorWipe(nextdemo_color, nextdemo_wait);
+	colorWipe(demo_color, speed);
 	break;
     case f_rainbow:
-	rainbow(nextdemo_wait);
+	rainbow(speed);
 	break;
     case f_rainbowCycle:
-	rainbowCycle(nextdemo_wait);
+	rainbowCycle(speed);
 	break;
     case f_theaterChase:
-	theaterChase(nextdemo_color, nextdemo_wait);
+	theaterChase(demo_color, speed);
 	break;
     case f_theaterChaseRainbow:
-	theaterChaseRainbow(nextdemo_wait);
+	theaterChaseRainbow(speed);
+	break;
+    case f_cylon:
+	cylon(false, speed);
+	break;
+    case f_cylonTrail:
+	cylon(true, speed);
+	break;
+    case f_doubleConverge:
+	doubleConverge(false, speed);
+	break;
+    case f_doubleConvergeTrail:
+	doubleConverge(false, speed);
+	doubleConverge(true, speed);
 	break;
     default:
 	break;
@@ -431,7 +529,7 @@ void loop() {
     // delay 80ms may work rarely
     // delay 200ms works 60-90% of the time
     // delay 500ms works no more reliably.
-    if (handle_IR(50)) return;
+    if (handle_IR(1)) return;
     Serial.println("No IR");
 }
 
@@ -459,14 +557,14 @@ void setup() {
 #elif defined(ESP8266I2S)
     Serial.print("Using ESP8266I2S to drive these LEDs: ");
     esp8266i2s.init(NUM_LEDS);
-    esp_brightness = 63;
+    esp_brightness = 96;
 #elif defined(ESP32)
     Serial.print("Using ESP32 RMT to drive these LEDs: ");
     ws2812_init(NEOPIXEL_PIN, LED_WS2812B);
-    esp_brightness = 63;
+    esp_brightness = 96;
 #endif
     Serial.println(NUM_LEDS);
-    leds_show_time(); // Initialize all pixels to 'off'
+    leds_show(); // Initialize all pixels to 'off'
     Serial.println("LEDs on");
     colorWipe(0x00FFFFFF, 10);
 }
