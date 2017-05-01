@@ -120,6 +120,8 @@ typedef enum {
 } StripDemo;
 
 StripDemo nextdemo = f_theaterChaseRainbow;
+// Is the current demo linked to a color (false for rainbow demos)
+bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
 int16_t speed = 50;
 
@@ -224,49 +226,162 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.println("Got IR: Slow");
 	    return 0;
 
-	case IR_RGBZONE_WHITE:
-	    nextdemo = f_colorWipe;
-	    demo_color = 0xFFFFFF; // White
-	    Serial.println("Got IR: White");
-	    return 1;
 
 	case IR_RGBZONE_RED:
-	    nextdemo = f_colorWipe;
-	    demo_color = 0xFF0000; // Red
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFF0000;
 	    Serial.println("Got IR: Red");
 	    return 1;
 
 	case IR_RGBZONE_GREEN:
-	    nextdemo = f_colorWipe;
-	    demo_color = 0x00FF00; // Green
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x00FF00;
 	    Serial.println("Got IR: Green");
 	    return 1;
 
 	case IR_RGBZONE_BLUE:
-	    nextdemo = f_colorWipe;
-	    demo_color = 0x0000FF; // Blue
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x0000FF;
 	    Serial.println("Got IR: Blue");
 	    return 1;
 
+	case IR_RGBZONE_WHITE:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFFFFFF;
+	    Serial.println("Got IR: White");
+	    return 1;
+
+
+
+	case IR_RGBZONE_RED2:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xBB0000;
+	    Serial.println("Got IR: Red2");
+	    return 1;
+
+	case IR_RGBZONE_GREEN2:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x00BB00;
+	    Serial.println("Got IR: Green2");
+	    return 1;
+
+	case IR_RGBZONE_BLUE2:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x0000BB;
+	    Serial.println("Got IR: Blue2");
+	    return 1;
+
+	case IR_RGBZONE_PINK:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xCC00CC;
+	    Serial.println("Got IR: Pink");
+	    return 1;
+
+
+
+	case IR_RGBZONE_ORANGE:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xBB0000;
+	    Serial.println("Got IR: Red2");
+	    return 1;
+
+	case IR_RGBZONE_BLUE3:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x00BB00;
+	    Serial.println("Got IR: Green2");
+	    return 1;
+
+	case IR_RGBZONE_PURPLED:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x270041;
+	    Serial.println("Got IR: DarkPurple");
+	    return 1;
+
+	case IR_RGBZONE_PINK2:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xEE80EE;
+	    Serial.println("Got IR: Pink2");
+	    return 1;
+
+
+
+	case IR_RGBZONE_ORANGE2:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFF8100;
+	    Serial.println("Got IR: Orange2");
+	    return 1;
+
+	case IR_RGBZONE_GREEN3:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x006A00;
+	    Serial.println("Got IR: Green2");
+	    return 1;
+
+	case IR_RGBZONE_PURPLE:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x2B0064;
+	    Serial.println("Got IR: DarkPurple2");
+	    return 1;
+
+	case IR_RGBZONE_BLUEL:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x50A7FF;
+	    Serial.println("Got IR: BlueLigh");
+	    return 1;
+
+
+
+	case IR_RGBZONE_YELLOW:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xF0FF00;
+	    Serial.println("Got IR: Yellow");
+	    return 1;
+
+	case IR_RGBZONE_GREEN4:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x00BB00;
+	    Serial.println("Got IR: Green2");
+	    return 1;
+
+	case IR_RGBZONE_PURPLE2:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xC00080;
+	    Serial.println("Got IR: Purple2");
+	    return 1;
+
+	case IR_RGBZONE_BLUEL2:
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x408BD8;
+	    Serial.println("Got IR: BlueLight2");
+	    return 1;
+
+
+
 	case IR_RGBZONE_DIY1:
 	    // this uses the last color set
-	    nextdemo = f_theaterChase;
-	    Serial.println("Got IR: DIY1/theaterChase");
+	    nextdemo = f_colorWipe;
+	    Serial.println("Got IR: DIY1/colorWipe");
 	    return 1;
 
 	case IR_RGBZONE_DIY2:
-	    nextdemo = f_rainbow;
-	    Serial.println("Got IR: DIY2/rainbow");
-	    return 1;
-
-	case IR_RGBZONE_DIY3:
-	    nextdemo = f_rainbowCycle;
-	    Serial.println("Got IR: DIY3/rainbowCycle");
+	    // this uses the last color set
+	    nextdemo = f_theaterChase;
+	    Serial.println("Got IR: DIY2/theaterChase");
 	    return 1;
 
 	case IR_RGBZONE_DIY4:
+	    nextdemo = f_rainbow;
+	    Serial.println("Got IR: DIY4/rainbow");
+	    return 1;
+
+	case IR_RGBZONE_DIY5:
+	    nextdemo = f_rainbowCycle;
+	    Serial.println("Got IR: DIY5/rainbowCycle");
+	    return 1;
+
+	case IR_RGBZONE_DIY6:
 	    nextdemo = f_theaterChaseRainbow;
-	    Serial.println("Got IR: DIY4/theaterChaseRainbow");
+	    Serial.println("Got IR: DIY6/theaterChaseRainbow");
 	    return 1;
 
 	case IR_RGBZONE_JUMP3:
@@ -288,8 +403,6 @@ bool handle_IR(uint32_t delay_time) {
 	    nextdemo = f_doubleConvergeTrail;
 	    Serial.println("Got IR: FADE7/DoubleConvergeTrail");
 	    return 1;
-
-//    case f_doubleConverge:
 
 	case IR_JUNK:
 	    return 0;
@@ -489,30 +602,40 @@ void loop() {
     }
     switch (nextdemo) {
     case f_colorWipe:
+	colorDemo = true;
 	colorWipe(demo_color, speed);
 	break;
+    case f_theaterChase:
+	colorDemo = true;
+	theaterChase(demo_color, speed);
+	break;
+
     case f_rainbow:
+	colorDemo = false;
 	rainbow(speed);
 	break;
     case f_rainbowCycle:
+	colorDemo = false;
 	rainbowCycle(speed);
 	break;
-    case f_theaterChase:
-	theaterChase(demo_color, speed);
-	break;
     case f_theaterChaseRainbow:
+	colorDemo = false;
 	theaterChaseRainbow(speed);
 	break;
     case f_cylon:
+	colorDemo = false;
 	cylon(false, speed);
 	break;
     case f_cylonTrail:
+	colorDemo = false;
 	cylon(true, speed);
 	break;
     case f_doubleConverge:
+	colorDemo = false;
 	doubleConverge(false, speed);
 	break;
     case f_doubleConvergeTrail:
+	colorDemo = false;
 	doubleConverge(false, speed);
 	doubleConverge(true, speed);
 	break;
