@@ -255,7 +255,7 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_RED2:
 	    if (!colorDemo) nextdemo = f_colorWipe;
-	    demo_color = 0xBB0000;
+	    demo_color = 0xCE6800;
 	    Serial.println("Got IR: Red2");
 	    return 1;
 
@@ -273,7 +273,7 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_PINK:
 	    if (!colorDemo) nextdemo = f_colorWipe;
-	    demo_color = 0xCC00CC;
+	    demo_color = 0xFF50FE;
 	    Serial.println("Got IR: Pink");
 	    return 1;
 
@@ -281,8 +281,8 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_ORANGE:
 	    if (!colorDemo) nextdemo = f_colorWipe;
-	    demo_color = 0xBB0000;
-	    Serial.println("Got IR: Red2");
+	    demo_color = 0xFF8100;
+	    Serial.println("Got IR: Orange");
 	    return 1;
 
 	case IR_RGBZONE_BLUE3:
@@ -299,7 +299,7 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_PINK2:
 	    if (!colorDemo) nextdemo = f_colorWipe;
-	    demo_color = 0xEE80EE;
+	    demo_color = 0xFFB9FF;
 	    Serial.println("Got IR: Pink2");
 	    return 1;
 
@@ -307,7 +307,7 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_ORANGE2:
 	    if (!colorDemo) nextdemo = f_colorWipe;
-	    demo_color = 0xFF8100;
+	    demo_color = 0xFFCA49;
 	    Serial.println("Got IR: Orange2");
 	    return 1;
 
@@ -345,7 +345,7 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_PURPLE2:
 	    if (!colorDemo) nextdemo = f_colorWipe;
-	    demo_color = 0xC00080;
+	    demo_color = 0x660265;
 	    Serial.println("Got IR: Purple2");
 	    return 1;
 
