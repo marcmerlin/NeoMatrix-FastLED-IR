@@ -28,6 +28,9 @@
 // Comment this out to force FastLED support on ESP8266.
 #define ESP8266I2S
 
+// Note: used remote buttons on my remote are
+// Auto / DIY3 / 6 color arrows
+
 
 #define RECV_PIN 11
 #define NEOPIXEL_PIN 6
@@ -117,6 +120,7 @@ typedef enum {
     f_cylonTrail = 7,
     f_doubleConverge = 8,
     f_doubleConvergeTrail = 9,
+    f_flash = 10,
 } StripDemo;
 
 StripDemo nextdemo = f_theaterChaseRainbow;
@@ -209,22 +213,22 @@ bool handle_IR(uint32_t delay_time) {
 	case IR_RGBZONE_BRIGHT:
 	    change_brightness(+1);
 	    Serial.println("Got IR: Bright");
-	    return 0;
+	    return 1;
 
 	case IR_RGBZONE_DIM:
 	    change_brightness(-1);
 	    Serial.println("Got IR: Dim");
-	    return 0;
+	    return 1;
 
 	case IR_RGBZONE_QUICK:
 	    change_speed(-10);
 	    Serial.println("Got IR: Quick");
-	    return 0;
+	    return 1;
 
 	case IR_RGBZONE_SLOW:
 	    change_speed(+10);
 	    Serial.println("Got IR: Slow");
-	    return 0;
+	    return 1;
 
 
 	case IR_RGBZONE_RED:
@@ -404,6 +408,11 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.println("Got IR: FADE7/DoubleConvergeTrail");
 	    return 1;
 
+	case IR_RGBZONE_FLASH:
+	    nextdemo = f_flash;
+	    Serial.println("Got IR: FLASH");
+	    return 1;
+
 	case IR_JUNK:
 	    return 0;
 
@@ -486,7 +495,7 @@ void cylon(bool trail, uint8_t wait) {
 	if (!trail) leds_setcolor(i, 0);
 	fadeall();
 	// Wait a little bit before we loop around and do it again
-	delay(wait/2);
+	delay(wait/4);
     }
 
     // Now go in the other direction.
@@ -499,7 +508,7 @@ void cylon(bool trail, uint8_t wait) {
 	if (!trail) leds_setcolor(i, 0);
 	fadeall();
 	// Wait a little bit before we loop around and do it again
-	delay(wait/2);
+	delay(wait/4);
     }
 }
 
@@ -519,7 +528,7 @@ void doubleConverge(bool trail, uint8_t wait) {
 	}
 
 	leds_show();
-	delay(wait);
+	delay(wait/3);
     }
 }
 
@@ -595,12 +604,34 @@ void theaterChaseRainbow(uint8_t wait) {
     }
 }
 
+
+// Local stuff I wrote
+// Flash 25 colors in the color wheel
+void flash(uint8_t wait) {
+    uint16_t i, j;
+
+    for(j=0; j<26; j++) {
+	for(i=0; i< NUM_LEDS; i++) {
+	    leds_setcolor(i, Wheel(j * 10));
+	}
+	leds_show();
+	if (handle_IR(wait*3)) return;
+	for(i=0; i< NUM_LEDS; i++) {
+	    leds_setcolor(i, 0);
+	}
+	leds_show();
+	if (handle_IR(wait*3)) return;
+    }
+}
+
 void loop() {
     if ((uint8_t) nextdemo > 0) {
 	Serial.print("Running demo: ");
 	Serial.println((uint8_t) nextdemo);
     }
     switch (nextdemo) {
+
+    // Colors on DIY1-3
     case f_colorWipe:
 	colorDemo = true;
 	colorWipe(demo_color, speed);
@@ -610,6 +641,7 @@ void loop() {
 	theaterChase(demo_color, speed);
 	break;
 
+    // Rainbow anims on DIY4-6
     case f_rainbow:
 	colorDemo = false;
 	rainbow(speed);
@@ -622,6 +654,8 @@ void loop() {
 	colorDemo = false;
 	theaterChaseRainbow(speed);
 	break;
+
+    // Jump3 to Jump7
     case f_cylon:
 	colorDemo = false;
 	cylon(false, speed);
@@ -639,6 +673,13 @@ void loop() {
 	doubleConverge(false, speed);
 	doubleConverge(true, speed);
 	break;
+
+    // Flash color wheel
+    case f_flash:
+	colorDemo = false;
+	flash(speed);
+	break;
+
     default:
 	break;
     }
