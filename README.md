@@ -18,9 +18,11 @@ Supported/tested chips are:
 - ESP32 - also allows both thanks to ESP32-Digital-RGB-LED-Drivers/RMT which also doesn't tie up the CPU.
 
 Photos and videos:
+![image](https://cloud.githubusercontent.com/assets/1369412/26763577/e6b234c4-4909-11e7-98cc-58e2bf450e3f.png)
 ![image](https://cloud.githubusercontent.com/assets/1369412/25098004/bbe92cee-235b-11e7-81b5-a4c092a7ce67.png)
 ![image](https://cloud.githubusercontent.com/assets/1369412/25097971/9cf96b3c-235b-11e7-9b45-fa712eea9b67.png)
 
 Quick video showing the problem of running Neopixels or IR: https://www.youtube.com/watch?v=62-nEJtm070
+For a demo of neopixel patterns: https://www.youtube.com/watch?v=x2j4XPIIZyU (jump to 3:50)
 
 Longer Video Showing the whole story and details: https://www.youtube.com/watch?v=hgYM-R2dIWk
