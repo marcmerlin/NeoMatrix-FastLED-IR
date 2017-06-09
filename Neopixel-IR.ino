@@ -54,6 +54,16 @@
     //#define NEOPIXEL_PIN D2 // GPIO4
     #define NEOPIXEL_PIN RX
     #endif
+
+    // Turn off Wifi
+    // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+    #define FREQUENCY    160                  // valid 80, 160
+    //
+    #include "ESP8266WiFi.h"
+    extern "C" {
+    #include "user_interface.h"
+    }
+
 #elif defined(ESP32)
     #include <IRremote.h>
     // ESP32 is not yet supported by FastLED. It does work with Adafruit, but that
@@ -119,8 +129,10 @@ typedef enum {
     f_cylon = 6,
     f_cylonTrail = 7,
     f_doubleConverge = 8,
-    f_doubleConvergeTrail = 9,
-    f_flash = 10,
+    f_doubleConvergeRev = 9,
+    f_doubleConvergeTrail = 10,
+    f_flash = 11,
+    f_flash3 = 12,
 } StripDemo;
 
 StripDemo nextdemo = f_theaterChaseRainbow;
@@ -198,6 +210,11 @@ void change_speed(int8_t change) {
 bool handle_IR(uint32_t delay_time) {
     decode_results IR_result;
     delay(delay_time);
+    #ifdef ESP8266
+    // Turn off Wifi
+    // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+    wdt_reset();
+    #endif
 
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
@@ -373,19 +390,24 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.println("Got IR: DIY2/theaterChase");
 	    return 1;
 
+	case IR_RGBZONE_DIY3:
+	    nextdemo = f_flash3;
+	    Serial.println("Got IR: DIY3/Flash3");
+	    return 1;
+
 	case IR_RGBZONE_DIY4:
-	    nextdemo = f_rainbow;
-	    Serial.println("Got IR: DIY4/rainbow");
+	    nextdemo = f_rainbowCycle;
+	    Serial.println("Got IR: DIY4/rainbowCycle");
 	    return 1;
 
 	case IR_RGBZONE_DIY5:
-	    nextdemo = f_rainbowCycle;
-	    Serial.println("Got IR: DIY5/rainbowCycle");
+	    nextdemo = f_theaterChaseRainbow;
+	    Serial.println("Got IR: DIY5/theaterChaseRainbow");
 	    return 1;
 
 	case IR_RGBZONE_DIY6:
-	    nextdemo = f_theaterChaseRainbow;
-	    Serial.println("Got IR: DIY6/theaterChaseRainbow");
+	    nextdemo = f_doubleConvergeRev;
+	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
 	    return 1;
 
 	case IR_RGBZONE_JUMP3:
@@ -512,19 +534,29 @@ void cylon(bool trail, uint8_t wait) {
     }
 }
 
-void doubleConverge(bool trail, uint8_t wait) {
+void doubleConverge(bool trail, uint8_t wait, bool rev=false) {
     static uint8_t hue;
     for(uint16_t i = 0; i < NUM_LEDS/2 + 4; i++) {
 	// fade everything out
 	//leds.fadeToBlackBy(60);
 
 	if (i < NUM_LEDS/2) {
-	    leds_setcolor(i, Wheel(hue++));
-	    leds_setcolor(NUM_LEDS - 1 - i, Wheel(hue++));
+	    if (!rev) {
+		leds_setcolor(i, Wheel(hue++));
+		leds_setcolor(NUM_LEDS - 1 - i, Wheel(hue++));
+	    } else {
+		leds_setcolor(NUM_LEDS/2 -1 -i, Wheel(hue++));
+		leds_setcolor(NUM_LEDS/2 + i, Wheel(hue++));
+	    }
 	}
-	if (!trail && i>4) {
-	    leds_setcolor(i - 4, 0);
-	    leds_setcolor(NUM_LEDS - 1 - i + 4, 0);
+	if (!trail && i>3) {
+	    if (!rev) {
+		leds_setcolor(i - 4, 0);
+		leds_setcolor(NUM_LEDS - 1 - i + 4, 0);
+	    } else {
+		leds_setcolor(NUM_LEDS/2 -1 -i +4, 0);
+		leds_setcolor(NUM_LEDS/2 + i -4, 0);
+	    }
 	}
 
 	leds_show();
@@ -539,7 +571,7 @@ void colorWipe(uint32_t c, uint8_t wait) {
     for(uint16_t i=0; i<NUM_LEDS; i++) {
 	leds_setcolor(i, c);
 	leds_show();
-	if (handle_IR(wait)) return;
+	if (handle_IR(wait/5)) return;
     }
 }
 
@@ -564,7 +596,7 @@ void rainbowCycle(uint8_t wait) {
 	    leds_setcolor(i, Wheel(((i * 256 / NUM_LEDS) + j) & 255));
 	}
 	leds_show();
-	if (handle_IR(wait)) return;
+	if (handle_IR(wait/20)) return;
     }
 }
 
@@ -588,7 +620,7 @@ void theaterChase(uint32_t c, uint8_t wait) {
 
 //Theatre-style crawling lights with rainbow effect
 void theaterChaseRainbow(uint8_t wait) {
-    for (int j=0; j < 256; j++) {     // cycle all 256 colors in the wheel
+    for (int j=0; j < 256; j+=7) {     // cycle all 256 colors in the wheel
 	for (int q=0; q < 3; q++) {
 	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
 		leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
@@ -624,6 +656,58 @@ void flash(uint8_t wait) {
     }
 }
 
+// Flash different color on every other led
+void flash2(uint8_t wait) {
+    uint16_t i, j;
+
+    for(j=0; j<52; j++) {
+	for(i=0; i< NUM_LEDS-1; i+=2) {
+	    leds_setcolor(i, Wheel(j * 5));
+	    leds_setcolor(i+1, 0);
+	}
+	leds_show();
+	if (handle_IR(wait*2)) return;
+
+	for(i=1; i< NUM_LEDS-1; i+=2) {
+	    leds_setcolor(i, Wheel(j * 5 + 48));
+	    leds_setcolor(i+1, 0);
+	}
+	leds_show();
+	if (handle_IR(wait*2)) return;
+    }
+}
+
+// Flash different colors on every other 2 out of 3 leds
+void flash3(uint8_t wait) {
+    uint16_t i, j;
+
+    for(j=0; j<52; j++) {
+	for(i=0; i< NUM_LEDS; i+=3) {
+	    leds_setcolor(i, Wheel(j * 5));
+	    leds_setcolor(i+1, Wheel(j * 5+128));
+	    leds_setcolor(i+2, 0);
+	}
+	leds_show();
+	if (handle_IR(wait)) return;
+
+	for(i=1; i< NUM_LEDS-2; i+=3) {
+	    leds_setcolor(i, Wheel(j * 5 + 48));
+	    leds_setcolor(i+1, Wheel(j * 5+128));
+	    leds_setcolor(i+2, 0);
+	}
+	leds_show();
+	if (handle_IR(wait)) return;
+
+	for(i=2; i< NUM_LEDS-2; i+=3) {
+	    leds_setcolor(i, Wheel(j * 5 + 96));
+	    leds_setcolor(i+1, Wheel(j * 5+128));
+	    leds_setcolor(i+2, 0);
+	}
+	leds_show();
+	if (handle_IR(wait)) return;
+    }
+}
+
 void loop() {
     if ((uint8_t) nextdemo > 0) {
 	Serial.print("Running demo: ");
@@ -642,10 +726,11 @@ void loop() {
 	break;
 
     // Rainbow anims on DIY4-6
-    case f_rainbow:
-	colorDemo = false;
-	rainbow(speed);
-	break;
+// This is not cool/wavy enough, the cycle version is, though
+//     case f_rainbow:
+// 	colorDemo = false;
+// 	rainbow(speed);
+// 	break;
     case f_rainbowCycle:
 	colorDemo = false;
 	rainbowCycle(speed);
@@ -653,6 +738,11 @@ void loop() {
     case f_theaterChaseRainbow:
 	colorDemo = false;
 	theaterChaseRainbow(speed);
+	break;
+
+    case f_doubleConvergeRev:
+	colorDemo = false;
+	doubleConverge(false, speed, true);
 	break;
 
     // Jump3 to Jump7
@@ -678,6 +768,11 @@ void loop() {
     case f_flash:
 	colorDemo = false;
 	flash(speed);
+	break;
+
+    case f_flash3:
+	colorDemo = false;
+	flash3(speed);
 	break;
 
     default:
@@ -722,6 +817,12 @@ void setup() {
     Serial.print("Using ESP8266I2S to drive these LEDs: ");
     esp8266i2s.init(NUM_LEDS);
     esp_brightness = 96;
+
+    // Turn off Wifi
+    // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+    WiFi.forceSleepBegin();                  // turn off ESP8266 RF
+    delay(1);                                // give RF section time to shutdown
+    system_update_cpu_freq(FREQUENCY);
 #elif defined(ESP32)
     Serial.print("Using ESP32 RMT to drive these LEDs: ");
     ws2812_init(NEOPIXEL_PIN, LED_WS2812B);
