@@ -11,79 +11,31 @@
 // leds.show takes 1 to 3ms during which IR cannot run and codes get dropped, but it's more
 // a problem if you constantly update for pixel animations and in that case the IR ISR gets
 // almost no chance to run.
-// The FastLED library is super since it re-enable interrupts mid update
+// The FastLED library is super since it re-enables interrupts mid update
 // on chips that are capable of it. This allows IR + Neopixel to work on Teensy v3.1 and most
 // other 32bit CPUs.
 
-// I've left the adafruit lib here as an option but please note that
-// enabling the adafruit driver will prevent IR interrupts from working, unless
-// you edit the adafruit driver and remove the noInterrupts call (this will then
-// cause neopixels to glitch).
-//#define ADAFRUIT
+// Compile WeMos D1 R2 & mini
 
-// ESP8266 will work with FASTLED, but there is a better lib that uses I2S support to get
-// perfect signalling without stopping interrupts at all. The FASTLED lib works well enough
-// but does result in occasional glitching for me.
-// https://github.com/JoDaNl/esp8266_ws2812_i2s/
-// Comment this out to force FastLED support on ESP8266.
-#define ESP8266I2S
-
-// Note: used remote buttons on my remote are
-// Auto / DIY3 / 6 color arrows
-
-
-#define RECV_PIN 11
-#define NEOPIXEL_PIN 6
 #define NUM_LEDS 48
 
-// ESP8266 runs under an RTOS and doens't have precise interrupts, so it has its
-// separate IR library and a custom I2S based neopixel library
 #ifdef ESP8266
-    #include <IRremoteESP8266.h>
-    // D4 is also the system LED, causing it to blink on IR receive, which is great.
-    #define RECV_PIN D4     // GPIO2
+#include <FastLED.h>
+#define NEOPIXEL_PIN D1 // GPIO5
 
-    #ifdef ESP8266I2S
-    // Neopixel strip must be plugged into RX pin (RXD0 / GPIO3)
-    #include <ws2812_i2s.h>
-    #else
-    #define FASTLED
-    #include <FastLED.h>
-    // When choosing pins, please see
-    // https://github.com/FastLED/FastLED/wiki/ESP8266-notes
-    //#define NEOPIXEL_PIN D2 // GPIO4
-    #define NEOPIXEL_PIN RX
-    #endif
 
-    // Turn off Wifi
-    // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
-    #define FREQUENCY    160                  // valid 80, 160
-    //
-    #include "ESP8266WiFi.h"
-    extern "C" {
-    #include "user_interface.h"
-    }
+#include <IRremoteESP8266.h>
+// D4 is also the system LED, causing it to blink on IR receive, which is great.
+#define RECV_PIN D4     // GPIO2
 
-#elif defined(ESP32)
-    #include <IRremote.h>
-    // ESP32 is not yet supported by FastLED. It does work with Adafruit, but that
-    // support is glitchy, so use the RMT code instead:
-    #include "esp32_ws2812.h"
-    #define RECV_PIN 2
-    #define NEOPIXEL_PIN 0
-    #define ESP32RMT
-    #undef ESP8266I2S
-#else
-    #include <IRremote.h>
-    #undef ESP8266I2S
-    #ifndef ADAFRUIT
-    #define FASTLED
-    #include <FastLED.h>
-    #else
-    #include <Adafruit_NeoPixel.h>
-    #endif
+// Turn off Wifi in setup()
+// https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
+//
+#include "ESP8266WiFi.h"
+extern "C" {
+#include "user_interface.h"
+}
 #endif
-
 
 // This file contains codes I captured and mapped myself
 // using IRremote's examples/IRrecvDemo
@@ -96,28 +48,8 @@
 
 IRrecv irrecv(RECV_PIN);
 
-#if defined(FASTLED)
 CRGB leds[NUM_LEDS];
-#elif defined(ADAFRUIT)
-// Parameter 1 = number of pixels in leds
-// Parameter 2 = Arduino pin number (most are valid)
-// Parameter 3 = pixel type flags, add together as needed:
-//   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
-//   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
-//   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
-//   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-//   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
-Adafruit_NeoPixel leds = Adafruit_NeoPixel(NUM_LEDS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
-#elif defined(ESP8266I2S)
-WS2812 esp8266i2s;
-Pixel_t leds[NUM_LEDS];
-uint8_t esp_brightness;
-#elif defined(ESP32RMT)
-rgbVal leds[NUM_LEDS];
-uint8_t esp_brightness;
-#else
-#error No neopixel library defined
-#endif
+uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 typedef enum {
     f_nothing = 0,
@@ -132,7 +64,9 @@ typedef enum {
     f_doubleConvergeRev = 9,
     f_doubleConvergeTrail = 10,
     f_flash = 11,
-    f_flash3 = 12,
+    //f_flash3 = 12,
+    f_juggle = 12,
+    f_bpm = 13,
 } StripDemo;
 
 StripDemo nextdemo = f_theaterChaseRainbow;
@@ -145,11 +79,7 @@ int16_t speed = 50;
 // ---------------------------------------------------------------------------
 
 void change_brightness(int8_t change) {
-#if defined(ESP8266I2S)
-    static uint8_t brightness = 6;
-#else
     static uint8_t brightness = 4;
-#endif
     static uint32_t last_brightness_change = 0 ;
     uint8_t bright_value;
 
@@ -162,22 +92,7 @@ void change_brightness(int8_t change) {
     brightness = constrain(brightness + change, 1, 8);
     bright_value = (1 << brightness) - 1;
 
-#if defined(FASTLED)
     FastLED.setBrightness(bright_value);
-#elif defined(ADAFRUIT)
-    leds.setBrightness(bright_value);
-#else
-    bright_value = 255;
-    if (brightness == 7) bright_value = 224;
-    else if (brightness == 6) bright_value = 176;
-    else if (brightness == 5) bright_value = 128;
-    else if (brightness == 4) bright_value = 96;
-    else if (brightness == 3) bright_value = 64;
-    else if (brightness == 2) bright_value = 32;
-    else if (brightness == 1) bright_value = 16;
-    else if (brightness == 0) bright_value = 0;
-    esp_brightness = bright_value;
-#endif
 
     Serial.print("Changing brightness ");
     Serial.print(change);
@@ -209,9 +124,12 @@ void change_speed(int8_t change) {
 
 bool handle_IR(uint32_t delay_time) {
     decode_results IR_result;
-    delay(delay_time);
+    // Get proper dithering for non full brightness
+    // https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
+    //delay(delay_time);
+    FastLED.delay(delay_time);
     #ifdef ESP8266
-    // Turn off Wifi
+    // reset watchdog timer often enough to avoid reboots
     // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
     wdt_reset();
     #endif
@@ -391,8 +309,8 @@ bool handle_IR(uint32_t delay_time) {
 	    return 1;
 
 	case IR_RGBZONE_DIY3:
-	    nextdemo = f_flash3;
-	    Serial.println("Got IR: DIY3/Flash3");
+	    nextdemo = f_juggle;
+	    Serial.println("Got IR: DIY3/Juggle");
 	    return 1;
 
 	case IR_RGBZONE_DIY4:
@@ -408,6 +326,11 @@ bool handle_IR(uint32_t delay_time) {
 	case IR_RGBZONE_DIY6:
 	    nextdemo = f_doubleConvergeRev;
 	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
+	    return 1;
+
+	case IR_RGBZONE_AUTO:
+	    nextdemo = f_bpm;
+	    Serial.println("Got IR: AUTO/bpm");
 	    return 1;
 
 	case IR_RGBZONE_JUMP3:
@@ -441,6 +364,8 @@ bool handle_IR(uint32_t delay_time) {
 	default:
 	    Serial.print("Got unknown IR value: ");
 	    Serial.println(IR_result.value, HEX);
+	    // Allow pausing the current demo to inspect it in slow motion
+	    delay(1000);
 	    return 0;
 	}
     }
@@ -448,35 +373,13 @@ bool handle_IR(uint32_t delay_time) {
 }
 
 void leds_show() {
-#if defined(FASTLED)
     FastLED.show();
-#elif defined(ADAFRUIT)
-    leds.show();
-#elif defined(ESP8266I2S)
-    esp8266i2s.show(leds);
-#elif defined(ESP32)
-    ws2812_setColors(NUM_LEDS, leds);
-#endif
+    // This causes flickering
+    //FastLED[0].showLeds();
 }
 
 void leds_setcolor(uint16_t i, uint32_t c) {
-#if defined(FASTLED)
     leds[i] = c;
-#elif defined(ADAFRUIT)
-    leds.setPixelColor(i, c);
-#else
-    uint8_t r,g,b;
-    r = ((c & 0xFF0000) >> 16) * esp_brightness/255.0;
-    g = ((c & 0x00FF00) >>  8) * esp_brightness/255.0;
-    b = ((c & 0x0000FF) >>  0) * esp_brightness/255.0;
-    #if defined(ESP8266I2S)
-	leds[i].R = r;
-	leds[i].G = g;
-	leds[i].B = b;
-    #elif defined(ESP32RMT)
-	leds[i] = makeRGBVal(r, g, b);
-    #endif
-#endif
 }
 
 // Input a value 0 to 255 to get a color value.
@@ -499,10 +402,9 @@ uint32_t Wheel(byte WheelPos) {
 
 // Demos from FastLED
 
-void fadeall() {
-#ifdef FASTLED
-    for(int i = 0; i < NUM_LEDS; i++) {  leds[i].nscale8(250); }
-#endif
+// fade in 0 to x/256th of the previous value
+void fadeall(uint8_t fade) {
+    for(uint16_t i = 0; i < NUM_LEDS; i++) {  leds[i].nscale8(fade); }
 }
 
 void cylon(bool trail, uint8_t wait) {
@@ -514,10 +416,10 @@ void cylon(bool trail, uint8_t wait) {
 	// Show the leds
 	leds_show();
 	// now that we've shown the leds, reset the i'th led to black
-	if (!trail) leds_setcolor(i, 0);
-	fadeall();
+	//if (!trail) leds_setcolor(i, 0);
+	if (trail) fadeall(224); else fadeall(92);
 	// Wait a little bit before we loop around and do it again
-	delay(wait/4);
+	if (handle_IR(wait/4)) return;
     }
 
     // Now go in the other direction.
@@ -527,10 +429,10 @@ void cylon(bool trail, uint8_t wait) {
 	// Show the leds
 	leds_show();
 	// now that we've shown the leds, reset the i'th led to black
-	if (!trail) leds_setcolor(i, 0);
-	fadeall();
+	//if (!trail) leds_setcolor(i, 0);
+	if (trail) fadeall(224); else fadeall(92);
 	// Wait a little bit before we loop around and do it again
-	delay(wait/4);
+	if (handle_IR(wait/4)) return;
     }
 }
 
@@ -549,6 +451,7 @@ void doubleConverge(bool trail, uint8_t wait, bool rev=false) {
 		leds_setcolor(NUM_LEDS/2 + i, Wheel(hue++));
 	    }
 	}
+#if 0
 	if (!trail && i>3) {
 	    if (!rev) {
 		leds_setcolor(i - 4, 0);
@@ -558,14 +461,71 @@ void doubleConverge(bool trail, uint8_t wait, bool rev=false) {
 		leds_setcolor(NUM_LEDS/2 + i -4, 0);
 	    }
 	}
-
+#endif
+	if (trail) fadeall(224); else fadeall(92);
 	leds_show();
-	delay(wait/3);
+	if (handle_IR(wait/3)) return;
     }
 }
 
-// The animations below are from Adafruit_NeoPixel/examples/strandtest
+// From FastLED's DemoReel
+// ---------------------------------------------
+void addGlitter( fract8 chanceOfGlitter) 
+{
+    if (random8() < chanceOfGlitter) {
+	leds[ random16(NUM_LEDS) ] += CRGB::White;
+    }
+}
 
+
+void juggle(uint8_t wait) {
+    // eight colored dots, weaving in and out of sync with each other
+    fadeToBlackBy( leds, NUM_LEDS, 20);
+    byte dothue = 0;
+    for( int i = 0; i < 8; i++) {
+	leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
+	dothue += 32;
+    }
+    leds_show();
+    if (handle_IR(wait/3)) return;
+}
+
+void bpm(uint8_t wait)
+{
+    // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+    uint8_t BeatsPerMinute = 62;
+    CRGBPalette16 palette = PartyColors_p;
+    uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
+    for( int i = 0; i < NUM_LEDS; i++) { //9948
+	leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+    }
+    gHue++;
+    leds_show();
+    if (handle_IR(wait/3)) return;
+}
+
+// Slightly different, this makes the rainbow equally distributed throughout
+void rainbowCycle(uint8_t wait) {
+    uint16_t i, j;
+
+    for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+#if 0
+	for(i=0; i< NUM_LEDS; i++) {
+	    leds_setcolor(i, Wheel(((i * 256 / NUM_LEDS) + j) & 255));
+	}
+#endif
+	fill_rainbow( leds, NUM_LEDS, gHue, 7);
+	addGlitter(80);
+	gHue++;
+	leds_show();
+	if (handle_IR(wait/20)) return;
+    }
+}
+
+
+
+
+// The animations below are from Adafruit_NeoPixel/examples/strandtest
 // Fill the dots one after the other with a color
 void colorWipe(uint32_t c, uint8_t wait) {
     for(uint16_t i=0; i<NUM_LEDS; i++) {
@@ -575,6 +535,7 @@ void colorWipe(uint32_t c, uint8_t wait) {
     }
 }
 
+#if 0
 void rainbow(uint8_t wait) {
     uint16_t i, j;
 
@@ -586,19 +547,7 @@ void rainbow(uint8_t wait) {
 	if (handle_IR(wait)) return;
     }
 }
-
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait) {
-    uint16_t i, j;
-
-    for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
-	for(i=0; i< NUM_LEDS; i++) {
-	    leds_setcolor(i, Wheel(((i * 256 / NUM_LEDS) + j) & 255));
-	}
-	leds_show();
-	if (handle_IR(wait/20)) return;
-    }
-}
+#endif
 
 //Theatre-style crawling lights.
 void theaterChase(uint32_t c, uint8_t wait) {
@@ -611,9 +560,12 @@ void theaterChase(uint32_t c, uint8_t wait) {
 
 	    if (handle_IR(wait)) return;
 
+	    fadeall(16);
+#if 0
 	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
 		leds_setcolor(i+q, 0);        //turn every third pixel off
 	    }
+#endif
 	}
     }
 }
@@ -629,9 +581,12 @@ void theaterChaseRainbow(uint8_t wait) {
 
 	    if (handle_IR(wait)) return;
 
+	    fadeall(16);
+#if 0
 	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
 		leds_setcolor(i+q, 0);        //turn every third pixel off
 	    }
+#endif
 	}
     }
 }
@@ -656,7 +611,9 @@ void flash(uint8_t wait) {
     }
 }
 
+#if 0
 // Flash different color on every other led
+// Not currently called, looks too much like TheatreRainbow
 void flash2(uint8_t wait) {
     uint16_t i, j;
 
@@ -678,6 +635,7 @@ void flash2(uint8_t wait) {
 }
 
 // Flash different colors on every other 2 out of 3 leds
+// not a great demo, really...
 void flash3(uint8_t wait) {
     uint16_t i, j;
 
@@ -707,6 +665,7 @@ void flash3(uint8_t wait) {
 	if (handle_IR(wait)) return;
     }
 }
+#endif
 
 void loop() {
     if ((uint8_t) nextdemo > 0) {
@@ -770,21 +729,29 @@ void loop() {
 	flash(speed);
 	break;
 
+#if 0
     case f_flash3:
 	colorDemo = false;
 	flash3(speed);
+	break;
+#endif
+    case f_juggle:
+	colorDemo = false;
+	juggle(speed);
+	break;
+
+    case f_bpm:
+	colorDemo = false;
+	bpm(speed);
 	break;
 
     default:
 	break;
     }
 
-    // In case a specific demo was run with an overridden speed
-    // reset the speed for the next one to the value stored in our
-    // speed changing function.
-    //change_speed(0);
 
-    Serial.println("Loop done, listening for IR and restarting demo");
+    Serial.print("Loop done, listening for IR and restarting demo at speed ");
+    Serial.println(speed);
     // delay 80ms may work rarely
     // delay 200ms works 60-90% of the time
     // delay 500ms works no more reliably.
@@ -798,39 +765,42 @@ void setup() {
     Serial.begin(115200);
     Serial.println("Enabling IRin");
     irrecv.enableIRIn(); // Start the receiver
-#ifndef ESP8266
-    // this doesn't exist in the ESP8266 IR library, but by using pin D4
-    // IR receive happens to make the system LED blink, so it's all good
-    irrecv.blink13(true);
-#endif
-    Serial.println("Enabled IRin, turn on LEDs");
-
-#if defined(FASTLED)
-    Serial.print("Using FastLED to drive these LEDs: ");
-    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS);
-    FastLED.setBrightness(15);
-#elif defined(ADAFRUIT)
-    Serial.print("Using Adafruit_Neopixel to drive these LEDs: ");
-    leds.begin();
-    leds.setBrightness(15);
-#elif defined(ESP8266I2S)
-    Serial.print("Using ESP8266I2S to drive these LEDs: ");
-    esp8266i2s.init(NUM_LEDS);
-    esp_brightness = 96;
-
+    Serial.print("Enabled IRin on pin ");
+    Serial.println(RECV_PIN);
+#ifdef ESP8266
+    Serial.println("Init ESP8266");
     // Turn off Wifi
     // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
     WiFi.forceSleepBegin();                  // turn off ESP8266 RF
     delay(1);                                // give RF section time to shutdown
-    system_update_cpu_freq(FREQUENCY);
-#elif defined(ESP32)
-    Serial.print("Using ESP32 RMT to drive these LEDs: ");
-    ws2812_init(NEOPIXEL_PIN, LED_WS2812B);
-    esp_brightness = 96;
+    #define FREQUENCY    160                  // valid 80, 160
+    // this breaks FastLED, so skip that step.
+    // system_update_cpu_freq(FREQUENCY);
+#else
+    // this doesn't exist in the ESP8266 IR library, but by using pin D4
+    // IR receive happens to make the system LED blink, so it's all good
+    Serial.println("Init NON ESP8266, set IR receive to blink system LED");
+    irrecv.blink13(true);
 #endif
+
+    Serial.print("Using FastLED on pin ");
+    Serial.print(NEOPIXEL_PIN);
+    Serial.print(" to drive LEDs: ");
     Serial.println(NUM_LEDS);
-    leds_show(); // Initialize all pixels to 'off'
+    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+    FastLED.setBrightness(32);
+    // Turn off all LEDs first, and then light 3 of them for debug.
+    leds_show();
+    delay(1000);
+    leds[0] = CRGB::Red;
+    leds[10] = CRGB::Blue;
+    leds[20] = CRGB::Green;
+    leds_show();
     Serial.println("LEDs on");
+    delay(1000);
+    Serial.println("Start code");
+
+    // init first demo
     colorWipe(0x00FFFFFF, 10);
 }
 
