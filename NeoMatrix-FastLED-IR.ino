@@ -28,12 +28,8 @@
 //#include "bluesmiley24.h"
 #include "smileytongue24.h"
 
-// Allow temporaly dithering, does not work with ESP32 right now
-#ifndef ESP32
-#define DELAY FastLED.delay
-#else
-#define DELAY delay
-#endif
+// temporaly dithering, does not work well when using a matrix
+//#define DELAY FastLED.delay
 #define DELAY delay
 
 #define MATRIXPIN D8
@@ -49,7 +45,7 @@
 
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
-#define BRIGHTNESS 32
+uint8_t matrix_brightness = 32;
 
 #define mw 24
 #define mh 32
@@ -118,16 +114,19 @@ bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
 int16_t speed = 50;
 
+uint8_t led_brightness = 128;
 
 // ---------------------------------------------------------------------------
 // Matrix Code
 // ---------------------------------------------------------------------------
 
 void display_resolution() {
+    static uint16_t cnt=1;
+
     matrix->setTextSize(1);
     // not wide enough;
     if (mw<16) return;
-    matrix->clear();
+    matrix_clear();
     // Font is 5x7, if display is too small
     // 8 can only display 1 char
     // 16 can almost display 3 chars
@@ -148,9 +147,8 @@ void display_resolution() {
 	} else {
 	    // we're not tall enough either, so we wait and display
 	    // the 2nd value on top.
-	    matrix->show();
-	    DELAY(2000);
-	    matrix->clear();
+	    matrix_show();
+	    matrix_clear();
 	    matrix->setCursor(mw-11, 0);
 	}   
     }
@@ -174,17 +172,20 @@ void display_resolution() {
 	matrix->print("*");
     }
     
-    matrix->show();
+    matrix->setTextColor(matrix->Color(255,0,255)); 
+    matrix->setCursor(0, mh-14);
+    matrix->print(cnt++);
+    matrix_show();
 }
 
 void display_scrollText() {
     uint8_t size = max(int(mw/8), 1);
-    matrix->clear();
+    matrix_clear();
     matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
     matrix->setTextSize(1);
     matrix->setRotation(0);
     for (int8_t x=7; x>=-42; x--) {
-	matrix->clear();
+	matrix_clear();
 	matrix->setCursor(x,0);
 	matrix->setTextColor(matrix->Color(0, 255, 0));
 	matrix->print("Hello");
@@ -193,7 +194,7 @@ void display_scrollText() {
 	    matrix->setTextColor(matrix->Color(255, 255, 0));
 	    matrix->print("World");
 	}
-	matrix->show();
+	matrix_show();
         DELAY(50);
     }
 
@@ -201,17 +202,17 @@ void display_scrollText() {
     matrix->setTextSize(size);
     matrix->setTextColor(matrix->Color(0, 0, 255));
     for (int16_t x=8*size; x>=-6*8*size; x--) {
-	matrix->clear();
+	matrix_clear();
 	matrix->setCursor(x,mw/2-size*4);
 	matrix->print("Rotate");
-	matrix->show();
+	matrix_show();
 	// note that on a big array the refresh rate from show() will be slow enough that
 	// the delay become irrelevant. This is already true on a 32x32 array.
         DELAY(50/size);
     }
     matrix->setRotation(0);
     matrix->setCursor(0,0);
-    matrix->show();
+    matrix_show();
 }
 
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
@@ -237,13 +238,13 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	int16_t x = xf >> 4;
 	int16_t y = yf >> 4;
 
-	matrix->clear();
+	matrix_clear();
 	// pan 24x24 pixmap
 	if (bitmapSize == 24) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
 #ifdef BM32
 	if (bitmapSize == 32) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap32, bitmapSize, bitmapSize);
 #endif
-	matrix->show();
+	matrix_show();
 	 
 	// Only pan if the display size is smaller than the pixmap
 	// but not if the difference is too small or it'll look bad.
@@ -289,7 +290,6 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 void change_brightness(int8_t change) {
     static uint8_t brightness = 4;
     static uint32_t last_brightness_change = 0 ;
-    uint8_t bright_value;
 
     if (millis() - last_brightness_change < 300) {
 	Serial.print("Too soon... Ignoring brightness change from ");
@@ -298,16 +298,16 @@ void change_brightness(int8_t change) {
     }
     last_brightness_change = millis();
     brightness = constrain(brightness + change, 1, 8);
-    bright_value = (1 << brightness) - 1;
+    led_brightness = (1 << brightness) - 1;
 
-    FastLED.setBrightness(bright_value);
+    FastLED.setBrightness(led_brightness);
 
     Serial.print("Changing brightness ");
     Serial.print(change);
     Serial.print(" to level ");
     Serial.print(brightness);
     Serial.print(" value ");
-    Serial.println(bright_value);
+    Serial.println(led_brightness);
     leds_show();
 }
 
@@ -581,7 +581,15 @@ bool handle_IR(uint32_t delay_time) {
 }
 
 void leds_show() {
-    FastLED[0].showLeds();
+    FastLED[0].showLeds(led_brightness);
+}
+
+void matrix_show() {
+    FastLED[1].showLeds(matrix_brightness);
+}
+
+void matrix_clear() {
+    FastLED[1].clearLedData();
 }
 
 void leds_setcolor(uint16_t i, uint32_t c) {
@@ -878,8 +886,10 @@ void loop() {
 	Serial.print("Running demo: ");
 	Serial.println((uint8_t) nextdemo);
     }
-    switch (nextdemo) {
+    display_resolution();
 
+
+    switch (nextdemo) {
     // Colors on DIY1-3
     case f_colorWipe:
 	colorDemo = true;
@@ -1009,17 +1019,22 @@ void setup() {
     Serial.println("Start code");
 
     // Init Matrix
+    // Serialized, 768 pixels takes 26 seconds for 1000 updates or 26ms per refresh
     FastLED.addLeds<NEOPIXEL,MATRIXPIN>(matrixleds, mw*mh).setCorrection(TypicalLEDStrip);
+    // https://github.com/FastLED/FastLED/wiki/Parallel-Output
+    // WS2811_PORTA - pins 12, 13, 14 and 15 or pins 6,7,5 and 8 on the NodeMCU
+    // This is much faster 1000 updates in 10sec
+    //FastLED.addLeds<WS2811_PORTA,3>(matrixleds, mw*mh/3).setCorrection(TypicalLEDStrip);
     Serial.print("Matrix Size: ");
     Serial.print(mw);
     Serial.print(" ");
     Serial.println(mh);
     matrix->begin();
     matrix->setTextWrap(false);
-    matrix->setBrightness(BRIGHTNESS);
+    matrix->setBrightness(matrix_brightness);
 
     // init first matrix demo
-    display_resolution();
+    while (1) { display_resolution(); yield(); };
 
     // init first strip demo
     colorWipe(0x0000FF00, 10);
