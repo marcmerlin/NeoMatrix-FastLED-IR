@@ -17,10 +17,13 @@
 
 // Compile WeMos D1 R2 & mini
 
-
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
 #include <FastLED.h>
+
+// Other fonts possible on http://oleddisplay.squix.ch/#/home 
+// https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
+//#include <Fonts/Picopixel.h>
 
 // Choose your prefered pixmap
 //#include "heart24.h"
@@ -32,12 +35,7 @@
 //#define DELAY FastLED.delay
 #define DELAY delay
 
-#define MATRIXPIN D8
-
-#if defined(ESP8266)
-#pragma message "template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 50>"
-#endif
-
+#define MATRIXPIN D6
 
 #include "google32.h"
 // Anything with black does not look so good with the naked eye (better on pictures)
@@ -143,7 +141,7 @@ void display_resolution() {
     if (mw<25) {
 	if (mh==13) matrix->setCursor(6, 7);
 	else if (mh>=13) {
-	    matrix->setCursor(mw-11, 8);
+	    matrix->setCursor(mw-12, 8);
 	} else {
 	    // we're not tall enough either, so we wait and display
 	    // the 2nd value on top.
@@ -336,11 +334,6 @@ bool handle_IR(uint32_t delay_time) {
     // https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
     //delay(delay_time);
     DELAY(delay_time);
-    #ifdef ESP8266
-    // reset watchdog timer often enough to avoid reboots
-    // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
-    wdt_reset();
-    #endif
 
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
@@ -581,15 +574,29 @@ bool handle_IR(uint32_t delay_time) {
 }
 
 void leds_show() {
-    FastLED[0].showLeds(led_brightness);
+    //FastLED[0].showLeds(led_brightness);
 }
 
 void matrix_show() {
+#if 0
+#ifdef ESP8266
+// Disable watchdog interrupt so that it does not trigger in the middle of
+// updates. and break timing of pixels, causing random corruption on interval
+// https://github.com/esp8266/Arduino/issues/34
+    ESP.wdtDisable();
+#endif
     FastLED[1].showLeds(matrix_brightness);
+#ifdef ESP8266
+    ESP.wdtEnable(1000);
+#endif
+#endif
+    matrix->show();
 }
 
 void matrix_clear() {
-    FastLED[1].clearLedData();
+    //FastLED[1].clearLedData();
+    // clear does not work properly with multiple matrices connected via parallel inputs
+    memset(matrixleds, 0, sizeof(matrixleds));
 }
 
 void leds_setcolor(uint16_t i, uint32_t c) {
@@ -990,10 +997,6 @@ void setup() {
     // Turn off Wifi
     // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
     WiFi.forceSleepBegin();                  // turn off ESP8266 RF
-    delay(1);                                // give RF section time to shutdown
-    #define FREQUENCY    160                  // valid 80, 160
-    // this breaks FastLED, so skip that step.
-    // system_update_cpu_freq(FREQUENCY);
 #else
     // this doesn't exist in the ESP8266 IR library, but by using pin D4
     // IR receive happens to make the system LED blink, so it's all good
@@ -1005,8 +1008,8 @@ void setup() {
     Serial.print(NEOPIXEL_PIN);
     Serial.print(" to drive LEDs: ");
     Serial.println(NUM_LEDS);
-    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-    FastLED.setBrightness(32);
+    //FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+    FastLED.setBrightness(led_brightness);
     // Turn off all LEDs first, and then light 3 of them for debug.
     leds_show();
     delay(1000);
@@ -1020,21 +1023,24 @@ void setup() {
 
     // Init Matrix
     // Serialized, 768 pixels takes 26 seconds for 1000 updates or 26ms per refresh
-    FastLED.addLeds<NEOPIXEL,MATRIXPIN>(matrixleds, mw*mh).setCorrection(TypicalLEDStrip);
+    // FastLED.addLeds<NEOPIXEL,MATRIXPIN>(matrixleds, mw*mh).setCorrection(TypicalLEDStrip);
     // https://github.com/FastLED/FastLED/wiki/Parallel-Output
     // WS2811_PORTA - pins 12, 13, 14 and 15 or pins 6,7,5 and 8 on the NodeMCU
     // This is much faster 1000 updates in 10sec
-    //FastLED.addLeds<WS2811_PORTA,3>(matrixleds, mw*mh/3).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<WS2811_PORTA,3>(matrixleds, mw*mh/3).setCorrection(TypicalLEDStrip);
     Serial.print("Matrix Size: ");
     Serial.print(mw);
     Serial.print(" ");
     Serial.println(mh);
     matrix->begin();
+    //matrix->setFont(&Picopixel);
     matrix->setTextWrap(false);
     matrix->setBrightness(matrix_brightness);
+    // speed test
+    while (1) { display_resolution(); yield();};
 
     // init first matrix demo
-    while (1) { display_resolution(); yield(); };
+    display_resolution();
 
     // init first strip demo
     colorWipe(0x0000FF00, 10);
