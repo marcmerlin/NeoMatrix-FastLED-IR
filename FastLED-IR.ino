@@ -41,10 +41,6 @@ extern "C" {
 // using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
 
-// From Adafruit lib
-#ifdef __AVR__
-    #include <avr/power.h>
-#endif
 
 IRrecv irrecv(RECV_PIN);
 
@@ -374,8 +370,6 @@ bool handle_IR(uint32_t delay_time) {
 
 void leds_show() {
     FastLED.show();
-    // This causes flickering
-    //FastLED[0].showLeds();
 }
 
 void leds_setcolor(uint16_t i, uint32_t c) {
