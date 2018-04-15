@@ -17,10 +17,55 @@
 
 // Compile WeMos D1 R2 & mini
 
+
+#include <Adafruit_GFX.h>
+#include <FastLED_NeoMatrix.h>
+#include <FastLED.h>
+
+// Choose your prefered pixmap
+//#include "heart24.h"
+//#include "yellowsmiley24.h"
+//#include "bluesmiley24.h"
+#include "smileytongue24.h"
+
+// Allow temporaly dithering, does not work with ESP32 right now
+#ifndef ESP32
+#define DELAY FastLED.delay
+#else
+#define DELAY delay
+#endif
+#define DELAY delay
+
+#define MATRIXPIN D8
+
+#if defined(ESP8266)
+#pragma message "template <int DATA_PIN, int T1, int T2, int T3, EOrder RGB_ORDER = RGB, int XTRA0 = 0, bool FLIP = false, int WAIT_TIME = 50>"
+#endif
+
+
+#include "google32.h"
+// Anything with black does not look so good with the naked eye (better on pictures)
+//#include "linux32.h"
+
+// Max is 255, 32 is a conservative value to not overload
+// a USB power supply (500mA) for 12x12 pixels.
+#define BRIGHTNESS 32
+
+#define mw 24
+#define mh 32
+
+CRGB matrixleds[mw*mh];
+
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1, 
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
+    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
+
+//---------------------------------------------------------------------------- 
+
 #define NUM_LEDS 48
 
 #ifdef ESP8266
-#include <FastLED.h>
 #define NEOPIXEL_PIN D1 // GPIO5
 
 
@@ -35,12 +80,14 @@
 extern "C" {
 #include "user_interface.h"
 }
+// min/max are broken by the ESP8266 include
+#define min(a,b) (a<b)?(a):(b)
+#define max(a,b) (a>b)?(a):(b)
 #endif
 
 // This file contains codes I captured and mapped myself
 // using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
-
 
 IRrecv irrecv(RECV_PIN);
 
@@ -72,6 +119,171 @@ int32_t demo_color = 0x00FF00; // Green
 int16_t speed = 50;
 
 
+// ---------------------------------------------------------------------------
+// Matrix Code
+// ---------------------------------------------------------------------------
+
+void display_resolution() {
+    matrix->setTextSize(1);
+    // not wide enough;
+    if (mw<16) return;
+    matrix->clear();
+    // Font is 5x7, if display is too small
+    // 8 can only display 1 char
+    // 16 can almost display 3 chars
+    // 24 can display 4 chars
+    // 32 can display 5 chars
+    matrix->setCursor(0, 0);
+    matrix->setTextColor(matrix->Color(255,0,0));
+    if (mw>10) matrix->print(mw/10);
+    matrix->setTextColor(matrix->Color(255,128,0)); 
+    matrix->print(mw % 10);
+    matrix->setTextColor(matrix->Color(0,255,0));
+    matrix->print('x');
+    // not wide enough to print 5 chars, go to next line
+    if (mw<25) {
+	if (mh==13) matrix->setCursor(6, 7);
+	else if (mh>=13) {
+	    matrix->setCursor(mw-11, 8);
+	} else {
+	    // we're not tall enough either, so we wait and display
+	    // the 2nd value on top.
+	    matrix->show();
+	    DELAY(2000);
+	    matrix->clear();
+	    matrix->setCursor(mw-11, 0);
+	}   
+    }
+    matrix->setTextColor(matrix->Color(0,255,128)); 
+    matrix->print(mh/10);
+    matrix->setTextColor(matrix->Color(0,128,255));  
+    matrix->print(mh % 10);
+    // enough room for a 2nd line
+    if ((mw>25 && mh >14) || mh>16) {
+	matrix->setCursor(0, mh-7);
+	matrix->setTextColor(matrix->Color(0,255,255)); 
+	if (mw>16) matrix->print('*');
+	matrix->setTextColor(matrix->Color(255,0,0)); 
+	matrix->print('R');
+	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix->print('G');
+	matrix->setTextColor(matrix->Color(0,0,255)); 
+	matrix->print("B");
+	matrix->setTextColor(matrix->Color(255,255,0)); 
+	// this one could be displayed off screen, but we don't care :)
+	matrix->print("*");
+    }
+    
+    matrix->show();
+}
+
+void display_scrollText() {
+    uint8_t size = max(int(mw/8), 1);
+    matrix->clear();
+    matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+    matrix->setTextSize(1);
+    matrix->setRotation(0);
+    for (int8_t x=7; x>=-42; x--) {
+	matrix->clear();
+	matrix->setCursor(x,0);
+	matrix->setTextColor(matrix->Color(0, 255, 0));
+	matrix->print("Hello");
+	if (mh>11) {
+	    matrix->setCursor(-20-x,mh-7);
+	    matrix->setTextColor(matrix->Color(255, 255, 0));
+	    matrix->print("World");
+	}
+	matrix->show();
+        DELAY(50);
+    }
+
+    matrix->setRotation(3);
+    matrix->setTextSize(size);
+    matrix->setTextColor(matrix->Color(0, 0, 255));
+    for (int16_t x=8*size; x>=-6*8*size; x--) {
+	matrix->clear();
+	matrix->setCursor(x,mw/2-size*4);
+	matrix->print("Rotate");
+	matrix->show();
+	// note that on a big array the refresh rate from show() will be slow enough that
+	// the delay become irrelevant. This is already true on a 32x32 array.
+        DELAY(50/size);
+    }
+    matrix->setRotation(0);
+    matrix->setCursor(0,0);
+    matrix->show();
+}
+
+// Scroll within big bitmap so that all if it becomes visible or bounce a small one.
+// If the bitmap is bigger in one dimension and smaller in the other one, it will
+// be both panned and bounced in the appropriate dimensions.
+void display_panOrBounceBitmap (uint8_t bitmapSize) {
+    // keep integer math, deal with values 16 times too big
+    // start by showing upper left of big bitmap or centering if the display is big
+    int16_t xf = max(0, (mw-bitmapSize)/2) << 4;
+    int16_t yf = max(0, (mh-bitmapSize)/2) << 4;
+    // scroll speed in 1/16th
+    int16_t xfc = 6;
+    int16_t yfc = 3;
+    // scroll down and right by moving upper left corner off screen 
+    // more up and left (which means negative numbers)
+    int16_t xfdir = -1;
+    int16_t yfdir = -1;
+
+    for (uint16_t i=1; i<200; i++) {
+	bool updDir = false;
+
+	// Get actual x/y by dividing by 16.
+	int16_t x = xf >> 4;
+	int16_t y = yf >> 4;
+
+	matrix->clear();
+	// pan 24x24 pixmap
+	if (bitmapSize == 24) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
+#ifdef BM32
+	if (bitmapSize == 32) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap32, bitmapSize, bitmapSize);
+#endif
+	matrix->show();
+	 
+	// Only pan if the display size is smaller than the pixmap
+	// but not if the difference is too small or it'll look bad.
+	if (bitmapSize-mw>2) {
+	    xf += xfc*xfdir;
+	    if (xf >= 0)                      { xfdir = -1; updDir = true ; };
+	    // we don't go negative past right corner, go back positive
+	    if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
+	}
+	if (bitmapSize-mh>2) {
+	    yf += yfc*yfdir;
+	    // we shouldn't display past left corner, reverse direction.
+	    if (yf >= 0)                      { yfdir = -1; updDir = true ; };
+	    if (yf <= ((mh-bitmapSize) << 4)) { yfdir = 1;  updDir = true ; };
+	}
+	// only bounce a pixmap if it's smaller than the display size
+	if (mw>bitmapSize) {
+	    xf += xfc*xfdir;
+	    // Deal with bouncing off the 'walls'
+	    if (xf >= (mw-bitmapSize) << 4) { xfdir = -1; updDir = true ; };
+	    if (xf <= 0)           { xfdir =  1; updDir = true ; };
+	}
+	if (mh>bitmapSize) {
+	    yf += yfc*yfdir;
+	    if (yf >= (mh-bitmapSize) << 4) { yfdir = -1; updDir = true ; };
+	    if (yf <= 0)           { yfdir =  1; updDir = true ; };
+	}
+	
+	if (updDir) {
+	    // Add -1, 0 or 1 but bind result to 1 to 1.
+	    // Let's take 3 is a minimum speed, otherwise it's too slow.
+	    xfc = constrain(xfc + random(-1, 2), 3, 16);
+	    yfc = constrain(xfc + random(-1, 2), 3, 16);
+	}
+	DELAY(10);
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Strip Code
 // ---------------------------------------------------------------------------
 
 void change_brightness(int8_t change) {
@@ -123,7 +335,7 @@ bool handle_IR(uint32_t delay_time) {
     // Get proper dithering for non full brightness
     // https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
     //delay(delay_time);
-    FastLED.delay(delay_time);
+    DELAY(delay_time);
     #ifdef ESP8266
     // reset watchdog timer often enough to avoid reboots
     // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
@@ -361,7 +573,7 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.print("Got unknown IR value: ");
 	    Serial.println(IR_result.value, HEX);
 	    // Allow pausing the current demo to inspect it in slow motion
-	    delay(1000);
+	    DELAY(1000);
 	    return 0;
 	}
     }
@@ -369,7 +581,7 @@ bool handle_IR(uint32_t delay_time) {
 }
 
 void leds_show() {
-    FastLED.show();
+    FastLED[0].showLeds();
 }
 
 void leds_setcolor(uint16_t i, uint32_t c) {
@@ -756,6 +968,8 @@ void loop() {
 
 
 void setup() {
+    // Time for serial port to work?
+    delay(1000);
     Serial.begin(115200);
     Serial.println("Enabling IRin");
     irrecv.enableIRIn(); // Start the receiver
@@ -794,8 +1008,21 @@ void setup() {
     delay(1000);
     Serial.println("Start code");
 
-    // init first demo
-    colorWipe(0x00FFFFFF, 10);
+    // Init Matrix
+    FastLED.addLeds<NEOPIXEL,MATRIXPIN>(matrixleds, mw*mh).setCorrection(TypicalLEDStrip);
+    Serial.print("Matrix Size: ");
+    Serial.print(mw);
+    Serial.print(" ");
+    Serial.println(mh);
+    matrix->begin();
+    matrix->setTextWrap(false);
+    matrix->setBrightness(BRIGHTNESS);
+
+    // init first matrix demo
+    display_resolution();
+
+    // init first strip demo
+    colorWipe(0x0000FF00, 10);
 }
 
 // vim:sts=4:sw=4
