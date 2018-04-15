@@ -334,6 +334,7 @@ bool handle_IR(uint32_t delay_time) {
     // https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
     //delay(delay_time);
     DELAY(delay_time);
+    display_resolution();
 
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
@@ -574,11 +575,10 @@ bool handle_IR(uint32_t delay_time) {
 }
 
 void leds_show() {
-    //FastLED[0].showLeds(led_brightness);
+    FastLED[0].showLeds(led_brightness);
 }
 
 void matrix_show() {
-#if 0
 #ifdef ESP8266
 // Disable watchdog interrupt so that it does not trigger in the middle of
 // updates. and break timing of pixels, causing random corruption on interval
@@ -589,8 +589,7 @@ void matrix_show() {
 #ifdef ESP8266
     ESP.wdtEnable(1000);
 #endif
-#endif
-    matrix->show();
+    //matrix->show();
 }
 
 void matrix_clear() {
@@ -1008,7 +1007,7 @@ void setup() {
     Serial.print(NEOPIXEL_PIN);
     Serial.print(" to drive LEDs: ");
     Serial.println(NUM_LEDS);
-    //FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(led_brightness);
     // Turn off all LEDs first, and then light 3 of them for debug.
     leds_show();
@@ -1037,7 +1036,7 @@ void setup() {
     matrix->setTextWrap(false);
     matrix->setBrightness(matrix_brightness);
     // speed test
-    while (1) { display_resolution(); yield();};
+    //while (1) { display_resolution(); yield();};
 
     // init first matrix demo
     display_resolution();
