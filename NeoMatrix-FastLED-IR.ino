@@ -117,7 +117,7 @@ bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
 int16_t speed = 50;
 
-uint8_t led_brightness = 128;
+uint8_t led_brightness = 32;
 
 // ---------------------------------------------------------------------------
 // Matrix Code
@@ -337,7 +337,9 @@ void change_brightness(int8_t change) {
     last_brightness_change = millis();
     brightness = constrain(brightness + change, 1, 8);
     led_brightness = (1 << brightness) - 1;
+    matrix_brightness = (1 << brightness) - 1;
 
+    // This is actually ignored by the currrent setup with 2 independent strings
     FastLED.setBrightness(led_brightness);
 
     Serial.print("Changing brightness ");
