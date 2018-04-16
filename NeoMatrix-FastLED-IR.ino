@@ -23,17 +23,22 @@
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
-//#include <Fonts/Picopixel.h>
+// Default is 5x7, meaning 4.8 chars wide, 4 chars high
+// Picopixel: 3x5 means 6 chars wide, 5 or 6 chars high
+// #include <Fonts/Picopixel.h>
+// Proportional 5x5 font, 4.8 wide, 6 high
+// #include <Fonts/Org_01.h>
+// TomThumb: 3x5 means 6 chars wide, 5 or 6 chars high
+// -> nicer font
+#include <Fonts/TomThumb.h>
+// 3x3 but not readable
+//#include <Fonts/Tiny3x3a2pt7b.h>
 
 // Choose your prefered pixmap
 //#include "heart24.h"
 //#include "yellowsmiley24.h"
 //#include "bluesmiley24.h"
 #include "smileytongue24.h"
-
-// temporaly dithering, does not work well when using a matrix
-//#define DELAY FastLED.delay
-#define DELAY delay
 
 #define MATRIXPIN D6
 
@@ -173,6 +178,41 @@ void display_resolution() {
     matrix->setTextColor(matrix->Color(255,0,255)); 
     matrix->setCursor(0, mh-14);
     matrix->print(cnt++);
+    if (cnt == 10000) cnt=1;
+    matrix_show();
+}
+
+void font_test() {
+    static uint16_t cnt=1;
+
+    matrix->setTextSize(1);
+    matrix_clear();
+
+    matrix->setRotation(0);
+    matrix->setTextColor(matrix->Color(255,0,255)); 
+    matrix->setCursor(0, 6);
+    matrix->print(cnt++);
+
+    matrix->setCursor(0, 12);
+    matrix->setTextColor(matrix->Color(255,0,0));
+    matrix->print("Eat");
+
+    matrix->setCursor(0, 18);
+    matrix->setTextColor(matrix->Color(255,128,0)); 
+    matrix->print("Sleep");
+
+    matrix->setCursor(0, 24);
+    matrix->setTextColor(matrix->Color(0,255,0));
+    matrix->print("Rave");
+
+    matrix->setCursor(0, 30);
+    matrix->setTextColor(matrix->Color(0,255,128));
+    matrix->print("REPEAT");
+
+    matrix->setRotation(1);
+    matrix->setCursor(1, 5);
+    matrix->setTextColor(matrix->Color(255,255,0));
+    matrix->print("Repeat");
     matrix_show();
 }
 
@@ -193,7 +233,7 @@ void display_scrollText() {
 	    matrix->print("World");
 	}
 	matrix_show();
-        DELAY(50);
+        delay(50);
     }
 
     matrix->setRotation(3);
@@ -206,7 +246,7 @@ void display_scrollText() {
 	matrix_show();
 	// note that on a big array the refresh rate from show() will be slow enough that
 	// the delay become irrelevant. This is already true on a 32x32 array.
-        DELAY(50/size);
+        delay(50/size);
     }
     matrix->setRotation(0);
     matrix->setCursor(0,0);
@@ -277,7 +317,7 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	    xfc = constrain(xfc + random(-1, 2), 3, 16);
 	    yfc = constrain(xfc + random(-1, 2), 3, 16);
 	}
-	DELAY(10);
+	delay(10);
     }
 }
 
@@ -330,11 +370,8 @@ void change_speed(int8_t change) {
 
 bool handle_IR(uint32_t delay_time) {
     decode_results IR_result;
-    // Get proper dithering for non full brightness
-    // https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
-    //delay(delay_time);
-    DELAY(delay_time);
-    display_resolution();
+    delay(delay_time);
+    font_test();
 
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
@@ -567,7 +604,7 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.print("Got unknown IR value: ");
 	    Serial.println(IR_result.value, HEX);
 	    // Allow pausing the current demo to inspect it in slow motion
-	    DELAY(1000);
+	    delay(1000);
 	    return 0;
 	}
     }
@@ -892,8 +929,6 @@ void loop() {
 	Serial.print("Running demo: ");
 	Serial.println((uint8_t) nextdemo);
     }
-    display_resolution();
-
 
     switch (nextdemo) {
     // Colors on DIY1-3
@@ -971,14 +1006,8 @@ void loop() {
 	break;
     }
 
-
-    Serial.print("Loop done, listening for IR and restarting demo at speed ");
+    Serial.print("Loop done, restarting demo at speed ");
     Serial.println(speed);
-    // delay 80ms may work rarely
-    // delay 200ms works 60-90% of the time
-    // delay 500ms works no more reliably.
-    if (handle_IR(1)) return;
-    Serial.println("No IR");
 }
 
 
@@ -1032,14 +1061,19 @@ void setup() {
     Serial.print(" ");
     Serial.println(mh);
     matrix->begin();
-    //matrix->setFont(&Picopixel);
-    matrix->setTextWrap(false);
     matrix->setBrightness(matrix_brightness);
     // speed test
     //while (1) { display_resolution(); yield();};
 
     // init first matrix demo
     display_resolution();
+    delay(2000);
+
+    //matrix->setFont(&Picopixel);
+    //matrix->setFont(&Org_01);
+    matrix->setFont(&TomThumb);
+    //matrix->setFont(&Tiny3x3a2pt7b);
+    matrix->setTextWrap(false);
 
     // init first strip demo
     colorWipe(0x0000FF00, 10);
