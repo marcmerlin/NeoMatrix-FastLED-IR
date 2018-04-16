@@ -60,6 +60,9 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1,
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 
+// How many ms used for each matrix update
+#define MX_UPD_TIME 10
+
 //---------------------------------------------------------------------------- 
 
 #define NUM_LEDS 48
@@ -317,7 +320,6 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	    xfc = constrain(xfc + random(-1, 2), 3, 16);
 	    yfc = constrain(xfc + random(-1, 2), 3, 16);
 	}
-	delay(10);
     }
 }
 
@@ -372,8 +374,10 @@ void change_speed(int8_t change) {
 
 bool handle_IR(uint32_t delay_time) {
     decode_results IR_result;
-    delay(delay_time);
-    font_test();
+    for (uint16_t i=0; i<delay_time / MX_UPD_TIME; i++) {
+	font_test();
+    }
+    delay(delay_time % MX_UPD_TIME);
 
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
@@ -622,6 +626,9 @@ void matrix_show() {
 // Disable watchdog interrupt so that it does not trigger in the middle of
 // updates. and break timing of pixels, causing random corruption on interval
 // https://github.com/esp8266/Arduino/issues/34
+// Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
+// in parallel mode, does not affect output. That said, reducing their amount
+// is still good.
     ESP.wdtDisable();
 #endif
     FastLED[1].showLeds(matrix_brightness);
