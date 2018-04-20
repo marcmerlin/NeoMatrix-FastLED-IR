@@ -126,6 +126,28 @@ uint8_t led_brightness = 32;
 // Matrix Code
 // ---------------------------------------------------------------------------
 
+void matrix_update() {
+    static uint8_t state = 0;
+
+    switch (state) {
+    case 0: 
+	if (esrr()) {
+	    state++;
+	    Serial.print("Swithching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+    case 1: 
+	if (esrr_flash()) {
+	    state++;
+	    state = 0;
+	    Serial.print("Swithching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+    }
+}
+
 void display_resolution() {
     static uint16_t cnt=1;
 
@@ -218,6 +240,147 @@ void font_test() {
     matrix->print("Repeat");
     matrix_show();
 }
+
+void tfsf() {
+    static uint16_t state=1;
+
+    matrix->setRotation(0);
+    matrix->setTextSize(1);
+    matrix_clear();
+
+    if (state < 100) {
+	matrix->setCursor(0, 12);
+	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix->print("EAT");
+    }
+
+    if (state < 175 && state > 75)  {
+	matrix->setCursor(0, 18);
+	matrix->setTextColor(matrix->Color(255,128,0)); 
+	matrix->print("SLEEP");
+    }
+
+    if (state < 250 && state > 150) {
+	matrix->setCursor(0, 24);
+	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix->print("RAVE");
+    }
+
+    if (state < 25 || state > 225) {
+	matrix->setCursor(0, 30);
+	matrix->setTextColor(matrix->Color(0,255,128));
+	matrix->print("REPEAT");
+    }
+    if (state++ > 300) state = 0;
+
+    matrix_show();
+}
+
+bool esrr() {
+    static uint16_t state = 1;
+    static float spd = 1.0;
+    float spdincr = 0.3;
+    uint16_t duration = 100;
+    uint16_t overlap = 50;
+    uint8_t displayall = 12;
+    uint8_t resetspd = 18;
+    uint8_t l = 0;
+
+    matrix->setRotation(0);
+    matrix->setTextSize(1);
+    matrix_clear();
+
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	matrix->setCursor(7, 7);
+	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix->print("EAT");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	matrix->setCursor(3, 14);
+	matrix->setTextColor(matrix->Color(255,128,0)); 
+	matrix->print("SLEEP");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	matrix->setCursor(5, 22);
+	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix->print("RAVE");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
+	matrix->setCursor(0, 30);
+	matrix->setTextColor(matrix->Color(0,255,128));
+	matrix->print("REPEAT");
+    }
+    l++;
+
+    // 400 - 4x50 = 200
+    if (state++ > (l*duration-l*overlap)/spd) {
+	state = 0;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    spd = 1.0;
+	    state = 1;
+	    return 1;
+	}
+    }
+
+    matrix_show();
+    return 0;
+}
+
+bool esrr_flash() {
+    #define esrflashperiod 50
+    static uint16_t state = 1;
+    static uint16_t period = esrflashperiod;
+    static uint8_t exit = 0;
+    static bool oldshow = 0;
+    bool show = 0;
+
+    matrix->setRotation(0);
+    matrix->setTextSize(1);
+    matrix_clear();
+
+    if (!((state / period) % 2)) {
+	show = 1;
+	matrix->setCursor(7, 7);
+	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix->print("EAT");
+	matrix->setCursor(3, 14);
+	matrix->setTextColor(matrix->Color(255,128,0)); 
+	matrix->print("SLEEP");
+	matrix->setCursor(5, 22);
+	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix->print("RAVE");
+	matrix->setCursor(0, 30);
+	matrix->setTextColor(matrix->Color(0,255,128));
+	matrix->print("REPEAT");
+    }
+
+    if (show != oldshow) {
+	period = max(period - 1, 1);
+	oldshow = show;
+	if (period == 1) exit++;
+    }
+    matrix_show();
+    state++;
+
+    if (exit == 30) {
+	state = 1;
+	period = esrflashperiod;
+	exit = 0;
+	oldshow = 0;
+	return 1;
+    }
+    return 0;
+}
+
+
 
 void display_scrollText() {
     uint8_t size = max(int(mw/8), 1);
@@ -375,7 +538,7 @@ void change_speed(int8_t change) {
 bool handle_IR(uint32_t delay_time) {
     decode_results IR_result;
     for (uint16_t i=0; i<delay_time / MX_UPD_TIME; i++) {
-	font_test();
+	matrix_update();
     }
     delay(delay_time % MX_UPD_TIME);
 
@@ -1076,7 +1239,7 @@ void setup() {
 
     // init first matrix demo
     display_resolution();
-    delay(2000);
+    delay(500);
 
     //matrix->setFont(&Picopixel);
     //matrix->setFont(&Org_01);
