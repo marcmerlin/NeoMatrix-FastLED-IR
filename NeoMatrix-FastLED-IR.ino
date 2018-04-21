@@ -127,26 +127,41 @@ uint8_t led_brightness = 32;
 // ---------------------------------------------------------------------------
 
 void matrix_update() {
-    static uint8_t state = 0;
+    static uint8_t state = 3;
 
     switch (state) {
     case 0: 
 	if (esrr()) {
 	    state++;
-	    Serial.print("Swithching to matrix demo ");
+	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
 	}
 	break;
     case 1: 
-	if (esrr_flash()) {
+	if (esrr_flashin()) {
 	    state++;
-	    state = 0;
-	    Serial.print("Swithching to matrix demo ");
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+    case 2: 
+	if (esrr_fade()) {
+	    state++;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+    case 3: 
+	if (tfsf()) {
+	    state++;
+	    state = 3;
+	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
 	}
 	break;
     }
 }
+
 
 void display_resolution() {
     static uint16_t cnt=1;
@@ -207,9 +222,14 @@ void display_resolution() {
     matrix_show();
 }
 
+
 void font_test() {
     static uint16_t cnt=1;
 
+    //matrix->setFont(&Picopixel);
+    //matrix->setFont(&Org_01);
+    matrix->setFont(&TomThumb);
+    //matrix->setFont(&Tiny3x3a2pt7b);
     matrix->setTextSize(1);
     matrix_clear();
 
@@ -241,39 +261,77 @@ void font_test() {
     matrix_show();
 }
 
-void tfsf() {
-    static uint16_t state=1;
+bool tfsf() {
+    static uint16_t state = 1;
+    static float spd = 1.0;
+    static uint8_t startfade = 0;
+    float spdincr = 0.6;
+    uint16_t duration = 100;
+    uint8_t resetspd = 5;
+    uint8_t l = 0;
 
+    matrix->setFont();
     matrix->setRotation(0);
-    matrix->setTextSize(1);
-    matrix_clear();
+    matrix->setTextSize(4);
 
-    if (state < 100) {
-	matrix->setCursor(0, 12);
+
+    if ((state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	matrix->setCursor(0, 0);
 	matrix->setTextColor(matrix->Color(255,0,0));
-	matrix->print("EAT");
+	matrix_clear();
+	matrix->print("T");
     }
+    l++;
 
-    if (state < 175 && state > 75)  {
-	matrix->setCursor(0, 18);
-	matrix->setTextColor(matrix->Color(255,128,0)); 
-	matrix->print("SLEEP");
+    if ((state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	matrix->setCursor(0, 0);
+	matrix->setTextColor(matrix->Color(192,192,0)); 
+	matrix_clear();
+	matrix->print("F");
     }
+    l++;
 
-    if (state < 250 && state > 150) {
-	matrix->setCursor(0, 24);
+    if ((state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	matrix->setCursor(4, 4);
+	matrix->setTextColor(matrix->Color(0,192,192));
+	matrix_clear();
+	matrix->print("S");
+    }
+    l++;
+
+    if ((state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	matrix->setCursor(4, 4);
 	matrix->setTextColor(matrix->Color(0,255,0));
-	matrix->print("RAVE");
+	matrix_clear();
+	matrix->print("F");
+    }
+    l++;
+
+    if (!startfade && (state > (l*duration)/spd))  {
+	matrix->setCursor(2, 2);
+	matrix->setTextColor(matrix->Color(0,0,255));
+	matrix_clear();
+	matrix->print("8");
+	startfade = l;
     }
 
-    if (state < 25 || state > 225) {
-	matrix->setCursor(0, 30);
-	matrix->setTextColor(matrix->Color(0,255,128));
-	matrix->print("REPEAT");
+    if (startfade)  {
+	for (uint16_t i = 0; i < mw*mh; i++) matrixleds[i].nscale8(248-spd*2);
     }
-    if (state++ > 300) state = 0;
+    l++;
+
+    if (state++ > ((l+0.5)*duration)/spd) {
+	state = 1;
+	startfade = 0;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    spd = 1.0;
+	    return 1;
+	}
+    }
 
     matrix_show();
+    return 0;
 }
 
 bool esrr() {
@@ -282,17 +340,18 @@ bool esrr() {
     float spdincr = 0.3;
     uint16_t duration = 100;
     uint16_t overlap = 50;
-    uint8_t displayall = 12;
-    uint8_t resetspd = 18;
+    uint8_t displayall = 18;
+    uint8_t resetspd = 24;
     uint8_t l = 0;
 
+    matrix->setFont(&TomThumb);
     matrix->setRotation(0);
     matrix->setTextSize(1);
     matrix_clear();
 
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setCursor(7, 7);
+	matrix->setCursor(7, 6);
 	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix->print("EAT");
     }
@@ -300,7 +359,7 @@ bool esrr() {
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 	matrix->setCursor(3, 14);
-	matrix->setTextColor(matrix->Color(255,128,0)); 
+	matrix->setTextColor(matrix->Color(192,192,0)); 
 	matrix->print("SLEEP");
     }
     l++;
@@ -314,18 +373,17 @@ bool esrr() {
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
 	matrix->setCursor(0, 30);
-	matrix->setTextColor(matrix->Color(0,255,128));
+	matrix->setTextColor(matrix->Color(0,192,192));
 	matrix->print("REPEAT");
     }
     l++;
 
     // 400 - 4x50 = 200
     if (state++ > (l*duration-l*overlap)/spd) {
-	state = 0;
+	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
 	    spd = 1.0;
-	    state = 1;
 	    return 1;
 	}
     }
@@ -334,49 +392,82 @@ bool esrr() {
     return 0;
 }
 
-bool esrr_flash() {
-    #define esrflashperiod 50
-    static uint16_t state = 1;
+bool esrr_flashin() {
+    #define esrflashperiod 30
+    static uint16_t state = 0;
     static uint16_t period = esrflashperiod;
-    static uint8_t exit = 0;
+    static uint16_t exit = 0;
     static bool oldshow = 0;
     bool show = 0;
 
+    matrix->setFont(&TomThumb);
     matrix->setRotation(0);
     matrix->setTextSize(1);
     matrix_clear();
 
-    if (!((state / period) % 2)) {
+    state++;
+    if (!(state % period) || exit) {
+	state = 1;
 	show = 1;
-	matrix->setCursor(7, 7);
-	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix->setCursor(7, 6);
+	matrix->setTextColor(matrix->Color(255,0,255));
 	matrix->print("EAT");
 	matrix->setCursor(3, 14);
-	matrix->setTextColor(matrix->Color(255,128,0)); 
+	matrix->setTextColor(matrix->Color(255,255,0)); 
 	matrix->print("SLEEP");
 	matrix->setCursor(5, 22);
-	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix->setTextColor(matrix->Color(0,255,255));
 	matrix->print("RAVE");
 	matrix->setCursor(0, 30);
-	matrix->setTextColor(matrix->Color(0,255,128));
+	matrix->setTextColor(matrix->Color(64,255,64));
 	matrix->print("REPEAT");
     }
 
-    if (show != oldshow) {
+    if (exit)
+    {
+	exit++;
+    }
+    else if (show != oldshow) {
 	period = max(period - 1, 1);
 	oldshow = show;
-	if (period == 1) exit++;
+	if (period == 1) exit=1;
+	Serial.println(period);
     }
+    Serial.println(exit);
     matrix_show();
-    state++;
 
-    if (exit == 30) {
-	state = 1;
+    // 100 = 1s
+    if (exit == 300) {
+	state = 0;
 	period = esrflashperiod;
 	exit = 0;
 	oldshow = 0;
 	return 1;
     }
+    return 0;
+}
+
+bool esrr_fade() {
+    static uint16_t state = 0;
+
+    matrix->setFont(&TomThumb);
+    matrix->setRotation(0);
+    matrix->setTextSize(1);
+    matrix_clear();
+
+    matrix->setCursor(7, 6);
+    matrix->setTextColor(matrix->Color(128,128,255));
+    matrix->print("EAT");
+    matrix->setCursor(3, 14);
+    matrix->setTextColor(matrix->Color(255,128,128)); 
+    matrix->print("SLEEP");
+    matrix->setCursor(5, 22);
+    matrix->setTextColor(matrix->Color(128,255,128));
+    matrix->print("RAVE");
+    matrix->setCursor(0, 30);
+    matrix->setTextColor(matrix->Color(255,64,255));
+    matrix->print("REPEAT");
+
     return 0;
 }
 
@@ -1234,6 +1325,7 @@ void setup() {
     Serial.println(mh);
     matrix->begin();
     matrix->setBrightness(matrix_brightness);
+    matrix->setTextWrap(false);
     // speed test
     //while (1) { display_resolution(); yield();};
 
@@ -1241,11 +1333,7 @@ void setup() {
     display_resolution();
     delay(500);
 
-    //matrix->setFont(&Picopixel);
-    //matrix->setFont(&Org_01);
-    matrix->setFont(&TomThumb);
-    //matrix->setFont(&Tiny3x3a2pt7b);
-    matrix->setTextWrap(false);
+    //matrix->font_test();
 
     // init first strip demo
     colorWipe(0x0000FF00, 10);
