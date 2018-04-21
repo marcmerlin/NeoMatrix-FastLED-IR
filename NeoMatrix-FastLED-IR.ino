@@ -264,50 +264,54 @@ void font_test() {
 bool tfsf() {
     static uint16_t state = 1;
     static float spd = 1.0;
-    static uint8_t startfade = 0;
+    static int8_t startfade = -1;
     float spdincr = 0.6;
     uint16_t duration = 100;
     uint8_t resetspd = 5;
-    uint8_t l = 0;
+    int8_t l = 0;
 
     matrix->setFont();
     matrix->setRotation(0);
     matrix->setTextSize(4);
 
 
-    if ((state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(0, 0);
 	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix_clear();
 	matrix->print("T");
+	startfade = l;
     }
     l++;
 
-    if ((state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(0, 0);
 	matrix->setTextColor(matrix->Color(192,192,0)); 
 	matrix_clear();
 	matrix->print("F");
+	startfade = l;
     }
     l++;
 
-    if ((state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(4, 4);
 	matrix->setTextColor(matrix->Color(0,192,192));
 	matrix_clear();
 	matrix->print("S");
+	startfade = l;
     }
     l++;
 
-    if ((state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(4, 4);
 	matrix->setTextColor(matrix->Color(0,255,0));
 	matrix_clear();
 	matrix->print("F");
+	startfade = l;
     }
     l++;
 
-    if (!startfade && (state > (l*duration)/spd))  {
+    if (startfade < l && (state > (l*duration)/spd))  {
 	matrix->setCursor(2, 2);
 	matrix->setTextColor(matrix->Color(0,0,255));
 	matrix_clear();
@@ -315,14 +319,14 @@ bool tfsf() {
 	startfade = l;
     }
 
-    if (startfade)  {
+    if (startfade > -1)  {
 	for (uint16_t i = 0; i < mw*mh; i++) matrixleds[i].nscale8(248-spd*2);
     }
     l++;
 
     if (state++ > ((l+0.5)*duration)/spd) {
 	state = 1;
-	startfade = 0;
+	startfade = -1;
 	spd += spdincr;
 	if (spd > resetspd) {
 	    spd = 1.0;
