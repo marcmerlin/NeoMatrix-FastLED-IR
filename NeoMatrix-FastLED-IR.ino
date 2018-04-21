@@ -23,6 +23,7 @@
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
+// https://learn.adafruit.com/adafruit-gfx-graphics-library/using-fonts
 // Default is 5x7, meaning 4.8 chars wide, 4 chars high
 // Picopixel: 3x5 means 6 chars wide, 5 or 6 chars high
 // #include <Fonts/Picopixel.h>
@@ -127,7 +128,7 @@ uint8_t led_brightness = 32;
 // ---------------------------------------------------------------------------
 
 void matrix_update() {
-    static uint8_t state = 3;
+    static uint8_t state = 2;
 
     switch (state) {
     case 0: 
@@ -149,12 +150,12 @@ void matrix_update() {
 	    state++;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
+	    state = 2;
 	}
 	break;
     case 3: 
 	if (tfsf()) {
 	    state++;
-	    state = 3;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
 	}
@@ -268,7 +269,7 @@ bool tfsf() {
     float spdincr = 0.6;
     uint16_t duration = 100;
     uint8_t resetspd = 5;
-    int8_t l = 0;
+    uint8_t l = 0;
 
     matrix->setFont();
     matrix->setRotation(0);
@@ -453,25 +454,60 @@ bool esrr_flashin() {
 
 bool esrr_fade() {
     static uint16_t state = 0;
+    static uint8_t wheel = 0;
+    static uint8_t sp = 0;
+    static float spd = 1.0;
+    float spdincr = 0.2;
+    uint8_t resetspd = 5;
+    uint16_t txtcolor;
 
-    matrix->setFont(&TomThumb);
-    matrix->setRotation(0);
-    matrix->setTextSize(1);
-    matrix_clear();
+    state++;
 
-    matrix->setCursor(7, 6);
-    matrix->setTextColor(matrix->Color(128,128,255));
-    matrix->print("EAT");
-    matrix->setCursor(3, 14);
-    matrix->setTextColor(matrix->Color(255,128,128)); 
-    matrix->print("SLEEP");
-    matrix->setCursor(5, 22);
-    matrix->setTextColor(matrix->Color(128,255,128));
-    matrix->print("RAVE");
-    matrix->setCursor(0, 30);
-    matrix->setTextColor(matrix->Color(255,64,255));
-    matrix->print("REPEAT");
+    if (state == 1) {
+	//wheel+=20;
+	matrix->setFont(&TomThumb);
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
+	matrix_clear();
 
+	matrix->setCursor(7, 6);
+	txtcolor = Color24toColor16(Wheel((wheel+=24)));
+        //Serial.println(txtcolor, HEX);
+	matrix->setTextColor(txtcolor);
+	matrix->print("EAT");
+	matrix->setCursor(3, 14);
+	txtcolor = Color24toColor16(Wheel((wheel+=24)));
+        //Serial.println(txtcolor, HEX);
+	matrix->setTextColor(txtcolor);
+	matrix->print("SLEEP");
+	matrix->setCursor(5, 22);
+	txtcolor = Color24toColor16(Wheel((wheel+=24)));
+        //Serial.println(txtcolor, HEX);
+	matrix->setTextColor(txtcolor);
+	matrix->print("RAVE");
+	matrix->setCursor(0, 30);
+	txtcolor = Color24toColor16(Wheel((wheel+=24)));
+        //Serial.println(txtcolor, HEX);
+	matrix->setTextColor(txtcolor);
+	matrix->print("REPEAT");
+    }
+
+     
+    if (state > 40/spd && state < 100/spd)  {
+	fadeToBlackBy( matrixleds, mw*mh, 20*spd);
+    }
+
+    if (state > 100/spd) {
+	state = 0;
+	spd += spdincr;
+	Serial.println(spd);
+	Serial.println(state);
+	if (spd > resetspd) {
+	    spd = 1.0;
+	    return 1;
+	}
+    }
+    matrix_show();
     return 0;
 }
 
@@ -906,22 +942,33 @@ void leds_setcolor(uint16_t i, uint32_t c) {
     leds[i] = c;
 }
 
+uint16_t Color24toColor16(uint32_t color) {
+  return ((uint16_t)(((color & 0xFF0000) >> 16) & 0xF8) << 8) |
+         ((uint16_t)(((color & 0x00FF00) >>  8) & 0xFC) << 3) |
+                    (((color & 0x0000FF) >>  0)         >> 3);
+}
+
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
 uint32_t Wheel(byte WheelPos) {
+    uint32_t wheel=0;
+
+    //Serial.print(WheelPos);
     WheelPos = 255 - WheelPos;
-    if(WheelPos < 85) {
-	//return leds.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-	return ((((uint32_t)(255 - WheelPos * 3)) << 16) + (WheelPos * 3));
+    if (WheelPos < 85) {
+	wheel = (((uint32_t)(255 - WheelPos * 3)) << 16) + (WheelPos * 3);
     }
-    if(WheelPos < 170) {
+    if (!wheel && WheelPos < 170) {
 	WheelPos -= 85;
-	//return leds.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-	return ((((uint32_t)(WheelPos * 3)) << 8) + (255 - WheelPos * 3));
+	wheel = (((uint32_t)(WheelPos * 3)) << 8) + (255 - WheelPos * 3);
     }
-    WheelPos -= 170;
-    //return leds.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-    return ((((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8));
+    if (!wheel) {
+	WheelPos -= 170;
+	wheel = (((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8);
+    }
+    //Serial.print(" -> ");
+    //Serial.println(wheel, HEX);
+    return (wheel);
 }
 
 // Demos from FastLED
@@ -1192,11 +1239,6 @@ void flash3(uint8_t wait) {
 #endif
 
 void loop() {
-    if ((uint8_t) nextdemo > 0) {
-	Serial.print("Running demo: ");
-	Serial.println((uint8_t) nextdemo);
-    }
-
     switch (nextdemo) {
     // Colors on DIY1-3
     case f_colorWipe:
@@ -1273,8 +1315,17 @@ void loop() {
 	break;
     }
 
-    Serial.print("Loop done, restarting demo at speed ");
+    #if 0
+    if ((uint8_t) nextdemo > 0) {
+	//Serial.print("Running new demo: ");
+	//Serial.println((uint8_t) nextdemo);
+	//Serial.print(" at speed ");
+    } else {
+	Serial.print("Loop done, restarting demo at speed ");
+    }
     Serial.println(speed);
+    #endif
+
 }
 
 
