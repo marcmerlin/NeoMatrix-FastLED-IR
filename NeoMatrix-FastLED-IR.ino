@@ -34,6 +34,11 @@
 #include <Fonts/TomThumb.h>
 // 3x3 but not readable
 //#include <Fonts/Tiny3x3a2pt7b.h>
+//#include <Fonts/FreeMonoBold9pt7b.h>
+//#include <Fonts/FreeMonoBold12pt7b.h>
+//#include <Fonts/FreeMonoBold18pt7b.h>
+//#include <Fonts/FreeMonoBold24pt7b.h>
+#include "fonts.h"
 
 // Choose your prefered pixmap
 //#include "heart24.h"
@@ -128,39 +133,51 @@ uint8_t led_brightness = 32;
 // ---------------------------------------------------------------------------
 
 void matrix_update() {
-    static uint8_t state = 2;
+    static uint8_t state = 4;
 
+    Serial.print("Switching to matrix demo ");
     switch (state) {
     case 0: 
+	Serial.println(state);
 	if (esrr()) {
 	    state++;
-	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
 	}
 	break;
+
     case 1: 
+	Serial.println(state);
 	if (esrr_flashin()) {
 	    state++;
-	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
 	}
 	break;
+
     case 2: 
+	Serial.println(state);
 	if (esrr_fade()) {
 	    state++;
-	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
-	    state = 2;
 	}
 	break;
+
     case 3: 
+	Serial.println(state);
 	if (tfsf()) {
 	    state++;
-	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
+	}
+	break;
+
+    case 4: 
+	Serial.println(state);
+	if (tfsf_zoom()) {
+	    state++;
+	    state = 4;
 	}
 	break;
     }
+    if (state == 5) state = 0;
 }
 
 
@@ -226,15 +243,63 @@ void display_resolution() {
 
 void font_test() {
     static uint16_t cnt=1;
+    matrix->setRotation(0);
+    char letters[] = { 'T', 'F', 'S', 'F', '8' };
 
+    while (1) {
+	for (char l = 0; l < sizeof(letters); l++) {
+	    uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
+	    matrix->setTextColor(txtcolor); 
+	    for (uint32_t s = 3; s<17; s++) {
+		matrix_clear();
+		matrix->setFont( &Century_Schoolbook_L_Bold[s] );
+		matrix->setCursor(11-s*0.55, 15+s*0.75);
+		matrix->print(letters[l]);
+		matrix_show();
+		delay(20);
+	    }
+	}
+	delay(500);
+    }
+
+    delay(10000);
+#if 0
+    matrix->setFont(&FreeMonoBold9pt7b);
+    matrix->setCursor(-1, 31);
+    matrix->print("T");
+    matrix_show();
+    delay(1000);
+    matrix_clear();
+
+    matrix->setFont(&FreeMonoBold12pt7b);
+    matrix->setCursor(-1, 31);
+    matrix->print("T");
+    matrix_show();
+    delay(1000);
+    matrix_clear();
+
+    matrix->setFont(&FreeMonoBold18pt7b);
+    matrix->setCursor(-1, 31);
+    matrix->print("T");
+    matrix_show();
+    delay(1000);
+    matrix_clear();
+
+    matrix->setFont(&FreeMonoBold24pt7b);
+    matrix->setCursor(-1, 31);
+    matrix->print("T");
+    matrix_show();
+    matrix_clear();
+    delay(1000);
+#endif
+
+    matrix_clear();
     //matrix->setFont(&Picopixel);
     //matrix->setFont(&Org_01);
     matrix->setFont(&TomThumb);
     //matrix->setFont(&Tiny3x3a2pt7b);
     matrix->setTextSize(1);
-    matrix_clear();
 
-    matrix->setRotation(0);
     matrix->setTextColor(matrix->Color(255,0,255)); 
     matrix->setCursor(0, 6);
     matrix->print(cnt++);
@@ -262,7 +327,85 @@ void font_test() {
     matrix_show();
 }
 
+
 bool tfsf() {
+    static uint16_t state = 1;
+    static float spd = 1.0;
+    static int8_t startfade = -1;
+    float spdincr = 0.6;
+    uint16_t duration = 100;
+    uint8_t resetspd = 5;
+    uint8_t l = 0;
+
+    matrix->setFont();
+    matrix->setRotation(0);
+    matrix->setTextSize(4);
+
+
+    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	matrix->setCursor(0, 0);
+	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix_clear();
+	matrix->print("T");
+	startfade = l;
+    }
+    l++;
+
+    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	matrix->setCursor(0, 0);
+	matrix->setTextColor(matrix->Color(192,192,0)); 
+	matrix_clear();
+	matrix->print("F");
+	startfade = l;
+    }
+    l++;
+
+    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	matrix->setCursor(4, 4);
+	matrix->setTextColor(matrix->Color(0,192,192));
+	matrix_clear();
+	matrix->print("S");
+	startfade = l;
+    }
+    l++;
+
+    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	matrix->setCursor(4, 4);
+	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix_clear();
+	matrix->print("F");
+	startfade = l;
+    }
+    l++;
+
+    if (startfade < l && (state > (l*duration)/spd))  {
+	matrix->setCursor(2, 2);
+	matrix->setTextColor(matrix->Color(0,0,255));
+	matrix_clear();
+	matrix->print("8");
+	startfade = l;
+    }
+
+    if (startfade > -1)  {
+	for (uint16_t i = 0; i < mw*mh; i++) matrixleds[i].nscale8(248-spd*2);
+    }
+    l++;
+
+    if (state++ > ((l+0.5)*duration)/spd) {
+	state = 1;
+	startfade = -1;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    spd = 1.0;
+	    return 1;
+	}
+    }
+
+    matrix_show();
+    return 0;
+}
+
+bool tfsf_zoom() {
     static uint16_t state = 1;
     static float spd = 1.0;
     static int8_t startfade = -1;
@@ -953,7 +1096,7 @@ uint16_t Color24toColor16(uint32_t color) {
 uint32_t Wheel(byte WheelPos) {
     uint32_t wheel=0;
 
-    //Serial.print(WheelPos);
+    // Serial.print(WheelPos);
     WheelPos = 255 - WheelPos;
     if (WheelPos < 85) {
 	wheel = (((uint32_t)(255 - WheelPos * 3)) << 16) + (WheelPos * 3);
@@ -966,8 +1109,8 @@ uint32_t Wheel(byte WheelPos) {
 	WheelPos -= 170;
 	wheel = (((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8);
     }
-    //Serial.print(" -> ");
-    //Serial.println(wheel, HEX);
+    // Serial.print(" -> ");
+    // Serial.println(wheel, HEX);
     return (wheel);
 }
 
@@ -1388,7 +1531,7 @@ void setup() {
     display_resolution();
     delay(500);
 
-    //matrix->font_test();
+    font_test();
 
     // init first strip demo
     colorWipe(0x0000FF00, 10);
