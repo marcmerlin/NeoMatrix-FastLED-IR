@@ -436,9 +436,9 @@ bool esrr_flashin() {
 	period = max(period - 1, 1);
 	oldshow = show;
 	if (period == 1) exit=1;
-	Serial.println(period);
+	//Serial.println(period);
     }
-    Serial.println(exit);
+    //Serial.println(exit);
     matrix_show();
 
     // 100 = 1s
@@ -500,8 +500,8 @@ bool esrr_fade() {
     if (state > 100/spd) {
 	state = 0;
 	spd += spdincr;
-	Serial.println(spd);
-	Serial.println(state);
+	//Serial.println(spd);
+	//Serial.println(state);
 	if (spd > resetspd) {
 	    spd = 1.0;
 	    return 1;
@@ -1317,9 +1317,9 @@ void loop() {
 
     #if 0
     if ((uint8_t) nextdemo > 0) {
-	//Serial.print("Running new demo: ");
-	//Serial.println((uint8_t) nextdemo);
-	//Serial.print(" at speed ");
+	Serial.print("Running new demo: ");
+	Serial.println((uint8_t) nextdemo);
+	Serial.print(" at speed ");
     } else {
 	Serial.print("Loop done, restarting demo at speed ");
     }
