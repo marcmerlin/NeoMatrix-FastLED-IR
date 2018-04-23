@@ -132,52 +132,28 @@ uint8_t led_brightness = 32;
 // Matrix Code
 // ---------------------------------------------------------------------------
 
-void matrix_update() {
-    static uint8_t state = 4;
 
-    Serial.print("Switching to matrix demo ");
-    switch (state) {
-    case 0: 
-	Serial.println(state);
-	if (esrr()) {
-	    state++;
-	    Serial.println(state);
-	}
-	break;
+void matrix_show() {
+#ifdef ESP8266
+// Disable watchdog interrupt so that it does not trigger in the middle of
+// updates. and break timing of pixels, causing random corruption on interval
+// https://github.com/esp8266/Arduino/issues/34
+// Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
+// in parallel mode, does not affect output. That said, reducing their amount
+// is still good.
+    ESP.wdtDisable();
+#endif
+    FastLED[1].showLeds(matrix_brightness);
+#ifdef ESP8266
+    ESP.wdtEnable(1000);
+#endif
+    //matrix->show();
+}
 
-    case 1: 
-	Serial.println(state);
-	if (esrr_flashin()) {
-	    state++;
-	    Serial.println(state);
-	}
-	break;
-
-    case 2: 
-	Serial.println(state);
-	if (esrr_fade()) {
-	    state++;
-	    Serial.println(state);
-	}
-	break;
-
-    case 3: 
-	Serial.println(state);
-	if (tfsf()) {
-	    state++;
-	    Serial.println(state);
-	}
-	break;
-
-    case 4: 
-	Serial.println(state);
-	if (tfsf_zoom()) {
-	    state++;
-	    state = 4;
-	}
-	break;
-    }
-    if (state == 5) state = 0;
+void matrix_clear() {
+    //FastLED[1].clearLedData();
+    // clear does not work properly with multiple matrices connected via parallel inputs
+    memset(matrixleds, 0, sizeof(matrixleds));
 }
 
 
@@ -244,25 +220,7 @@ void display_resolution() {
 void font_test() {
     static uint16_t cnt=1;
     matrix->setRotation(0);
-    char letters[] = { 'T', 'F', 'S', 'F', '8' };
 
-    while (1) {
-	for (char l = 0; l < sizeof(letters); l++) {
-	    uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
-	    matrix->setTextColor(txtcolor); 
-	    for (uint32_t s = 3; s<17; s++) {
-		matrix_clear();
-		matrix->setFont( &Century_Schoolbook_L_Bold[s] );
-		matrix->setCursor(11-s*0.55, 15+s*0.75);
-		matrix->print(letters[l]);
-		matrix_show();
-		delay(20);
-	    }
-	}
-	delay(500);
-    }
-
-    delay(10000);
 #if 0
     matrix->setFont(&FreeMonoBold9pt7b);
     matrix->setCursor(-1, 31);
@@ -405,81 +363,54 @@ bool tfsf() {
     return 0;
 }
 
-bool tfsf_zoom() {
+// type 0 = up, type 1 = up and down
+bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t state = 1;
-    static float spd = 1.0;
-    static int8_t startfade = -1;
-    float spdincr = 0.6;
-    uint16_t duration = 100;
-    uint8_t resetspd = 5;
-    uint8_t l = 0;
+    static uint16_t direction = 1;
+    static uint16_t size = 3;
+    static uint8_t l = 0;
+    static uint16_t delayframe = 1;
+    char letters[] = { 'T', 'F', 'S', 'F', '8' };
+    bool done = 0;
 
-    matrix->setFont();
-    matrix->setRotation(0);
-    matrix->setTextSize(4);
-
-
-    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(0, 0);
-	matrix->setTextColor(matrix->Color(255,0,0));
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	// Serial.println("delayed frame");
+	return 0;
+    }
+    delayframe = speed;
+    if (direction == 1) {
+	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
+	matrix->setTextColor(txtcolor); 
 	matrix_clear();
-	matrix->print("T");
-	startfade = l;
-    }
-    l++;
+	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
+	matrix->setCursor(11-size*0.55, 15+size*0.75);
+	matrix->print(letters[l]);
+	if (size<16) size++; else if (zoom_type == 0) { done = 1; delayframe = speed * 50; } else direction = 2;
 
-    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(0, 0);
-	matrix->setTextColor(matrix->Color(192,192,0)); 
+    } else if (zoom_type == 1) {
+	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 255, 0)));
+	matrix->setTextColor(txtcolor); 
 	matrix_clear();
-	matrix->print("F");
-	startfade = l;
-    }
-    l++;
-
-    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(4, 4);
-	matrix->setTextColor(matrix->Color(0,192,192));
-	matrix_clear();
-	matrix->print("S");
-	startfade = l;
-    }
-    l++;
-
-    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(4, 4);
-	matrix->setTextColor(matrix->Color(0,255,0));
-	matrix_clear();
-	matrix->print("F");
-	startfade = l;
-    }
-    l++;
-
-    if (startfade < l && (state > (l*duration)/spd))  {
-	matrix->setCursor(2, 2);
-	matrix->setTextColor(matrix->Color(0,0,255));
-	matrix_clear();
-	matrix->print("8");
-	startfade = l;
-    }
-
-    if (startfade > -1)  {
-	for (uint16_t i = 0; i < mw*mh; i++) matrixleds[i].nscale8(248-spd*2);
-    }
-    l++;
-
-    if (state++ > ((l+0.5)*duration)/spd) {
-	state = 1;
-	startfade = -1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    spd = 1.0;
-	    return 1;
-	}
+	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
+	matrix->setCursor(11-size*0.55, 15+size*0.75);
+	matrix->print(letters[l]);
+	if (size>3) size--; else { done = 1; direction = 1; };
     }
 
     matrix_show();
-    return 0;
+    Serial.println("done?");
+    if (! done) return 0;
+    direction = 1;
+    size = 3;
+    Serial.println("more letters?");
+    if (++l < sizeof(letters)) return 0;
+    l = 0;
+    Serial.println("reverse pattern?");
+    if (zoom_type == 1 && direction == 2) return 0;
+
+    Serial.println("Done with font animation");
+    return 1;
 }
 
 bool esrr() {
@@ -758,6 +689,64 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 	    yfc = constrain(xfc + random(-1, 2), 3, 16);
 	}
     }
+}
+
+
+void matrix_update() {
+    static uint8_t state = 4;
+
+    switch (state) {
+    case 0: 
+	if (esrr()) {
+	    state++;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+
+    case 1: 
+	if (esrr_flashin()) {
+	    state++;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+
+    case 2: 
+	if (esrr_fade()) {
+	    state++;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+
+    case 3: 
+	if (tfsf()) {
+	    state++;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+
+    case 4: 
+	if (tfsf_zoom(0, 20)) {
+	    state++;
+	    state = 4;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+
+    case 5: 
+	if (tfsf_zoom(1, 30)) {
+	    state++;
+	    state = 4;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+    }
+    if (state == 5) state = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1057,30 +1046,6 @@ bool handle_IR(uint32_t delay_time) {
 void leds_show() {
     FastLED[0].showLeds(led_brightness);
 }
-
-void matrix_show() {
-#ifdef ESP8266
-// Disable watchdog interrupt so that it does not trigger in the middle of
-// updates. and break timing of pixels, causing random corruption on interval
-// https://github.com/esp8266/Arduino/issues/34
-// Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
-// in parallel mode, does not affect output. That said, reducing their amount
-// is still good.
-    ESP.wdtDisable();
-#endif
-    FastLED[1].showLeds(matrix_brightness);
-#ifdef ESP8266
-    ESP.wdtEnable(1000);
-#endif
-    //matrix->show();
-}
-
-void matrix_clear() {
-    //FastLED[1].clearLedData();
-    // clear does not work properly with multiple matrices connected via parallel inputs
-    memset(matrixleds, 0, sizeof(matrixleds));
-}
-
 void leds_setcolor(uint16_t i, uint32_t c) {
     leds[i] = c;
 }
@@ -1531,7 +1496,7 @@ void setup() {
     display_resolution();
     delay(500);
 
-    font_test();
+    //font_test();
 
     // init first strip demo
     colorWipe(0x0000FF00, 10);
