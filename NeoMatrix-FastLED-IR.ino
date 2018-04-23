@@ -132,6 +132,39 @@ uint8_t led_brightness = 32;
 // Matrix Code
 // ---------------------------------------------------------------------------
 
+uint16_t Color24toColor16(uint32_t color) {
+  return ((uint16_t)(((color & 0xFF0000) >> 16) & 0xF8) << 8) |
+         ((uint16_t)(((color & 0x00FF00) >>  8) & 0xFC) << 3) |
+                    (((color & 0x0000FF) >>  0)         >> 3);
+}
+
+// Input a value 0 to 255 to get a color value.
+// The colours are a transition r - g - b - back to r.
+uint32_t Wheel(byte WheelPos) {
+    uint32_t wheel=0;
+
+    // Serial.print(WheelPos);
+    WheelPos = 255 - WheelPos;
+    if (WheelPos < 85) {
+	wheel = (((uint32_t)(255 - WheelPos * 3)) << 16) + (WheelPos * 3);
+    }
+    if (!wheel && WheelPos < 170) {
+	WheelPos -= 85;
+	wheel = (((uint32_t)(WheelPos * 3)) << 8) + (255 - WheelPos * 3);
+    }
+    if (!wheel) {
+	WheelPos -= 170;
+	wheel = (((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8);
+    }
+    // Serial.print(" -> ");
+    // Serial.println(wheel, HEX);
+    return (wheel);
+}
+
+// ---------------------------------------------------------------------------
+// Matrix Code
+// ---------------------------------------------------------------------------
+
 
 void matrix_show() {
 #ifdef ESP8266
@@ -1050,34 +1083,6 @@ void leds_setcolor(uint16_t i, uint32_t c) {
     leds[i] = c;
 }
 
-uint16_t Color24toColor16(uint32_t color) {
-  return ((uint16_t)(((color & 0xFF0000) >> 16) & 0xF8) << 8) |
-         ((uint16_t)(((color & 0x00FF00) >>  8) & 0xFC) << 3) |
-                    (((color & 0x0000FF) >>  0)         >> 3);
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-    uint32_t wheel=0;
-
-    // Serial.print(WheelPos);
-    WheelPos = 255 - WheelPos;
-    if (WheelPos < 85) {
-	wheel = (((uint32_t)(255 - WheelPos * 3)) << 16) + (WheelPos * 3);
-    }
-    if (!wheel && WheelPos < 170) {
-	WheelPos -= 85;
-	wheel = (((uint32_t)(WheelPos * 3)) << 8) + (255 - WheelPos * 3);
-    }
-    if (!wheel) {
-	WheelPos -= 170;
-	wheel = (((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8);
-    }
-    // Serial.print(" -> ");
-    // Serial.println(wheel, HEX);
-    return (wheel);
-}
 
 // Demos from FastLED
 
