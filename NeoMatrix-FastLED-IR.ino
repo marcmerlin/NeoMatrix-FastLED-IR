@@ -328,13 +328,13 @@ bool tfsf() {
     uint8_t resetspd = 5;
     uint8_t l = 0;
 
-    matrix->setFont();
     matrix->setRotation(0);
-    matrix->setTextSize(4);
+    matrix->setTextSize(2);
+    matrix->setFont( &Century_Schoolbook_L_Bold[9] );
 
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(0, 0);
+	matrix->setCursor(0, 26);
 	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix_clear();
 	matrix->print("T");
@@ -343,7 +343,7 @@ bool tfsf() {
     l++;
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(0, 0);
+	matrix->setCursor(0, 26);
 	matrix->setTextColor(matrix->Color(192,192,0)); 
 	matrix_clear();
 	matrix->print("F");
@@ -352,7 +352,7 @@ bool tfsf() {
     l++;
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(4, 4);
+	matrix->setCursor(4, 32);
 	matrix->setTextColor(matrix->Color(0,192,192));
 	matrix_clear();
 	matrix->print("S");
@@ -361,7 +361,7 @@ bool tfsf() {
     l++;
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(4, 4);
+	matrix->setCursor(4, 32);
 	matrix->setTextColor(matrix->Color(0,255,0));
 	matrix_clear();
 	matrix->print("F");
@@ -370,7 +370,7 @@ bool tfsf() {
     l++;
 
     if (startfade < l && (state > (l*duration)/spd))  {
-	matrix->setCursor(2, 2);
+	matrix->setCursor(1, 29);
 	matrix->setTextColor(matrix->Color(0,0,255));
 	matrix_clear();
 	matrix->print("8");
@@ -405,6 +405,8 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t delayframe = 1;
     char letters[] = { 'T', 'F', 'S', 'F', '8' };
     bool done = 0;
+
+    matrix->setTextSize(1);
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
@@ -726,7 +728,7 @@ void display_panOrBounceBitmap (uint8_t bitmapSize) {
 
 
 void matrix_update() {
-    static uint8_t state = 4;
+    static uint8_t state = 3;
 
     switch (state) {
     case 0: 
@@ -758,13 +760,13 @@ void matrix_update() {
 	    state++;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
+	    state =3;
 	}
 	break;
 
     case 4: 
 	if (tfsf_zoom(0, 20)) {
 	    state++;
-	    state = 4;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
 	}
@@ -773,13 +775,12 @@ void matrix_update() {
     case 5: 
 	if (tfsf_zoom(1, 30)) {
 	    state++;
-	    state = 4;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
 	}
 	break;
     }
-    if (state == 5) state = 0;
+    if (state == 6) state = 0;
 }
 
 // ---------------------------------------------------------------------------
