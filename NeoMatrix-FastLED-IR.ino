@@ -48,10 +48,6 @@
 
 #define MATRIXPIN D6
 
-#include "google32.h"
-// Anything with black does not look so good with the naked eye (better on pictures)
-//#include "linux32.h"
-
 // Max is 255, 32 is a conservative value to not overload
 // a USB power supply (500mA) for 12x12 pixels.
 uint8_t matrix_brightness = 32;
@@ -77,7 +73,6 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1,
 #define NEOPIXEL_PIN D1 // GPIO5
 
 
-#include <IRremoteESP8266.h>
 // D4 is also the system LED, causing it to blink on IR receive, which is great.
 #define RECV_PIN D4     // GPIO2
 
@@ -92,6 +87,8 @@ extern "C" {
 #define min(a,b) (a<b)?(a):(b)
 #define max(a,b) (a>b)?(a):(b)
 #endif
+
+#include <IRremoteESP8266.h>
 
 // This file contains codes I captured and mapped myself
 // using IRremote's examples/IRrecvDemo
@@ -621,6 +618,79 @@ bool esrr_fade() {
 }
 
 
+bool webvwc() {
+    static uint16_t state = 1;
+    static float spd = 1.0;
+    float spdincr = 0.3;
+    uint16_t duration = 100;
+    uint16_t overlap = 50;
+    uint8_t displayall = 18;
+    uint8_t resetspd = 24;
+    uint8_t l = 0;
+    uint16_t txtcolor;
+
+    matrix->setFont(&TomThumb);
+    matrix->setRotation(0);
+    matrix->setTextSize(1);
+    matrix_clear();
+
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	matrix->setCursor(5, 6);
+	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setTextColor(txtcolor); 
+	matrix->print("WITH");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	matrix->setCursor(3, 12);
+	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setTextColor(txtcolor); 
+	matrix->print("EVERY");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	matrix->setCursor(5, 18);
+	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setTextColor(txtcolor); 
+	matrix->print("BEAT");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	matrix->setCursor(0, 24);
+	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setTextColor(txtcolor); 
+	matrix->print("WE ARE");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
+	matrix->setCursor(0, 30);
+	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setTextColor(txtcolor); 
+	matrix->print("CLOSER");
+    }
+    l++;
+
+    // 400 - 4x50 = 200
+    if (state++ > (l*duration-l*overlap)/spd) {
+	state = 1;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    spd = 1.0;
+	    return 1;
+	}
+    }
+
+    matrix_show();
+    return 0;
+}
+
+
+
 
 void display_scrollText() {
     uint8_t size = max(int(mw/8), 1);
@@ -662,73 +732,72 @@ void display_scrollText() {
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
-void display_panOrBounceBitmap (uint8_t bitmapSize) {
+bool panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
+    static uint16_t count = 0;
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
-    int16_t xf = max(0, (mw-bitmapSize)/2) << 4;
-    int16_t yf = max(0, (mh-bitmapSize)/2) << 4;
+    static int16_t xf = max(0, (mw-bitmapSize)/2) << 4;
+    static int16_t yf = max(0, (mh-bitmapSize)/2) << 4;
     // scroll speed in 1/16th
-    int16_t xfc = 6;
-    int16_t yfc = 3;
+    static int16_t xfc = 6;
+    static int16_t yfc = 3;
     // scroll down and right by moving upper left corner off screen 
     // more up and left (which means negative numbers)
-    int16_t xfdir = -1;
-    int16_t yfdir = -1;
+    static int16_t xfdir = -1;
+    static int16_t yfdir = -1;
 
-    for (uint16_t i=1; i<200; i++) {
-	bool updDir = false;
+    bool updDir = false;
 
-	// Get actual x/y by dividing by 16.
-	int16_t x = xf >> 4;
-	int16_t y = yf >> 4;
+    // Get actual x/y by dividing by 16.
+    int16_t x = xf >> 4;
+    int16_t y = yf >> 4;
 
-	matrix_clear();
-	// pan 24x24 pixmap
-	if (bitmapSize == 24) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
-#ifdef BM32
-	if (bitmapSize == 32) matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap32, bitmapSize, bitmapSize);
-#endif
-	matrix_show();
-	 
-	// Only pan if the display size is smaller than the pixmap
-	// but not if the difference is too small or it'll look bad.
-	if (bitmapSize-mw>2) {
-	    xf += xfc*xfdir;
-	    if (xf >= 0)                      { xfdir = -1; updDir = true ; };
-	    // we don't go negative past right corner, go back positive
-	    if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
-	}
-	if (bitmapSize-mh>2) {
-	    yf += yfc*yfdir;
-	    // we shouldn't display past left corner, reverse direction.
-	    if (yf >= 0)                      { yfdir = -1; updDir = true ; };
-	    if (yf <= ((mh-bitmapSize) << 4)) { yfdir = 1;  updDir = true ; };
-	}
-	// only bounce a pixmap if it's smaller than the display size
-	if (mw>bitmapSize) {
-	    xf += xfc*xfdir;
-	    // Deal with bouncing off the 'walls'
-	    if (xf >= (mw-bitmapSize) << 4) { xfdir = -1; updDir = true ; };
-	    if (xf <= 0)           { xfdir =  1; updDir = true ; };
-	}
-	if (mh>bitmapSize) {
-	    yf += yfc*yfdir;
-	    if (yf >= (mh-bitmapSize) << 4) { yfdir = -1; updDir = true ; };
-	    if (yf <= 0)           { yfdir =  1; updDir = true ; };
-	}
-	
-	if (updDir) {
-	    // Add -1, 0 or 1 but bind result to 1 to 1.
-	    // Let's take 3 is a minimum speed, otherwise it's too slow.
-	    xfc = constrain(xfc + random(-1, 2), 3, 16);
-	    yfc = constrain(xfc + random(-1, 2), 3, 16);
-	}
+    count++;
+    matrix_clear();
+    // pan 24x24 pixmap
+    matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
+    matrix_show();
+     
+    // Only pan if the display size is smaller than the pixmap
+    // but not if the difference is too small or it'll look bad.
+    if (bitmapSize-mw>2) {
+	xf += xfc*xfdir;
+	if (xf >= 0)                      { xfdir = -1; updDir = true ; };
+	// we don't go negative past right corner, go back positive
+	if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
     }
+    if (bitmapSize-mh>2) {
+	yf += yfc*yfdir;
+	// we shouldn't display past left corner, reverse direction.
+	if (yf >= 0)                      { yfdir = -1; updDir = true ; };
+	if (yf <= ((mh-bitmapSize) << 4)) { yfdir = 1;  updDir = true ; };
+    }
+    // only bounce a pixmap if it's smaller than the display size
+    if (mw>bitmapSize) {
+	xf += xfc*xfdir;
+	// Deal with bouncing off the 'walls'
+	if (xf >= (mw-bitmapSize) << 4) { xfdir = -1; updDir = true ; };
+	if (xf <= 0)           { xfdir =  1; updDir = true ; };
+    }
+    if (mh>bitmapSize) {
+	yf += yfc*yfdir;
+	if (yf >= (mh-bitmapSize) << 4) { yfdir = -1; updDir = true ; };
+	if (yf <= 0)           { yfdir =  1; updDir = true ; };
+    }
+    
+    if (updDir) {
+	// Add -1, 0 or 1 but bind result to 1 to 1.
+	// Let's take 3 is a minimum speed, otherwise it's too slow.
+	xfc = constrain(xfc + random(-1, 2), 3, 16);
+	yfc = constrain(xfc + random(-1, 2), 3, 16);
+    }
+    if (count == 1000) return 1;
+    return 0;
 }
 
 
 void matrix_update() {
-    static uint8_t state = 3;
+    static uint8_t state = 6;
 
     switch (state) {
     case 0: 
@@ -740,7 +809,7 @@ void matrix_update() {
 	break;
 
     case 1: 
-	if (esrr_flashin()) {
+	if (tfsf()) {
 	    state++;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
@@ -748,7 +817,7 @@ void matrix_update() {
 	break;
 
     case 2: 
-	if (esrr_fade()) {
+	if (esrr_flashin()) {
 	    state++;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
@@ -756,16 +825,15 @@ void matrix_update() {
 	break;
 
     case 3: 
-	if (tfsf()) {
+	if (tfsf_zoom(0, 20)) {
 	    state++;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
-	    state =3;
 	}
 	break;
 
     case 4: 
-	if (tfsf_zoom(0, 20)) {
+	if (esrr_fade()) {
 	    state++;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
@@ -779,8 +847,26 @@ void matrix_update() {
 	    Serial.println(state);
 	}
 	break;
+
+    case 6: 
+	if (webvwc()) {
+	    state++;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	    state = 6;
+	}
+	break;
+
+    case 7: 
+	if (panOrBounceBitmap(1, 24)) {
+	    state++;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+
     }
-    if (state == 6) state = 0;
+    if (state == 8) state = 0;
 }
 
 // ---------------------------------------------------------------------------
