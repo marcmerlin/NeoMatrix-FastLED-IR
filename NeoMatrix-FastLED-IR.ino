@@ -621,6 +621,8 @@ bool esrr_fade() {
 bool webvwc() {
     static uint16_t state = 1;
     static float spd = 1.0;
+    static bool didclear = 0;
+    static bool firstpass = 0;
     float spdincr = 0.3;
     uint16_t duration = 100;
     uint16_t overlap = 50;
@@ -632,8 +634,10 @@ bool webvwc() {
     matrix->setFont(&TomThumb);
     matrix->setRotation(0);
     matrix->setTextSize(1);
-    matrix_clear();
-
+    if (! didclear) {
+	matrix_clear();
+	didclear = 1;
+    }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 	matrix->setCursor(5, 6);
@@ -644,6 +648,7 @@ bool webvwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	firstpass = 1;
 	matrix->setCursor(3, 12);
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
@@ -660,14 +665,14 @@ bool webvwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setCursor(0, 24);
+	matrix->setCursor(2, 24);
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("WE ARE");
     }
     l++;
 
-    if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
+    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
 	matrix->setCursor(0, 30);
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
@@ -675,15 +680,18 @@ bool webvwc() {
     }
     l++;
 
-    // 400 - 4x50 = 200
     if (state++ > (l*duration-l*overlap)/spd) {
 	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
 	    spd = 1.0;
+	    didclear = 0;
+	    firstpass = 0;
 	    return 1;
 	}
     }
+
+    if (spd < displayall) fadeToBlackBy( matrixleds, mw*mh, 20*map(spd, 1, 24, 1, 4));
 
     matrix_show();
     return 0;
