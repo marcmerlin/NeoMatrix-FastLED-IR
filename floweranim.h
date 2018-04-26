@@ -1,39 +1,3 @@
-#include <Adafruit_GFX.h>
-#ifndef PSTR
-  #define PSTR
-#endif
-//Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(32,32, PIN, NEO_MATRIX_TOP + NEO_MATRIX_LEFT + NEO_MATRIX_COLUMNS + NEO_MATRIX_ZIGZAG, NEO_GRB + NEO_KHZ800);
-#if 0
-#include <Adafruit_NeoMatrix.h>
-#include <Adafruit_NeoPixel.h>
-#define PIN 6
-#define mw 32
-#define mh 32
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(16, mh, 
-  mw/16, mh/16, 
-  PIN,
-  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
-    NEO_TILE_TOP + NEO_TILE_LEFT,
-  NEO_GRB            + NEO_KHZ800 );
-#else
-#include <FastLED_NeoMatrix.h>
-#include <FastLED.h>
-#define mw 24
-#define mh 32
-
-CRGB matrixleds[mw*mh];
-
-FastLED_NeoMatrix matrix = FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1, 
-  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
-    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
-    // WS2811_PORTA - pins 12, 13, 14 and 15 or pins 6,7,5 and 8 on the NodeMCU
-    // This is much faster 1000 updates in 10sec
-
-#endif
-
-
 #define flowerRedFrame0 {\
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,74,138,138,112,21,0,0,0,0,0,0,0,0,0,0,0,0,0,\
 0,0,0,0,0,0,0,0,0,0,0,8,144,228,247,228,228,238,238,189,74,0,0,0,0,0,0,0,0,0,0,0,\
@@ -3106,36 +3070,3 @@ flowerGreenFrame0, flowerGreenFrame1, flowerGreenFrame2, flowerGreenFrame3, flow
 const uint8_t flowerBlueFrames[30][32*32] PROGMEM   = {
 flowerBlueFrame0, flowerBlueFrame1, flowerBlueFrame2, flowerBlueFrame3, flowerBlueFrame4, flowerBlueFrame5, flowerBlueFrame6, flowerBlueFrame7, flowerBlueFrame8, flowerBlueFrame9, flowerBlueFrame10, flowerBlueFrame11, flowerBlueFrame12, flowerBlueFrame13, flowerBlueFrame14, flowerBlueFrame15, flowerBlueFrame16, flowerBlueFrame17, flowerBlueFrame18, flowerBlueFrame19, flowerBlueFrame20, flowerBlueFrame21, flowerBlueFrame22, flowerBlueFrame23, flowerBlueFrame24, flowerBlueFrame25, flowerBlueFrame26, flowerBlueFrame27, flowerBlueFrame28, flowerBlueFrame29, };
 
-void setup() {
-    Serial.begin(115200);
-    FastLED.addLeds<WS2811_PORTA,3>(matrixleds, mw*mh/3).setCorrection(TypicalLEDStrip);
-    matrix.begin();
-    matrix.setBrightness(40);
-    matrix.fillScreen(0);
-    matrix.show();
-    delay(100);
-}
-
-uint16_t drawRGB24toRGB565(const uint8_t r, const uint8_t g, const uint8_t b) {
-  return ((r / 8) << 11) | ((g / 4) << 5) | (b / 8);
-}
-
-void loop() {
-    static uint16_t frame = 0;
-
-    Serial.print("Displaying Frame: ");
-    Serial.println(frame);
-
-    for (uint8_t y = 0; y < 32; y++) {
-	for (uint8_t x = 0; x < 32; x++) {
-	    uint32_t loc = y*32 + x;
-	    matrix.drawPixel(x-4, y, drawRGB24toRGB565(
-		(pgm_read_byte(&(flowerRedFrames[frame][loc]))), 
-		(pgm_read_byte(&(flowerGreenFrames[frame][loc]))), 
-		(pgm_read_byte(&(flowerBlueFrames[frame][loc])))
-	    ));
-	}
-    }
-    matrix.show();
-    if (++frame == 30) frame = 0;
-}

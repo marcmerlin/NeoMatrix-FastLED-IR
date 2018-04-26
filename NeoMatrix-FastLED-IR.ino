@@ -40,10 +40,9 @@
 //#include <Fonts/FreeMonoBold24pt7b.h>
 #include "fonts.h"
 
+#include "floweranim.h"
+
 // Choose your prefered pixmap
-//#include "heart24.h"
-//#include "yellowsmiley24.h"
-//#include "bluesmiley24.h"
 #include "smileytongue24.h"
 
 #define MATRIXPIN D6
@@ -618,7 +617,7 @@ bool esrr_fade() {
 }
 
 
-bool webvwc() {
+bool webwc() {
     static uint16_t state = 1;
     static float spd = 1.0;
     static bool didclear = 0;
@@ -803,9 +802,27 @@ bool panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     return 0;
 }
 
+bool GifAnim() {
+    static uint16_t frame = 0;
+
+    for (uint8_t y = 0; y < 32; y++) {
+	for (uint8_t x = 0; x < 32; x++) {
+	    uint32_t loc = y*32 + x;
+	    matrix->drawPixel(x-4, y, matrix->Color(
+		(pgm_read_byte(&(flowerRedFrames[frame][loc]))), 
+		(pgm_read_byte(&(flowerGreenFrames[frame][loc]))), 
+		(pgm_read_byte(&(flowerBlueFrames[frame][loc])))
+	    ));
+	}
+    }
+    matrix_show();
+    if (++frame == 30) frame = 0;
+    return 0;
+}
+
 
 void matrix_update() {
-    static uint8_t state = 6;
+    static uint8_t state = 8;
 
     switch (state) {
     case 0: 
@@ -857,11 +874,10 @@ void matrix_update() {
 	break;
 
     case 6: 
-	if (webvwc()) {
+	if (webwc()) {
 	    state++;
 	    Serial.print("Switching to matrix demo ");
 	    Serial.println(state);
-	    state = 6;
 	}
 	break;
 
@@ -873,13 +889,27 @@ void matrix_update() {
 	}
 	break;
 
-    }
-    if (state == 8) state = 0;
+    case 8: 
+	if (GifAnim()) {
+	    state++;
+	    Serial.print("Switching to matrix demo ");
+	    Serial.println(state);
+	}
+	break;
+
+    } if (state == 9) state = 0;
 }
 
 // ---------------------------------------------------------------------------
 // Strip Code
 // ---------------------------------------------------------------------------
+
+void leds_show() {
+    FastLED[0].showLeds(led_brightness);
+}
+void leds_setcolor(uint16_t i, uint32_t c) {
+    leds[i] = c;
+}
 
 void change_brightness(int8_t change) {
     static uint8_t brightness = 4;
@@ -1169,13 +1199,6 @@ bool handle_IR(uint32_t delay_time) {
 	}
     }
     return 0;
-}
-
-void leds_show() {
-    FastLED[0].showLeds(led_brightness);
-}
-void leds_setcolor(uint16_t i, uint32_t c) {
-    leds[i] = c;
 }
 
 
