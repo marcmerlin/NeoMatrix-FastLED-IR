@@ -64,6 +64,10 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1,
 // How many ms used for each matrix update
 #define MX_UPD_TIME 10
 
+uint8_t matrix_state = 0;
+uint8_t matrix_loop = 0;
+
+
 //---------------------------------------------------------------------------- 
 
 #define NUM_LEDS 48
@@ -430,17 +434,17 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     }
 
     matrix_show();
-    Serial.println("done?");
+    //Serial.println("done?");
     if (! done) return 0;
     direction = 1;
     size = 3;
-    Serial.println("more letters?");
+    //Serial.println("more letters?");
     if (++l < sizeof(letters)) return 0;
     l = 0;
-    Serial.println("reverse pattern?");
+    //Serial.println("reverse pattern?");
     if (zoom_type == 1 && direction == 2) return 0;
 
-    Serial.println("Done with font animation");
+    //Serial.println("Done with font animation");
     return 1;
 }
 
@@ -803,6 +807,7 @@ bool panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 }
 
 bool GifAnim() {
+    static uint8_t loop = 30;
     static uint16_t frame = 0;
 
     for (uint8_t y = 0; y < 32; y++) {
@@ -816,88 +821,68 @@ bool GifAnim() {
 	}
     }
     matrix_show();
-    if (++frame == 30) frame = 0;
+    if (++frame == 30) {
+	frame = 0;
+	if (loop-- == 0) {
+	    loop = 30;
+	    return 1;
+	}
+    }
     return 0;
 }
 
+void matrix_next() {
+    matrix_state++;
+    if (matrix_state == 9) { 
+	matrix_state = 0;
+	matrix_loop = 0;
+    }
+}
 
+// TODO3: change anim to take number
 void matrix_update() {
-    static uint8_t state = 8;
+    switch (matrix_state) {
+	case 0: 
+	    if (! esrr()) return;
+	    break;
 
-    switch (state) {
-    case 0: 
-	if (esrr()) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
+	case 1: 
+	    if (!tfsf()) return ;
+	    break;
 
-    case 1: 
-	if (tfsf()) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
+	case 2: 
+	    if (!esrr_flashin()) return ;
+	    break;
 
-    case 2: 
-	if (esrr_flashin()) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
+	case 3: 
+	    if (!tfsf_zoom(0, 20)) return ;
+	    break;
 
-    case 3: 
-	if (tfsf_zoom(0, 20)) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
+	case 4: 
+	    if (!esrr_fade()) return ;
+	    break;
 
-    case 4: 
-	if (esrr_fade()) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
+	case 5: 
+	    if (!tfsf_zoom(1, 30)) return ;
+	    break;
 
-    case 5: 
-	if (tfsf_zoom(1, 30)) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
+	case 6: 
+	    if (!webwc()) return ;
+	    break;
 
-    case 6: 
-	if (webwc()) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
+	case 7: 
+	    if (!panOrBounceBitmap(1, 24)) return ;
+	    break;
 
-    case 7: 
-	if (panOrBounceBitmap(1, 24)) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
+	case 8: 
+	    if (!GifAnim()) return ;
+	    break;
+    } 
 
-    case 8: 
-	if (GifAnim()) {
-	    state++;
-	    Serial.print("Switching to matrix demo ");
-	    Serial.println(state);
-	}
-	break;
-
-    } if (state == 9) state = 0;
+    if (matrix_loop++ < 3) return;
+    matrix_next();
+    Serial.print("Switching to matrix demo ");
+    Serial.println(matrix_state);
 }
 
 // ---------------------------------------------------------------------------
@@ -982,6 +967,11 @@ bool handle_IR(uint32_t delay_time) {
 	case IR_RGBZONE_DIM:
 	    change_brightness(-1);
 	    Serial.println("Got IR: Dim");
+	    return 1;
+
+	case IR_RGBZONE_NEXT:
+	    matrix_next();
+	    Serial.println("Got IR: Next");
 	    return 1;
 
 	case IR_RGBZONE_QUICK:
@@ -1194,7 +1184,7 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.print("Got unknown IR value: ");
 	    Serial.println(IR_result.value, HEX);
 	    // Allow pausing the current demo to inspect it in slow motion
-	    delay(1000);
+	    //delay(1000);
 	    return 0;
 	}
     }
