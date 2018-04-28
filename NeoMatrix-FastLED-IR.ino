@@ -40,7 +40,9 @@
 //#include <Fonts/FreeMonoBold24pt7b.h>
 #include "fonts.h"
 
-#include "floweranim.h"
+#include "anim_flower.h"
+#include "anim_nucleus.h"
+#include "anim_balls.h"
 
 // Choose your prefered pixmap
 #include "smileytongue24.h"
@@ -867,9 +869,24 @@ bool panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     return 3;
 }
 
-bool GifAnim() {
-    static uint8_t loop = 20;
+bool AnimFlower() {
+#define flowerloop 15
+    static uint8_t loop = flowerloop;
     static uint16_t frame = 0;
+    static uint16_t delayframe = 1;
+    uint8_t repeat = 3;
+
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	// Serial.println("delayed frame");
+	matrix_show(); // make sure we still run at the same speed.
+	return repeat;
+    }
+    delayframe = 1;
+//    Serial.print("loop ");
+//    Serial.print(loop);
+//    Serial.print(" frame ");
+//    Serial.println(frame);
 
     for (uint8_t y = 0; y < 32; y++) {
 	for (uint8_t x = 0; x < 32; x++) {
@@ -882,21 +899,101 @@ bool GifAnim() {
 	}
     }
     matrix_show();
-    if (++frame == 30) {
+    if (++frame == sizeof(flowerRedFrames)/(32*32)) {
 	frame = 0;
 	if (loop-- == 0) {
-	    loop = 50;
+	    loop = flowerloop;
 	    return 0;
 	}
     }
-    return 3;
+    return repeat;
+}
+
+bool AnimNucleus() {
+#define nucleusloop 5
+    static uint8_t loop = nucleusloop;
+    static uint16_t frame = 0;
+    static uint16_t delayframe = 2;
+    uint8_t repeat = 3;
+
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	// Serial.println("delayed frame");
+	matrix_show(); // make sure we still run at the same speed.
+	return repeat;
+    }
+    delayframe = 2;
+//    Serial.print("loop ");
+//    Serial.print(loop);
+//    Serial.print(" frame ");
+//    Serial.println(frame);
+
+    for (uint8_t y = 0; y < 32; y++) {
+	for (uint8_t x = 0; x < 32; x++) {
+	    uint32_t loc = y*32 + x;
+	    matrix->drawPixel(x-4, y, matrix->Color(
+		(pgm_read_byte(&(nucleusRedFrames[frame][loc]))), 
+		(pgm_read_byte(&(nucleusGreenFrames[frame][loc]))), 
+		(pgm_read_byte(&(nucleusBlueFrames[frame][loc])))
+	    ));
+	}
+    }
+    matrix_show();
+    if (++frame == sizeof(nucleusRedFrames)/(32*32)) {
+	frame = 0;
+	if (loop-- == 0) {
+	    loop = nucleusloop;
+	    return 0;
+	}
+    }
+    return repeat;
+}
+
+bool AnimBalls() {
+#define ballsloop 3
+    static uint8_t loop = ballsloop;
+    static uint16_t frame = 0;
+    static uint16_t delayframe = 3;
+    uint8_t repeat = 3;
+
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	// Serial.println("delayed frame");
+	matrix_show(); // make sure we still run at the same speed.
+	return repeat;
+    }
+    delayframe = 3;
+//    Serial.print("loop ");
+//    Serial.print(loop);
+//    Serial.print(" frame ");
+//    Serial.println(frame);
+
+    for (uint8_t y = 0; y < 32; y++) {
+	for (uint8_t x = 0; x < 32; x++) {
+	    uint32_t loc = y*32 + x;
+	    matrix->drawPixel(x-4, y, matrix->Color(
+		(pgm_read_byte(&(ballsRedFrames[frame][loc]))), 
+		(pgm_read_byte(&(ballsGreenFrames[frame][loc]))), 
+		(pgm_read_byte(&(ballsBlueFrames[frame][loc])))
+	    ));
+	}
+    }
+    matrix_show();
+    if (++frame == sizeof(ballsRedFrames)/(32*32)) {
+	frame = 0;
+	if (loop-- == 0) {
+	    loop = ballsloop;
+	    return 0;
+	}
+    }
+    return repeat;
 }
 
 void matrix_next() {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_state++;
-    if (matrix_state == 10) { 
+    if (matrix_state == 12) { 
 	matrix_state = 0;
     }
 }
@@ -945,7 +1042,7 @@ void matrix_update() {
 	    break;
 
 	case 6: 
-	    ret = tfsf_zoom(1, 30);
+	    ret = AnimNucleus();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -957,7 +1054,7 @@ void matrix_update() {
 	    break;
 
 	case 8: 
-	    ret = GifAnim();
+	    ret = AnimFlower();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -968,6 +1065,19 @@ void matrix_update() {
 	    if (ret) return;
 	    matrix_state = 2;
 	    break;
+
+	case 10: 
+	    ret = tfsf_zoom(1, 30);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 11: 
+	    ret = AnimBalls();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
     } 
     Serial.print("Done with demo ");
     Serial.print(matrix_state);
@@ -1235,13 +1345,13 @@ bool handle_IR(uint32_t delay_time) {
 	case IR_RGBZONE_BU:
 	    Serial.println("Got IR: Blue UP");
 	    matrix_loop = 9999;
-	    matrix_state = 7;
+	    matrix_state = 8;
 	    return 1;
 
 	case IR_RGBZONE_BD:
 	    Serial.println("Got IR: Blue DOWN");
 	    matrix_loop = 9999;
-	    matrix_state = 8;
+	    matrix_state = 10;
 	    return 1;
 
 	case IR_RGBZONE_DIY1:
