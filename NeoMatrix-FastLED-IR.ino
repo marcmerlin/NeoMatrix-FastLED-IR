@@ -399,7 +399,6 @@ bool tfsf() {
 // TODO: other 2 pixmaps
 
 // type 0 = up, type 1 = up and down
-// FIXME this breaks the colors displayed by the strip
 bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t state = 1;
     static uint16_t direction = 1;
@@ -415,9 +414,10 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
 	// Serial.println("delayed frame");
+	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
     }
-    delayframe = speed;
+    delayframe = speed / 10;
     if (direction == 1) {
 	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
 	matrix->setTextColor(txtcolor); 
@@ -426,7 +426,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->setCursor(11-size*0.55, 15+size*0.75);
 	matrix->print(letters[l]);
 	if (size<16) size++; 
-	else if (zoom_type == 0) { done = 1; delayframe = speed * 50; } 
+	else if (zoom_type == 0) { done = 1; delayframe = speed * 5; } 
 	     else direction = 2;
 
     } else if (zoom_type == 1) {
@@ -436,7 +436,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 	matrix->setCursor(11-size*0.55, 15+size*0.75);
 	matrix->print(letters[l]);
-	if (size>3) size--; else { done = 1; direction = 1; };
+	if (size>3) size--; else { done = 1; direction = 1; delayframe = speed; };
     }
 
     matrix_show();
@@ -628,29 +628,47 @@ bool esrr_fade() {
 }
 
 
-bool circles() {
+bool squares(bool reverse) {
+#define sqdelay 2
     static uint16_t state = 0;
     static uint8_t wheel = 0;
+    uint8_t repeat = 3;
+    static uint16_t delayframe = sqdelay;
 
     uint8_t x = mw/2-1;
     uint8_t y = mh/2-1;
-    uint8_t radius = max(mh/2-1,mw/2-1);
+    uint8_t maxsize = max(mh/2,mw/2);
 
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	matrix_show(); // make sure we still run at the same speed.
+	return repeat;
+    }
+    delayframe = sqdelay;
     state++;
     wheel += 10;
-    Serial.println(wheel);
 
     matrix_clear();
-    for (uint8_t r = 0; r <= radius; r++) {
-	matrix->drawCircle( mw/2-1, mh/2-1, r, Color24toColor16(Wheel(wheel+r*10)));
+    if (reverse) {
+	for (uint8_t s = maxsize; s >= 1 ; s--) {
+	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, Color24toColor16(Wheel(wheel+(maxsize-s)*10)));
+	}
+    } else {
+	for (uint8_t s = 1; s <= maxsize; s++) {
+	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, Color24toColor16(Wheel(wheel+s*10)));
+	}
     }
 
-    if (state > 10) {
+    Serial.print("state ");
+    Serial.println(state);
+    if (state > 100) {
 	state = 0;
 	return 0;
     }
     matrix_show();
-    return 100;
+    return repeat;
 }
 
 
@@ -870,55 +888,56 @@ void matrix_next() {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_state++;
-    if (matrix_state == 9) { 
+    if (matrix_state == 10) { 
 	matrix_state = 0;
     }
 }
 
-// TODO3: adjust number of runs per anim
+// FIXME: when force switching apps, it does not reset their vars
+// hitting next 
 void matrix_update() {
     uint8_t ret;
 
     switch (matrix_state) {
 	case 0: 
-	    ret = esrr();
+	    ret = squares(0);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 1: 
-	    ret = tfsf();
+	    ret = esrr();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 2: 
-	    ret = circles();
+	    ret = squares(1);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    matrix_state = 2;
 	    break;
 
 	case 3: 
-	    ret = tfsf_zoom(0, 20);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 4: 
 	    ret = esrr_fade();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
+	case 4: 
+	    ret = tfsf_zoom(0, 20);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
 	case 5: 
-	    ret = tfsf_zoom(1, 30);
+	    ret = webwc();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 6: 
-	    ret = webwc();
+	    ret = tfsf_zoom(1, 30);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -933,6 +952,13 @@ void matrix_update() {
 	    ret = GifAnim();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
+	    break;
+
+	case 9: 
+	    ret = tfsf();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    matrix_state = 2;
 	    break;
     } 
     Serial.print("Done with demo ");
@@ -1405,7 +1431,7 @@ void rainbowCycle(uint8_t wait) {
 	addGlitter(80);
 	gHue++;
 	leds_show();
-	if (handle_IR(wait/20)) return;
+	if (handle_IR(wait/5)) return;
     }
 }
 
