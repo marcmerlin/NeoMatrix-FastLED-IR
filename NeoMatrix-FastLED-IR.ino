@@ -419,22 +419,30 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     }
     delayframe = speed / 10;
     if (direction == 1) {
+	int8_t offset = 0; // adjust some letters left or right as needed
 	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
+	if (letters[l] == 'T') offset = -2 * size/15;
+	if (letters[l] == '8') offset = 2 * size/15;
+
 	matrix->setTextColor(txtcolor); 
 	matrix_clear();
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
-	matrix->setCursor(11-size*0.55, 15+size*0.75);
+	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
 	matrix->print(letters[l]);
-	if (size<16) size++; 
+	if (size<18) size++; 
 	else if (zoom_type == 0) { done = 1; delayframe = speed * 5; } 
 	     else direction = 2;
 
     } else if (zoom_type == 1) {
+	int8_t offset = 0; // adjust some letters left or right as needed
 	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 255, 0)));
+	if (letters[l] == 'T') offset = -2 * size/15;
+	if (letters[l] == '8') offset = 2 * size/15;
+
 	matrix->setTextColor(txtcolor); 
 	matrix_clear();
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
-	matrix->setCursor(11-size*0.55, 15+size*0.75);
+	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
 	matrix->print(letters[l]);
 	if (size>3) size--; else { done = 1; direction = 1; delayframe = speed; };
     }
@@ -661,8 +669,8 @@ bool squares(bool reverse) {
 	}
     }
 
-    Serial.print("state ");
-    Serial.println(state);
+    //Serial.print("state ");
+    //Serial.println(state);
     if (state > 100) {
 	state = 0;
 	return 0;
