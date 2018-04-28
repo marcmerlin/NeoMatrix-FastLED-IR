@@ -669,9 +669,9 @@ bool squares(bool reverse) {
 	}
     }
 
-    //Serial.print("state ");
-    //Serial.println(state);
-    if (state > 100) {
+    // Serial.print("state ");
+    // Serial.println(state);
+    if (state > 400) {
 	state = 0;
 	return 0;
     }
