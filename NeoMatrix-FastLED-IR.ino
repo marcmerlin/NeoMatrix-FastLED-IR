@@ -66,7 +66,7 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1,
 // How many ms used for each matrix update
 #define MX_UPD_TIME 10
 
-uint8_t matrix_state = 2;
+uint8_t matrix_state = 0;
 int16_t matrix_loop = -1;
 
 
@@ -620,7 +620,10 @@ bool esrr_fade() {
 
      
     if (state > 40/spd && state < 100/spd)  {
-	fadeToBlackBy( matrixleds, mw*mh, 20*spd);
+	//fadeToBlackBy( matrixleds, mw*mh, 20*spd);
+	// For reasons I don't understand, fadetoblack causes display corruption in this case
+	// while looping nscale (ideally mostly the same thing), works.
+	for (uint16_t i = 0; i < mw*mh; i++) matrixleds[i].nscale8(242-spd*4);
     }
 
     if (state > 100/spd) {
@@ -1150,7 +1153,9 @@ bool handle_IR(uint32_t delay_time) {
     for (uint16_t i=0; i<delay_time / MX_UPD_TIME; i++) {
 	matrix_update();
     }
+    // Don't run update continuously, or the IR interrupts don't get in.
     delay(delay_time % MX_UPD_TIME);
+    // if (delay_time % MX_UPD_TIME > MX_UPD_TIME/2) matrix_update();
 
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
