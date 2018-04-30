@@ -11,4 +11,4 @@ It uses these libraries
 - FastLED_NeoMatrix
 
 Photos and videos:
-![image](https://cloud.githubusercontent.com/assets/1369412/26763577/e6b234c4-4909-11e7-98cc-58e2bf450e3f.png)
+https://www.youtube.com/watch?v=tU_wkrrv_4A
