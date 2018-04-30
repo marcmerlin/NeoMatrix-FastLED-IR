@@ -371,6 +371,7 @@ bool tfsf() {
     }
     l++;
 
+#if 0
     if (startfade < l && (state > (l*duration)/spd))  {
 	matrix->setCursor(1, 29);
 	matrix->setTextColor(matrix->Color(0,0,255));
@@ -378,6 +379,7 @@ bool tfsf() {
 	matrix->print("8");
 	startfade = l;
     }
+#endif
 
     if (startfade > -1)  {
 	for (uint16_t i = 0; i < mw*mh; i++) matrixleds[i].nscale8(248-spd*2);
@@ -398,8 +400,6 @@ bool tfsf() {
     return 3;
 }
 
-// TODO: other 2 pixmaps
-
 // type 0 = up, type 1 = up and down
 bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t state = 1;
@@ -407,7 +407,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t size = 3;
     static uint8_t l = 0;
     static uint16_t delayframe = 1;
-    char letters[] = { 'T', 'F', 'S', 'F', '8' };
+    char letters[] = { 'T', 'F', 'S', 'F' };
     bool done = 0;
     uint8_t repeat = 6;
 
@@ -467,7 +467,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 bool esrr() {
     static uint16_t state = 1;
     static float spd = 1.0;
-    float spdincr = 0.3;
+    float spdincr = 0.6;
     uint16_t duration = 100;
     uint16_t overlap = 50;
     uint8_t displayall = 18;
@@ -519,7 +519,7 @@ bool esrr() {
     }
 
     matrix_show();
-    return 2;
+    return 1;
 }
 
 // This is too jarring on the eyes at night
@@ -583,7 +583,7 @@ bool esrr_fade() {
     static uint8_t wheel = 0;
     static uint8_t sp = 0;
     static float spd = 1.0;
-    float spdincr = 0.2;
+    float spdincr = 0.5;
     uint8_t resetspd = 5;
     uint16_t txtcolor;
 
@@ -637,7 +637,7 @@ bool esrr_fade() {
 	}
     }
     matrix_show();
-    return 3;
+    return 2;
 }
 
 
@@ -690,7 +690,7 @@ bool webwc() {
     static float spd = 1.0;
     static bool didclear = 0;
     static bool firstpass = 0;
-    float spdincr = 0.3;
+    float spdincr = 0.6;
     uint16_t duration = 100;
     uint16_t overlap = 50;
     uint8_t displayall = 18;
@@ -761,7 +761,7 @@ bool webwc() {
     if (spd < displayall) fadeToBlackBy( matrixleds, mw*mh, 20*map(spd, 1, 24, 1, 4));
 
     matrix_show();
-    return 3;
+    return 2;
 }
 
 
@@ -992,11 +992,12 @@ bool AnimBalls() {
     return repeat;
 }
 
+#define LAST_MATRIX 11
 void matrix_next() {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_state++;
-    if (matrix_state == 12) { 
+    if (matrix_state == LAST_MATRIX+1) { 
 	matrix_state = 0;
     }
 }
@@ -1066,7 +1067,6 @@ void matrix_update() {
 	    ret = tfsf();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
-	    matrix_state = 2;
 	    break;
 
 	case 10: 
@@ -1075,7 +1075,7 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case 11: 
+	case LAST_MATRIX: 
 	    ret = AnimBalls();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -1475,8 +1475,6 @@ void cylon(bool trail, uint8_t wait) {
 void doubleConverge(bool trail, uint8_t wait, bool rev=false) {
     static uint8_t hue;
     for(uint16_t i = 0; i < NUM_LEDS/2 + 4; i++) {
-	// fade everything out
-	//leds.fadeToBlackBy(60);
 
 	if (i < NUM_LEDS/2) {
 	    if (!rev) {
