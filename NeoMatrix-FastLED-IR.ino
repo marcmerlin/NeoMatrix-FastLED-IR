@@ -436,8 +436,6 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	size = 3;
 	l = 0;
 	if (matrix_loop == -1) { dont_exit = 1; delayframe = 1; };
-	Serial.print(matrix_loop);
-	Serial.println(dont_exit);
     }
 
     matrix->setTextSize(1);
@@ -448,7 +446,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
     }
-    delayframe = min(speed / 20, 1);
+    delayframe = max(speed / 20, 1);
     // before exiting, we run the full delay to show the last frame long enough
     if (dont_exit == 0) { dont_exit = 1; return 0; }
 #ifndef NOFONTS
@@ -1225,7 +1223,7 @@ void matrix_update() {
 	    break;
 
 	case 10: 
-	    ret = tfsf_zoom(1, 40);
+	    ret = tfsf_zoom(1, 60);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
