@@ -1082,12 +1082,27 @@ bool AnimBalls() {
 }
 
 uint16_t pos2matrix(uint16_t pos) {
+    #define panelwidth 8
+    #define panelnum 3
+    #define ledwidth (panelwidth * panelnum)
+    #define panelheight 32
+
     uint16_t newpos;
-    uint16_t panel = (pos % 24);
+    // gives 0 1 or 2 for panel 0 1 or 2
+    uint16_t panel = (pos % ledwidth)/panelwidth;
+    // 0 256 or 512
+    uint16_t paneloffset = panel * panelwidth * panelheight;
+    // 23 => line 0 panel 2, 39, line 1 panel 1
+    uint16_t line = pos/ledwidth; 
+    // 0-23 - [0-2]*8 gives 0 to 7 for each panel
+    uint16_t lineoffset = (pos % ledwidth) - panel*panelwidth;
+
+    return paneloffset + line*panelwidth + lineoffset;
 }
 
 bool demoreel100() {
-#define demoreeldelay 2
+    #define demoreeldelay 1
+
     static uint16_t state;
     static uint8_t gHue = 0; 
     uint8_t repeat = 2;
@@ -1096,10 +1111,9 @@ bool demoreel100() {
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	matrix_clear();
-	uint16_t state = 0;
+	state = 0;
     }
 
-    state++;
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
@@ -1108,33 +1122,33 @@ bool demoreel100() {
 	return repeat;
     }
     delayframe = demoreeldelay;
+    state++;
     gHue++;
 
-    if (state < 1000)
+    if (state < 2000)
     {
       // random colored speckles that blink in and fade smoothly
       fadeToBlackBy( matrixleds, NUMMATRIX, 10);
       int pos = random16(NUMMATRIX);
       matrixleds[pos] += CHSV( gHue + random8(64), 200, 255);
     }
-    else if (state < 2000)
+    else if (state < 4000)
     {
       // a colored dot sweeping back and forth, with fading trails
       fadeToBlackBy( matrixleds, NUMMATRIX, 20);
       int pos = beatsin16( 13, 0, NUMMATRIX-1 );
-      matrixleds[pos] += CHSV( gHue, 255, 192);
+      matrixleds[pos2matrix(pos)] += CHSV( gHue, 255, 192);
     }
-    else if (state < 3000)
+    else if (state < 6000)
     {
       // eight colored dots, weaving in and out of sync with each other
       fadeToBlackBy( matrixleds, NUMMATRIX, 20);
       byte dothue = 0;
       for( int i = 0; i < 8; i++) {
 	  int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
-	matrixleds[pos] |= CHSV(dothue, 200, 255);
+	matrixleds[pos2matrix(pos)] |= CHSV(dothue, 200, 255);
 	dothue += 32;
       }
-      return repeat;
     } else { 
 	matrix_reset_demo = 1;
 	return 0;
