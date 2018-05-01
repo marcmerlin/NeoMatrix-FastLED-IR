@@ -1499,39 +1499,45 @@ bool handle_IR(uint32_t delay_time) {
 
 
 	case IR_RGBZONE_RU:
-	    Serial.println("Got IR: Red UP");
 	    matrix_loop = 9999;
 	    matrix_state = 0;
+	    Serial.print("Got IR: Red UP switching to matrix state ");
+	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_RD:
-	    Serial.println("Got IR: Red DOWN");
 	    matrix_loop = 9999;
 	    matrix_state = 2;
+	    Serial.print("Got IR: Red DOWN switching to matrix state ");
+	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_GU:
-	    Serial.println("Got IR: Green UP");
-	    matrix_loop = 9999;
 	    matrix_state = 4;
+	    Serial.print("Got IR: Green UP switching to matrix state ");
+	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_GD:
-	    Serial.println("Got IR: Green DOWN");
 	    matrix_loop = 9999;
 	    matrix_state = 6;
+	    Serial.print("Got IR: Green DOWN switching to matrix state ");
+	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BU:
-	    Serial.println("Got IR: Blue UP");
 	    matrix_loop = 9999;
 	    matrix_state = 8;
+	    Serial.print("Got IR: Blue UP switching to matrix state ");
+	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BD:
 	    Serial.println("Got IR: Blue DOWN");
 	    matrix_loop = 9999;
 	    matrix_state = 10;
+	    Serial.print("Got IR: Blue DOWN switching to matrix state ");
+	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_DIY1:
