@@ -17,6 +17,7 @@
 
 // Compile WeMos D1 R2 & mini
 
+#include "config.h"
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
 #include <FastLED.h>
@@ -38,11 +39,15 @@
 //#include <Fonts/FreeMonoBold12pt7b.h>
 //#include <Fonts/FreeMonoBold18pt7b.h>
 //#include <Fonts/FreeMonoBold24pt7b.h>
+#ifndef NOFONTS
 #include "fonts.h"
+#endif
 
+#ifndef NOANIMGIF
 #include "anim_flower.h"
 #include "anim_nucleus.h"
 #include "anim_balls.h"
+#endif
 
 // Choose your prefered pixmap
 #include "smileytongue24.h"
@@ -55,8 +60,9 @@ uint8_t matrix_brightness = 32;
 
 #define mw 24
 #define mh 32
+#define NUMMATRIX (mw*mh)
 
-CRGB matrixleds[mw*mh];
+CRGB matrixleds[NUMMATRIX];
 
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
@@ -66,8 +72,9 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1,
 // How many ms used for each matrix update
 #define MX_UPD_TIME 10
 
-uint8_t matrix_state = 0;
+uint8_t matrix_state = 12;
 int16_t matrix_loop = -1;
+bool matrix_reset_demo = 1;
 
 
 //---------------------------------------------------------------------------- 
@@ -322,16 +329,25 @@ void font_test() {
 
 
 bool tfsf() {
-    static uint16_t state = 1;
-    static float spd = 1.0;
-    static int8_t startfade = -1;
+    static uint16_t state;
+    static float spd;
+    static int8_t startfade;
     float spdincr = 0.6;
     uint16_t duration = 100;
     uint8_t resetspd = 5;
     uint8_t l = 0;
 
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 1;
+	spd = 1.0;
+	startfade = -1;
+    }
+
     matrix->setRotation(0);
     matrix->setTextSize(2);
+#ifndef NOFONTS
     matrix->setFont( &Century_Schoolbook_L_Bold[9] );
 
 
@@ -370,6 +386,7 @@ bool tfsf() {
 	startfade = l;
     }
     l++;
+#endif
 
 #if 0
     if (startfade < l && (state > (l*duration)/spd))  {
@@ -382,7 +399,7 @@ bool tfsf() {
 #endif
 
     if (startfade > -1)  {
-	for (uint16_t i = 0; i < mw*mh; i++) matrixleds[i].nscale8(248-spd*2);
+	for (uint16_t i = 0; i < NUMMATRIX; i++) matrixleds[i].nscale8(248-spd*2);
     }
     l++;
 
@@ -391,7 +408,7 @@ bool tfsf() {
 	startfade = -1;
 	spd += spdincr;
 	if (spd > resetspd) {
-	    spd = 1.0;
+	    matrix_reset_demo = 1;
 	    return 0;
 	}
     }
@@ -402,14 +419,24 @@ bool tfsf() {
 
 // type 0 = up, type 1 = up and down
 bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
-    static uint16_t state = 1;
-    static uint16_t direction = 1;
-    static uint16_t size = 3;
-    static uint8_t l = 0;
-    static uint16_t delayframe = 1;
+    static uint16_t state;
+    static uint16_t direction;
+    static uint16_t size;
+    static uint8_t l;
+    static uint16_t delayframe;
     char letters[] = { 'T', 'F', 'S', 'F' };
     bool done = 0;
     uint8_t repeat = 6;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 1;
+	direction = 1;
+	size = 3;
+	l = 0;
+	delayframe = 1;
+    }
 
     matrix->setTextSize(1);
 
@@ -419,7 +446,8 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
     }
-    delayframe = speed / 10;
+    delayframe = speed / 20;
+#ifndef NOFONTS
     if (direction == 1) {
 	int8_t offset = 0; // adjust some letters left or right as needed
 	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
@@ -448,6 +476,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->print(letters[l]);
 	if (size>3) size--; else { done = 1; direction = 1; delayframe = speed; };
     }
+#endif
 
     matrix_show();
     //Serial.println("done?");
@@ -461,18 +490,27 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     if (zoom_type == 1 && direction == 2) return repeat;
 
     //Serial.println("Done with font animation");
+    matrix_reset_demo = 1;
     return 0;
 }
 
 bool esrr() {
-    static uint16_t state = 1;
-    static float spd = 1.0;
+    static uint16_t state;
+    static float spd;
     float spdincr = 0.6;
     uint16_t duration = 100;
     uint16_t overlap = 50;
     uint8_t displayall = 18;
     uint8_t resetspd = 24;
     uint8_t l = 0;
+
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 1;
+	spd = 1.0;
+    }
 
     matrix->setFont(&TomThumb);
     matrix->setRotation(0);
@@ -513,7 +551,7 @@ bool esrr() {
 	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
-	    spd = 1.0;
+	    matrix_reset_demo = 1;
 	    return 0;
 	}
     }
@@ -523,6 +561,7 @@ bool esrr() {
 }
 
 // This is too jarring on the eyes at night
+#if 0
 bool esrr_flashin() {
     #define esrflashperiod 30
     static uint16_t state = 0;
@@ -577,15 +616,26 @@ bool esrr_flashin() {
     }
     return 0;
 }
+#endif
 
 bool esrr_fade() {
-    static uint16_t state = 0;
-    static uint8_t wheel = 0;
-    static uint8_t sp = 0;
-    static float spd = 1.0;
+    static uint16_t state;
+    static uint8_t wheel;
+    static uint8_t sp;
+    static float spd;
     float spdincr = 0.5;
     uint8_t resetspd = 5;
     uint16_t txtcolor;
+
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 0;
+	wheel = 0;
+	sp = 0;
+	spd = 1.0;
+    }
 
     state++;
 
@@ -620,10 +670,10 @@ bool esrr_fade() {
 
      
     if (state > 40/spd && state < 100/spd)  {
-	//fadeToBlackBy( matrixleds, mw*mh, 20*spd);
+	//fadeToBlackBy( matrixleds, NUMMATRIX, 20*spd);
 	// For reasons I don't understand, fadetoblack causes display corruption in this case
 	// while looping nscale (ideally mostly the same thing), works.
-	for (uint16_t i = 0; i < mw*mh; i++) matrixleds[i].nscale8(242-spd*4);
+	for (uint16_t i = 0; i < NUMMATRIX; i++) matrixleds[i].nscale8(242-spd*4);
     }
 
     if (state > 100/spd) {
@@ -632,7 +682,7 @@ bool esrr_fade() {
 	//Serial.println(spd);
 	//Serial.println(state);
 	if (spd > resetspd) {
-	    spd = 1.0;
+	    matrix_reset_demo = 1;
 	    return 0;
 	}
     }
@@ -643,10 +693,18 @@ bool esrr_fade() {
 
 bool squares(bool reverse) {
 #define sqdelay 2
-    static uint16_t state = 0;
-    static uint8_t wheel = 0;
+    static uint16_t state;
+    static uint8_t wheel;
     uint8_t repeat = 3;
     static uint16_t delayframe = sqdelay;
+
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 0;
+	wheel = 0;
+    }
 
     uint8_t x = mw/2-1;
     uint8_t y = mh/2-1;
@@ -677,7 +735,7 @@ bool squares(bool reverse) {
     // Serial.print("state ");
     // Serial.println(state);
     if (state > 400) {
-	state = 0;
+	matrix_reset_demo = 1;
 	return 0;
     }
     matrix_show();
@@ -686,10 +744,10 @@ bool squares(bool reverse) {
 
 
 bool webwc() {
-    static uint16_t state = 1;
-    static float spd = 1.0;
-    static bool didclear = 0;
-    static bool firstpass = 0;
+    static uint16_t state;
+    static float spd;
+    static bool didclear;
+    static bool firstpass;
     float spdincr = 0.6;
     uint16_t duration = 100;
     uint16_t overlap = 50;
@@ -697,6 +755,15 @@ bool webwc() {
     uint8_t resetspd = 24;
     uint8_t l = 0;
     uint16_t txtcolor;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 1;
+	spd = 1.0;
+	didclear = 0;
+	firstpass = 0;
+    }
 
     matrix->setFont(&TomThumb);
     matrix->setRotation(0);
@@ -751,22 +818,19 @@ bool webwc() {
 	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
-	    spd = 1.0;
-	    didclear = 0;
-	    firstpass = 0;
+	    matrix_reset_demo = 1;
 	    return 0;
 	}
     }
 
-    if (spd < displayall) fadeToBlackBy( matrixleds, mw*mh, 20*map(spd, 1, 24, 1, 4));
+    if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
 
     matrix_show();
     return 2;
 }
 
 
-
-
+#if 0
 void display_scrollText() {
     uint8_t size = max(int(mw/8), 1);
     matrix_clear();
@@ -803,23 +867,37 @@ void display_scrollText() {
     matrix->setCursor(0,0);
     matrix_show();
 }
+#endif
 
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
 bool panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
-    static uint16_t count = 0;
+    static uint16_t state;
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
-    static int16_t xf = max(0, (mw-bitmapSize)/2) << 4;
-    static int16_t yf = max(0, (mh-bitmapSize)/2) << 4;
+    static int16_t xf;
+    static int16_t yf;
     // scroll speed in 1/16th
-    static int16_t xfc = 6;
-    static int16_t yfc = 3;
+    static int16_t xfc;
+    static int16_t yfc;
     // scroll down and right by moving upper left corner off screen 
     // more up and left (which means negative numbers)
-    static int16_t xfdir = -1;
-    static int16_t yfdir = -1;
+    static int16_t xfdir;
+    static int16_t yfdir;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 0;
+	xf = max(0, (mw-bitmapSize)/2) << 4;
+	yf = max(0, (mh-bitmapSize)/2) << 4;
+	xfc = 6;
+	yfc = 3;
+	xfdir = -1;
+	yfdir = -1;
+    }
+
 
     bool updDir = false;
 
@@ -865,8 +943,8 @@ bool panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 	xfc = constrain(xfc + random(-1, 2), 3, 16);
 	yfc = constrain(xfc + random(-1, 2), 3, 16);
     }
-    if (count++ == 600) { 
-	count = 0;
+    if (state++ == 600) { 
+	matrix_reset_demo = 1;
 	return 0; 
     }
     return 3;
@@ -891,6 +969,7 @@ bool AnimFlower() {
 //    Serial.print(" frame ");
 //    Serial.println(frame);
 
+#ifndef NOANIMGIF
     for (uint8_t y = 0; y < 32; y++) {
 	for (uint8_t x = 0; x < 32; x++) {
 	    uint32_t loc = y*32 + x;
@@ -909,6 +988,7 @@ bool AnimFlower() {
 	    return 0;
 	}
     }
+#endif
     return repeat;
 }
 
@@ -931,6 +1011,7 @@ bool AnimNucleus() {
 //    Serial.print(" frame ");
 //    Serial.println(frame);
 
+#ifndef NOANIMGIF
     for (uint8_t y = 0; y < 32; y++) {
 	for (uint8_t x = 0; x < 32; x++) {
 	    uint32_t loc = y*32 + x;
@@ -949,6 +1030,7 @@ bool AnimNucleus() {
 	    return 0;
 	}
     }
+#endif
     return repeat;
 }
 
@@ -971,6 +1053,7 @@ bool AnimBalls() {
 //    Serial.print(" frame ");
 //    Serial.println(frame);
 
+#ifndef NOANIMGIF
     for (uint8_t y = 0; y < 32; y++) {
 	for (uint8_t x = 0; x < 32; x++) {
 	    uint32_t loc = y*32 + x;
@@ -989,10 +1072,68 @@ bool AnimBalls() {
 	    return 0;
 	}
     }
+#endif
     return repeat;
 }
 
-#define LAST_MATRIX 11
+bool demoreel100() {
+#define demoreeldelay 2
+    static uint16_t state;
+    static uint8_t gHue = 0; 
+    uint8_t repeat = 2;
+    static uint16_t delayframe = demoreeldelay;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	uint16_t state = 0;
+    }
+
+    state++;
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	matrix_show(); // make sure we still run at the same speed.
+	return repeat;
+    }
+    delayframe = demoreeldelay;
+    gHue++;
+
+    if (state < 1000)
+    {
+      // random colored speckles that blink in and fade smoothly
+      fadeToBlackBy( matrixleds, NUMMATRIX, 10);
+      int pos = random16(NUMMATRIX);
+      matrixleds[pos] += CHSV( gHue + random8(64), 200, 255);
+    }
+    else if (state < 2000)
+    {
+      // a colored dot sweeping back and forth, with fading trails
+      fadeToBlackBy( matrixleds, NUMMATRIX, 20);
+      int pos = beatsin16( 13, 0, NUMMATRIX-1 );
+      matrixleds[pos] += CHSV( gHue, 255, 192);
+    }
+    else if (state < 3000)
+    {
+      // eight colored dots, weaving in and out of sync with each other
+      fadeToBlackBy( matrixleds, NUMMATRIX, 20);
+      byte dothue = 0;
+      for( int i = 0; i < 8; i++) {
+	matrixleds[beatsin16( i+7, 0, NUMMATRIX-1 )] |= CHSV(dothue, 200, 255);
+	dothue += 32;
+      }
+      return repeat;
+    } else { 
+	matrix_reset_demo = 1;
+	return 0;
+    }
+
+    matrix_show();
+    return repeat;
+}
+
+#define LAST_MATRIX 12
 void matrix_next() {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1075,13 +1216,20 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case LAST_MATRIX: 
+	case 11: 
 	    ret = AnimBalls();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
+	case LAST_MATRIX: 
+	    ret = demoreel100();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
     } 
+    matrix_reset_demo = 1;
     Serial.print("Done with demo ");
     Serial.print(matrix_state);
     Serial.print(" loop ");
@@ -1832,11 +1980,11 @@ void setup() {
 
     // Init Matrix
     // Serialized, 768 pixels takes 26 seconds for 1000 updates or 26ms per refresh
-    // FastLED.addLeds<NEOPIXEL,MATRIXPIN>(matrixleds, mw*mh).setCorrection(TypicalLEDStrip);
+    // FastLED.addLeds<NEOPIXEL,MATRIXPIN>(matrixleds, NUMMATRIX).setCorrection(TypicalLEDStrip);
     // https://github.com/FastLED/FastLED/wiki/Parallel-Output
     // WS2811_PORTA - pins 12, 13, 14 and 15 or pins 6,7,5 and 8 on the NodeMCU
     // This is much faster 1000 updates in 10sec
-    FastLED.addLeds<WS2811_PORTA,3>(matrixleds, mw*mh/3).setCorrection(TypicalLEDStrip);
+    FastLED.addLeds<WS2811_PORTA,3>(matrixleds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
     Serial.print("Matrix Size: ");
     Serial.print(mw);
     Serial.print(" ");

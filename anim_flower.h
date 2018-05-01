@@ -1,3 +1,7 @@
+#include "config.h"
+
+#ifndef NOANIMGIF
+
 #define flowerRedFrame0 {\
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,74,138,138,112,21,0,0,0,0,0,0,0,0,0,0,0,0,0,\
 0,0,0,0,0,0,0,0,0,0,0,8,144,228,247,228,228,238,238,189,74,0,0,0,0,0,0,0,0,0,0,0,\
@@ -3070,3 +3074,4 @@ flowerGreenFrame0, flowerGreenFrame1, flowerGreenFrame2, flowerGreenFrame3, flow
 const uint8_t flowerBlueFrames[30][32*32] PROGMEM   = {
 flowerBlueFrame0, flowerBlueFrame1, flowerBlueFrame2, flowerBlueFrame3, flowerBlueFrame4, flowerBlueFrame5, flowerBlueFrame6, flowerBlueFrame7, flowerBlueFrame8, flowerBlueFrame9, flowerBlueFrame10, flowerBlueFrame11, flowerBlueFrame12, flowerBlueFrame13, flowerBlueFrame14, flowerBlueFrame15, flowerBlueFrame16, flowerBlueFrame17, flowerBlueFrame18, flowerBlueFrame19, flowerBlueFrame20, flowerBlueFrame21, flowerBlueFrame22, flowerBlueFrame23, flowerBlueFrame24, flowerBlueFrame25, flowerBlueFrame26, flowerBlueFrame27, flowerBlueFrame28, flowerBlueFrame29, };
 
+#endif

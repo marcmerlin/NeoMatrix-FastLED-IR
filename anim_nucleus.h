@@ -1,3 +1,7 @@
+#include "config.h"
+
+#ifndef NOANIMGIF
+
 #define nucleusRedFrame0 {\
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,115,141,70,40,0,0,0,0,0,0,0,0,0,0,0,0,0,\
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,38,176,238,141,38,1,0,0,0,0,0,0,0,0,0,0,0,\
@@ -4627,3 +4631,4 @@ nucleusGreenFrame0, nucleusGreenFrame1, nucleusGreenFrame2, nucleusGreenFrame3, 
 
 const uint8_t nucleusBlueFrames[44][32*32]  PROGMEM = {
 nucleusBlueFrame0, nucleusBlueFrame1, nucleusBlueFrame2, nucleusBlueFrame3, nucleusBlueFrame4, nucleusBlueFrame5, nucleusBlueFrame6, nucleusBlueFrame7, nucleusBlueFrame8, nucleusBlueFrame9, nucleusBlueFrame10, nucleusBlueFrame11, nucleusBlueFrame12, nucleusBlueFrame13, nucleusBlueFrame14, nucleusBlueFrame15, nucleusBlueFrame16, nucleusBlueFrame17, nucleusBlueFrame18, nucleusBlueFrame19, nucleusBlueFrame20, nucleusBlueFrame21, nucleusBlueFrame22, nucleusBlueFrame23, nucleusBlueFrame24, nucleusBlueFrame25, nucleusBlueFrame26, nucleusBlueFrame27, nucleusBlueFrame28, nucleusBlueFrame29, nucleusBlueFrame30, nucleusBlueFrame31, nucleusBlueFrame32, nucleusBlueFrame33, nucleusBlueFrame34, nucleusBlueFrame35, nucleusBlueFrame36, nucleusBlueFrame37, nucleusBlueFrame38, nucleusBlueFrame39, nucleusBlueFrame40, nucleusBlueFrame41, nucleusBlueFrame42, nucleusBlueFrame43, };
+#endif

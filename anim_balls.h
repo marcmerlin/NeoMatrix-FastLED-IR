@@ -1,3 +1,7 @@
+#include "config.h"
+
+#ifndef NOANIMGIF
+
 #define ballsRedFrame0 {\
 1,1,1,1,1,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,\
 1,1,1,1,1,2,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,\
@@ -3996,3 +4000,4 @@ ballsGreenFrame0, ballsGreenFrame1, ballsGreenFrame2, ballsGreenFrame3, ballsGre
 
 const uint8_t ballsBlueFrames[38][32*32]  PROGMEM = {
 ballsBlueFrame0, ballsBlueFrame1, ballsBlueFrame2, ballsBlueFrame3, ballsBlueFrame4, ballsBlueFrame5, ballsBlueFrame6, ballsBlueFrame7, ballsBlueFrame8, ballsBlueFrame9, ballsBlueFrame10, ballsBlueFrame11, ballsBlueFrame12, ballsBlueFrame13, ballsBlueFrame14, ballsBlueFrame15, ballsBlueFrame16, ballsBlueFrame17, ballsBlueFrame18, ballsBlueFrame19, ballsBlueFrame20, ballsBlueFrame21, ballsBlueFrame22, ballsBlueFrame23, ballsBlueFrame24, ballsBlueFrame25, ballsBlueFrame26, ballsBlueFrame27, ballsBlueFrame28, ballsBlueFrame29, ballsBlueFrame30, ballsBlueFrame31, ballsBlueFrame32, ballsBlueFrame33, ballsBlueFrame34, ballsBlueFrame35, ballsBlueFrame36, ballsBlueFrame37,  };
+#endif

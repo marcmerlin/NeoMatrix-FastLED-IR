@@ -1,5 +1,6 @@
 // http://oleddisplay.squix.ch/#/home
 
+#ifndef NOFONTS
 const uint8_t Century_Schoolbook_L_Bold_6Bitmaps[] PROGMEM = {
 
 	// Bitmap Data:
@@ -3173,3 +3174,4 @@ const GFXfont Century_Schoolbook_L_Bold_36 PROGMEM = {
 (uint8_t  *)Century_Schoolbook_L_Bold_36Bitmaps,(GFXglyph *)Century_Schoolbook_L_Bold_36Glyphs,0x20, 0x7E, 51};
 
 const GFXfont Century_Schoolbook_L_Bold[] = { Century_Schoolbook_L_Bold_6 , Century_Schoolbook_L_Bold_6 , Century_Schoolbook_L_Bold_6 , Century_Schoolbook_L_Bold_6 , Century_Schoolbook_L_Bold_8 , Century_Schoolbook_L_Bold_10, Century_Schoolbook_L_Bold_12, Century_Schoolbook_L_Bold_14, Century_Schoolbook_L_Bold_16, Century_Schoolbook_L_Bold_18, Century_Schoolbook_L_Bold_20, Century_Schoolbook_L_Bold_22, Century_Schoolbook_L_Bold_24, Century_Schoolbook_L_Bold_26, Century_Schoolbook_L_Bold_28, Century_Schoolbook_L_Bold_30, Century_Schoolbook_L_Bold_32, Century_Schoolbook_L_Bold_34, Century_Schoolbook_L_Bold_36 };
+#endif
