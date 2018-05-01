@@ -181,13 +181,13 @@ void matrix_show() {
 // updates. and break timing of pixels, causing random corruption on interval
 // https://github.com/esp8266/Arduino/issues/34
 // Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
-// in parallel mode, does not affect output. That said, reducing their amount
+// in parallel mode, should not affect output. That said, reducing their amount
 // is still good.
-    ESP.wdtDisable();
+    //ESP.wdtDisable();
 #endif
     FastLED[1].showLeds(matrix_brightness);
 #ifdef ESP8266
-    ESP.wdtEnable(1000);
+    //ESP.wdtEnable(1000);
 #endif
     //matrix->show();
 }
