@@ -423,6 +423,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t direction;
     static uint16_t size;
     static uint8_t l;
+    static bool dont_exit;
     static uint16_t delayframe;
     char letters[] = { 'T', 'F', 'S', 'F' };
     bool done = 0;
@@ -430,12 +431,13 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
 	state = 1;
 	direction = 1;
 	size = 3;
 	l = 0;
-	delayframe = 1;
+	if (matrix_loop == -1) { dont_exit = 1; delayframe = 1; };
+	Serial.print(matrix_loop);
+	Serial.println(dont_exit);
     }
 
     matrix->setTextSize(1);
@@ -446,7 +448,9 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
     }
-    delayframe = speed / 20;
+    delayframe = min(speed / 20, 1);
+    // before exiting, we run the full delay to show the last frame long enough
+    if (dont_exit == 0) { dont_exit = 1; return 0; }
 #ifndef NOFONTS
     if (direction == 1) {
 	int8_t offset = 0; // adjust some letters left or right as needed
@@ -474,7 +478,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
 	matrix->print(letters[l]);
-	if (size>3) size--; else { done = 1; direction = 1; delayframe = speed; };
+	if (size>3) size--; else { done = 1; direction = 1; delayframe = speed * 2; };
     }
 #endif
 
@@ -491,7 +495,10 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 
     //Serial.println("Done with font animation");
     matrix_reset_demo = 1;
-    return 0;
+    dont_exit =  0;
+    // After showing the last letter, pause longer unless it's a zoom in zoom out.
+    if (zoom_type == 0) delayframe *= 2;
+    return repeat;
 }
 
 bool esrr() {
@@ -1076,6 +1083,11 @@ bool AnimBalls() {
     return repeat;
 }
 
+uint16_t pos2matrix(uint16_t pos) {
+    uint16_t newpos;
+    uint16_t panel = (pos % 24);
+}
+
 bool demoreel100() {
 #define demoreeldelay 2
     static uint16_t state;
@@ -1120,7 +1132,8 @@ bool demoreel100() {
       fadeToBlackBy( matrixleds, NUMMATRIX, 20);
       byte dothue = 0;
       for( int i = 0; i < 8; i++) {
-	matrixleds[beatsin16( i+7, 0, NUMMATRIX-1 )] |= CHSV(dothue, 200, 255);
+	  int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
+	matrixleds[pos] |= CHSV(dothue, 200, 255);
 	dothue += 32;
       }
       return repeat;
@@ -1137,6 +1150,7 @@ bool demoreel100() {
 void matrix_next() {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
+    matrix_reset_demo = 1;
     matrix_state++;
     if (matrix_state == LAST_MATRIX+1) { 
 	matrix_state = 0;
@@ -1211,7 +1225,7 @@ void matrix_update() {
 	    break;
 
 	case 10: 
-	    ret = tfsf_zoom(1, 30);
+	    ret = tfsf_zoom(1, 40);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1328,7 +1342,8 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_NEXT:
 	    matrix_next();
-	    Serial.println("Got IR: Next");
+	    Serial.print("Got IR: Next to matrix state ");
+	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_QUICK:
