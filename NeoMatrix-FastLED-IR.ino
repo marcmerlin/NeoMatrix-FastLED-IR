@@ -58,11 +58,8 @@
 // a USB power supply (500mA) for 12x12 pixels.
 uint8_t matrix_brightness = 32;
 
-#define mw 24
-#define mh 32
-#define NUMMATRIX (mw*mh)
-
-CRGB matrixleds[NUMMATRIX];
+// Add an extra safety pixel to deal with suboptimal code in Fireworks2.
+CRGB matrixleds[NUMMATRIX+1];
 
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
@@ -183,6 +180,8 @@ void matrix_show() {
 // Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
 // in parallel mode, should not affect output. That said, reducing their amount
 // is still good.
+// Well, that sure didn't work, it actually made things worse in a demo during
+// fade, so I'm turning it off again.
     //ESP.wdtDisable();
 #endif
     FastLED[1].showLeds(matrix_brightness);
@@ -1081,6 +1080,7 @@ bool AnimBalls() {
     return repeat;
 }
 
+#if 0
 uint16_t pos2matrix(uint16_t pos) {
     #define panelwidth 8
     #define panelnum 3
@@ -1098,6 +1098,12 @@ uint16_t pos2matrix(uint16_t pos) {
     uint16_t lineoffset = (pos % ledwidth) - panel*panelwidth;
 
     return paneloffset + line*panelwidth + lineoffset;
+}
+#endif
+
+// Make use of my new XY API in Neomatrix
+uint16_t pos2matrix(uint16_t pos) {
+    return matrix->XY(pos % mw, pos / mw);
 }
 
 bool demoreel100() {
@@ -1158,7 +1164,16 @@ bool demoreel100() {
     return repeat;
 }
 
-#define LAST_MATRIX 12
+bool call_fireworks() {
+    static uint16_t state;
+
+    fireworks();
+    matrix_show();
+    if (state++ > 3000) return 0;
+    return 1;
+}
+
+#define LAST_MATRIX 13
 void matrix_next() {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1169,8 +1184,6 @@ void matrix_next() {
     }
 }
 
-// FIXME: when force switching apps, it does not reset their vars
-// hitting next 
 void matrix_update() {
     uint8_t ret;
 
@@ -1248,8 +1261,14 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case LAST_MATRIX: 
+	case 12: 
 	    ret = demoreel100();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case LAST_MATRIX: 
+	    ret = call_fireworks();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1653,7 +1672,7 @@ void cylon(bool trail, uint8_t wait) {
     }
 }
 
-void doubleConverge(bool trail, uint8_t wait, bool rev=false) {
+void doubleConverge(bool trail, uint8_t wait, bool rev) {
     static uint8_t hue;
     for(uint16_t i = 0; i < NUM_LEDS/2 + 4; i++) {
 
@@ -1925,12 +1944,12 @@ void loop() {
 	break;
     case f_doubleConverge:
 	colorDemo = false;
-	doubleConverge(false, speed);
+	doubleConverge(false, speed, false);
 	break;
     case f_doubleConvergeTrail:
 	colorDemo = false;
-	doubleConverge(false, speed);
-	doubleConverge(true, speed);
+	doubleConverge(false, speed, false);
+	doubleConverge(true, speed, false);
 	break;
 
     // Flash color wheel
@@ -2017,6 +2036,7 @@ void setup() {
     // https://github.com/FastLED/FastLED/wiki/Parallel-Output
     // WS2811_PORTA - pins 12, 13, 14 and 15 or pins 6,7,5 and 8 on the NodeMCU
     // This is much faster 1000 updates in 10sec
+    //FastLED.addLeds<NEOPIXEL,PIN>(leds, NUMMATRIX); 
     FastLED.addLeds<WS2811_PORTA,3>(matrixleds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
     Serial.print("Matrix Size: ");
     Serial.print(mw);

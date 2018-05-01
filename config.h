@@ -1,3 +1,7 @@
+#define mw 24
+#define mh 32
+#define NUMMATRIX (mw*mh)
+
 // Fonts + Gifs
 // Sketch uses 676884 bytes (64%) of program storage space. Maximum is 1044464 bytes.
 // Global variables use 33124 bytes (40%) of dynamic memory, leaving 48796 bytes for local variables. Maximum is 81920 bytes.
