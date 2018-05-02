@@ -1169,8 +1169,9 @@ bool call_fireworks() {
 
     fireworks();
     matrix_show();
-    if (state++ > 3000) return 0;
-    return 1;
+    if (state++ < 3000) return 1;
+    state = 0;
+    return 0;
 }
 
 #define LAST_MATRIX 13
