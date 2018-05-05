@@ -846,7 +846,7 @@ uint8_t scrollText(char str[], uint8_t len) {
     int8_t fontsize = 14; // real height is twice that.
     int8_t fontwidth = 18;
     uint8_t size = max(int(mw/8), 1);
-#define stdelay 2
+#define stdelay 1
     static uint16_t delayframe = stdelay;
 
     if (matrix_reset_demo == 1) {
@@ -869,7 +869,7 @@ uint8_t scrollText(char str[], uint8_t len) {
     delayframe = stdelay;
 
     matrix_clear();
-    matrix->setCursor(x, 22);
+    matrix->setCursor(x, 24);
     for (uint8_t c=0; c<len; c++) {
 	uint16_t txtcolor = Color24toColor16(Wheel(map(c, 0, len, 0, 512)));
 	matrix->setTextColor(txtcolor); 
