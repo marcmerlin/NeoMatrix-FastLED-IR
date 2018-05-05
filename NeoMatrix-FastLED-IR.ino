@@ -329,7 +329,7 @@ void font_test() {
 }
 
 
-bool tfsf() {
+uint8_t tfsf() {
     static uint16_t state;
     static float spd;
     static int8_t startfade;
@@ -419,7 +419,7 @@ bool tfsf() {
 }
 
 // type 0 = up, type 1 = up and down
-bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
+uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t state;
     static uint16_t direction;
     static uint16_t size;
@@ -453,11 +453,12 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 #ifndef NOFONTS
     if (direction == 1) {
 	int8_t offset = 0; // adjust some letters left or right as needed
-	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
 	if (letters[l] == 'T') offset = -2 * size/15;
 	if (letters[l] == '8') offset = 2 * size/15;
 
+	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
 	matrix->setTextColor(txtcolor); 
+
 	matrix_clear();
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
@@ -500,7 +501,7 @@ bool tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     return repeat;
 }
 
-bool esrr() {
+uint8_t esrr() {
     static uint16_t state;
     static float spd;
     float spdincr = 0.6;
@@ -568,7 +569,7 @@ bool esrr() {
 
 // This is too jarring on the eyes at night
 #if 0
-bool esrr_flashin() {
+uint8_t esrr_flashin() {
     #define esrflashperiod 30
     static uint16_t state = 0;
     static uint16_t period = esrflashperiod;
@@ -624,7 +625,7 @@ bool esrr_flashin() {
 }
 #endif
 
-bool esrr_fade() {
+uint8_t esrr_fade() {
     static uint16_t state;
     static uint8_t wheel;
     static uint8_t sp;
@@ -697,7 +698,7 @@ bool esrr_fade() {
 }
 
 
-bool squares(bool reverse) {
+uint8_t squares(bool reverse) {
 #define sqdelay 2
     static uint16_t state;
     static uint8_t wheel;
@@ -749,7 +750,7 @@ bool squares(bool reverse) {
 }
 
 
-bool webwc() {
+uint8_t webwc() {
     static uint16_t state;
     static float spd;
     static bool didclear;
@@ -836,49 +837,63 @@ bool webwc() {
 }
 
 
-#if 0
-void display_scrollText() {
+uint8_t scrollText(char str[], uint8_t len) {
+    static uint8_t wheel;
+    static int16_t x;
+
+    uint8_t repeat = 2;
+    char chr[] = " ";
+    int8_t fontsize = 14; // real height is twice that.
+    int8_t fontwidth = 18;
     uint8_t size = max(int(mw/8), 1);
-    matrix_clear();
-    matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-    matrix->setTextSize(1);
-    matrix->setRotation(0);
-    for (int8_t x=7; x>=-42; x--) {
-	matrix_clear();
-	matrix->setCursor(x,0);
-	matrix->setTextColor(matrix->Color(0, 255, 0));
-	matrix->print("Hello");
-	if (mh>11) {
-	    matrix->setCursor(-20-x,mh-7);
-	    matrix->setTextColor(matrix->Color(255, 255, 0));
-	    matrix->print("World");
-	}
-	matrix_show();
-        delay(50);
+#define stdelay 2
+    static uint16_t delayframe = stdelay;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	wheel = 0;
+	x = 7;
+	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
+	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+	matrix->setTextSize(1);
+	matrix->setRotation(0);
     }
 
-    matrix->setRotation(3);
-    matrix->setTextSize(size);
-    matrix->setTextColor(matrix->Color(0, 0, 255));
-    for (int16_t x=8*size; x>=-6*8*size; x--) {
-	matrix_clear();
-	matrix->setCursor(x,mw/2-size*4);
-	matrix->print("Rotate");
-	matrix_show();
-	// note that on a big array the refresh rate from show() will be slow enough that
-	// the delay become irrelevant. This is already true on a 32x32 array.
-        delay(50/size);
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	matrix_show(); // make sure we still run at the same speed.
+	return repeat;
     }
-    matrix->setRotation(0);
-    matrix->setCursor(0,0);
+    delayframe = stdelay;
+
+    matrix_clear();
+    matrix->setCursor(x, 22);
+    for (uint8_t c=0; c<len; c++) {
+	uint16_t txtcolor = Color24toColor16(Wheel(map(c, 0, len, 0, 512)));
+	matrix->setTextColor(txtcolor); 
+	//Serial.print(txtcolor, HEX);
+	//Serial.print(" >");
+	chr[0]=str[c];
+	//Serial.println(chr);
+	matrix->print(chr);
+    }
     matrix_show();
+    x--;
+
+    if (x < (-1 * (int16_t)len * fontwidth)) {
+	matrix_reset_demo = 1;
+	return 0;
+    }
+    matrix_show();
+    return repeat;
 }
-#endif
 
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
-bool panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
+uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     static uint16_t state;
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
@@ -956,7 +971,7 @@ bool panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     return 3;
 }
 
-bool AnimFlower() {
+uint8_t AnimFlower() {
 #define flowerloop 15
     static uint8_t loop = flowerloop;
     static uint16_t frame = 0;
@@ -998,7 +1013,7 @@ bool AnimFlower() {
     return repeat;
 }
 
-bool AnimNucleus() {
+uint8_t AnimNucleus() {
 #define nucleusloop 5
     static uint8_t loop = nucleusloop;
     static uint16_t frame = 0;
@@ -1040,7 +1055,7 @@ bool AnimNucleus() {
     return repeat;
 }
 
-bool AnimBalls() {
+uint8_t AnimBalls() {
 #define ballsloop 3
     static uint8_t loop = ballsloop;
     static uint16_t frame = 0;
@@ -1108,7 +1123,7 @@ uint16_t pos2matrix(uint16_t pos) {
     return matrix->XY(pos % mw, pos / mw);
 }
 
-bool demoreel100() {
+uint8_t demoreel100() {
     #define demoreeldelay 1
 
     static uint16_t state;
@@ -1166,7 +1181,7 @@ bool demoreel100() {
     return repeat;
 }
 
-bool call_fireworks() {
+uint8_t call_fireworks() {
     static uint16_t state;
 
     if (matrix_reset_demo == 1) {
@@ -1189,6 +1204,8 @@ void matrix_change(int matrix) {
     matrix_reset_demo = 1;
     if (matrix==-128) if (matrix_state-- == 0) matrix_state = LAST_MATRIX;
     if (matrix==+127) if (matrix_state++ == LAST_MATRIX) matrix_state = 0;
+    // Special one key press demos are shown once and next goes back to the normal loop
+    if (matrix_state > 90) matrix = 0;
     if (matrix >= 0 && matrix < 127) { matrix_state = matrix; matrix_loop = 9999; }
 }
 
@@ -1280,6 +1297,14 @@ void matrix_update() {
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
+
+	case 99: 
+	    char str[] = "Thank You :)";
+	    ret = scrollText(str, sizeof(str));
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
 
     } 
     matrix_reset_demo = 1;
@@ -1389,7 +1414,6 @@ bool handle_IR(uint32_t delay_time) {
 	    return 1;
 
 	case IR_RGBZONE_POWER:
-	    if (is_change()) { matrix_change(-128); return 1; }
 	    nextdemo = f_colorWipe;
 	    demo_color = 0x000000;
 	    speed = 1;
@@ -1398,6 +1422,7 @@ bool handle_IR(uint32_t delay_time) {
 	    return 1;
 
 	case IR_RGBZONE_QUICK:
+	    if (is_change()) { ; return 1; }
 	    change_speed(-10);
 	    Serial.println("Got IR: Quick");
 	    return 1;
@@ -1559,37 +1584,37 @@ bool handle_IR(uint32_t delay_time) {
 
 
 	case IR_RGBZONE_RU:
-	    if (is_change()) { matrix_change(0); return 1; }
+	    matrix_change(0);
 	    Serial.print("Got IR: Red UP switching to matrix state ");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_RD:
-	    if (is_change()) { matrix_change(2); return 1; }
+	    matrix_change(2);
 	    Serial.print("Got IR: Red DOWN switching to matrix state ");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_GU:
-	    if (is_change()) { matrix_change(4); return 1; }
+	    matrix_change(4);
 	    Serial.print("Got IR: Green UP switching to matrix state ");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_GD:
-	    if (is_change()) { matrix_change(6); return 1; }
+	    matrix_change(6);
 	    Serial.print("Got IR: Green DOWN switching to matrix state ");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BU:
-	    if (is_change()) { matrix_change(8); return 1; }
+	    matrix_change(8);
 	    Serial.print("Got IR: Blue UP switching to matrix state ");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BD:
-	    if (is_change()) { matrix_change(10); return 1; }
+	    matrix_change(10);
 	    Serial.print("Got IR: Blue DOWN switching to matrix state ");
 	    Serial.println(matrix_state);
 	    return 1;
@@ -1627,6 +1652,7 @@ bool handle_IR(uint32_t delay_time) {
 	    return 1;
 
 	case IR_RGBZONE_AUTO:
+	    matrix_change(99);
 	    nextdemo = f_bpm;
 	    Serial.println("Got IR: AUTO/bpm");
 	    return 1;
