@@ -436,7 +436,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	direction = 1;
 	size = 3;
 	l = 0;
-	if (matrix_loop == -1) { dont_exit = 1; delayframe = 1; };
+	if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; };
     }
 
     matrix->setTextSize(1);
@@ -447,10 +447,9 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
     }
-    delayframe = max(speed / 20, 1);
+    delayframe = max(speed / 10 , 1);
     // before exiting, we run the full delay to show the last frame long enough
     if (dont_exit == 0) { dont_exit = 1; return 0; }
-#ifndef NOFONTS
     if (direction == 1) {
 	int8_t offset = 0; // adjust some letters left or right as needed
 	if (letters[l] == 'T') offset = -2 * size/15;
@@ -460,7 +459,9 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->setTextColor(txtcolor); 
 
 	matrix_clear();
+#ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
+#endif
 	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
 	matrix->print(letters[l]);
 	if (size<18) size++; 
@@ -475,12 +476,13 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 
 	matrix->setTextColor(txtcolor); 
 	matrix_clear();
+#ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
+#endif
 	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
 	matrix->print(letters[l]);
 	if (size>3) size--; else { done = 1; direction = 1; delayframe = speed * 2; };
     }
-#endif
 
     matrix_show();
     //Serial.println("done?");
@@ -841,10 +843,10 @@ uint8_t scrollText(char str[], uint8_t len) {
     static uint8_t wheel;
     static int16_t x;
 
-    uint8_t repeat = 2;
+    uint8_t repeat = 1;
     char chr[] = " ";
     int8_t fontsize = 14; // real height is twice that.
-    int8_t fontwidth = 18;
+    int8_t fontwidth = 16;
     uint8_t size = max(int(mw/8), 1);
 #define stdelay 1
     static uint16_t delayframe = stdelay;
@@ -853,7 +855,9 @@ uint8_t scrollText(char str[], uint8_t len) {
 	matrix_reset_demo = 0;
 	wheel = 0;
 	x = 7;
+#ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
+#endif
 	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
 	matrix->setTextSize(1);
 	matrix->setRotation(0);
@@ -861,8 +865,6 @@ uint8_t scrollText(char str[], uint8_t len) {
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
-	//Serial.print("delayed frame ");
-	//Serial.println(delayframe);
 	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
     }
@@ -880,6 +882,7 @@ uint8_t scrollText(char str[], uint8_t len) {
 	matrix->print(chr);
     }
     matrix_show();
+    //x-=2; // faster but maybe too much?
     x--;
 
     if (x < (-1 * (int16_t)len * fontwidth)) {
@@ -1123,7 +1126,7 @@ uint16_t pos2matrix(uint16_t pos) {
     return matrix->XY(pos % mw, pos / mw);
 }
 
-uint8_t demoreel100() {
+uint8_t demoreel100(uint8_t demo) {
     #define demoreeldelay 1
 
     static uint16_t state;
@@ -1150,28 +1153,28 @@ uint8_t demoreel100() {
 
     if (state < 2000)
     {
-      // random colored speckles that blink in and fade smoothly
-      fadeToBlackBy( matrixleds, NUMMATRIX, 10);
-      int pos = random16(NUMMATRIX);
-      matrixleds[pos] += CHSV( gHue + random8(64), 200, 255);
-    }
-    else if (state < 4000)
-    {
-      // a colored dot sweeping back and forth, with fading trails
-      fadeToBlackBy( matrixleds, NUMMATRIX, 20);
-      int pos = beatsin16( 13, 0, NUMMATRIX-1 );
-      matrixleds[pos2matrix(pos)] += CHSV( gHue, 255, 192);
-    }
-    else if (state < 6000)
-    {
-      // eight colored dots, weaving in and out of sync with each other
-      fadeToBlackBy( matrixleds, NUMMATRIX, 20);
-      byte dothue = 0;
-      for( int i = 0; i < 8; i++) {
-	  int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
-	matrixleds[pos2matrix(pos)] |= CHSV(dothue, 200, 255);
-	dothue += 32;
-      }
+	if (demo == 1) {
+	    // random colored speckles that blink in and fade smoothly
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 10);
+	    int pos = random16(NUMMATRIX);
+	    matrixleds[pos] += CHSV( gHue + random8(64), 200, 255);
+	}
+	if (demo == 2) {
+	    // a colored dot sweeping back and forth, with fading trails
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
+	    int pos = beatsin16( 13, 0, NUMMATRIX-1 );
+	    matrixleds[pos2matrix(pos)] += CHSV( gHue, 255, 192);
+	}
+	if (demo == 3) {
+	    // eight colored dots, weaving in and out of sync with each other
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
+	    byte dothue = 0;
+	    for( int i = 0; i < 8; i++) {
+		int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
+	      matrixleds[pos2matrix(pos)] |= CHSV(dothue, 200, 255);
+	      dothue += 32;
+	    }
+	}
     } else { 
 	matrix_reset_demo = 1;
 	return 0;
@@ -1180,6 +1183,63 @@ uint8_t demoreel100() {
     matrix_show();
     return repeat;
 }
+
+
+// Pride2015 by Mark Kriegsman: https://gist.github.com/kriegsman/964de772d64c502760e5
+// This function draws rainbows with an ever-changing, widely-varying set of parameters.
+uint8_t pride()
+{
+    static uint16_t sPseudotime = 0;
+    static uint16_t sLastMillis = 0;
+    static uint16_t sHue16 = 0;
+    static uint16_t state;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	state = 0;
+    }
+
+
+    uint8_t sat8 = beatsin88( 87, 220, 250);
+    uint8_t brightdepth = beatsin88( 341, 200, 250);
+    uint16_t brightnessthetainc16;
+    uint8_t msmultiplier = beatsin88(147, 23, 60);
+
+    brightnessthetainc16 = beatsin88( map(speed,1,255,150,475), (20 * 256), (40 * 256));
+
+    uint16_t hue16 = sHue16;//gHue * 256;
+    uint16_t hueinc16 = beatsin88(113, 1, 3000);
+
+    uint16_t ms = millis();
+    uint16_t deltams = ms - sLastMillis ;
+    sLastMillis  = ms;
+    sPseudotime += deltams * msmultiplier;
+    sHue16 += deltams * beatsin88( 400, 5, 9);
+    uint16_t brightnesstheta16 = sPseudotime;
+
+    for ( uint16_t i = 0 ; i < NUMMATRIX; i++) {
+	hue16 += hueinc16;
+	uint8_t hue8 = hue16 / 256;
+
+	brightnesstheta16  += brightnessthetainc16;
+	uint16_t b16 = sin16( brightnesstheta16  ) + 32768;
+
+	uint16_t bri16 = (uint32_t)((uint32_t)b16 * (uint32_t)b16) / 65536;
+	uint8_t bri8 = (uint32_t)(((uint32_t)bri16) * brightdepth) / 65536;
+	bri8 += (255 - brightdepth);
+
+	CRGB newcolor = CHSV( hue8, sat8, bri8);
+
+	nblend( matrixleds[matrix->XY(i/mh, i%mh)], newcolor, 64);
+    }
+    
+    matrix_show();
+    if (state++ < 1000) return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
+
 
 uint8_t call_fireworks() {
     static uint16_t state;
@@ -1197,16 +1257,24 @@ uint8_t call_fireworks() {
     return 0;
 }
 
-#define LAST_MATRIX 13
+#define LAST_MATRIX 16
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_reset_demo = 1;
     if (matrix==-128) if (matrix_state-- == 0) matrix_state = LAST_MATRIX;
     if (matrix==+127) if (matrix_state++ == LAST_MATRIX) matrix_state = 0;
+    // If existing matrix was already >90, any +- change brings it back to 0.
+    if (matrix_state > 90) matrix_state = 0;
+    if (matrix >= 0 && matrix < 127) matrix_state = matrix;
     // Special one key press demos are shown once and next goes back to the normal loop
-    if (matrix_state > 90) matrix = 0;
-    if (matrix >= 0 && matrix < 127) { matrix_state = matrix; matrix_loop = 9999; }
+    if (matrix >= 0 && matrix < 90) matrix_loop = 9999;
+    Serial.print("Got matrix_change ");
+    Serial.print(matrix);
+    Serial.print(", switching to matrix demo ");
+    Serial.print(matrix_state);
+    Serial.print(" loop ");
+    Serial.println(matrix_loop);
 }
 
 void matrix_update() {
@@ -1239,7 +1307,7 @@ void matrix_update() {
 	    break;
 
 	case 4: 
-	    ret = tfsf_zoom(0, 20);
+	    ret = tfsf_zoom(0, 30);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1275,7 +1343,7 @@ void matrix_update() {
 	    break;
 
 	case 10: 
-	    ret = tfsf_zoom(1, 60);
+	    ret = tfsf_zoom(1, 40);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1287,13 +1355,31 @@ void matrix_update() {
 	    break;
 
 	case 12: 
-	    ret = demoreel100();
+	    ret = demoreel100(1);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 13: 
+	    ret = call_fireworks();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 14: 
+	    ret = demoreel100(2);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 15: 
+	    ret = pride();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case LAST_MATRIX: 
-	    ret = call_fireworks();
+	    ret = demoreel100(3);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1314,8 +1400,6 @@ void matrix_update() {
     Serial.println(matrix_loop);
     if (matrix_loop-- > 0) return;
     matrix_change(127);
-    Serial.print("Switching to matrix demo ");
-    Serial.println(matrix_state);
 }
 
 // ---------------------------------------------------------------------------
@@ -1414,6 +1498,7 @@ bool handle_IR(uint32_t delay_time) {
 	    return 1;
 
 	case IR_RGBZONE_POWER:
+	    if (is_change()) { matrix_change(-128); return 1; }
 	    nextdemo = f_colorWipe;
 	    demo_color = 0x000000;
 	    speed = 1;

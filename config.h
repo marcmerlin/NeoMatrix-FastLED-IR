@@ -12,7 +12,7 @@
 // Sketch uses 332208 bytes (31%) of program storage space. Maximum is 1044464 bytes.
 // Global variables use 33112 bytes (40%) of dynamic memory, leaving 48808 bytes for local variables. Maximum is 81920 bytes.
 // Uploading 336352 bytes from /tmp/arduino_build_498793/NeoMatrix-FastLED-IR.ino.bin to flash at 0x00000000
-#define NOANIMGIF 1
+//#define NOANIMGIF 1
 
 
 // Disable fonts in many sizes
