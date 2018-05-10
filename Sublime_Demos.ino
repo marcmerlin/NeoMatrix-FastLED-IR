@@ -111,13 +111,13 @@ void theMatrix()
 void coloredRain()
 {
 	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
-	rain(60, 180, map8(intensity,2,60), 10, solidRainColor, true, false, false);
+	rain(60, 180, map8(intensity,2,60), 30, solidRainColor, true, false, false);
 }
 
 void stormyRain()
 {
 	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
-	rain(0, 90, map8(intensity,0,150)+60, 10, solidRainColor, true, true, true);
+	rain(0, 90, map8(intensity,0,100)+30, 30, solidRainColor, true, true, true);
 }
 
 void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLength, CRGB rainColor, bool splashes, bool clouds, bool storm)
@@ -133,12 +133,13 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 	CRGBPalette16 rain_p( CRGB::Black, rainColor );
 	CRGBPalette16 rainClouds_p( CRGB::Black, CRGB(15,24,24), CRGB(9,15,15), CRGB::Black );
 
-	fadeToBlackBy( leds, NUM_LEDS, 255-tailLength);
+	fadeToBlackBy( leds, NUMMATRIX, 255-tailLength);
 
 	// Loop for each column individually
 	for (int x = 0; x < MATRIX_WIDTH; x++) {
 		// Step 1.  Move each dot down one cell
 		for (int i = 0; i < MATRIX_HEIGHT; i++) {
+			//Serial.print("S1 "); Serial.print(x); Serial.print(" "); Serial.println(i);
 			if (tempMatrix[x][i] >= backgroundDepth) {	// Don't move empty cells
 				tempMatrix[x][i-1] = tempMatrix[x][i];
 				tempMatrix[x][i] = 0;
@@ -147,11 +148,13 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 
 		// Step 2.  Randomly spawn new dots at top
 		if (random(255) < spawnFreq) {
+			//Serial.print("S2 "); Serial.print(x); Serial.print(" "); Serial.println(x);
 			tempMatrix[x][MATRIX_HEIGHT-1] = random(backgroundDepth, maxBrightness);
 		}
 
 		// Step 3. Map from tempMatrix cells to LED colors
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
+			//Serial.print("S3 "); Serial.print(x); Serial.print(" "); Serial.println(y);
 			if (tempMatrix[x][y] >= backgroundDepth) {	// Don't write out empty cells
 				leds[XY(x,y)] = ColorFromPalette(rain_p, tempMatrix[x][y]);
 			}
@@ -181,10 +184,11 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 		if (storm) {
 			int lightning[MATRIX_WIDTH][MATRIX_HEIGHT];
 
-			if (random16() < 72) {		// Odds of a lightning bolt
+			if (random16() < 200) {		// Odds of a lightning bolt
 				lightning[scale8(random8(), MATRIX_WIDTH)][MATRIX_HEIGHT-1] = 255;	// Random starting location
 				for(int ly = MATRIX_HEIGHT-1; ly > 0; ly--) {
 					for (int lx = 0; lx < MATRIX_WIDTH; lx++) {
+			//Serial.print("LX "); Serial.print(lx); Serial.print(" "); Serial.println(ly);
 						if (lightning[lx][ly] == 255) {
 							lightning[lx][ly] = 0;
 							uint8_t dir = random8(4);

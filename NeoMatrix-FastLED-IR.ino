@@ -1256,6 +1256,7 @@ uint8_t call_fire() {
 uint8_t call_rain(uint8_t which) {
     #define raindelay 4
     static uint16_t state;
+    static uint16_t delayframe = raindelay;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1267,11 +1268,10 @@ uint8_t call_rain(uint8_t which) {
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
 	matrix_show(); // make sure we still run at the same speed.
-	return repeat;
+	return 1;
     }
     delayframe = raindelay;
 
-    matrix_clear();
     if (which == 1) theMatrix();
     if (which == 2) coloredRain();
     if (which == 3) stormyRain();
@@ -1281,7 +1281,47 @@ uint8_t call_rain(uint8_t which) {
     return 0;
 }
 
-#define LAST_MATRIX 20
+// Adapted from	LEDText/examples/TextExample3 by Aaron Liddiment
+uint8_t plasma() {
+    #define PLASMA_X_FACTOR  24
+    #define PLASMA_Y_FACTOR  24
+    static uint16_t PlasmaTime, PlasmaShift;
+    uint16_t OldPlasmaTime;
+
+    static uint16_t state;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	state = 0;
+    }
+
+    PlasmaShift = (random8(0, 5) * 32) + 64;
+    int16_t r, h;
+    int x, y;
+
+    for (x=0; x<MATRIX_WIDTH; x++)
+    {
+	for (y=0; y<MATRIX_HEIGHT; y++)
+	{
+	    r = sin16(PlasmaTime) / 256;
+	    h = sin16(x * r * PLASMA_X_FACTOR + PlasmaTime) + cos16(y * (-r) * PLASMA_Y_FACTOR + PlasmaTime) + sin16(y * x * (cos16(-PlasmaTime) / 256) / 2);
+	    // drawPixel does not accept CHSV, so we get a fastLED offset and write to it directly
+	    matrixleds[matrix->XY(x, y)] = CHSV((h / 256) + 128, 255, 255);
+	}
+    }
+
+    OldPlasmaTime = PlasmaTime;
+    PlasmaTime += PlasmaShift;
+    if (OldPlasmaTime > PlasmaTime) PlasmaShift = (random8(0, 5) * 32) + 64;
+
+    matrix_show();
+    if (state++ < 3000) return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
+
+#define LAST_MATRIX 21
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1426,6 +1466,12 @@ void matrix_update() {
 	    break;
 
 	case 19: 
+	    ret = plasma();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 20: 
 	    ret = call_rain(3);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -1511,8 +1557,9 @@ void change_speed(int8_t change) {
 
 bool is_change() {
     uint32_t newmil = millis();
-    // Any change after next button acts as a pattern change for 10 seconds
-    if (newmil - last_change < 10000) {
+    // Any change after next button acts as a pattern change for 5 seconds
+    // (actually more than 5 secs because millis stops during panel refresh)
+    if (newmil - last_change < 5000) {
 	last_change = newmil;
 	return 1;
     }
