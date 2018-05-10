@@ -604,6 +604,7 @@ uint8_t esrr_flashin() {
 }
 #endif
 
+// FIXME: still get some display problems on fade
 uint8_t esrr_fade() {
     static uint16_t state;
     static uint8_t wheel;
@@ -1077,6 +1078,8 @@ uint8_t AnimBalls() {
     return repeat;
 }
 
+// this is doing it the hard way, and only for my matrix.
+// instead, use XY() I added in NeoMatrix
 #if 0
 uint16_t pos2matrix(uint16_t pos) {
     #define panelwidth 8
@@ -1234,7 +1237,23 @@ uint8_t call_fireworks() {
     return 0;
 }
 
-#define LAST_MATRIX 16
+uint8_t call_fire() {
+    static uint16_t state;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 0;
+    }
+
+    fire();
+    matrix_show();
+    if (state++ < 3000) return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
+#define LAST_MATRIX 17
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1256,6 +1275,11 @@ void matrix_change(int matrix) {
 
 void matrix_update() {
     uint8_t ret;
+
+    EVERY_N_MILLISECONDS(40) {
+	gHue++;  // slowly cycle the "base color" through the rainbow
+    }
+    sublime_loop();
 
     switch (matrix_state) {
 	case 0: 
@@ -1351,6 +1375,12 @@ void matrix_update() {
 
 	case 15: 
 	    ret = pride();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 16: 
+	    ret = call_fire();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2112,6 +2142,10 @@ void loop() {
     Serial.println(strip_speed);
     #endif
 
+    EVERY_N_MILLISECONDS(40) {
+	gHue++;  // slowly cycle the "base color" through the rainbow
+    }
+    sublime_loop();
 }
 
 
