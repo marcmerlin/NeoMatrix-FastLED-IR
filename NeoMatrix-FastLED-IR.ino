@@ -18,9 +18,6 @@
 // Compile WeMos D1 R2 & mini
 
 #include "config.h"
-#include <Adafruit_GFX.h>
-#include <FastLED_NeoMatrix.h>
-#include <FastLED.h>
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
@@ -78,25 +75,6 @@ bool matrix_reset_demo = 1;
 
 #define NUM_LEDS 48
 
-#ifdef ESP8266
-#define NEOPIXEL_PIN D1 // GPIO5
-
-
-// D4 is also the system LED, causing it to blink on IR receive, which is great.
-#define RECV_PIN D4     // GPIO2
-
-// Turn off Wifi in setup()
-// https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
-//
-#include "ESP8266WiFi.h"
-extern "C" {
-#include "user_interface.h"
-}
-// min/max are broken by the ESP8266 include
-#define min(a,b) (a<b)?(a):(b)
-#define max(a,b) (a>b)?(a):(b)
-#endif
-
 #include <IRremoteESP8266.h>
 
 // This file contains codes I captured and mapped myself
@@ -106,7 +84,6 @@ extern "C" {
 IRrecv irrecv(RECV_PIN);
 
 CRGB leds[NUM_LEDS];
-uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 
 typedef enum {
     f_nothing = 0,
@@ -130,7 +107,7 @@ StripDemo nextdemo = f_theaterChaseRainbow;
 // Is the current demo linked to a color (false for rainbow demos)
 bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
-int16_t speed = 50;
+static int16_t strip_speed = 50;
 
 uint8_t led_brightness = 32;
 
@@ -1444,16 +1421,16 @@ void change_speed(int8_t change) {
 
     if (millis() - last_speed_change < 200) {
 	Serial.print("Too soon... Ignoring speed change from ");
-	Serial.println(speed);
+	Serial.println(strip_speed);
 	return;
     }
     last_speed_change = millis();
 
     Serial.print("Changing speed ");
-    Serial.print(speed);
-    speed = constrain(speed + change, 1, 100);
+    Serial.print(strip_speed);
+    strip_speed = constrain(strip_speed + change, 1, 100);
     Serial.print(" to new speed ");
-    Serial.println(speed);
+    Serial.println(strip_speed);
 }
 
 bool is_change() {
@@ -1501,7 +1478,7 @@ bool handle_IR(uint32_t delay_time) {
 	    if (is_change()) { matrix_change(-128); return 1; }
 	    nextdemo = f_colorWipe;
 	    demo_color = 0x000000;
-	    speed = 1;
+	    strip_speed = 1;
 	    Serial.println("Got IR: Power");
 	    Serial.println("Hit slower speed to restart panel anim");
 	    return 1;
@@ -2052,72 +2029,72 @@ void loop() {
     // Colors on DIY1-3
     case f_colorWipe:
 	colorDemo = true;
-	colorWipe(demo_color, speed);
+	colorWipe(demo_color, strip_speed);
 	break;
     case f_theaterChase:
 	colorDemo = true;
-	theaterChase(demo_color, speed);
+	theaterChase(demo_color, strip_speed);
 	break;
 
     // Rainbow anims on DIY4-6
 // This is not cool/wavy enough, the cycle version is, though
 //     case f_rainbow:
 // 	colorDemo = false;
-// 	rainbow(speed);
+// 	rainbow(strip_speed);
 // 	break;
     case f_rainbowCycle:
 	colorDemo = false;
-	rainbowCycle(speed);
+	rainbowCycle(strip_speed);
 	break;
     case f_theaterChaseRainbow:
 	colorDemo = false;
-	theaterChaseRainbow(speed);
+	theaterChaseRainbow(strip_speed);
 	break;
 
     case f_doubleConvergeRev:
 	colorDemo = false;
-	doubleConverge(false, speed, true);
+	doubleConverge(false, strip_speed, true);
 	break;
 
     // Jump3 to Jump7
     case f_cylon:
 	colorDemo = false;
-	cylon(false, speed);
+	cylon(false, strip_speed);
 	break;
     case f_cylonTrail:
 	colorDemo = false;
-	cylon(true, speed);
+	cylon(true, strip_speed);
 	break;
     case f_doubleConverge:
 	colorDemo = false;
-	doubleConverge(false, speed, false);
+	doubleConverge(false, strip_speed, false);
 	break;
     case f_doubleConvergeTrail:
 	colorDemo = false;
-	doubleConverge(false, speed, false);
-	doubleConverge(true, speed, false);
+	doubleConverge(false, strip_speed, false);
+	doubleConverge(true, strip_speed, false);
 	break;
 
     // Flash color wheel
     case f_flash:
 	colorDemo = false;
-	flash(speed);
+	flash(strip_speed);
 	break;
 
 #if 0
     case f_flash3:
 	colorDemo = false;
-	flash3(speed);
+	flash3(strip_speed);
 	break;
 #endif
     case f_juggle:
 	colorDemo = false;
-	juggle(speed);
+	juggle(strip_speed);
 	break;
 
     case f_bpm:
 	colorDemo = false;
-	bpm(speed);
+	bpm(strip_speed);
 	break;
 
     default:
@@ -2132,7 +2109,7 @@ void loop() {
     } else {
 	Serial.print("Loop done, restarting demo at speed ");
     }
-    Serial.println(speed);
+    Serial.println(strip_speed);
     #endif
 
 }

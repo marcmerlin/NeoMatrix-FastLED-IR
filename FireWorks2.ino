@@ -15,15 +15,6 @@
 
 #include "config.h"
 
-uint8_t moving_speed = 255;
-#define MATRIX_HEIGHT mh
-#define MATRIX_WIDTH mw
-
-int XY( int x, int y) 
-{
-	// For some reason, Y is reversed on my matrix, so fix this here.
-	return matrix->XY(x,MATRIX_HEIGHT-1-y);
-}
 
 CRGB& setXY( int x, int y) 
 {
@@ -156,7 +147,7 @@ class Dot {
 	}							// End of the move function 
 
 	void GroundLaunch() {
-		gGravity = map8(moving_speed, 0, 6)+3;
+		gGravity = map8(speed, 0, 6)+3;
 
 		yv = ((20*(MATRIX_HEIGHT+(3*(gGravity*0.8))))-(MATRIX_HEIGHT*5)) + random16(MATRIX_HEIGHT*5);	// Vertical velocity = Minimum velocity + Random maximum difference
 		xv = random16(350) - 175;			// Generates a signed int value between +/- 175  (Nice width but always inside of frame)      
