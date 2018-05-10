@@ -1253,7 +1253,35 @@ uint8_t call_fire() {
     return 0;
 }
 
-#define LAST_MATRIX 17
+uint8_t call_rain(uint8_t which) {
+    #define raindelay 4
+    static uint16_t state;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	state = 0;
+    }
+
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	matrix_show(); // make sure we still run at the same speed.
+	return repeat;
+    }
+    delayframe = raindelay;
+
+    matrix_clear();
+    if (which == 1) theMatrix();
+    if (which == 2) coloredRain();
+    if (which == 3) stormyRain();
+    matrix_show();
+    if (state++ < 3000) return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
+#define LAST_MATRIX 20
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1381,6 +1409,24 @@ void matrix_update() {
 
 	case 16: 
 	    ret = call_fire();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 17: 
+	    ret = call_rain(1);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 18: 
+	    ret = call_rain(2);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 19: 
+	    ret = call_rain(3);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
