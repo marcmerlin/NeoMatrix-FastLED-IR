@@ -41,8 +41,6 @@ uint8_t currentFirePaletteIndex = firePaletteCount-1; // Force rotating fire pal
 // Array of temp cells (used by fire, theMatrix, coloredRain, stormyRain)
 uint_fast16_t tempMatrix[MATRIX_WIDTH+1][MATRIX_HEIGHT+1];
 
-// compat shim
-int wrapX(int x) { return x; }
 #define leds matrixleds
 
 // based on FastLED example Fire2012WithPalette: https://github.com/FastLED/FastLED/blob/master/examples/Fire2012WithPalette/Fire2012WithPalette.ino
@@ -139,7 +137,6 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 	for (int x = 0; x < MATRIX_WIDTH; x++) {
 		// Step 1.  Move each dot down one cell
 		for (int i = 0; i < MATRIX_HEIGHT; i++) {
-			//Serial.print("S1 "); Serial.print(x); Serial.print(" "); Serial.println(i);
 			if (tempMatrix[x][i] >= backgroundDepth) {	// Don't move empty cells
 				tempMatrix[x][i-1] = tempMatrix[x][i];
 				tempMatrix[x][i] = 0;
@@ -148,13 +145,11 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 
 		// Step 2.  Randomly spawn new dots at top
 		if (random(255) < spawnFreq) {
-			//Serial.print("S2 "); Serial.print(x); Serial.print(" "); Serial.println(x);
 			tempMatrix[x][MATRIX_HEIGHT-1] = random(backgroundDepth, maxBrightness);
 		}
 
 		// Step 3. Map from tempMatrix cells to LED colors
 		for (int y = 0; y < MATRIX_HEIGHT; y++) {
-			//Serial.print("S3 "); Serial.print(x); Serial.print(" "); Serial.println(y);
 			if (tempMatrix[x][y] >= backgroundDepth) {	// Don't write out empty cells
 				leds[XY(x,y)] = ColorFromPalette(rain_p, tempMatrix[x][y]);
 			}
@@ -187,8 +182,7 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 			if (random16() < 200) {		// Odds of a lightning bolt
 				lightning[scale8(random8(), MATRIX_WIDTH)][MATRIX_HEIGHT-1] = 255;	// Random starting location
 				for(int ly = MATRIX_HEIGHT-1; ly > 0; ly--) {
-					for (int lx = 0; lx < MATRIX_WIDTH; lx++) {
-			//Serial.print("LX "); Serial.print(lx); Serial.print(" "); Serial.println(ly);
+					for (int lx = 1; lx < MATRIX_WIDTH-1; lx++) {
 						if (lightning[lx][ly] == 255) {
 							lightning[lx][ly] = 0;
 							uint8_t dir = random8(4);

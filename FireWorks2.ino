@@ -15,10 +15,9 @@
 
 #include "config.h"
 
-
 CRGB& setXY( int x, int y) 
 {
-	return matrixleds[XY(x,y)];
+	return matrixleds[XY(wrapX(x),y)];
 }
 
 void screenscale( accum88 hor, accum88 ver, fract8& pixel, fract8& up, fract8& right, fract8& diag) // 3 Pointers to resulting fract8 variables

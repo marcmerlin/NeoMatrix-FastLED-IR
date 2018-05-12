@@ -55,10 +55,15 @@
 // a USB power supply (500mA) for 12x12 pixels.
 uint8_t matrix_brightness = 32;
 
-// Add an extra safety pixel to deal with suboptimal code in Fireworks2.
-CRGB matrixleds[NUMMATRIX+1];
+cLEDMatrix<-MATRIX_TILE_WIDTH, -MATRIX_TILE_HEIGHT, HORIZONTAL_ZIGZAG_MATRIX, MATRIX_TILE_H, MATRIX_TILE_V, HORIZONTAL_BLOCKS> ledmatrix;
 
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1, 
+
+//CRGB matrixleds[NUMMATRIX];
+// cLEDMatrix creates a FastLED array and we need to retrieve a pointer to its first element
+// to act as a regular FastLED array.
+CRGB *matrixleds = ledmatrix[0];
+
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, MATRIX_TILE_H, MATRIX_TILE_V, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
@@ -66,7 +71,8 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, 8, mh, mw/8, 1,
 // How many ms used for each matrix update
 #define MX_UPD_TIME 10
 
-uint8_t matrix_state = 12;
+
+uint8_t matrix_state = 20;
 int16_t matrix_loop = -1;
 bool matrix_reset_demo = 1;
 
@@ -173,7 +179,7 @@ void matrix_show() {
 void matrix_clear() {
     //FastLED[1].clearLedData();
     // clear does not work properly with multiple matrices connected via parallel inputs
-    memset(matrixleds, 0, sizeof(matrixleds));
+    memset(matrixleds, 0, NUMMATRIX*3);
 }
 
 
@@ -1276,7 +1282,7 @@ uint8_t call_rain(uint8_t which) {
     if (which == 2) coloredRain();
     if (which == 3) stormyRain();
     matrix_show();
-    if (state++ < 3000) return 1;
+    if (state++ < 500) return 1;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -2278,7 +2284,6 @@ void setup() {
     leds_show();
     Serial.println("LEDs on");
     delay(1000);
-    Serial.println("Start code");
 
     // Init Matrix
     // Serialized, 768 pixels takes 26 seconds for 1000 updates or 26ms per refresh
@@ -2295,12 +2300,18 @@ void setup() {
     matrix->begin();
     matrix->setBrightness(matrix_brightness);
     matrix->setTextWrap(false);
+    Serial.println("Start code");
+    sprite_setup();
+    matrix->show();
+    delay(1000);
     // speed test
     //while (1) { display_resolution(); yield();};
 
+    matrix->clear();
     // init first matrix demo
     display_resolution();
-    delay(500);
+    delay(1000);
+    matrix->clear();
 
     //font_test();
 

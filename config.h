@@ -4,8 +4,18 @@
 #include <FastLED_NeoMatrix.h>
 #include <FastLED.h>
 
-#define mw 24
-#define mh 32
+#include <LEDMatrix.h>
+#include <LEDSprites.h>
+//
+// Used by LEDMatrix
+#define MATRIX_TILE_WIDTH   8 // width of EACH NEOPIXEL MATRIX (not total display)
+#define MATRIX_TILE_HEIGHT  32 // height of each matrix
+#define MATRIX_TILE_H       3  // number of matrices arranged horizontally
+#define MATRIX_TILE_V       1  // number of matrices arranged vertically
+
+// Used by NeoMatrix
+#define mw (MATRIX_TILE_WIDTH *  MATRIX_TILE_H)
+#define mh (MATRIX_TILE_HEIGHT * MATRIX_TILE_V)
 #define NUMMATRIX (mw*mh)
 
 // Compat for some other demos
@@ -75,4 +85,10 @@ extern "C" {
 
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 uint16_t speed = 255;
+
+int wrapX(int x) { 
+	if (x < 0 ) return 0;
+	if (x >= MATRIX_WIDTH) return (MATRIX_WIDTH-1);
+	return x;
+}
 #endif
