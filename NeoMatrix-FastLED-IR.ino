@@ -1287,6 +1287,30 @@ uint8_t call_rain(uint8_t which) {
     return 0;
 }
 
+uint8_t call_pacman() {
+    #define pacmandelay 5
+    static uint16_t delayframe = pacmandelay;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	pacman_setup();
+    }
+
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	matrix_show(); // make sure we still run at the same speed.
+	return 1;
+    }
+    delayframe = pacmandelay;
+
+    matrix_clear();
+    if (pacman_loop()) return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
 // Adapted from	LEDText/examples/TextExample3 by Aaron Liddiment
 uint8_t plasma() {
     #define PLASMA_X_FACTOR  24
@@ -1466,7 +1490,7 @@ void matrix_update() {
 	    break;
 
 	case 18: 
-	    ret = call_rain(2);
+	    ret = call_pacman();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2300,8 +2324,10 @@ void setup() {
     matrix->begin();
     matrix->setBrightness(matrix_brightness);
     matrix->setTextWrap(false);
-    Serial.println("Start code");
-    sprite_setup();
+    Serial.println("Init Pixels");
+    ledmatrix.DrawLine (0, 0, ledmatrix.Width() - 1, ledmatrix.Height() - 1, CRGB(0, 255, 0));
+    ledmatrix.DrawPixel(0, 0, CRGB(255, 0, 0));
+    ledmatrix.DrawPixel(ledmatrix.Width() - 1, ledmatrix.Height() - 1, CRGB(0, 0, 255));
     matrix->show();
     delay(1000);
     // speed test
