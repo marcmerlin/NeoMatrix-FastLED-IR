@@ -73,7 +73,7 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
 #define MX_UPD_TIME 10
 
 
-uint8_t matrix_state = 22;
+uint8_t matrix_state = 24;
 int16_t matrix_loop = -1;
 bool matrix_reset_demo = 1;
 
@@ -1356,24 +1356,23 @@ uint8_t td10() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	td_random();
+	td_init();
 	driftx = MIDLX;//pin the animation to the center
 	drifty = MIDLY;
+	matrix_clear();
     }
 
     if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
-	//Serial.print("delayed frame ");
-	//Serial.println(delayframe);
 	matrix_show(); // make sure we still run at the same speed.
 	return 1;
     }
     delayframe = td10delay;
 
-    matrix_clear();
     corner();
     bkringer();
     ringer();
+
+    td_loop();
     matrix_show();
     return 1;
     matrix_reset_demo = 1;
@@ -1387,8 +1386,65 @@ uint8_t td11() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	td_random();
+	td_init();
         adjunct = 0;
+	matrix_clear();
+    }
+
+    if (--delayframe) {
+	matrix_show(); // make sure we still run at the same speed.
+	return 1;
+    }
+    delayframe = td11delay;
+
+    whitewarp();
+    ringer();
+
+    td_loop();
+    matrix_show();
+    return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
+
+uint8_t td25() {
+    #define td25delay 5
+    static uint16_t delayframe = td25delay;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	td_init();
+        adjunct = 0;
+	matrix_clear();
+    }
+
+    if (--delayframe) {
+	matrix_show(); // make sure we still run at the same speed.
+	return 1;
+    }
+    delayframe = td25delay;
+
+    spire();
+    if (flip3)
+      adjuster();
+
+    td_loop();
+    matrix_show();
+    return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
+
+uint8_t td29() {
+    #define td29delay 5
+    static uint16_t delayframe = td29delay;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	td_init();
+	matrix_clear();
     }
 
     if (--delayframe) {
@@ -1398,11 +1454,11 @@ uint8_t td11() {
 	matrix_show(); // make sure we still run at the same speed.
 	return 1;
     }
-    delayframe = td11delay;
+    delayframe = td29delay;
 
-    matrix_clear();
-    whitewarp();
-    ringer();
+    Raudio();
+
+    td_loop();
     matrix_show();
     return 1;
     matrix_reset_demo = 1;
@@ -1411,7 +1467,7 @@ uint8_t td11() {
 
 
 
-#define LAST_MATRIX 23
+#define LAST_MATRIX 25
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1579,9 +1635,20 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
+	case 23: 
+	    ret = td11();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 24: 
+	    ret = td25();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
 
 	case LAST_MATRIX: 
-	    ret = td11();
+	    ret = td29();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
