@@ -1350,15 +1350,23 @@ uint8_t plasma() {
     return 0;
 }
 
-uint8_t td10() {
-    #define td10delay 5
-    static uint16_t delayframe = td10delay;
+uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
+    static uint8_t delayframe = dfinit;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	td_init();
-	driftx = MIDLX;//pin the animation to the center
-	drifty = MIDLY;
+
+	switch (demo) {
+	case 10:
+	    driftx = MIDLX;//pin the animation to the center
+	    drifty = MIDLY;
+	    break;
+	case 11:
+	case 25:
+	    adjunct = 0;
+	    break;
+	}
 	matrix_clear();
     }
 
@@ -1366,101 +1374,31 @@ uint8_t td10() {
 	matrix_show(); // make sure we still run at the same speed.
 	return 1;
     }
-    delayframe = td10delay;
+    delayframe = dfinit;
 
-    corner();
-    bkringer();
-    ringer();
+    switch (demo) {
+    case 10:
+	corner();
+	bkringer();
+	ringer();
+	break;
+    case 11:
+	whitewarp();
+	ringer();
+	break;
+    case 25:
+	spire();
+	if (flip3)
+	  adjuster();
+	break;
+    case 29:
+	Raudio();
+	break;
+    }
 
     td_loop();
     matrix_show();
-    return 1;
-    matrix_reset_demo = 1;
-    return 0;
-}
-
-
-uint8_t td11() {
-    #define td11delay 5
-    static uint16_t delayframe = td11delay;
-
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
-	td_init();
-        adjunct = 0;
-	matrix_clear();
-    }
-
-    if (--delayframe) {
-	matrix_show(); // make sure we still run at the same speed.
-	return 1;
-    }
-    delayframe = td11delay;
-
-    whitewarp();
-    ringer();
-
-    td_loop();
-    matrix_show();
-    return 1;
-    matrix_reset_demo = 1;
-    return 0;
-}
-
-
-uint8_t td25() {
-    #define td25delay 5
-    static uint16_t delayframe = td25delay;
-
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
-	td_init();
-        adjunct = 0;
-	matrix_clear();
-    }
-
-    if (--delayframe) {
-	matrix_show(); // make sure we still run at the same speed.
-	return 1;
-    }
-    delayframe = td25delay;
-
-    spire();
-    if (flip3)
-      adjuster();
-
-    td_loop();
-    matrix_show();
-    return 1;
-    matrix_reset_demo = 1;
-    return 0;
-}
-
-
-uint8_t td29() {
-    #define td29delay 5
-    static uint16_t delayframe = td29delay;
-
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
-	td_init();
-	matrix_clear();
-    }
-
-    if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
-	//Serial.print("delayed frame ");
-	//Serial.println(delayframe);
-	matrix_show(); // make sure we still run at the same speed.
-	return 1;
-    }
-    delayframe = td29delay;
-
-    Raudio();
-
-    td_loop();
-    matrix_show();
-    return 1;
+    if (counter < loops) return 1;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -1630,25 +1568,25 @@ void matrix_update() {
 	    break;
 
 	case 22: 
-	    ret = td10();
+	    ret = metd(10, 5, 300);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 23: 
-	    ret = td11();
+	    ret = metd(11, 5, 300);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 24: 
-	    ret = td25();
+	    ret = metd(25, 2, 300);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case LAST_MATRIX: 
-	    ret = td29();
+	    ret = metd(29, 5, 300);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;

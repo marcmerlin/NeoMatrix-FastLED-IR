@@ -324,6 +324,27 @@ void spire() {
     else
       radius2++;
   }
+
+  float xer = driftx + radius * (cos8(2 * h) - 128.0) / 128.0;
+  float yer = drifty + radius * (sin8(2 * h) - 128.0) / 128.0;
+  zeds.DrawCircle(xer, yer, dot, CHSV(h, 255, 255));
+  xer = driftx - radius * (cos8(2 * h) - 128.0) / 128.0;
+  yer = drifty - radius * (sin8(2 * h) - 128.0) / 128.0;
+  zeds.DrawCircle(xer, yer, dot, CHSV(h + 128, 255, 255));
+
+  xer = driftx + radius * (cos8(2 * h + 87) - 128.0) / 128.0;
+  yer = drifty + radius * (sin8(2 * h + 87) - 128.0) / 128.0;
+  zeds.DrawCircle(xer, yer, dot, CHSV(h + 85, 255, 255));
+  xer = driftx - radius * (cos8(2 * h + 87) - 128.0) / 128.0;
+  yer = drifty - radius * (sin8(2 * h + 87) - 128.0) / 128.0;
+  zeds.DrawCircle(xer, yer, dot, CHSV(h - 85, 255, 255));
+
+  xer = driftx + radius * (cos8(2 * h + 43) - 128.0) / 128.0;
+  yer = drifty + radius * (sin8(2 * h + 43) - 128.0) / 128.0;
+  zeds.DrawCircle(xer, yer, dot, CHSV(h + 43, 255, 255));
+  xer = driftx - radius * (cos8(2 * h + 43) - 128.0) / 128.0;
+  yer = drifty - radius * (sin8(2 * h + 43) - 128.0) / 128.0;
+  zeds.DrawCircle(xer, yer, dot, CHSV(h - 43, 255, 255));
 }
 
 
