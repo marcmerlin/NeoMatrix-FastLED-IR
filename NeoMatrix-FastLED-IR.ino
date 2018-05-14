@@ -18,6 +18,7 @@
 // Compile WeMos D1 R2 & mini
 
 #include "config.h"
+#include "Table_Mark_Estes.h"
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
@@ -72,7 +73,7 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
 #define MX_UPD_TIME 10
 
 
-uint8_t matrix_state = 20;
+uint8_t matrix_state = 22;
 int16_t matrix_loop = -1;
 bool matrix_reset_demo = 1;
 
@@ -1287,13 +1288,13 @@ uint8_t call_rain(uint8_t which) {
     return 0;
 }
 
-uint8_t call_pacman() {
+uint8_t call_pacman(uint8_t loopcnt) {
     #define pacmandelay 5
     static uint16_t delayframe = pacmandelay;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	pacman_setup();
+	pacman_setup(loopcnt);
     }
 
     if (--delayframe) {
@@ -1305,7 +1306,6 @@ uint8_t call_pacman() {
     }
     delayframe = pacmandelay;
 
-    matrix_clear();
     if (pacman_loop()) return 1;
     matrix_reset_demo = 1;
     return 0;
@@ -1350,8 +1350,68 @@ uint8_t plasma() {
     return 0;
 }
 
+uint8_t td10() {
+    #define td10delay 5
+    static uint16_t delayframe = td10delay;
 
-#define LAST_MATRIX 21
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	td_random();
+	driftx = MIDLX;//pin the animation to the center
+	drifty = MIDLY;
+    }
+
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	matrix_show(); // make sure we still run at the same speed.
+	return 1;
+    }
+    delayframe = td10delay;
+
+    matrix_clear();
+    corner();
+    bkringer();
+    ringer();
+    matrix_show();
+    return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
+
+uint8_t td11() {
+    #define td11delay 5
+    static uint16_t delayframe = td11delay;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	td_random();
+        adjunct = 0;
+    }
+
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	matrix_show(); // make sure we still run at the same speed.
+	return 1;
+    }
+    delayframe = td11delay;
+
+    matrix_clear();
+    whitewarp();
+    ringer();
+    matrix_show();
+    return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
+
+
+#define LAST_MATRIX 23
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1490,7 +1550,7 @@ void matrix_update() {
 	    break;
 
 	case 18: 
-	    ret = call_pacman();
+	    ret = call_pacman(3);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1507,8 +1567,21 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case LAST_MATRIX: 
+	case 21: 
 	    ret = demoreel100(3);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 22: 
+	    ret = td10();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+
+	case LAST_MATRIX: 
+	    ret = td11();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;

@@ -12,9 +12,6 @@ cLEDSprites Sprites(&leds);
 #define maxx (MATRIX_WIDTH - MY_SPRITE_WIDTH - 1)
 #define maxy (MATRIX_HEIGHT - MY_SPRITE_HEIGHT -1)
 
-// How long before the pill appears?
-uint8_t pacman_loops = 3;
-
 #define POWER_PILL_SIZE	4
 const uint8_t PowerPillData[] = 
 {
@@ -333,10 +330,19 @@ static uint8_t inmaze = 0;
 static uint8_t pinmaze = 0;
 static uint8_t ginmaze = 0;
 static bool ghostdead = false;
+static uint8_t pacman_loops;
 
-void pacman_setup()
+void pacman_setup(uint8_t loopcnt)
 {
     Serial.println("Sprite setup");
+    // Cleanup from previous run
+    Sprites.RemoveSprite(&SprPacmanLeft);
+    Sprites.RemoveSprite(&SprPacmanRight);
+    Sprites.RemoveSprite(&SprPinky);
+    Sprites.RemoveSprite(&SprGhost);
+    Sprites.RemoveSprite(&SprPill);
+    Sprites.RemoveSprite(&SprEyes);
+    Sprites.RemoveSprite(&Spr200);
     // Rate is a divider, higher rate is slower.
     SprPacmanRight.SetPositionFrameMotionOptions(0/*X*/, -10/*Y*/, 0/*Frame*/, 4/*FrameRate*/, 0/*XChange*/, 0/*XRate*/, 1/*YChange*/, 1/*YRate*/, SPRITE_DETECT_EDGE | SPRITE_DETECT_COLLISION);
     Sprites.AddSprite(&SprPacmanRight);
@@ -351,6 +357,7 @@ void pacman_setup()
     pinmaze = 0;
     ginmaze = 0;
     ghostdead = false;
+    pacman_loops = loopcnt;
 }
 
 uint8_t pacman_loop()
@@ -369,10 +376,9 @@ uint8_t pacman_loop()
     int8_t ey = SprEyes.m_Y;
 
     matrix_clear();
-    leds.DrawLine (leds.Width()/2, MY_SPRITE_HEIGHT, leds.Width()/2, leds.Height() - 1 - MY_SPRITE_HEIGHT, CRGB::Grey);
-    matrix_show();
     Sprites.UpdateSprites();
     Sprites.DetectCollisions();
+#if 0
     Serial.print("rx: ");
     Serial.print(pcmrx);
     Serial.print(" ry: ");
@@ -405,6 +411,7 @@ uint8_t pacman_loop()
     Serial.print(pcmr, HEX);
     Serial.print(" ");
     Serial.println(inmaze);
+#endif
 
     // So you are going to ask "why are you not using the edge detection code"
     // First, SPRITE_X|Y_KEEPIN does not work if you want your sprite to go around
@@ -526,6 +533,7 @@ uint8_t pacman_loop()
 	pinmaze = 1;
     }
 
+    // ginmaze > 5 && 
     if (!ghostdead && SprGhost.GetFlags() & SPRITE_COLLISION)
     {
 	Serial.println("Ghost killed");
@@ -546,13 +554,11 @@ uint8_t pacman_loop()
     else if (SprEyes.m_Y > MATRIX_HEIGHT) {
 	Serial.println("Ghost eyes left the building, stopping");
 	SprEyes.m_Y = 0;
-	Sprites.RemoveSprite(&SprEyes);
-	Sprites.RemoveSprite(&Spr200);
-	Sprites.RemoveSprite(&SprPacmanLeft);
 	return 0;
     }
 
     Sprites.RenderSprites();
+    leds.DrawLine (leds.Width()/2, MY_SPRITE_HEIGHT, leds.Width()/2, leds.Height() - 1 - MY_SPRITE_HEIGHT, CRGB::Grey);
     matrix_show();
     return 1;
 }
