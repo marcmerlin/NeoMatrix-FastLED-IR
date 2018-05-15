@@ -283,16 +283,6 @@ void whitewarp() {
    // zeds(xfire[howmany - 1], yfire[howmany - 1]) = CRGB::White;
 }
 
-void Raudio()  // rotating ring,  dots  , freq rotates, colors do not
-{
-  for (int i = 0; i < MATRIX_WIDTH ; i++) {
-    xangle =  (sin8(i * mstep  +  h) - 128.0) / 128.0;
-    yangle =  (cos8(i * mstep  +  h) - 128.0) / 128.0;
-    zeds(MIDLX + xangle * (MATRIX_WIDTH / 2 - faudio[i] / mscale) , MIDLY + yangle * (MATRIX_HEIGHT / 2 - faudio[i] / mscale)) = CHSV(i * mstep , 255, 255);
-  }
-  audioprocess();
-}
-
 void spire() {
 
   if (counter == 0)
@@ -346,6 +336,374 @@ void spire() {
   yer = drifty - radius * (sin8(2 * h + 43) - 128.0) / 128.0;
   zeds.DrawCircle(xer, yer, dot, CHSV(h - 43, 255, 255));
 }
+
+
+void Raudio()  // rotating ring,  dots  , freq rotates, colors do not
+{
+  for (int i = 0; i < MATRIX_WIDTH ; i++) {
+    xangle =  (sin8(i * mstep  +  h) - 128.0) / 128.0;
+    yangle =  (cos8(i * mstep  +  h) - 128.0) / 128.0;
+    zeds(MIDLX + xangle * (MATRIX_WIDTH / 2 - faudio[i] / mscale) , MIDLY + yangle * (MATRIX_HEIGHT / 2 - faudio[i] / mscale)) = CHSV(i * mstep , 255, 255);
+  }
+  audioprocess();
+}
+
+void Raudio3()//star shaped colors rotate
+{
+  for (int i = 0; i < MATRIX_WIDTH ; i++) {
+    xangle =  (sin8(i * mstep  + h) - 128.0) / 128.0;
+    yangle =  (cos8(i * mstep  + h) - 128.0) / 128.0;
+    zeds.DrawLine(MIDLX + xangle * 2 , MIDLY + yangle * 2 , MIDLX  + xangle * ( 2 + (faudio[i] ) / (mscale)) , MIDLY  + yangle * ( 2 + (faudio[i] ) / (mscale)), CHSV(i * mstep , 255, 255));
+  }
+  //zeds.DrawFilledRectangle(MIDLX - 1, MIDLY - 1, MIDLX + 1, MIDLY + 1, CHSV(h, 255, 255));
+  audioprocess();
+}
+
+void Raudio5()  // multi color  ring witht variable height
+{
+  for (byte i = 0; i < MATRIX_WIDTH ; i++) {
+    xangle =  (sin8(i * mstep  - h) - 128.0) / 128.0;
+    yangle =  (cos8(i * mstep  - h) - 128.0) / 128.0;
+    zeds.DrawLine(MIDLX + MIDLX * xangle, MIDLY + MIDLY * yangle, MIDLX + xangle * (MIDLX - faudio[i] / (mscale )) , MIDLY + yangle * (MIDLY - faudio[i] / (mscale )), CHSV(i * mstep  + 2 * h, 255, 255));
+  }
+  audioprocess();
+}
+
+void rmagictime()
+{
+
+  if (counter == 0)
+  {
+    locusx = driftx;
+    locusy = drifty;
+    raad = 1;
+    ringdelay = random(30, 60);
+    // ccoolloorr = random8();
+  }
+
+  if (raad < MATRIX_WIDTH - dot)
+  {
+    zeds.DrawCircle(driftx, drifty , raad, CHSV(ccoolloorr + h , 255, 255));
+    zeds.DrawCircle(driftx, drifty , raad + 1, CHSV(ccoolloorr + h , 255, 255));
+    zeds.DrawCircle(driftx, drifty , raad - 1, CHSV(ccoolloorr + h , 255, 255));
+    raad++;
+  }
+
+  if (raad == MATRIX_WIDTH - dot) {
+    ringdelay--;
+    //ringdelay = constrain(ringdelay, 0, 20);
+  }
+
+  if (ringdelay == 0)
+  {
+    raad = 1;
+    locusx = driftx;
+    locusy = drifty;
+    ringdelay = random(50, 70);
+    ccoolloorr = random(8);
+  }
+}
+
+void bkboxer() {
+
+  if (counter >= bringdelay)
+  {
+    if (counter - bringdelay <= MATRIX_WIDTH + 13)
+    {
+      zeds.DrawRectangle(driftx - 12 - (counter - bringdelay) , drifty - 12 - (counter - bringdelay) , driftx + 12 + (counter - bringdelay), drifty + 12 + (counter - bringdelay), CHSV(h, 255, 255));
+      zeds.DrawRectangle(driftx - 8 - (counter - bringdelay) , drifty - 8 - (counter - bringdelay) , driftx + 8 + (counter - bringdelay), drifty + 8 + (counter - bringdelay), CHSV(h +   steper * 3, 255, 255));
+      zeds.DrawRectangle(driftx - 4 - (counter - bringdelay) , drifty - 4 - (counter - bringdelay) , driftx + 4 + (counter - bringdelay), drifty + 4 + (counter - bringdelay), CHSV(h +  steper * 6, 255, 255));
+      zeds.DrawRectangle(driftx - (counter - bringdelay) , drifty - (counter - bringdelay) , driftx + (counter - bringdelay), drifty + (counter - bringdelay), CHSV(h + steper * 9, 255, 255));
+    }
+    else {
+      bringdelay = counter + random(60, 980);
+
+    }
+  }
+}
+
+void drawstar(byte xlocl, byte ylocl, byte biggy, byte little, byte points, byte dangle, byte koler)// random multipoint star
+{
+  if (counter == 0) {
+    shifty = 3;//move quick
+  }
+  radius2 = 255 / points;
+  for (int i = 0; i < points; i++)
+  {
+    zeds.DrawLine(xlocl + ((little * (sin8(i * radius2 + radius2 / 2 - dangle) - 128.0)) / 128), ylocl + ((little * (cos8(i * radius2 + radius2 / 2 - dangle) - 128.0)) / 128), xlocl + ((biggy * (sin8(i * radius2 - dangle) - 128.0)) / 128), ylocl + ((biggy * (cos8(i * radius2 - dangle) - 128.0)) / 128), CHSV(koler , 255, 255));
+    zeds.DrawLine(xlocl + ((little * (sin8(i * radius2 - radius2 / 2 - dangle) - 128.0)) / 128), ylocl + ((little * (cos8(i * radius2 - radius2 / 2 - dangle) - 128.0)) / 128), xlocl + ((biggy * (sin8(i * radius2 - dangle) - 128.0)) / 128), ylocl + ((biggy * (cos8(i * radius2 - dangle) - 128.0)) / 128), CHSV(koler , 255, 255));
+  }
+}
+
+void starer() {
+  if (counter == 0)
+    pointy = 7;
+  if (counter >= ringdelay)
+  {
+    if (counter - ringdelay <= MATRIX_WIDTH + 5)
+      drawstar(driftx  , drifty, 2 * (counter - ringdelay), (counter - ringdelay), pointy, blender + h, h * 2 + 85);
+    else {
+      ringdelay = counter + random(50, 99);
+      pointy = random(3, 9);
+    }
+  }
+}
+
+void hypnoduck2()
+// growing spirals
+{
+  if (counter == 0)
+    dot = random(2, 4);
+  if (!flip2)
+    quash = 12 + dot;
+  else
+    quash = -12 - dot;
+
+  if (flip3 && flip2)
+    zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CHSV(h, 255, 150));
+  else {
+    if (flip)
+      zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CRGB::Black);
+    else
+      whitewarp();
+  }
+
+  for (uint32_t jj = 50; jj < 100 + (counter % 400); jj += 5)
+  {
+    xangle =  (sin8(jj + quash * h) - 128.0) / 128.0;
+    yangle =  (cos8(jj + quash * h) - 128.0) / 128.0;
+
+    zeds.DrawFilledCircle( driftx + xangle * (jj /  (19 - dot)) , drifty + yangle * (jj / (19 - dot)), dot, CHSV(h - 85, 255, 255));
+
+
+    xangle =  (sin8(jj + quash * h + 128) - 128.0) / 128.0;
+    yangle =  (cos8(jj + quash * h + 128) - 128.0) / 128.0;
+    zeds.DrawFilledCircle( driftx + xangle * (jj /  (19 - dot)) ,  drifty + yangle * (jj / (19 - dot)), dot, CHSV(h , 255, 255));
+  }
+}
+
+void boxer() {
+  if (counter >= ringdelay)
+  {
+    if (counter - ringdelay <= MATRIX_WIDTH)
+    {
+      zeds.DrawRectangle(driftx - (counter - ringdelay) , drifty - (counter - ringdelay) , driftx + (counter - ringdelay), drifty + (counter - ringdelay), CHSV(h * 2 + 128, 255, 255));
+    }
+    else
+      ringdelay = counter + random(40, 70);
+  }
+}
+
+void spin2()  // 4 meteriorw moving in ovals
+{
+  driftx = MIDLX;
+  drifty = MIDLY;
+  xangle =  (sin8(2 * (h )) - 128.0) / 128.0;
+  yangle =  (cos8(2 * (h )) - 128.0) / 128.0;
+
+  zeds.DrawFilledCircle(MIDLX + xangle * (MIDLX - 9), MIDLY + yangle * (MIDLY - 1) , dot, CHSV(h + 128, 255, 255));
+  xangle =  (sin8(2 * (h ) + 64) - 128.0) / 128.0;
+  yangle =  (cos8(2 * (h ) + 64) - 128.0) / 128.0;
+  zeds.DrawFilledCircle(MIDLX + xangle * (MIDLX - 1), MIDLY + yangle * (MIDLY - 9) , dot, CHSV(h , 255, 255));
+  xangle =  (sin8(2 * (h ) + 128) - 128.0) / 128.0;
+  yangle =  (cos8(2 * (h ) + 128) - 128.0) / 128.0;
+  zeds.DrawFilledCircle(MIDLX + xangle * (MIDLX - 9), MIDLY + yangle * (MIDLY - 1) , dot, CHSV(h + 64, 255, 255));
+  xangle =  (sin8(2 * (h ) - 64) - 128.0) / 128.0;
+  yangle =  (cos8(2 * (h ) - 64) - 128.0) / 128.0;
+  zeds.DrawFilledCircle(MIDLX + xangle * (MIDLX - 1), MIDLY + yangle * (MIDLY - 9) , dot, CHSV(h - 64, 255, 255));
+}
+
+void bkstarer() {
+  if (counter == 0)
+    pointyfix = 5;
+  if (counter >= bringdelay)
+  {
+    if (counter - bringdelay <= MATRIX_WIDTH + 20)
+    {
+      //void drawstar(byte xlocl, byte ylocl, byte biggy, byte little, byte points, byte dangle, byte koler)// random multipoint star
+      drawstar(driftx, drifty, 2 * (MATRIX_WIDTH - (counter - bringdelay) + 15), 15 + MATRIX_WIDTH - (counter - bringdelay), pointyfix, blender - h, h  - 60);
+      drawstar(driftx, drifty, 2 * (MATRIX_WIDTH - (counter - bringdelay) + 10), 10 + MATRIX_WIDTH - (counter - bringdelay), pointyfix, blender - h, h  - 50);
+      drawstar(driftx, drifty, 2 * (MATRIX_WIDTH - (counter - bringdelay) + 5), 5 + MATRIX_WIDTH - (counter - bringdelay), pointyfix, blender - h, h  - 40);
+      drawstar(driftx, drifty, 2 * (MATRIX_WIDTH - (counter - bringdelay)), MATRIX_WIDTH - (counter - bringdelay), pointyfix, blender - h, h - 30  );
+    }
+    else
+    {
+      bringdelay = counter + random(69, 126);
+      pointy = random(4, 9);
+    }
+  }
+}
+
+void starz()// 3 stars spin in a circle
+{
+  if (counter == 0) {
+    howmany = random (3, 9);
+    inner = random(MIDLY / 5, MIDLY / 2);
+    radius2 = 255 / howmany;
+  }
+
+  xcen = MIDLX * (sin8(-2 * h - 85) - 128.0) / 128;
+  ycen = MIDLY  * (cos8(-2 * h - 85 ) - 128.0) / 128;
+
+  if (h % 16 == 0) {
+    inner = inner + flipme;
+    if (inner > MIDLY / 2 || inner < MIDLY / 5)
+      flipme = -flipme;
+  }
+
+  for (int i = 0; i < howmany; i++)
+  {
+    zeds.DrawLine(driftx + xcen + ((inner * (sin8(i * radius2 + radius2 / 2 +  h) - 128.0)) / 128), drifty + ycen + ((inner * (cos8(i * radius2 + radius2 / 2 +  h) - 128.0)) / 128), driftx + xcen + ((MIDLX * (sin8(i * radius2 +  h) - 128.0)) / 128), drifty + ycen + ((MIDLY * (cos8(i * radius2 +  h) - 128.0)) / 128), CHSV(h , 255, 255));
+    zeds.DrawLine(driftx + xcen + ((inner * (sin8(i * radius2 - radius2 / 2 +  h) - 128.0)) / 128), drifty + ycen + ((inner * (cos8(i * radius2 - radius2 / 2 +  h) - 128.0)) / 128), driftx + xcen + ((MIDLX * (sin8(i * radius2 +  h) - 128.0)) / 128), drifty + ycen + ((MIDLY * (cos8(i * radius2 +  h) - 128.0)) / 128), CHSV(h , 255, 255));
+  }
+
+  xcen = MIDLX  * (sin8(-2 * h + 85) - 128.0) / 128;
+  ycen = MIDLY  * (cos8(-2 * h + 85) - 128.0) / 128;
+  for (int i = 0; i < howmany; i++)
+  {
+    zeds.DrawLine(driftx + xcen + ((inner * (sin8(i * radius2 + radius2 / 2 +  h) - 128.0)) / 128), drifty + ycen + ((inner * (cos8(i * radius2 + radius2 / 2 +  h) - 128.0)) / 128), driftx + xcen + ((MIDLX * (sin8(i * radius2 +  h) - 128.0)) / 128), drifty + ycen + ((MIDLY * (cos8(i * radius2 +  h) - 128.0)) / 128), CHSV(h + 85, 255, 255));
+    zeds.DrawLine(driftx + xcen + ((inner * (sin8(i * radius2 - radius2 / 2 +  h) - 128.0)) / 128), drifty + ycen + ((inner * (cos8(i * radius2 - radius2 / 2 +  h) - 128.0)) / 128), driftx + xcen + ((MIDLX * (sin8(i * radius2 +  h) - 128.0)) / 128), drifty + ycen + ((MIDLY * (cos8(i * radius2 +  h) - 128.0)) / 128), CHSV(h + 85, 255, 255));
+  }
+
+  xcen = MIDLX  * (sin8(-2 * h) - 128.0) / 128;
+  ycen = MIDLY  * (cos8(-2 * h) - 128.0) / 128;
+  for (int i = 0; i < howmany; i++)
+  {
+    zeds.DrawLine(driftx + xcen + ((inner * (sin8(i * radius2 + radius2 / 2 +  h) - 128.0)) / 128), drifty + ycen + ((inner * (cos8(i * radius2 + radius2 / 2 +  h) - 128.0)) / 128), driftx + xcen + ((MIDLX * (sin8(i * radius2 +  h) - 128.0)) / 128), drifty + ycen + ((MIDLY * (cos8(i * radius2 +  h) - 128.0)) / 128), CHSV(h  - 85, 255, 255));
+    zeds.DrawLine(driftx + xcen + ((inner * (sin8(i * radius2 - radius2 / 2 +  h) - 128.0)) / 128), drifty + ycen + ((inner * (cos8(i * radius2 - radius2 / 2 +  h) - 128.0)) / 128), driftx + xcen + ((MIDLX * (sin8(i * radius2 +  h) - 128.0)) / 128), drifty + ycen + ((MIDLY * (cos8(i * radius2 +  h) - 128.0)) / 128), CHSV(h  - 85, 255, 255));
+  }
+}
+
+void hypnoduck4()
+// spiral inward with the hyponic light
+{
+
+  if (flip2) quash = 8; else quash = -8;
+
+  if (flip3)
+
+    zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CRGB::Black);
+  else
+  { if (flip)
+      zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CHSV(h + 35, 255, 155));
+    else
+      zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CRGB::White);
+  }
+  for (uint32_t jj = 890; jj > 166 - (counter % 160); jj -= 5)
+  {
+    xangle =  (sin8(jj + quash * h) - 128.0) / 128.0;
+    yangle =  (cos8(jj + quash * h) - 128.0) / 128.0;
+    zeds.DrawFilledCircle(driftx + xangle * (jj /  17) , drifty + yangle * (jj / 17), 2, CHSV(h, 255, 255));
+
+    xangle =  (sin8(jj + quash * h + 128) - 128.0) / 128.0;
+    yangle =  (cos8(jj + quash * h + 128) - 128.0) / 128.0;
+    zeds.DrawFilledCircle(driftx + xangle * (jj /  17) , drifty + yangle * (jj / 17), 2, CHSV(h - 115, 255, 255));
+  }
+}
+
+void solid2()
+{
+  if (counter == 0)
+    rr = random8();
+  zeds.DrawFilledRectangle(0 , 0,  MATRIX_WIDTH, MATRIX_HEIGHT, CHSV(rr -  h, 255, 90));
+}
+
+void bubbles() {
+  if (counter == 0)
+  {
+    howmany = random (MIDLX >> 1, MIDLX );
+
+    for (byte u = 0; u < howmany; u++) {
+      xfire[u] = random(MATRIX_WIDTH);
+      yfire[u]  = random(MATRIX_HEIGHT);
+      fcolor[u] = random8(); //color
+      fpeed[u] = random(1, 7); //speed
+
+      fcount[u] = random(3, MIDLX >> 1); //radius
+      if (random8() > 128)
+        rimmer[u] = true;
+      else
+        rimmer[u] = false;
+    }
+  }
+
+  for (byte u = 0; u < howmany; u++) {
+    zeds.DrawFilledCircle(xfire[u],  yfire[u] - fcount[u] / 2, fcount[u], CHSV(fcolor[u], 255, 255));
+    if (rimmer[u])
+      zeds.DrawCircle(xfire[u],  yfire[u] - fcount[u] / 2, fcount[u], CHSV(fcolor[u] + 87, 255, 255));
+    else
+      zeds.DrawCircle(xfire[u],  yfire[u] - fcount[u] / 2, fcount[u], CHSV(fcolor[u] - 87, 255, 255));
+
+    if (counter % fpeed[u] == 0)
+    {
+      if (u % 2 == 0)
+        yfire[u]++;
+      else
+        xfire[u]++;
+    }
+    if (yfire[u] > MATRIX_HEIGHT + fcount[u] + 2  || xfire[u] > MATRIX_WIDTH + fcount[u] + 2  )
+    {
+      if (u % 2 == 0)
+      {
+        xfire[u] = random(3, MATRIX_WIDTH - 3);
+        yfire[u] =   0;
+      }
+      else
+      {
+        yfire[u] = random(3, MATRIX_HEIGHT - 3);
+        xfire[u] =   0;
+      }
+      fcolor[u] = random8(); //color
+      fpeed[u] = random(1, 7); //speed
+      fcount[u] = random(2, MIDLX >> 1); //radius
+
+      if (random8() > 128)
+        rimmer[u] = true;
+      else
+        rimmer[u] = false;
+    }
+  }
+}
+
+void homer2() {// growing egg
+  if (counter == 0 )
+  {
+    howmany = random (MIDLX + 8, 2 * MATRIX_WIDTH - 12);
+    dot = random(1, 5);
+    for (int i = 0; i < howmany; i++) {
+      fcount[i] = random8(); //angle
+      fcolor[i] = random8();//color
+      fpeed[i] = random(1, 4);// bigger = slower
+
+      xpoffset[i] = random8();
+      ccoolloorr = random8();
+    }
+  }
+  byte tempo = dot * 2 + 50;
+  if (counter % tempo == 0) {
+    dot++;
+    counter = counter + tempo;
+
+  }
+
+  if (dot >= MIDLX) {
+    dot = random(3, 7);
+    ccoolloorr =  random8();
+  }
+  zeds.DrawCircle( MIDLX  , MIDLY, dot + 1, CRGB::White);
+  for (int i = 0; i < howmany; i++)
+  {
+    if (flip)
+      zeds(MIDLX +  (dot + MIDLX - ((counter + xpoffset[i]) % MIDLX) / fpeed[i]) * (sin8(fcount[i] + 2 * h ) - 128.0) / 128.0 , MIDLY +  (dot + MIDLY - ((counter + xpoffset[i]) % MIDLY) / fpeed[i]) * (cos8(fcount[i] + 2 * h ) - 128.0) / 128.0) =  CHSV(fcolor[i], 255, 255);
+    else if (!flip2)
+      zeds(MIDLX +  (dot + MIDLX - ((counter + xpoffset[i]) % MIDLX) / fpeed[i]) * (sin8(fcount[i] + 2 * h ) - 128.0) / 128.0 , MIDLY +  (dot + MIDLY - ((counter + xpoffset[i]) % MIDLY) / fpeed[i]) * (cos8(fcount[i] + 2 * h ) - 128.0) / 128.0) =  CRGB::Orange;
+    else
+      zeds(MIDLX +  (dot + MIDLX - ((counter + xpoffset[i]) % MIDLX) / fpeed[i]) * (sin8(fcount[i] + 2 * h ) - 128.0) / 128.0, MIDLY +  (dot + MIDLY - ((counter + xpoffset[i]) % MIDLY) / fpeed[i]) * (cos8(fcount[i] + 2 * h ) - 128.0) / 128.0) = CHSV(h, 255, 255);
+  }
+
+  zeds.DrawFilledCircle( MIDLX  , MIDLY, dot  , CHSV(h, 255, 55 + 100 * dot / MIDLX));
+}
+
 
 
 // vim:sts=2:sw=2

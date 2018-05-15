@@ -15,8 +15,11 @@ boolean flip = true, flip2 = false, flip3 = true, mixit = false, rimmer[MATRIX_W
 byte ccoolloorr, why1, why2, why3, eeks1, eeks2, eeks3, h = 0, oldpattern, howmany, xhowmany, kk;
 unsigned long lasttest, lastmillis, dwell = 5000,  longhammer;
 float locusx, locusy, driftx, drifty, xcen, ycen, yangle, xangle;
+byte raad, lender = 128, xsizer, ysizer, xx,  yy, flipme = 1;
 byte shifty = 6, pattern = 0, poffset;
 byte sinewidth, mstep, faudio[64], inner, bfade = 6;
+int directn = 1, quash = 5;
+
 
 #endif
 

@@ -1354,6 +1354,8 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
     static uint8_t delayframe = dfinit;
 
     if (matrix_reset_demo == 1) {
+	Serial.print("Starting ME Table Demo #");
+	Serial.println(demo);
 	matrix_reset_demo = 0;
 	td_init();
 
@@ -1365,6 +1367,12 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 	case 11:
 	case 25:
 	    adjunct = 0;
+	    break;
+	case 52:
+	    bfade = 3;
+	    break;
+	case 110:
+	    bfade = 10;
 	    break;
 	}
 	matrix_clear();
@@ -1388,11 +1396,57 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 	break;
     case 25:
 	spire();
-	if (flip3)
-	  adjuster();
+	if (flip3) adjuster();
 	break;
     case 29:
 	Raudio();
+	break;
+    case 34:
+	Raudio3();
+	break;
+    case 36:
+	Raudio5();
+	break;
+    case 37:
+	Raudio();
+        adjuster();
+	break;
+    case 52:
+	rmagictime();
+	bkboxer();
+	starer();
+	if (flip && !flip2) adjuster();
+	break;
+    case 61:
+	starer();
+	bkboxer();
+	break;
+    case 67:
+	hypnoduck2();
+	break;
+    case 70:
+	// TODO, inspect each sub-demo
+	if (flip2) boxer();
+	else if (flip3) bkringer();
+	spin2();
+	if (!flip && flip2 && !flip3) adjuster();
+	break;
+    case 73:
+        homer2();
+	break;
+    case 77:
+	if (flip2) bkstarer(); else bkringer();
+	whitewarp();
+	break;
+    case 80:
+	starz();
+	break;
+    case 105:
+	hypnoduck4();
+	break;
+    case 110:
+	if (flip3) solid2();
+	bubbles();
 	break;
     }
 
@@ -1405,7 +1459,7 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 
 
 
-#define LAST_MATRIX 25
+#define LAST_MATRIX 37
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1585,8 +1639,80 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case LAST_MATRIX: 
+	case 25: 
 	    ret = metd(29, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 26: 
+	    ret = metd(34, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 27: 
+	    ret = metd(36, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 28: 
+	    ret = metd(37, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 29: 
+	    ret = metd(52, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 30: 
+	    ret = metd(61, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 31: 
+	    ret = metd(67, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 32: 
+	    ret = metd(70, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 33: 
+	    ret = metd(73, 10, 600);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 34: 
+	    ret = metd(77, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 35: 
+	    ret = metd(80, 5, 300);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 36: 
+	    ret = metd(105, 1, 1200);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case LAST_MATRIX: 
+	    ret = metd(110, 5, 300);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1676,13 +1802,39 @@ bool is_change() {
 
 
 bool handle_IR(uint32_t delay_time) {
+    int8_t new_pattern = 0;
+    char readchar;
+
     decode_results IR_result;
     for (uint16_t i=0; i<delay_time / MX_UPD_TIME; i++) {
 	matrix_update();
     }
     // Don't run update continuously, or the IR interrupts don't get in.
-    delay(delay_time % MX_UPD_TIME);
     // if (delay_time % MX_UPD_TIME > MX_UPD_TIME/2) matrix_update();
+    delay(delay_time % MX_UPD_TIME);
+
+
+    if (Serial.available()) readchar = Serial.read(); else readchar = 0;
+    if (readchar) {
+	while ((readchar >= '0') && (readchar <= '9')) {
+	    new_pattern = 10 * new_pattern + (readchar - '0');
+	    readchar = 0;
+	    if (Serial.available()) readchar = Serial.read();
+	}
+
+	if (new_pattern) {
+	    Serial.print("Got new pattern via serial ");
+	    Serial.println(new_pattern);
+	    matrix_change(new_pattern);
+	} else {
+	    Serial.print("Got serial char ");
+	    Serial.println(readchar);
+	}
+    }
+
+    if (readchar == 'n')      { Serial.println("Serial => next"); matrix_change(127);}
+    else if (readchar == 'p') { Serial.println("Serial => previous"); matrix_change(-128);}
+
 
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
