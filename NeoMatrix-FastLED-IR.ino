@@ -73,7 +73,7 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
 #define MX_UPD_TIME 10
 
 
-uint8_t matrix_state = 24;
+uint8_t matrix_state = 0;
 int16_t matrix_loop = -1;
 bool matrix_reset_demo = 1;
 
@@ -1404,10 +1404,10 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
     case 34:
 	Raudio3();
 	break;
-    case 36:
+    case 36: // unused, circles of color, too similar to 34
 	Raudio5();
 	break;
-    case 37:
+    case 37: // unused, other kinds of loose colored pixels, too close to 29
 	Raudio();
         adjuster();
 	break;
@@ -1417,7 +1417,7 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 	starer();
 	if (flip && !flip2) adjuster();
 	break;
-    case 61:
+    case 61: // unused, too similar to 52
 	starer();
 	bkboxer();
 	break;
@@ -1431,7 +1431,7 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 	spin2();
 	if (!flip && flip2 && !flip3) adjuster();
 	break;
-    case 73:
+    case 73: // unused, circle that gets fed by outside streams
         homer2();
 	break;
     case 77:
@@ -1445,7 +1445,7 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 	hypnoduck4();
 	break;
     case 110:
-	if (flip3) solid2();
+	//if (flip3) solid2();
 	bubbles();
 	break;
     }
@@ -1459,7 +1459,7 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 
 
 
-#define LAST_MATRIX 37
+#define LAST_MATRIX 32
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1495,20 +1495,20 @@ void matrix_update() {
 	    break;
 
 	case 1: 
-	    ret = esrr();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 2: 
 	    ret = squares(1);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    matrix_state = 2;
 	    break;
 
+	case 2: 
+	    ret = esrr();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
 	case 3: 
-	    ret = esrr_fade();
+	    ret = metd(52, 5, 300); // rectangles/squares/triangles zooming out
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1520,7 +1520,7 @@ void matrix_update() {
 	    break;
 
 	case 5: 
-	    ret = webwc();
+	    ret = metd(77, 5, 300); // streaming lines of colored pixels with shape zooming in or out
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1550,7 +1550,7 @@ void matrix_update() {
 	    break;
 
 	case 10: 
-	    ret = tfsf_zoom(1, 40);
+	    ret = metd(80, 5, 200); // rotating triangles of color
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1586,7 +1586,7 @@ void matrix_update() {
 	    break;
 
 	case 16: 
-	    ret = call_fire();
+	    ret = metd(105, 2, 400); // larger changing colors of hypno patterns
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1610,7 +1610,7 @@ void matrix_update() {
 	    break;
 
 	case 20: 
-	    ret = call_rain(3);
+	    ret = metd(110, 5, 300); // bubbles going up or right
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1622,97 +1622,67 @@ void matrix_update() {
 	    break;
 
 	case 22: 
-	    ret = metd(10, 5, 300);
+	    ret = metd(10, 5, 300); // 5 color windows-like pattern with circles in and out
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 23: 
-	    ret = metd(11, 5, 300);
+	case 23:  
+	    ret = metd(11, 5, 300);// color worm patterns going out with circles zomming out
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 24: 
-	    ret = metd(25, 2, 300);
+	    ret = tfsf_zoom(1, 40);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 25: 
+	case 25:  // audio:  colored pixels in a loose circle
 	    ret = metd(29, 5, 300);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 26: 
-	    ret = metd(34, 5, 300);
+	case 26: // audio: colored lines streaming from center
+	    ret = webwc();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 27: 
-	    ret = metd(36, 5, 300);
+	    ret = call_rain(3);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 28: 
-	    ret = metd(37, 5, 300);
+	    ret = metd(25, 3, 500);// 5 circles turning together, run a bit longer
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 29: 
-	    ret = metd(52, 5, 300);
+	    ret = esrr_fade();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 30: 
-	    ret = metd(61, 5, 300);
+	    ret = call_fire();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 31: 
-	    ret = metd(67, 5, 300);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 32: 
-	    ret = metd(70, 5, 300);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 33: 
-	    ret = metd(73, 10, 600);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 34: 
-	    ret = metd(77, 5, 300);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 35: 
-	    ret = metd(80, 5, 300);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 36: 
-	    ret = metd(105, 1, 1200);
+	    ret = metd(67, 5, 600); // two colors swirling bigger, creating hypno pattern
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case LAST_MATRIX: 
-	    ret = metd(110, 5, 300);
+	    ret = metd(34, 5, 300);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2029,69 +1999,81 @@ bool handle_IR(uint32_t delay_time) {
 
 
 	case IR_RGBZONE_RU:
-	    matrix_change(0);
-	    Serial.print("Got IR: Red UP switching to matrix state ");
+	    matrix_change(21);
+	    Serial.print("Got IR: Red UP switching to matrix state 21");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_RD:
-	    matrix_change(2);
-	    Serial.print("Got IR: Red DOWN switching to matrix state ");
+	    matrix_change(22);
+	    Serial.print("Got IR: Red DOWN switching to matrix state 22");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_GU:
-	    matrix_change(4);
-	    Serial.print("Got IR: Green UP switching to matrix state ");
+	    matrix_change(23);
+	    Serial.print("Got IR: Green UP switching to matrix state 23");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_GD:
-	    matrix_change(6);
-	    Serial.print("Got IR: Green DOWN switching to matrix state ");
+	    matrix_change(24);
+	    Serial.print("Got IR: Green DOWN switching to matrix state 24");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BU:
-	    matrix_change(8);
-	    Serial.print("Got IR: Blue UP switching to matrix state ");
+	    matrix_change(25);
+	    Serial.print("Got IR: Blue UP switching to matrix state 25");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BD:
-	    matrix_change(10);
-	    Serial.print("Got IR: Blue DOWN switching to matrix state ");
+	    matrix_change(26);
+	    Serial.print("Got IR: Blue DOWN switching to matrix state 26");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_DIY1:
+	    Serial.println("Got IR: DIY1 (27)");
+	    if (is_change()) { matrix_change(27); return 1; }
 	    // this uses the last color set
 	    nextdemo = f_colorWipe;
-	    Serial.println("Got IR: DIY1/colorWipe");
+	    Serial.println("Got IR: DIY1 colorWipe");
 	    return 1;
 
 	case IR_RGBZONE_DIY2:
+	    Serial.println("Got IR: DIY2 (28)");
+	    if (is_change()) { matrix_change(28); return 1; }
 	    // this uses the last color set
 	    nextdemo = f_theaterChase;
 	    Serial.println("Got IR: DIY2/theaterChase");
 	    return 1;
 
 	case IR_RGBZONE_DIY3:
+	    Serial.println("Got IR: DIY3 (29)");
+	    if (is_change()) { matrix_change(29); return 1; }
 	    nextdemo = f_juggle;
 	    Serial.println("Got IR: DIY3/Juggle");
 	    return 1;
 
 	case IR_RGBZONE_DIY4:
+	    Serial.println("Got IR: DIY4 (30)");
+	    if (is_change()) { matrix_change(30); return 1; }
 	    nextdemo = f_rainbowCycle;
 	    Serial.println("Got IR: DIY4/rainbowCycle");
 	    return 1;
 
 	case IR_RGBZONE_DIY5:
+	    Serial.println("Got IR: DIY5 (31)");
+	    if (is_change()) { matrix_change(31); return 1; }
 	    nextdemo = f_theaterChaseRainbow;
 	    Serial.println("Got IR: DIY5/theaterChaseRainbow");
 	    return 1;
 
 	case IR_RGBZONE_DIY6:
+	    Serial.println("Got IR: DIY6 (32)");
+	    if (is_change()) { matrix_change(32); return 1; }
 	    nextdemo = f_doubleConvergeRev;
 	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
 	    return 1;
