@@ -17,7 +17,7 @@
 
 CRGB& setXY( int x, int y) 
 {
-	return matrixleds[XY(wrapX(x),y)];
+	return matrixleds[XY2(wrapX(x),y)];
 }
 
 void screenscale( accum88 hor, accum88 ver, fract8& pixel, fract8& up, fract8& right, fract8& diag) // 3 Pointers to resulting fract8 variables
@@ -187,12 +187,12 @@ void fireworks()
 
 	for( uint8_t h = 0; h < MATRIX_WIDTH; h++) {	// All matrixleds will be set to 'sky1' (very dark blue) 
 		for( int v = 0; v < MATRIX_HEIGHT; v++) {
-			matrixleds[XY(h,v)] = sky1;
+			matrixleds[XY2(h,v)] = sky1;
 		}
 	}
 
 	if( random8() < 32 ) {
-		matrixleds[XY(random16(MATRIX_WIDTH),random16(MATRIX_HEIGHT))] = sky2;	// Around once each 8 frames, a random pixel is set to 'sky2' 
+		matrixleds[XY2(random16(MATRIX_WIDTH),random16(MATRIX_HEIGHT))] = sky2;	// Around once each 8 frames, a random pixel is set to 'sky2' 
 	}
 
 	static uint8_t launchcountdown = 0;
