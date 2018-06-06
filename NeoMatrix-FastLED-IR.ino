@@ -56,15 +56,6 @@
 
 #define MATRIXPIN D6
 
-// Max is 255, 32 is a conservative value to not overload
-// a USB power supply (500mA) for 12x12 pixels.
-uint8_t matrix_brightness = 32;
-
-FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, MATRIX_TILE_H, MATRIX_TILE_V, 
-  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
-    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
-    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
-
 // How many ms used for each matrix update
 #define MX_UPD_TIME 10
 

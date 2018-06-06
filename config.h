@@ -6,24 +6,6 @@
 
 #include <LEDMatrix.h>
 #include <LEDSprites.h>
-//
-// Used by LEDMatrix
-#define MATRIX_TILE_WIDTH   8 // width of EACH NEOPIXEL MATRIX (not total display)
-#define MATRIX_TILE_HEIGHT  32 // height of each matrix
-#define MATRIX_TILE_H       3  // number of matrices arranged horizontally
-#define MATRIX_TILE_V       1  // number of matrices arranged vertically
-
-// Used by NeoMatrix
-#define mw (MATRIX_TILE_WIDTH *  MATRIX_TILE_H)
-#define mh (MATRIX_TILE_HEIGHT * MATRIX_TILE_V)
-#define NUMMATRIX (mw*mh)
-
-// Compat for some other demos
-#define NUM_LEDS NUMMATRIX 
-#define MATRIX_HEIGHT mh
-#define MATRIX_WIDTH mw
-
-cLEDMatrix<-MATRIX_TILE_WIDTH, -MATRIX_TILE_HEIGHT, HORIZONTAL_ZIGZAG_MATRIX, MATRIX_TILE_H, MATRIX_TILE_V, HORIZONTAL_BLOCKS> ledmatrix;
 
 // Fonts + Gifs
 // Sketch uses 676884 bytes (64%) of program storage space. Maximum is 1044464 bytes.
@@ -45,18 +27,40 @@ cLEDMatrix<-MATRIX_TILE_WIDTH, -MATRIX_TILE_HEIGHT, HORIZONTAL_ZIGZAG_MATRIX, MA
 //#define NOFONTS 1
 
 
-
 //---------------------------------------------------------------------------- 
+//
+// Used by LEDMatrix
+#define MATRIX_TILE_WIDTH   8 // width of EACH NEOPIXEL MATRIX (not total display)
+#define MATRIX_TILE_HEIGHT  32 // height of each matrix
+#define MATRIX_TILE_H       3  // number of matrices arranged horizontally
+#define MATRIX_TILE_V       1  // number of matrices arranged vertically
 
+// Used by NeoMatrix
+#define mw (MATRIX_TILE_WIDTH *  MATRIX_TILE_H)
+#define mh (MATRIX_TILE_HEIGHT * MATRIX_TILE_V)
+#define NUMMATRIX (mw*mh)
+
+// Compat for some other demos
+#define NUM_LEDS NUMMATRIX 
+#define MATRIX_HEIGHT mh
+#define MATRIX_WIDTH mw
 #define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
-extern FastLED_NeoMatrix *matrix;
+cLEDMatrix<-MATRIX_TILE_WIDTH, -MATRIX_TILE_HEIGHT, HORIZONTAL_ZIGZAG_MATRIX, MATRIX_TILE_H, MATRIX_TILE_V, HORIZONTAL_BLOCKS> ledmatrix;
 
+//
 //CRGB matrixleds[NUMMATRIX];
 // cLEDMatrix creates a FastLED array and we need to retrieve a pointer to its first element
 // to act as a regular FastLED array.
 CRGB *matrixleds = ledmatrix[0];
 
+FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, MATRIX_TILE_H, MATRIX_TILE_V, 
+  NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
+    NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
+    NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
+
+
+uint8_t matrix_brightness = 32;
 
 int XY2( int x, int y, bool wrap=false) { 
 	return matrix->XY(x,MATRIX_HEIGHT-1-y);
