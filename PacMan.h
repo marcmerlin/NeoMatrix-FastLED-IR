@@ -1,16 +1,14 @@
 #include "config.h"
 
-#define leds ledmatrix
-
-cLEDSprites Sprites(&leds);
+cLEDSprites Sprites(&ledmatrix);
 
 #define MY_SPRITE_WIDTH  11
 #define MY_SPRITE_HEIGHT 10
 #define PACMAN_FRAMES  3
 #define PINKY_FRAMES  2
 
-#define maxx (MATRIX_WIDTH - MY_SPRITE_WIDTH - 1)
-#define maxy (MATRIX_HEIGHT - MY_SPRITE_HEIGHT -1)
+#define max_x (MATRIX_WIDTH - MY_SPRITE_WIDTH - 1)
+#define max_y (MATRIX_HEIGHT - MY_SPRITE_HEIGHT -1)
 
 #define POWER_PILL_SIZE	4
 const uint8_t PowerPillData[] = 
@@ -349,9 +347,9 @@ void pacman_setup(uint8_t loopcnt)
     SprPinky.SetPositionFrameMotionOptions(     0 /*X*/, -62/*Y*/, 0/*Frame*/, 2/*FrameRate*/, 0/*XChange*/, 0/*XRate*/, 1/*YChange*/, 1/*YRate*/, SPRITE_Y_KEEPIN | SPRITE_DETECT_EDGE);
     Sprites.AddSprite(&SprPinky);
     Serial.print("Top X for sprite: ");
-    Serial.print(maxx);
+    Serial.print(max_x);
     Serial.print(". Top Y for sprite: ");
-    Serial.println(maxy);
+    Serial.println(max_y);
     Serial.println("Sprite setup done");
     inmaze = 0;
     pinmaze = 0;
@@ -429,40 +427,40 @@ uint8_t pacman_loop()
     // YRate is '0' then the appropriate axis motion will be disabled.
     // The higher the rate, the more the sprite slows down
     if (gy < 1 && ginmaze == 6) {
-	Serial.println("Ghost hit bottom/left wall2");
+	//Serial.println("Ghost hit bottom/left wall2");
 	SprGhost.SetMotion(1, 2, 0, 0);
 	ginmaze = 7;
     }
-    else if (gx > maxx && ginmaze == 7) {
-	Serial.println("Ghost hit bottom/right wall2");
+    else if (gx > max_x && ginmaze == 7) {
+	//Serialln("Ghost hit bottom/right wall2");
 	SprGhost.SetMotion(0, 0, 1, 2);
 	ginmaze = 8;
     }
-    else if (gy > maxy && ginmaze == 8) {
+    else if (gy > max_y && ginmaze == 8) {
 	SprGhost.SetMotion(-1, 2, 0, 0);
-	Serial.println("Ghost hit top/right wall2");
+	//Serialln("Ghost hit top/right wall2");
 	ginmaze = 9;
     }
     else if (gx < 1 && ginmaze == 9) {
-	Serial.println("Ghost hit top/left wall3");
+	//Serialln("Ghost hit top/left wall3");
 	SprGhost.SetMotion(0, 0, -1, 2);
 	ginmaze = 10;
     }
 
 
-    if (pcmry >= maxy && !inmaze) inmaze = 1;
-    if (pcmry >= maxy && inmaze == 1) {
+    if (pcmry >= max_y && !inmaze) inmaze = 1;
+    if (pcmry >= max_y && inmaze == 1) {
 	SprPacmanRight.SetMotion(1, 1, 0, 0);
-	Serial.println("Pacman hit top/left wall");
+	//Serialln("Pacman hit top/left wall");
 	inmaze = 2;
     }
-    else if (pcmrx >= maxx && inmaze == 2) {
-	Serial.println("Pacman hit top/right wall");
+    else if (pcmrx >= max_x && inmaze == 2) {
+	//Serialln("Pacman hit top/right wall");
 	SprPacmanRight.SetMotion(0, 0, -1, 1);
 	inmaze = 3;
     }
     else if (pcmry <= 1 && inmaze == 3) {
-	Serial.println("Pacman hit bottom/right wall");
+	//Serialln("Pacman hit bottom/right wall");
 	SprPacmanRight.SetMotion(-1, 1, 0, 0);
 	inmaze = 4;
 	if (pacman_loops == 0) {
@@ -471,14 +469,14 @@ uint8_t pacman_loop()
 	} else { pacman_loops--; }
     }
     else if (pcmrx <= 1 && inmaze == 4) {
-	Serial.println("Pacman hit bottom/left wall");
+	//Serialln("Pacman hit bottom/left wall");
 	SprPacmanRight.SetMotion(0, 0, 1, 1);
 	inmaze = 1;
     }
 
     if (inmaze<6 && SprPacmanRight.GetFlags() & SPRITE_COLLISION)
     {
-	Serial.println("Pill Collision");
+	//Serialln("Pill Collision");
 	inmaze = 6;
 	ginmaze = 6;
 	Sprites.RemoveSprite(&SprPinky);
@@ -490,45 +488,45 @@ uint8_t pacman_loop()
 	Sprites.AddSprite(&SprGhost);
     }
     else if (pcmly <= 1 && inmaze == 6) {
-	Serial.println("Pacman hit bottom/left wall2");
+	//Serialln("Pacman hit bottom/left wall2");
 	SprPacmanLeft.SetMotion(1, 1, 0, 0);
 	inmaze = 7;
     }
-    else if (pcmlx >= maxx && inmaze == 7) {
-	Serial.println("Pacman hit bottom/right wall2");
+    else if (pcmlx >= max_x && inmaze == 7) {
+	//Serialln("Pacman hit bottom/right wall2");
 	SprPacmanLeft.SetMotion(0, 0, 1, 1);
 	inmaze = 8;
     }
-    else if (pcmly >= maxy && inmaze == 8) {
+    else if (pcmly >= max_y && inmaze == 8) {
 	SprPacmanLeft.SetMotion(-1, 1, 0, 0);
-	Serial.println("Pacman hit top/right wall2");
+	//Serialln("Pacman hit top/right wall2");
 	inmaze = 9;
     }
     else if (pcmlx <= 1 && inmaze == 9) {
-	Serial.println("Pacman hit top/left wall3");
+	//Serialln("Pacman hit top/left wall3");
 	SprPacmanLeft.SetMotion(0, 0, -1, 1);
 	inmaze = 10;
     }
 
 
-    if (py >= maxy && !pinmaze) pinmaze = 1;
-    if (py >= maxy && pinmaze == 1) {
+    if (py >= max_y && !pinmaze) pinmaze = 1;
+    if (py >= max_y && pinmaze == 1) {
 	SprPinky.SetMotion(1, 1, 0, 0);
-	Serial.println("Pinky hit top/left wall");
+	//Serialln("Pinky hit top/left wall");
 	pinmaze = 2;
     }
-    else if (px >= maxx && pinmaze == 2) {
-	Serial.println("Pinky hit top/right wall");
+    else if (px >= max_x && pinmaze == 2) {
+	//Serialln("Pinky hit top/right wall");
 	SprPinky.SetMotion(0, 0, -1, 1);
 	pinmaze = 3;
     }
     else if (py <= 1 && pinmaze == 3) {
-	Serial.println("Pinky hit bottom/right wall");
+	//Serialln("Pinky hit bottom/right wall");
 	SprPinky.SetMotion(-1, 1, 0, 0);
 	pinmaze = 4;
     }
     else if (px <= 1 && pinmaze == 4) {
-	Serial.println("Pinky hit bottom/left wall");
+	//Serialln("Pinky hit bottom/left wall");
 	SprPinky.SetMotion(0, 0, 1, 1);
 	pinmaze = 1;
     }
@@ -536,7 +534,7 @@ uint8_t pacman_loop()
     // ginmaze > 5 && 
     if (!ghostdead && SprGhost.GetFlags() & SPRITE_COLLISION)
     {
-	Serial.println("Ghost killed");
+	//Serialln("Ghost killed");
 	Sprites.RemoveSprite(&SprGhost);
 	Spr200.SetPositionFrameMotionOptions(SprGhost.m_X+1, SprGhost.m_Y, 0, 0, 0, 0, 0, 0);
 	Sprites.AddSprite(&Spr200);
@@ -547,18 +545,18 @@ uint8_t pacman_loop()
     }
 
     if (ghostdead && SprEyes.m_Y < 1) {
-	Serial.println("Eye Bounce #1");
+	//Serialln("Eye Bounce #1");
 	SprEyes.m_Y = 1;
 	SprEyes.SetMotion(0, 0, 1, 3);
     }
     else if (SprEyes.m_Y > MATRIX_HEIGHT) {
-	Serial.println("Ghost eyes left the building, stopping");
+	//Serialln("Ghost eyes left the building, stopping");
 	SprEyes.m_Y = 0;
 	return 0;
     }
 
     Sprites.RenderSprites();
-    leds.DrawLine (leds.Width()/2, MY_SPRITE_HEIGHT, leds.Width()/2, leds.Height() - 1 - MY_SPRITE_HEIGHT, CRGB::Grey);
+    ledmatrix.DrawLine (ledmatrix.Width()/2, MY_SPRITE_HEIGHT, ledmatrix.Width()/2, ledmatrix.Height() - 1 - MY_SPRITE_HEIGHT, CRGB::Grey);
     matrix_show();
     return 1;
 }
