@@ -20,6 +20,34 @@ byte shifty = 6, pattern = 0, poffset;
 byte sinewidth, mstep, faudio[64], inner, bfade = 6;
 int directn = 1, quash = 5;
 
+void td_init();
+void fakenoise();
+void audioprocess();
+void adjuster();
+void td_init();
+void td_loop();
+void corner();
+void bkringer();
+void ringer();
+void whitewarp();
+void spire();
+void Raudio();
+void Raudio3();
+void Raudio5();
+void rmagictime();
+void bkboxer();
+void starer();
+void hypnoduck2();
+void boxer();
+void spin2();
+void bkstarer();
+void starz();
+void hypnoduck4();
+void solid2();
+void bubbles();
+void homer2();
+
+
 
 #endif
 
