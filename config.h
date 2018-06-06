@@ -23,6 +23,7 @@
 #define MATRIX_HEIGHT mh
 #define MATRIX_WIDTH mw
 
+cLEDMatrix<-MATRIX_TILE_WIDTH, -MATRIX_TILE_HEIGHT, HORIZONTAL_ZIGZAG_MATRIX, MATRIX_TILE_H, MATRIX_TILE_V, HORIZONTAL_BLOCKS> ledmatrix;
 
 // Fonts + Gifs
 // Sketch uses 676884 bytes (64%) of program storage space. Maximum is 1044464 bytes.
@@ -51,17 +52,19 @@
 
 extern FastLED_NeoMatrix *matrix;
 
-int XY( int x, int y) 
-{
-	// For some reason, Y is reversed on my matrix, so fix this here.
-	return matrix->XY(x,MATRIX_HEIGHT-1-y);
+//CRGB matrixleds[NUMMATRIX];
+// cLEDMatrix creates a FastLED array and we need to retrieve a pointer to its first element
+// to act as a regular FastLED array.
+CRGB *matrixleds = ledmatrix[0];
 
+
+int XY2( int x, int y, bool wrap=false) { 
+	return matrix->XY(x,MATRIX_HEIGHT-1-y);
 }
 
-// Yeah, with default arguments, this should not be necessary, but I'm hitting
-// a compiler bug that prevents , bool wrap=false in the signature.
-int XY( int x, int y, bool wrap) { 
-	return matrix->XY(x,MATRIX_HEIGHT-1-y);
+
+uint16_t XY( uint8_t x, uint8_t y) {
+    return matrix->XY(x,y);
 }
 
 #ifdef ESP8266
@@ -91,4 +94,8 @@ int wrapX(int x) {
 	if (x >= MATRIX_WIDTH) return (MATRIX_WIDTH-1);
 	return x;
 }
+
+void matrix_clear();
+void matrix_show();
+void aurora_setup();
 #endif
