@@ -86,6 +86,8 @@ extern "C" {
 #define max(a,b) (a>b)?(a):(b)
 #endif
 
+bool matrix_reset_demo = 1;
+
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 uint16_t speed = 255;
 
