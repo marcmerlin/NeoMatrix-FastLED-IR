@@ -62,9 +62,12 @@ uint8_t aurora(uint8_t item) {
     static uint8_t delayframe = 1;
     uint8_t repeat = 1;
     static uint16_t counter = 1;
-    uint16_t loops = 5000;
+    uint16_t loops = 2000;
 
-    if (item == 10) loops = 20000;
+    if (item == 1 ) { loops = 3000; }
+    if (item == 5 ) { loops = 4000; }
+    if (item == 7 ) { loops = 5000; }
+    if (item == 10) { loops = 5000; }
 
     if (matrix_reset_demo == 1) {
 	counter = 0;
@@ -80,7 +83,7 @@ uint8_t aurora(uint8_t item) {
 
     if (--delayframe) {
 	matrix_show(); // make sure we still run at the same speed.
-	return 1;
+	return repeat;
     }
     delayframe = 1;
 

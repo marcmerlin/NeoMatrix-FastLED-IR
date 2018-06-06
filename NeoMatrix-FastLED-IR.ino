@@ -309,6 +309,7 @@ uint8_t tfsf() {
     uint16_t duration = 100;
     uint8_t resetspd = 5;
     uint8_t l = 0;
+    uint8_t repeat = 1;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -387,7 +388,7 @@ uint8_t tfsf() {
     }
 
     matrix_show();
-    return 3;
+    return repeat;
 }
 
 // type 0 = up, type 1 = up and down
@@ -401,7 +402,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static uint16_t delayframe;
     char letters[] = { 'T', 'F', 'S', 'F' };
     bool done = 0;
-    uint8_t repeat = 3;
+    uint8_t repeat = 4;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1627,7 +1628,7 @@ void matrix_update() {
 	    break;
 
 	case 24: 
-	    ret = tfsf_zoom(1, 25);
+	    ret = tfsf_zoom(1, 30);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1804,6 +1805,8 @@ bool handle_IR(uint32_t delay_time) {
 
     if (readchar == 'n')      { Serial.println("Serial => next"); matrix_change(127);}
     else if (readchar == 'p') { Serial.println("Serial => previous"); matrix_change(-128);}
+    else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
+    else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
 
 
     if (irrecv.decode(&IR_result)) {
