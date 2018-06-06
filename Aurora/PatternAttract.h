@@ -20,9 +20,9 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "matrix.h"
-
 #ifndef PatternAttract_H
+
+#include "matrix.h"
 
 class PatternAttract : public Drawable {
 private:

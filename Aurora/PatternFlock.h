@@ -32,10 +32,10 @@
 // See: http://www.red3d.com/cwr/
 // Rules: Cohesion, Separation, Alignment
 
-#include "matrix.h"
-
 #ifndef PatternFlock_H
 #define PatternFlock_H
+
+#include "matrix.h"
 
 class PatternFlock : public Drawable {
   public:

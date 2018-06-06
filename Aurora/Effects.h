@@ -25,10 +25,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include "matrix.h"
-
 #ifndef Effects_H
 #define Effects_H
+
+#include "matrix.h"
 
 #define MAX_COLOR_VALUE 255
 

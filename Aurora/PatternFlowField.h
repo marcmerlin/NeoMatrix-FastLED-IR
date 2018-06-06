@@ -20,9 +20,9 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "matrix.h"
-
 #ifndef PatternFlowField_H
+
+#include "matrix.h"
 
 class PatternFlowField : public Drawable {
   public:

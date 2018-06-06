@@ -20,10 +20,10 @@
 * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
-#include "matrix.h"
-
 #ifndef PatternIncrementalDrift_H
 #define PatternIncrementalDrift_H
+
+#include "matrix.h"
 
 class PatternIncrementalDrift : public Drawable {
   public:

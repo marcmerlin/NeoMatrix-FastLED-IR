@@ -24,10 +24,10 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "matrix.h"
-
 
 #ifndef PatternSwirl_H
+
+#include "matrix.h"
 
 class PatternSwirl : public Drawable {
   private:

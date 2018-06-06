@@ -31,10 +31,10 @@
 * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#include "matrix.h"
-
 #ifndef PatternPendulumWave_H
 #define PatternPendulumWave_H
+
+#include "matrix.h"
 
 class PatternPendulumWave : public Drawable {
   public:
