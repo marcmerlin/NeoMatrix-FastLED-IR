@@ -19,6 +19,10 @@
 
 #include "config.h"
 #include "Table_Mark_Estes.h"
+#include "PacMan.h"
+#include "FireWorks2.h"
+#include "Sublime_Demos.h"
+#include "aurora.h"
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
@@ -56,14 +60,6 @@
 // a USB power supply (500mA) for 12x12 pixels.
 uint8_t matrix_brightness = 32;
 
-cLEDMatrix<-MATRIX_TILE_WIDTH, -MATRIX_TILE_HEIGHT, HORIZONTAL_ZIGZAG_MATRIX, MATRIX_TILE_H, MATRIX_TILE_V, HORIZONTAL_BLOCKS> ledmatrix;
-
-
-//CRGB matrixleds[NUMMATRIX];
-// cLEDMatrix creates a FastLED array and we need to retrieve a pointer to its first element
-// to act as a regular FastLED array.
-CRGB *matrixleds = ledmatrix[0];
-
 FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH, MATRIX_TILE_HEIGHT, MATRIX_TILE_H, MATRIX_TILE_V, 
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
@@ -77,7 +73,6 @@ uint8_t matrix_state = 0;
 // controls how many times a demo should run its pattern
 // init at -1 to indicate that a demo is run for the first time (demo switch)
 int16_t matrix_loop = -1;
-bool matrix_reset_demo = 1;
 
 
 //---------------------------------------------------------------------------- 
@@ -1234,7 +1229,6 @@ uint8_t pride()
 }
 
 
-
 uint8_t call_fireworks() {
     static uint16_t state;
 
@@ -1464,9 +1458,10 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
     return 0;
 }
 
+extern uint8_t aurora(uint8_t item);
 
 
-#define LAST_MATRIX 32
+#define LAST_MATRIX 45
 void matrix_change(int matrix) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
@@ -1684,6 +1679,13 @@ void matrix_update() {
 
 	case 31: 
 	    ret = metd(67, 5, 900); // two colors swirling bigger, creating hypno pattern
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	//case 32-44: // see default
+	default:
+	    ret = aurora(matrix_state-32);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2527,6 +2529,8 @@ void setup() {
     leds_show();
     Serial.println("LEDs on");
     delay(1000);
+
+    aurora_setup();
 
     // Init Matrix
     // Serialized, 768 pixels takes 26 seconds for 1000 updates or 26ms per refresh
