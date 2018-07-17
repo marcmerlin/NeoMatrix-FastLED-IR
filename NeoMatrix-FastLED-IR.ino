@@ -104,7 +104,13 @@ bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
 static int16_t strip_speed = 50;
 
+// Those LEDS are not as bright on low settings, so make them brighter in software
+#define WS2813
+#ifdef WS2813
+uint8_t led_brightness = 64;
+#else
 uint8_t led_brightness = 32;
+#endif
 
 uint32_t last_change = millis();
 
@@ -1480,6 +1486,8 @@ void matrix_update() {
 	gHue++;  // slowly cycle the "base color" through the rainbow
     }
     sublime_loop();
+    // reset passthrough color set by some demos
+    matrix->setPassThruColor();
 
     switch (matrix_state) {
 	case 0: 
@@ -1718,7 +1726,7 @@ void leds_setcolor(uint16_t i, uint32_t c) {
 }
 
 void change_brightness(int8_t change) {
-    static uint8_t brightness = 4;
+    static uint8_t brightness = 5;
     static uint32_t last_brightness_change = 0 ;
 
     if (millis() - last_brightness_change < 300) {
@@ -1728,7 +1736,11 @@ void change_brightness(int8_t change) {
     }
     last_brightness_change = millis();
     brightness = constrain(brightness + change, 1, 8);
+#ifdef WS2813
+    led_brightness = constrain((1 << (brightness+1)) - 1, 1, 255);
+#else
     led_brightness = (1 << brightness) - 1;
+#endif
     matrix_brightness = (1 << brightness) - 1;
 
     // This is actually ignored by the currrent setup with 2 independent strings
