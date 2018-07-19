@@ -45,11 +45,6 @@
 #include "fonts.h"
 #endif
 
-#ifndef NOANIMGIF
-#include "anim_nucleus.h"
-#include "anim_balls.h"
-#endif
-
 // Choose your prefered pixmap
 #include "smileytongue24.h"
 
@@ -952,9 +947,8 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     return 3;
 }
 
-uint8_t AnimFlower() {
-    #define flowerframes 30
-    #define flowerloop (450 * flowerframes)
+uint8_t GifAnim(char *fn, uint16_t frames) {
+    #define flowerloop (450 * frames)
     static uint32_t loop = flowerloop;
     static uint16_t delayframe = 1;
     uint8_t repeat = 1;
@@ -962,11 +956,10 @@ uint8_t AnimFlower() {
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	// exit if the gif animation couldn't get setup.
-	if (sav_newgif("/gifs/32anim_flower.gif")) return 0;
+	if (sav_newgif(fn)) return 0;
     }
 
     if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
 	// Serial.println("delayed frame");
 	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
@@ -982,89 +975,6 @@ uint8_t AnimFlower() {
     return repeat;
 }
 
-uint8_t AnimNucleus() {
-#define nucleusloop 5
-    static uint8_t loop = nucleusloop;
-    static uint16_t frame = 0;
-    static uint16_t delayframe = 2;
-    uint8_t repeat = 3;
-
-    if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
-	// Serial.println("delayed frame");
-	matrix_show(); // make sure we still run at the same speed.
-	return repeat;
-    }
-    delayframe = 2;
-//    Serial.print("loop ");
-//    Serial.print(loop);
-//    Serial.print(" frame ");
-//    Serial.println(frame);
-
-#ifndef NOANIMGIF
-    for (uint8_t y = 0; y < 32; y++) {
-	for (uint8_t x = 0; x < 32; x++) {
-	    uint32_t loc = y*32 + x;
-	    matrix->drawPixel(x-4, y, matrix->Color(
-		(pgm_read_byte(&(nucleusRedFrames[frame][loc]))), 
-		(pgm_read_byte(&(nucleusGreenFrames[frame][loc]))), 
-		(pgm_read_byte(&(nucleusBlueFrames[frame][loc])))
-	    ));
-	}
-    }
-    matrix_show();
-    if (++frame == sizeof(nucleusRedFrames)/(32*32)) {
-	frame = 0;
-	if (loop-- == 0) {
-	    loop = nucleusloop;
-	    return 0;
-	}
-    }
-#endif
-    return repeat;
-}
-
-uint8_t AnimBalls() {
-#define ballsloop 3
-    static uint8_t loop = ballsloop;
-    static uint16_t frame = 0;
-    static uint16_t delayframe = 3;
-    uint8_t repeat = 3;
-
-    if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
-	// Serial.println("delayed frame");
-	matrix_show(); // make sure we still run at the same speed.
-	return repeat;
-    }
-    delayframe = 3;
-//    Serial.print("loop ");
-//    Serial.print(loop);
-//    Serial.print(" frame ");
-//    Serial.println(frame);
-
-#ifndef NOANIMGIF
-    for (uint8_t y = 0; y < 32; y++) {
-	for (uint8_t x = 0; x < 32; x++) {
-	    uint32_t loc = y*32 + x;
-	    matrix->drawPixel(x-4, y, matrix->Color(
-		(pgm_read_byte(&(ballsRedFrames[frame][loc]))), 
-		(pgm_read_byte(&(ballsGreenFrames[frame][loc]))), 
-		(pgm_read_byte(&(ballsBlueFrames[frame][loc])))
-	    ));
-	}
-    }
-    matrix_show();
-    if (++frame == sizeof(ballsRedFrames)/(32*32)) {
-	frame = 0;
-	if (loop-- == 0) {
-	    loop = ballsloop;
-	    return 0;
-	}
-    }
-#endif
-    return repeat;
-}
 
 // this is doing it the hard way, and only for my matrix.
 // instead, use XY() I added in NeoMatrix
@@ -1440,7 +1350,7 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 extern uint8_t aurora(uint8_t item);
 
 
-#define LAST_MATRIX 45
+#define LAST_MATRIX 54
 void matrix_change(int demo) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
@@ -1509,7 +1419,7 @@ void matrix_update() {
 	    break;
 
 	case 6: 
-	    ret = AnimNucleus();
+	    ret = GifAnim("/gifs/32anim_photon.gif", 44);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1521,7 +1431,7 @@ void matrix_update() {
 	    break;
 
 	case 8: 
-	    ret = AnimFlower();
+	    ret = GifAnim("/gifs/32anim_flower.gif", 30);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1539,7 +1449,7 @@ void matrix_update() {
 	    break;
 
 	case 11: 
-	    ret = AnimBalls();
+	    ret = GifAnim("/gifs/32anim_balls.gif", 38);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1667,6 +1577,60 @@ void matrix_update() {
 	//case 32-44: // see default
 	default:
 	    ret = aurora(matrix_state-32);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 45: 
+	    ret = GifAnim("/gifs/32anim_dance.gif", 100);  // 277
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 46: 
+	    ret = GifAnim("/gifs/circles_swap.gif", 16);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 47: 
+	    ret = GifAnim("/gifs/concentric_circles.gif", 40); // 20
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 48: 
+	    ret = GifAnim("/gifs/corkscrew.gif", 29);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 49: 
+	    ret = GifAnim("/gifs/cubeconstruct.gif", 30); // 76
+	    if (matrix_loop == -1) matrix_loop = ret; 
+	    if (ret) return;
+	    break;
+
+	case 50: 
+	    ret = GifAnim("/gifs/cubeslide.gif", 30); // 272
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 51: 
+	    ret = GifAnim("/gifs/runningedgehog.gif", 24); // 8
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 52: 
+	    ret = GifAnim("/gifs/triangles_in.gif", 48);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 53: 
+	    ret = GifAnim("/gifs/wifi.gif", 30); //254
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2528,6 +2492,8 @@ void setup() {
     Serial.print(mw);
     Serial.print(" ");
     Serial.println(mh);
+    // Turn off dithering https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
+    FastLED.setDither( 0 );
     matrix->begin();
     matrix->setBrightness(matrix_brightness);
     matrix->setTextWrap(false);
