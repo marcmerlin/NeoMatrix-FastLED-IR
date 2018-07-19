@@ -46,7 +46,6 @@
 #endif
 
 #ifndef NOANIMGIF
-#include "anim_flower.h"
 #include "anim_nucleus.h"
 #include "anim_balls.h"
 #endif
@@ -954,11 +953,17 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 }
 
 uint8_t AnimFlower() {
-#define flowerloop 15
-    static uint8_t loop = flowerloop;
-    static uint16_t frame = 0;
+    #define flowerframes 30
+    #define flowerloop (450 * flowerframes)
+    static uint32_t loop = flowerloop;
     static uint16_t delayframe = 1;
-    uint8_t repeat = 3;
+    uint8_t repeat = 1;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	// exit if the gif animation couldn't get setup.
+	if (sav_newgif("/gifs/32anim_flower.gif")) return 0;
+    }
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
@@ -967,31 +972,13 @@ uint8_t AnimFlower() {
 	return repeat;
     }
     delayframe = 1;
-//    Serial.print("loop ");
-//    Serial.print(loop);
-//    Serial.print(" frame ");
-//    Serial.println(frame);
 
-#ifndef NOANIMGIF
-    for (uint8_t y = 0; y < 32; y++) {
-	for (uint8_t x = 0; x < 32; x++) {
-	    uint32_t loc = y*32 + x;
-	    matrix->drawPixel(x-4, y, matrix->Color(
-		(pgm_read_byte(&(flowerRedFrames[frame][loc]))), 
-		(pgm_read_byte(&(flowerGreenFrames[frame][loc]))), 
-		(pgm_read_byte(&(flowerBlueFrames[frame][loc])))
-	    ));
-	}
+    // simpleanimviewer runs show() already.
+    sav_loop();
+    if (loop-- == 0) {
+	loop = flowerloop;
+	return 0;
     }
-    matrix_show();
-    if (++frame == sizeof(flowerRedFrames)/(32*32)) {
-	frame = 0;
-	if (loop-- == 0) {
-	    loop = flowerloop;
-	    return 0;
-	}
-    }
-#endif
     return repeat;
 }
 
@@ -1454,19 +1441,21 @@ extern uint8_t aurora(uint8_t item);
 
 
 #define LAST_MATRIX 45
-void matrix_change(int matrix) {
+void matrix_change(int demo) {
+    // Reset passthrough from previous demo
+    matrix->setPassThruColor();
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_reset_demo = 1;
-    if (matrix==-128) if (matrix_state-- == 0) matrix_state = LAST_MATRIX;
-    if (matrix==+127) if (matrix_state++ == LAST_MATRIX) matrix_state = 0;
+    if (demo==-128) if (matrix_state-- == 0) matrix_state = LAST_MATRIX;
+    if (demo==+127) if (matrix_state++ == LAST_MATRIX) matrix_state = 0;
     // If existing matrix was already >90, any +- change brings it back to 0.
     if (matrix_state > 90) matrix_state = 0;
-    if (matrix >= 0 && matrix < 127) matrix_state = matrix;
+    if (demo >= 0 && demo < 127) matrix_state = demo;
     // Special one key press demos are shown once and next goes back to the normal loop
-    if (matrix >= 0 && matrix < 90) matrix_loop = 9999;
+    if (demo >= 0 && demo < 90) matrix_loop = 9999;
     Serial.print("Got matrix_change ");
-    Serial.print(matrix);
+    Serial.print(demo);
     Serial.print(", switching to matrix demo ");
     Serial.print(matrix_state);
     Serial.print(" loop ");
@@ -2525,6 +2514,7 @@ void setup() {
     delay(1000);
 
     aurora_setup();
+    sav_setup();
 
     // Init Matrix
     // Serialized, 768 pixels takes 26 seconds for 1000 updates or 26ms per refresh
