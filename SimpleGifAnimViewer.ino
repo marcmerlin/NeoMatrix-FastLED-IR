@@ -53,6 +53,17 @@ void sav_setup() {
     decoder.setFileReadBlockCallback(fileReadBlockCallback);
 
     matrix->precal_gamma(matrix_gamma);
+
+    #ifdef ESP8266
+    SPIFFS.begin();
+    Dir dir = SPIFFS.openDir("/");
+    while (dir.next()) {
+	String fileName = dir.fileName();
+	size_t fileSize = dir.fileSize();
+	Serial.printf("FS File: %s, size: %s\n", fileName.c_str(), String(fileSize).c_str());
+    }
+    #endif
+    Serial.printf("\n");
 }
 
 bool sav_newgif(char *pathname) {
