@@ -1800,18 +1800,6 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.println("Hit slower speed to restart panel anim");
 	    return 1;
 
-	case IR_RGBZONE_QUICK:
-	    if (is_change()) { ; return 1; }
-	    change_speed(-10);
-	    Serial.println("Got IR: Quick");
-	    return 1;
-
-	case IR_RGBZONE_SLOW:
-	    change_speed(+10);
-	    Serial.println("Got IR: Slow");
-	    return 1;
-
-
 	case IR_RGBZONE_RED:
 	    Serial.println("Got IR: Red (1)");
 	    if (is_change()) { matrix_change(1); return 1; }
@@ -1968,109 +1956,134 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.println(matrix_state);
 	    return 1;
 
-	case IR_RGBZONE_RD:
-	    matrix_change(22);
-	    Serial.print("Got IR: Red DOWN switching to matrix state 22");
-	    Serial.println(matrix_state);
-	    return 1;
-
 	case IR_RGBZONE_GU:
-	    matrix_change(23);
-	    Serial.print("Got IR: Green UP switching to matrix state 23");
-	    Serial.println(matrix_state);
-	    return 1;
-
-	case IR_RGBZONE_GD:
-	    matrix_change(24);
-	    Serial.print("Got IR: Green DOWN switching to matrix state 24");
+	    matrix_change(22);
+	    Serial.print("Got IR: Green UP switching to matrix state 22");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BU:
+	    matrix_change(23);
+	    Serial.print("Got IR: Blue UP switching to matrix state 23");
+	    Serial.println(matrix_state);
+	    return 1;
+
+
+	case IR_RGBZONE_RD:
+	    Serial.print("Got IR: Red DOWN switching to matrix state 25");
 	    matrix_change(25);
-	    Serial.print("Got IR: Blue UP switching to matrix state 25");
+	    Serial.println(matrix_state);
+	    return 1;
+
+	case IR_RGBZONE_GD:
+	    Serial.print("Got IR: Green DOWN switching to matrix state 26");
+	    matrix_change(26);
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BD:
-	    matrix_change(26);
-	    Serial.print("Got IR: Blue DOWN switching to matrix state 26");
+	    Serial.print("Got IR: Blue DOWN switching to matrix state 27");
+	    matrix_change(27);
 	    Serial.println(matrix_state);
 	    return 1;
 
+	case IR_RGBZONE_QUICK:
+	    Serial.println("Got IR: Quick (24)");
+	    if (is_change()) { matrix_change(24); return 1; }
+	    change_speed(-10);
+	    return 1;
+
+	case IR_RGBZONE_SLOW:
+	    Serial.println("Got IR: Slow (28)");
+	    if (is_change()) { matrix_change(28); return 1; }
+	    change_speed(+10);
+	    return 1;
+
+
+
+
 	case IR_RGBZONE_DIY1:
-	    Serial.println("Got IR: DIY1 (27)");
-	    if (is_change()) { matrix_change(27); return 1; }
+	    Serial.println("Got IR: DIY1 (29)");
+	    if (is_change()) { matrix_change(29); return 1; }
 	    // this uses the last color set
 	    nextdemo = f_colorWipe;
 	    Serial.println("Got IR: DIY1 colorWipe");
 	    return 1;
 
 	case IR_RGBZONE_DIY2:
-	    Serial.println("Got IR: DIY2 (28)");
-	    if (is_change()) { matrix_change(28); return 1; }
+	    Serial.println("Got IR: DIY2 (30)");
+	    if (is_change()) { matrix_change(30); return 1; }
 	    // this uses the last color set
 	    nextdemo = f_theaterChase;
 	    Serial.println("Got IR: DIY2/theaterChase");
 	    return 1;
 
 	case IR_RGBZONE_DIY3:
-	    Serial.println("Got IR: DIY3 (29)");
-	    if (is_change()) { matrix_change(29); return 1; }
+	    Serial.println("Got IR: DIY3 (31)");
+	    if (is_change()) { matrix_change(31); return 1; }
 	    nextdemo = f_juggle;
 	    Serial.println("Got IR: DIY3/Juggle");
 	    return 1;
 
+	case IR_RGBZONE_AUTO:
+	    Serial.println("Got IR: AUTO/bpm (32)");
+	    if (is_change()) { matrix_change(32); return 1; }
+	    matrix_change(99);
+	    nextdemo = f_bpm;
+	    return 1;
+
+
+	// From here, we jump numbers more quickly to cover ranges of demos 32-44
 	case IR_RGBZONE_DIY4:
-	    Serial.println("Got IR: DIY4 (30)");
-	    if (is_change()) { matrix_change(30); return 1; }
+	    Serial.println("Got IR: DIY4 (35)");
+	    if (is_change()) { matrix_change(35); return 1; }
 	    nextdemo = f_rainbowCycle;
 	    Serial.println("Got IR: DIY4/rainbowCycle");
 	    return 1;
 
 	case IR_RGBZONE_DIY5:
-	    Serial.println("Got IR: DIY5 (31)");
-	    if (is_change()) { matrix_change(31); return 1; }
+	    Serial.println("Got IR: DIY5 (38)");
+	    if (is_change()) { matrix_change(38); return 1; }
 	    nextdemo = f_theaterChaseRainbow;
 	    Serial.println("Got IR: DIY5/theaterChaseRainbow");
 	    return 1;
 
 	case IR_RGBZONE_DIY6:
-	    Serial.println("Got IR: DIY6 (32)");
-	    if (is_change()) { matrix_change(32); return 1; }
+	    Serial.println("Got IR: DIY6 (41)");
+	    if (is_change()) { matrix_change(41); return 1; }
 	    nextdemo = f_doubleConvergeRev;
 	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
 	    return 1;
 
-	case IR_RGBZONE_AUTO:
-	    matrix_change(99);
-	    nextdemo = f_bpm;
-	    Serial.println("Got IR: AUTO/bpm");
+	case IR_RGBZONE_FLASH:
+	    Serial.println("Got IR: FLASH (43)");
+	    if (is_change()) { matrix_change(43); return 1; }
+	    nextdemo = f_flash;
 	    return 1;
 
+	// And from here, jump across a few GIF anims (45-53)
 	case IR_RGBZONE_JUMP3:
+	    Serial.println("Got IR: JUMP3/Cylon (45)");
+	    if (is_change()) { matrix_change(45); return 1; }
 	    nextdemo = f_cylon;
-	    Serial.println("Got IR: JUMP3/Cylon");
 	    return 1;
 
 	case IR_RGBZONE_JUMP7:
+	    Serial.println("Got IR: JUMP7/CylonWithTrail (47)");
+	    if (is_change()) { matrix_change(47); return 1; }
 	    nextdemo = f_cylonTrail;
-	    Serial.println("Got IR: JUMP7/CylonWithTrail");
 	    return 1;
 
 	case IR_RGBZONE_FADE3:
+	    Serial.println("Got IR: FADE3/DoubleConverge (49)");
+	    if (is_change()) { matrix_change(49); return 1; }
 	    nextdemo = f_doubleConverge;
-	    Serial.println("Got IR: FADE3/DoubleConverge");
 	    return 1;
 
 	case IR_RGBZONE_FADE7:
+	    Serial.println("Got IR: FADE7/DoubleConvergeTrail (51)");
+	    if (is_change()) { matrix_change(51); return 1; }
 	    nextdemo = f_doubleConvergeTrail;
-	    Serial.println("Got IR: FADE7/DoubleConvergeTrail");
-	    return 1;
-
-	case IR_RGBZONE_FLASH:
-	    nextdemo = f_flash;
-	    Serial.println("Got IR: FLASH");
 	    return 1;
 
 	case IR_JUNK:
