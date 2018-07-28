@@ -98,7 +98,6 @@ bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
 static int16_t strip_speed = 50;
 
-uint8_t led_brightness = 32;
 
 uint32_t last_change = millis();
 
@@ -947,10 +946,12 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     return 3;
 }
 
+// FIXME: reset decoding counter to 0 between different GIFS?
 uint8_t GifAnim(char *fn, uint16_t frames) {
-    #define flowerloop (450 * frames)
-    static uint32_t loop = flowerloop;
-    static uint16_t delayframe = 1;
+    #define gifloop (450 * frames)
+    //#define gifloop (10 * frames)
+    static uint32_t gifanimloop = gifloop;
+    static uint16_t delayframe = 2;
     uint8_t repeat = 1;
 
     if (matrix_reset_demo == 1) {
@@ -968,8 +969,11 @@ uint8_t GifAnim(char *fn, uint16_t frames) {
 
     // simpleanimviewer runs show() already.
     sav_loop();
-    if (loop-- == 0) {
-	loop = flowerloop;
+    // FIXME, 2nd show is needed to slow down the loop, makes no sense
+    matrix_show;
+    //Serial.println(gifanimloop);
+    if (gifanimloop-- == 0) {
+	gifanimloop = gifloop;
 	return 0;
     }
     return repeat;
@@ -1630,7 +1634,7 @@ void matrix_update() {
 	    break;
 
 	case 53: 
-	    ret = GifAnim("/gifs/wifi.gif", 30); //254
+	    ret = GifAnim("/gifs/wifi.gif", 50); //254
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1671,7 +1675,7 @@ void leds_setcolor(uint16_t i, uint32_t c) {
 }
 
 void change_brightness(int8_t change) {
-    static uint8_t brightness = 4;
+    static uint8_t brightness = 5;
     static uint32_t last_brightness_change = 0 ;
 
     if (millis() - last_brightness_change < 300) {
@@ -1680,9 +1684,9 @@ void change_brightness(int8_t change) {
 	return;
     }
     last_brightness_change = millis();
-    brightness = constrain(brightness + change, 1, 8);
+    brightness = constrain(brightness + change, 2, 8);
     led_brightness = (1 << brightness) - 1;
-    matrix_brightness = (1 << brightness) - 1;
+    matrix_brightness = (1 << (brightness-1)) - 1;
 
     // This is actually ignored by the currrent setup with 2 independent strings
     FastLED.setBrightness(led_brightness);
@@ -1691,8 +1695,10 @@ void change_brightness(int8_t change) {
     Serial.print(change);
     Serial.print(" to level ");
     Serial.print(brightness);
-    Serial.print(" value ");
-    Serial.println(led_brightness);
+    Serial.print(" led value ");
+    Serial.print(led_brightness);
+    Serial.print(" matrix value ");
+    Serial.println(matrix_brightness);
     leds_show();
 }
 

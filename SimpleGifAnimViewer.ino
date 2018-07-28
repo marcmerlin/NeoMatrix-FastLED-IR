@@ -22,7 +22,16 @@ float matrix_gamma = 3.0; // higher number is darker
  * lzwMaxBits can be set to 10 or 11 for small displays, 12 for large displays
  * All 32x32-pixel GIFs tested work with 11, most work with 10
  */
-GifDecoder<kMatrixWidth, kMatrixHeight, 12> decoder;
+
+// 12 gives 
+// Global variables use 72704 bytes (88%) of dynamic memory, leaving 9216 bytes for local variables. Maximum is 81920 bytes.
+// Low memory available, stability problems may occur.
+
+// 11 gives 
+// Global variables use 64512 bytes (78%) of dynamic memory, leaving 17408 bytes for local variables. Maximum is 81920 bytes.
+// Low memory available, stability problems may occur.
+
+GifDecoder<kMatrixWidth, kMatrixHeight, 11> decoder;
 
 bool fileSeekCallback(unsigned long position) { return file.seek(position); }
 unsigned long filePositionCallback(void) { return file.position(); }
@@ -31,6 +40,7 @@ int fileReadBlockCallback(void * buffer, int numberOfBytes) { return file.read((
 
 void screenClearCallback(void) { matrix_clear(); }
 void updateScreenCallback(void) { matrix_show(); }
+//void updateScreenCallback(void) { }
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
   CRGB color = CRGB(matrix->gamma[red], matrix->gamma[green], matrix->gamma[blue]);

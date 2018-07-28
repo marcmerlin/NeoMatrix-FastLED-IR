@@ -172,17 +172,17 @@ class Dot {
 	}							// End of Skyburst function
 };								// End of Dot class definition
 
-#define MAX_SHELLS 8
+#define MAX_SHELLS 6
 #define MIN_SHELLS 4
-#define MAX_SPARKS 40
-#define MIN_SPARKS 30
+#define MAX_SPARKS 30
+#define MIN_SPARKS 20
 
 Dot gDot[MAX_SHELLS];					//Creates an object named gDot of type Dot class
 Dot gSparks[MAX_SHELLS][MAX_SPARKS];			//Creates an array object named gSparks of type Dot class
 
 void fireworks() 
 {
-	CRGB sky1(0,0,8);				// Background sky color (will only work if brightness is set high 128 or up !!)
+	CRGB sky1(0,0,20);				// Background sky color (will only work if brightness is set high 128 or up !!)
 	CRGB sky2(8,8,8);				// Alternate sky color to create a star twinkle effect 
 
 	for( uint8_t h = 0; h < MATRIX_WIDTH; h++) {	// All matrixleds will be set to 'sky1' (very dark blue) 
