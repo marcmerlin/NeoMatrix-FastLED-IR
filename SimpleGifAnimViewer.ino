@@ -44,7 +44,8 @@ float matrix_gamma = 3.0; // higher number is darker
 // Sketch uses 432932 bytes (41%) of program storage space. Maximum is 1044464 bytes.
 // Global variables use 60432 bytes (73%) of dynamic memory, leaving 21488 bytes for local variables. Maximum is 81920 bytes.
 
-GifDecoder<kMatrixWidth, kMatrixHeight, 10> decoder;
+// 10 doesn't properly decode the bottom of /gifs/triangles_in.gif, 11 is required.
+GifDecoder<kMatrixWidth, kMatrixHeight, 11> decoder;
 
 bool fileSeekCallback(unsigned long position) { return file.seek(position); }
 unsigned long filePositionCallback(void) { return file.position(); }
