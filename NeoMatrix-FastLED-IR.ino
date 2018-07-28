@@ -966,11 +966,11 @@ uint8_t GifAnim(char *fn, uint16_t frames) {
     }
     delayframe = 1;
 
-    // simpleanimviewer runs show() already.
+    // simpleanimviewer may or may not run show() depending on whether
+    // it's time to decode the next frame.
     sav_loop();
-    // FIXME, 2nd show is needed to slow down the loop, makes no sense
-    matrix_show;
-    //Serial.println(gifanimloop);
+    // So we run it unconditionally, here, which adds the requested timing slowdown
+    matrix_show();
     if (gifanimloop-- == 0) {
 	gifanimloop = gifloop;
 	return 0;
@@ -1685,12 +1685,9 @@ void change_brightness(int8_t change) {
 	return;
     }
     last_brightness_change = millis();
-    brightness = constrain(brightness + change, 2, 8);
-    led_brightness = (1 << brightness) - 1;
+    brightness = constrain(brightness + change, 3, 8);
+    led_brightness = min((1 << (brightness+1)) - 1, 255);
     matrix_brightness = (1 << (brightness-1)) - 1;
-
-    // This is actually ignored by the currrent setup with 2 independent strings
-    FastLED.setBrightness(led_brightness);
 
     Serial.print("Changing brightness ");
     Serial.print(change);
@@ -1700,7 +1697,6 @@ void change_brightness(int8_t change) {
     Serial.print(led_brightness);
     Serial.print(" matrix value ");
     Serial.println(matrix_brightness);
-    leds_show();
 }
 
 void change_speed(int8_t change) {
@@ -1737,12 +1733,18 @@ bool handle_IR(uint32_t delay_time) {
     char readchar;
 
     decode_results IR_result;
+
+    // Instead of waiting without doing anything, update the matrix pattern.
     for (uint16_t i=0; i<delay_time / MX_UPD_TIME; i++) {
 	matrix_update();
     }
+
+    // Whatever time is left over, we wait with a real delay
+    // 45 msec wait = 4 loops of matrix updates of 10msec each + 5ms delay
+
+    delay(delay_time % MX_UPD_TIME);
     // Don't run update continuously, or the IR interrupts don't get in.
     // if (delay_time % MX_UPD_TIME > MX_UPD_TIME/2) matrix_update();
-    delay(delay_time % MX_UPD_TIME);
 
 
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;

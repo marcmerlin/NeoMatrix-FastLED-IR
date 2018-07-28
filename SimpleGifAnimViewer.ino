@@ -23,15 +23,28 @@ float matrix_gamma = 3.0; // higher number is darker
  * All 32x32-pixel GIFs tested work with 11, most work with 10
  */
 
+// Hardcoded GIFS in code, gives:
+// Sketch uses 740380 bytes (70%) of program storage space. Maximum is 1044464 bytes.
+// Global variables use 52676 bytes (64%) of dynamic memory, leaving 29244 bytes for local variables. Maximum is 81920 bytes.
+
+// TODO: find out why dynamic memory use went up to this much, when it used to be
+// Global variables use 32880 bytes (40%) of dynamic memory, leaving 49040 bytes for local variables
+
 // 12 gives 
+// Sketch uses 432932 bytes (41%) of program storage space. Maximum is 1044464 bytes. << much better
 // Global variables use 72704 bytes (88%) of dynamic memory, leaving 9216 bytes for local variables. Maximum is 81920 bytes.
 // Low memory available, stability problems may occur.
 
 // 11 gives 
+// Sketch uses 432932 bytes (41%) of program storage space. Maximum is 1044464 bytes.
 // Global variables use 64512 bytes (78%) of dynamic memory, leaving 17408 bytes for local variables. Maximum is 81920 bytes.
 // Low memory available, stability problems may occur.
 
-GifDecoder<kMatrixWidth, kMatrixHeight, 11> decoder;
+// 10 only uses 8 extra KB instead of 20 extra KB (12KB RAM saved)
+// Sketch uses 432932 bytes (41%) of program storage space. Maximum is 1044464 bytes.
+// Global variables use 60432 bytes (73%) of dynamic memory, leaving 21488 bytes for local variables. Maximum is 81920 bytes.
+
+GifDecoder<kMatrixWidth, kMatrixHeight, 10> decoder;
 
 bool fileSeekCallback(unsigned long position) { return file.seek(position); }
 unsigned long filePositionCallback(void) { return file.position(); }
@@ -39,8 +52,10 @@ int fileReadCallback(void) { return file.read(); }
 int fileReadBlockCallback(void * buffer, int numberOfBytes) { return file.read((uint8_t*)buffer, numberOfBytes); }
 
 void screenClearCallback(void) { matrix_clear(); }
-void updateScreenCallback(void) { matrix_show(); }
-//void updateScreenCallback(void) { }
+//void updateScreenCallback(void) { matrix_show(); }
+// For timing purposes, we run matrix_show unconditionally from the caller, even if the
+// frame did not change.
+void updateScreenCallback(void) { }
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
   CRGB color = CRGB(matrix->gamma[red], matrix->gamma[green], matrix->gamma[blue]);
@@ -90,8 +105,9 @@ bool sav_newgif(char *pathname) {
     return 0;
 }
 
-void sav_loop() {
-    decoder.decodeFrame();
+bool sav_loop() {
+    if (decoder.decodeFrame() == ERROR_WAITING) return 1;
+    return 0;
 }
 
 // vim:sts=4:sw=4

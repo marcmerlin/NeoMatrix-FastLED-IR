@@ -46,7 +46,7 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
     NEO_MATRIX_ROWS + NEO_MATRIX_ZIGZAG + 
     NEO_TILE_TOP + NEO_TILE_LEFT +  NEO_TILE_PROGRESSIVE);
 
-uint8_t led_brightness = 32;
+uint8_t led_brightness = 64;
 uint8_t matrix_brightness = 16;
 
 int XY2( int x, int y, bool wrap=false) { 
