@@ -52,10 +52,7 @@ int fileReadCallback(void) { return file.read(); }
 int fileReadBlockCallback(void * buffer, int numberOfBytes) { return file.read((uint8_t*)buffer, numberOfBytes); }
 
 void screenClearCallback(void) { matrix_clear(); }
-//void updateScreenCallback(void) { matrix_show(); }
-// For timing purposes, we run matrix_show unconditionally from the caller, even if the
-// frame did not change.
-void updateScreenCallback(void) { }
+void updateScreenCallback(void) { matrix_show(); }
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
   CRGB color = CRGB(matrix->gamma[red], matrix->gamma[green], matrix->gamma[blue]);

@@ -947,8 +947,8 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 
 // FIXME: reset decoding counter to 0 between different GIFS?
 uint8_t GifAnim(char *fn, uint16_t frames) {
-    #define gifloop (450 * frames)
-    //#define gifloop (10 * frames)
+    // fudge factor to control how long GIFs are shown
+    #define gifloop (25 * frames)
     static uint32_t gifanimloop = gifloop;
     static uint16_t delayframe = 2;
     uint8_t repeat = 1;
@@ -967,10 +967,9 @@ uint8_t GifAnim(char *fn, uint16_t frames) {
     delayframe = 1;
 
     // simpleanimviewer may or may not run show() depending on whether
-    // it's time to decode the next frame.
-    sav_loop();
-    // So we run it unconditionally, here, which adds the requested timing slowdown
-    matrix_show();
+    // it's time to decode the next frame. If it did not, wait here to
+    // add the matrix_show() delay that is expected by the caller
+    if (sav_loop()) { delay(MX_UPD_TIME); };
     if (gifanimloop-- == 0) {
 	gifanimloop = gifloop;
 	return 0;
