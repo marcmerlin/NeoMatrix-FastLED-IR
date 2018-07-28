@@ -45,12 +45,6 @@
 #include "fonts.h"
 #endif
 
-#ifndef NOANIMGIF
-#include "anim_flower.h"
-#include "anim_nucleus.h"
-#include "anim_balls.h"
-#endif
-
 // Choose your prefered pixmap
 #include "smileytongue24.h"
 
@@ -103,14 +97,6 @@ StripDemo nextdemo = f_theaterChaseRainbow;
 bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
 static int16_t strip_speed = 50;
-
-// Those LEDS are not as bright on low settings, so make them brighter in software
-#define WS2813
-#ifdef WS2813
-uint8_t led_brightness = 64;
-#else
-uint8_t led_brightness = 32;
-#endif
 
 uint32_t last_change = millis();
 
@@ -959,131 +945,39 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     return 3;
 }
 
-uint8_t AnimFlower() {
-#define flowerloop 15
-    static uint8_t loop = flowerloop;
-    static uint16_t frame = 0;
-    static uint16_t delayframe = 1;
-    uint8_t repeat = 3;
+// FIXME: reset decoding counter to 0 between different GIFS?
+uint8_t GifAnim(char *fn, uint16_t frames) {
+    #define gifloop (450 * frames)
+    //#define gifloop (10 * frames)
+    static uint32_t gifanimloop = gifloop;
+    static uint16_t delayframe = 2;
+    uint8_t repeat = 1;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	// exit if the gif animation couldn't get setup.
+	if (sav_newgif(fn)) return 0;
+    }
 
     if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
 	// Serial.println("delayed frame");
 	matrix_show(); // make sure we still run at the same speed.
 	return repeat;
     }
     delayframe = 1;
-//    Serial.print("loop ");
-//    Serial.print(loop);
-//    Serial.print(" frame ");
-//    Serial.println(frame);
 
-#ifndef NOANIMGIF
-    for (uint8_t y = 0; y < 32; y++) {
-	for (uint8_t x = 0; x < 32; x++) {
-	    uint32_t loc = y*32 + x;
-	    matrix->drawPixel(x-4, y, matrix->Color(
-		(pgm_read_byte(&(flowerRedFrames[frame][loc]))), 
-		(pgm_read_byte(&(flowerGreenFrames[frame][loc]))), 
-		(pgm_read_byte(&(flowerBlueFrames[frame][loc])))
-	    ));
-	}
+    // simpleanimviewer runs show() already.
+    sav_loop();
+    // FIXME, 2nd show is needed to slow down the loop, makes no sense
+    matrix_show;
+    //Serial.println(gifanimloop);
+    if (gifanimloop-- == 0) {
+	gifanimloop = gifloop;
+	return 0;
     }
-    matrix_show();
-    if (++frame == sizeof(flowerRedFrames)/(32*32)) {
-	frame = 0;
-	if (loop-- == 0) {
-	    loop = flowerloop;
-	    return 0;
-	}
-    }
-#endif
     return repeat;
 }
 
-uint8_t AnimNucleus() {
-#define nucleusloop 5
-    static uint8_t loop = nucleusloop;
-    static uint16_t frame = 0;
-    static uint16_t delayframe = 2;
-    uint8_t repeat = 3;
-
-    if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
-	// Serial.println("delayed frame");
-	matrix_show(); // make sure we still run at the same speed.
-	return repeat;
-    }
-    delayframe = 2;
-//    Serial.print("loop ");
-//    Serial.print(loop);
-//    Serial.print(" frame ");
-//    Serial.println(frame);
-
-#ifndef NOANIMGIF
-    for (uint8_t y = 0; y < 32; y++) {
-	for (uint8_t x = 0; x < 32; x++) {
-	    uint32_t loc = y*32 + x;
-	    matrix->drawPixel(x-4, y, matrix->Color(
-		(pgm_read_byte(&(nucleusRedFrames[frame][loc]))), 
-		(pgm_read_byte(&(nucleusGreenFrames[frame][loc]))), 
-		(pgm_read_byte(&(nucleusBlueFrames[frame][loc])))
-	    ));
-	}
-    }
-    matrix_show();
-    if (++frame == sizeof(nucleusRedFrames)/(32*32)) {
-	frame = 0;
-	if (loop-- == 0) {
-	    loop = nucleusloop;
-	    return 0;
-	}
-    }
-#endif
-    return repeat;
-}
-
-uint8_t AnimBalls() {
-#define ballsloop 3
-    static uint8_t loop = ballsloop;
-    static uint16_t frame = 0;
-    static uint16_t delayframe = 3;
-    uint8_t repeat = 3;
-
-    if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
-	// Serial.println("delayed frame");
-	matrix_show(); // make sure we still run at the same speed.
-	return repeat;
-    }
-    delayframe = 3;
-//    Serial.print("loop ");
-//    Serial.print(loop);
-//    Serial.print(" frame ");
-//    Serial.println(frame);
-
-#ifndef NOANIMGIF
-    for (uint8_t y = 0; y < 32; y++) {
-	for (uint8_t x = 0; x < 32; x++) {
-	    uint32_t loc = y*32 + x;
-	    matrix->drawPixel(x-4, y, matrix->Color(
-		(pgm_read_byte(&(ballsRedFrames[frame][loc]))), 
-		(pgm_read_byte(&(ballsGreenFrames[frame][loc]))), 
-		(pgm_read_byte(&(ballsBlueFrames[frame][loc])))
-	    ));
-	}
-    }
-    matrix_show();
-    if (++frame == sizeof(ballsRedFrames)/(32*32)) {
-	frame = 0;
-	if (loop-- == 0) {
-	    loop = ballsloop;
-	    return 0;
-	}
-    }
-#endif
-    return repeat;
-}
 
 // this is doing it the hard way, and only for my matrix.
 // instead, use XY() I added in NeoMatrix
@@ -1459,20 +1353,22 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
 extern uint8_t aurora(uint8_t item);
 
 
-#define LAST_MATRIX 45
-void matrix_change(int matrix) {
+#define LAST_MATRIX 54
+void matrix_change(int demo) {
+    // Reset passthrough from previous demo
+    matrix->setPassThruColor();
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_reset_demo = 1;
-    if (matrix==-128) if (matrix_state-- == 0) matrix_state = LAST_MATRIX;
-    if (matrix==+127) if (matrix_state++ == LAST_MATRIX) matrix_state = 0;
+    if (demo==-128) if (matrix_state-- == 0) matrix_state = LAST_MATRIX;
+    if (demo==+127) if (matrix_state++ == LAST_MATRIX) matrix_state = 0;
     // If existing matrix was already >90, any +- change brings it back to 0.
     if (matrix_state > 90) matrix_state = 0;
-    if (matrix >= 0 && matrix < 127) matrix_state = matrix;
+    if (demo >= 0 && demo < 127) matrix_state = demo;
     // Special one key press demos are shown once and next goes back to the normal loop
-    if (matrix >= 0 && matrix < 90) matrix_loop = 9999;
+    if (demo >= 0 && demo < 90) matrix_loop = 9999;
     Serial.print("Got matrix_change ");
-    Serial.print(matrix);
+    Serial.print(demo);
     Serial.print(", switching to matrix demo ");
     Serial.print(matrix_state);
     Serial.print(" loop ");
@@ -1528,7 +1424,7 @@ void matrix_update() {
 	    break;
 
 	case 6: 
-	    ret = AnimNucleus();
+	    ret = GifAnim("/gifs/32anim_photon.gif", 44);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1540,7 +1436,7 @@ void matrix_update() {
 	    break;
 
 	case 8: 
-	    ret = AnimFlower();
+	    ret = GifAnim("/gifs/32anim_flower.gif", 30);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1558,7 +1454,7 @@ void matrix_update() {
 	    break;
 
 	case 11: 
-	    ret = AnimBalls();
+	    ret = GifAnim("/gifs/32anim_balls.gif", 38);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1690,6 +1586,60 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
+	case 45: 
+	    ret = GifAnim("/gifs/32anim_dance.gif", 100);  // 277
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 46: 
+	    ret = GifAnim("/gifs/circles_swap.gif", 16);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 47: 
+	    ret = GifAnim("/gifs/concentric_circles.gif", 40); // 20
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 48: 
+	    ret = GifAnim("/gifs/corkscrew.gif", 29);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 49: 
+	    ret = GifAnim("/gifs/cubeconstruct.gif", 30); // 76
+	    if (matrix_loop == -1) matrix_loop = ret; 
+	    if (ret) return;
+	    break;
+
+	case 50: 
+	    ret = GifAnim("/gifs/cubeslide.gif", 30); // 272
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 51: 
+	    ret = GifAnim("/gifs/runningedgehog.gif", 24); // 8
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 52: 
+	    ret = GifAnim("/gifs/triangles_in.gif", 48);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 53: 
+	    ret = GifAnim("/gifs/wifi.gif", 50); //254
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
 	case LAST_MATRIX: 
 	    ret = metd(34, 5, 300); // single colored lines that extend from center.
 	    if (matrix_loop == -1) matrix_loop = ret;
@@ -1735,13 +1685,9 @@ void change_brightness(int8_t change) {
 	return;
     }
     last_brightness_change = millis();
-    brightness = constrain(brightness + change, 1, 8);
-#ifdef WS2813
-    led_brightness = constrain((1 << (brightness+1)) - 1, 1, 255);
-#else
+    brightness = constrain(brightness + change, 2, 8);
     led_brightness = (1 << brightness) - 1;
-#endif
-    matrix_brightness = (1 << brightness) - 1;
+    matrix_brightness = (1 << (brightness-1)) - 1;
 
     // This is actually ignored by the currrent setup with 2 independent strings
     FastLED.setBrightness(led_brightness);
@@ -1750,8 +1696,10 @@ void change_brightness(int8_t change) {
     Serial.print(change);
     Serial.print(" to level ");
     Serial.print(brightness);
-    Serial.print(" value ");
-    Serial.println(led_brightness);
+    Serial.print(" led value ");
+    Serial.print(led_brightness);
+    Serial.print(" matrix value ");
+    Serial.println(matrix_brightness);
     leds_show();
 }
 
@@ -2537,6 +2485,7 @@ void setup() {
     delay(1000);
 
     aurora_setup();
+    sav_setup();
 
     // Init Matrix
     // Serialized, 768 pixels takes 26 seconds for 1000 updates or 26ms per refresh
@@ -2550,6 +2499,8 @@ void setup() {
     Serial.print(mw);
     Serial.print(" ");
     Serial.println(mh);
+    // Turn off dithering https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
+    FastLED.setDither( 0 );
     matrix->begin();
     matrix->setBrightness(matrix_brightness);
     matrix->setTextWrap(false);
