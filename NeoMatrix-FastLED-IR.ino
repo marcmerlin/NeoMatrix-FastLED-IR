@@ -410,7 +410,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
 	// Serial.println("delayed frame");
-	matrix_show(); // make sure we still run at the same speed.
+	delay(MX_UPD_TIME);
 	return repeat;
     }
     delayframe = max((speed / 10) - faster , 1);
@@ -694,7 +694,7 @@ uint8_t squares(bool reverse) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
-	matrix_show(); // make sure we still run at the same speed.
+	delay(MX_UPD_TIME);
 	return repeat;
     }
     delayframe = sqdelay;
@@ -836,7 +836,7 @@ uint8_t scrollText(char str[], uint8_t len) {
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
-	matrix_show(); // make sure we still run at the same speed.
+	delay(MX_UPD_TIME);
 	return repeat;
     }
     delayframe = stdelay;
@@ -961,7 +961,7 @@ uint8_t GifAnim(char *fn, uint16_t frames) {
 
     if (--delayframe) {
 	// Serial.println("delayed frame");
-	matrix_show(); // make sure we still run at the same speed.
+	delay(MX_UPD_TIME);
 	return repeat;
     }
     delayframe = 1;
@@ -1024,7 +1024,7 @@ uint8_t demoreel100(uint8_t demo) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
-	matrix_show(); // make sure we still run at the same speed.
+	delay(MX_UPD_TIME);
 	return repeat;
     }
     delayframe = demoreeldelay;
@@ -1166,7 +1166,7 @@ uint8_t call_rain(uint8_t which) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
-	matrix_show(); // make sure we still run at the same speed.
+	delay(MX_UPD_TIME);
 	return 1;
     }
     delayframe = raindelay;
@@ -1193,7 +1193,7 @@ uint8_t call_pacman(uint8_t loopcnt) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
-	matrix_show(); // make sure we still run at the same speed.
+	delay(MX_UPD_TIME);
 	return 1;
     }
     delayframe = pacmandelay;
@@ -1271,7 +1271,7 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
     }
 
     if (--delayframe) {
-	matrix_show(); // make sure we still run at the same speed.
+	delay(MX_UPD_TIME);
 	return 1;
     }
     delayframe = dfinit;
@@ -1483,7 +1483,7 @@ void matrix_update() {
 	    break;
 
 	case 16: 
-	    ret = metd(105, 2, 400); // larger changing colors of hypno patterns
+	    ret = metd(105, 2, 400); // spinnig changing colors of hypno patterns
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
