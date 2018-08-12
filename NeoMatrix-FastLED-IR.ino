@@ -48,8 +48,6 @@
 // Choose your prefered pixmap
 #include "smileytongue24.h"
 
-#define MATRIXPIN D6
-
 // How many ms used for each matrix update
 #define MX_UPD_TIME 10
 
@@ -62,17 +60,17 @@ int16_t matrix_loop = -1;
 
 //---------------------------------------------------------------------------- 
 
-#define NUM_LEDS 48
-
+#ifdef ESP8266
 #include <IRremoteESP8266.h>
+#else
+#include <IRremote.h>
+#endif
 
 // This file contains codes I captured and mapped myself
 // using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
 
 IRrecv irrecv(RECV_PIN);
-
-CRGB leds[NUM_LEDS];
 
 typedef enum {
     f_nothing = 0,
@@ -97,6 +95,8 @@ StripDemo nextdemo = f_theaterChaseRainbow;
 bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
 static int16_t strip_speed = 50;
+
+
 
 uint32_t last_change = millis();
 
@@ -150,7 +150,11 @@ void matrix_show() {
 // fade, so I'm turning it off again.
     //ESP.wdtDisable();
 #endif
+#ifdef NEOPIXEL_PIN
     FastLED[1].showLeds(matrix_brightness);
+#else
+    FastLED.show();
+#endif
 #ifdef ESP8266
     //ESP.wdtEnable(1000);
 #endif
@@ -1667,12 +1671,14 @@ void matrix_update() {
 // Strip Code
 // ---------------------------------------------------------------------------
 
+#ifdef NEOPIXEL_PIN
 void leds_show() {
     FastLED[0].showLeds(led_brightness);
 }
 void leds_setcolor(uint16_t i, uint32_t c) {
     leds[i] = c;
 }
+#endif // NEOPIXEL_PIN
 
 void change_brightness(int8_t change) {
     static uint8_t brightness = 5;
@@ -2101,368 +2107,378 @@ bool handle_IR(uint32_t delay_time) {
 }
 
 
-// Demos from FastLED
 
-// fade in 0 to x/256th of the previous value
-void fadeall(uint8_t fade) {
-    for(uint16_t i = 0; i < NUM_LEDS; i++) {  leds[i].nscale8(fade); }
-}
-
-void cylon(bool trail, uint8_t wait) {
-    static uint8_t hue = 0;
-    // First slide the led in one direction
-    for(uint16_t i = 0; i < NUM_LEDS; i++) {
-	// Set the i'th led to red
-	leds_setcolor(i, Wheel(hue++));
-	// Show the leds
-	leds_show();
-	// now that we've shown the leds, reset the i'th led to black
-	//if (!trail) leds_setcolor(i, 0);
-	if (trail) fadeall(224); else fadeall(92);
-	// Wait a little bit before we loop around and do it again
-	if (handle_IR(wait/4)) return;
+#ifdef NEOPIXEL_PIN
+    // Demos from FastLED
+    // fade in 0 to x/256th of the previous value
+    void fadeall(uint8_t fade) {
+        for(uint16_t i = 0; i < NUM_LEDS; i++) {  leds[i].nscale8(fade); }
     }
-
-    // Now go in the other direction.
-    for(uint16_t i = (NUM_LEDS)-1; i > 0; i--) {
-	// Set the i'th led to red
-	leds_setcolor(i, Wheel(hue++));
-	// Show the leds
-	leds_show();
-	// now that we've shown the leds, reset the i'th led to black
-	//if (!trail) leds_setcolor(i, 0);
-	if (trail) fadeall(224); else fadeall(92);
-	// Wait a little bit before we loop around and do it again
-	if (handle_IR(wait/4)) return;
+    
+    void cylon(bool trail, uint8_t wait) {
+        static uint8_t hue = 0;
+        // First slide the led in one direction
+        for(uint16_t i = 0; i < NUM_LEDS; i++) {
+    	// Set the i'th led to red
+    	leds_setcolor(i, Wheel(hue++));
+    	// Show the leds
+    	leds_show();
+    	// now that we've shown the leds, reset the i'th led to black
+    	//if (!trail) leds_setcolor(i, 0);
+    	if (trail) fadeall(224); else fadeall(92);
+    	// Wait a little bit before we loop around and do it again
+    	if (handle_IR(wait/4)) return;
+        }
+    
+        // Now go in the other direction.
+        for(uint16_t i = (NUM_LEDS)-1; i > 0; i--) {
+    	// Set the i'th led to red
+    	leds_setcolor(i, Wheel(hue++));
+    	// Show the leds
+    	leds_show();
+    	// now that we've shown the leds, reset the i'th led to black
+    	//if (!trail) leds_setcolor(i, 0);
+    	if (trail) fadeall(224); else fadeall(92);
+    	// Wait a little bit before we loop around and do it again
+    	if (handle_IR(wait/4)) return;
+        }
     }
-}
-
-void doubleConverge(bool trail, uint8_t wait, bool rev) {
-    static uint8_t hue;
-    for(uint16_t i = 0; i < NUM_LEDS/2 + 4; i++) {
-
-	if (i < NUM_LEDS/2) {
-	    if (!rev) {
-		leds_setcolor(i, Wheel(hue++));
-		leds_setcolor(NUM_LEDS - 1 - i, Wheel(hue++));
-	    } else {
-		leds_setcolor(NUM_LEDS/2 -1 -i, Wheel(hue++));
-		leds_setcolor(NUM_LEDS/2 + i, Wheel(hue++));
-	    }
-	}
-#if 0
-	if (!trail && i>3) {
-	    if (!rev) {
-		leds_setcolor(i - 4, 0);
-		leds_setcolor(NUM_LEDS - 1 - i + 4, 0);
-	    } else {
-		leds_setcolor(NUM_LEDS/2 -1 -i +4, 0);
-		leds_setcolor(NUM_LEDS/2 + i -4, 0);
-	    }
-	}
-#endif
-	if (trail) fadeall(224); else fadeall(92);
-	leds_show();
-	if (handle_IR(wait/3)) return;
+    
+    void doubleConverge(bool trail, uint8_t wait, bool rev) {
+        static uint8_t hue;
+        for(uint16_t i = 0; i < NUM_LEDS/2 + 4; i++) {
+    
+    	if (i < NUM_LEDS/2) {
+    	    if (!rev) {
+    		leds_setcolor(i, Wheel(hue++));
+    		leds_setcolor(NUM_LEDS - 1 - i, Wheel(hue++));
+    	    } else {
+    		leds_setcolor(NUM_LEDS/2 -1 -i, Wheel(hue++));
+    		leds_setcolor(NUM_LEDS/2 + i, Wheel(hue++));
+    	    }
+    	}
+    #if 0
+    	if (!trail && i>3) {
+    	    if (!rev) {
+    		leds_setcolor(i - 4, 0);
+    		leds_setcolor(NUM_LEDS - 1 - i + 4, 0);
+    	    } else {
+    		leds_setcolor(NUM_LEDS/2 -1 -i +4, 0);
+    		leds_setcolor(NUM_LEDS/2 + i -4, 0);
+    	    }
+    	}
+    #endif
+    	if (trail) fadeall(224); else fadeall(92);
+    	leds_show();
+    	if (handle_IR(wait/3)) return;
+        }
     }
-}
-
-// From FastLED's DemoReel
-// ---------------------------------------------
-void addGlitter( fract8 chanceOfGlitter) 
-{
-    if (random8() < chanceOfGlitter) {
-	leds[ random16(NUM_LEDS) ] += CRGB::White;
+    
+    // From FastLED's DemoReel
+    // ---------------------------------------------
+    void addGlitter( fract8 chanceOfGlitter) 
+    {
+        if (random8() < chanceOfGlitter) {
+    	leds[ random16(NUM_LEDS) ] += CRGB::White;
+        }
     }
-}
-
-
-void juggle(uint8_t wait) {
-    // eight colored dots, weaving in and out of sync with each other
-    fadeToBlackBy( leds, NUM_LEDS, 20);
-    byte dothue = 0;
-    for( int i = 0; i < 8; i++) {
-	leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
-	dothue += 32;
+    
+    
+    void juggle(uint8_t wait) {
+        // eight colored dots, weaving in and out of sync with each other
+        fadeToBlackBy( leds, NUM_LEDS, 20);
+        byte dothue = 0;
+        for( int i = 0; i < 8; i++) {
+    	leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
+    	dothue += 32;
+        }
+        leds_show();
+        if (handle_IR(wait/3)) return;
     }
-    leds_show();
-    if (handle_IR(wait/3)) return;
-}
-
-void bpm(uint8_t wait)
-{
-    // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
-    uint8_t BeatsPerMinute = 62;
-    CRGBPalette16 palette = PartyColors_p;
-    uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-    for( int i = 0; i < NUM_LEDS; i++) { //9948
-	leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+    
+    void bpm(uint8_t wait)
+    {
+        // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+        uint8_t BeatsPerMinute = 62;
+        CRGBPalette16 palette = PartyColors_p;
+        uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
+        for( int i = 0; i < NUM_LEDS; i++) { //9948
+    	leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+        }
+        gHue++;
+        leds_show();
+        if (handle_IR(wait/3)) return;
     }
-    gHue++;
-    leds_show();
-    if (handle_IR(wait/3)) return;
-}
-
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait) {
-    uint16_t i, j;
-
-    for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
-#if 0
-	for(i=0; i< NUM_LEDS; i++) {
-	    leds_setcolor(i, Wheel(((i * 256 / NUM_LEDS) + j) & 255));
-	}
-#endif
-	fill_rainbow( leds, NUM_LEDS, gHue, 7);
-	addGlitter(80);
-	gHue++;
-	leds_show();
-	if (handle_IR(wait/5)) return;
+    
+    // Slightly different, this makes the rainbow equally distributed throughout
+    void rainbowCycle(uint8_t wait) {
+        uint16_t i, j;
+    
+        for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+    #if 0
+    	for(i=0; i< NUM_LEDS; i++) {
+    	    leds_setcolor(i, Wheel(((i * 256 / NUM_LEDS) + j) & 255));
+    	}
+    #endif
+    	fill_rainbow( leds, NUM_LEDS, gHue, 7);
+    	addGlitter(80);
+    	gHue++;
+    	leds_show();
+    	if (handle_IR(wait/5)) return;
+        }
     }
-}
-
-
-
-
-// The animations below are from Adafruit_NeoPixel/examples/strandtest
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) {
-    for(uint16_t i=0; i<NUM_LEDS; i++) {
-	leds_setcolor(i, c);
-	leds_show();
-	if (handle_IR(wait/5)) return;
+    
+    
+    
+    
+    // The animations below are from Adafruit_NeoPixel/examples/strandtest
+    // Fill the dots one after the other with a color
+    void colorWipe(uint32_t c, uint8_t wait) {
+        for(uint16_t i=0; i<NUM_LEDS; i++) {
+    	leds_setcolor(i, c);
+    	leds_show();
+    	if (handle_IR(wait/5)) return;
+        }
     }
-}
-
-#if 0
-void rainbow(uint8_t wait) {
-    uint16_t i, j;
-
-    for(j=0; j<256; j++) {
-	for(i=0; i<NUM_LEDS; i++) {
-	    leds_setcolor(i, Wheel((i+j) & 255));
-	}
-	leds_show();
-	if (handle_IR(wait)) return;
+    
+    #if 0
+    void rainbow(uint8_t wait) {
+        uint16_t i, j;
+    
+        for(j=0; j<256; j++) {
+    	for(i=0; i<NUM_LEDS; i++) {
+    	    leds_setcolor(i, Wheel((i+j) & 255));
+    	}
+    	leds_show();
+    	if (handle_IR(wait)) return;
+        }
     }
-}
-#endif
-
-//Theatre-style crawling lights.
-void theaterChase(uint32_t c, uint8_t wait) {
-    for (int j=0; j<10; j++) {  //do 10 cycles of chasing
-	for (int q=0; q < 3; q++) {
-	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
-		leds_setcolor(i+q, c);    //turn every third pixel on
-	    }
-	    leds_show();
-
-	    if (handle_IR(wait)) return;
-
-	    fadeall(16);
-#if 0
-	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
-		leds_setcolor(i+q, 0);        //turn every third pixel off
-	    }
-#endif
-	}
+    #endif
+    
+    //Theatre-style crawling lights.
+    void theaterChase(uint32_t c, uint8_t wait) {
+        for (int j=0; j<10; j++) {  //do 10 cycles of chasing
+    	for (int q=0; q < 3; q++) {
+    	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
+    		leds_setcolor(i+q, c);    //turn every third pixel on
+    	    }
+    	    leds_show();
+    
+    	    if (handle_IR(wait)) return;
+    
+    	    fadeall(16);
+    #if 0
+    	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
+    		leds_setcolor(i+q, 0);        //turn every third pixel off
+    	    }
+    #endif
+    	}
+        }
     }
-}
-
-//Theatre-style crawling lights with rainbow effect
-void theaterChaseRainbow(uint8_t wait) {
-    for (int j=0; j < 256; j+=7) {     // cycle all 256 colors in the wheel
-	for (int q=0; q < 3; q++) {
-	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
-		leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
-	    }
-	    leds_show();
-
-	    if (handle_IR(wait)) return;
-
-	    fadeall(16);
-#if 0
-	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
-		leds_setcolor(i+q, 0);        //turn every third pixel off
-	    }
-#endif
-	}
+    
+    //Theatre-style crawling lights with rainbow effect
+    void theaterChaseRainbow(uint8_t wait) {
+        for (int j=0; j < 256; j+=7) {     // cycle all 256 colors in the wheel
+    	for (int q=0; q < 3; q++) {
+    	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
+    		leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
+    	    }
+    	    leds_show();
+    
+    	    if (handle_IR(wait)) return;
+    
+    	    fadeall(16);
+    #if 0
+    	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
+    		leds_setcolor(i+q, 0);        //turn every third pixel off
+    	    }
+    #endif
+    	}
+        }
     }
-}
-
-
-// Local stuff I wrote
-// Flash 25 colors in the color wheel
-void flash(uint8_t wait) {
-    uint16_t i, j;
-
-    for(j=0; j<26; j++) {
-	for(i=0; i< NUM_LEDS; i++) {
-	    leds_setcolor(i, Wheel(j * 10));
-	}
-	leds_show();
-	if (handle_IR(wait*3)) return;
-	for(i=0; i< NUM_LEDS; i++) {
-	    leds_setcolor(i, 0);
-	}
-	leds_show();
-	if (handle_IR(wait*3)) return;
+    
+    
+    // Local stuff I wrote
+    // Flash 25 colors in the color wheel
+    void flash(uint8_t wait) {
+        uint16_t i, j;
+    
+        for(j=0; j<26; j++) {
+    	for(i=0; i< NUM_LEDS; i++) {
+    	    leds_setcolor(i, Wheel(j * 10));
+    	}
+    	leds_show();
+    	if (handle_IR(wait*3)) return;
+    	for(i=0; i< NUM_LEDS; i++) {
+    	    leds_setcolor(i, 0);
+    	}
+    	leds_show();
+    	if (handle_IR(wait*3)) return;
+        }
     }
-}
-
-#if 0
-// Flash different color on every other led
-// Not currently called, looks too much like TheatreRainbow
-void flash2(uint8_t wait) {
-    uint16_t i, j;
-
-    for(j=0; j<52; j++) {
-	for(i=0; i< NUM_LEDS-1; i+=2) {
-	    leds_setcolor(i, Wheel(j * 5));
-	    leds_setcolor(i+1, 0);
-	}
-	leds_show();
-	if (handle_IR(wait*2)) return;
-
-	for(i=1; i< NUM_LEDS-1; i+=2) {
-	    leds_setcolor(i, Wheel(j * 5 + 48));
-	    leds_setcolor(i+1, 0);
-	}
-	leds_show();
-	if (handle_IR(wait*2)) return;
+    
+    #if 0
+    // Flash different color on every other led
+    // Not currently called, looks too much like TheatreRainbow
+    void flash2(uint8_t wait) {
+        uint16_t i, j;
+    
+        for(j=0; j<52; j++) {
+    	for(i=0; i< NUM_LEDS-1; i+=2) {
+    	    leds_setcolor(i, Wheel(j * 5));
+    	    leds_setcolor(i+1, 0);
+    	}
+    	leds_show();
+    	if (handle_IR(wait*2)) return;
+    
+    	for(i=1; i< NUM_LEDS-1; i+=2) {
+    	    leds_setcolor(i, Wheel(j * 5 + 48));
+    	    leds_setcolor(i+1, 0);
+    	}
+    	leds_show();
+    	if (handle_IR(wait*2)) return;
+        }
     }
-}
-
-// Flash different colors on every other 2 out of 3 leds
-// not a great demo, really...
-void flash3(uint8_t wait) {
-    uint16_t i, j;
-
-    for(j=0; j<52; j++) {
-	for(i=0; i< NUM_LEDS; i+=3) {
-	    leds_setcolor(i, Wheel(j * 5));
-	    leds_setcolor(i+1, Wheel(j * 5+128));
-	    leds_setcolor(i+2, 0);
-	}
-	leds_show();
-	if (handle_IR(wait)) return;
-
-	for(i=1; i< NUM_LEDS-2; i+=3) {
-	    leds_setcolor(i, Wheel(j * 5 + 48));
-	    leds_setcolor(i+1, Wheel(j * 5+128));
-	    leds_setcolor(i+2, 0);
-	}
-	leds_show();
-	if (handle_IR(wait)) return;
-
-	for(i=2; i< NUM_LEDS-2; i+=3) {
-	    leds_setcolor(i, Wheel(j * 5 + 96));
-	    leds_setcolor(i+1, Wheel(j * 5+128));
-	    leds_setcolor(i+2, 0);
-	}
-	leds_show();
-	if (handle_IR(wait)) return;
+    
+    // Flash different colors on every other 2 out of 3 leds
+    // not a great demo, really...
+    void flash3(uint8_t wait) {
+        uint16_t i, j;
+    
+        for(j=0; j<52; j++) {
+    	for(i=0; i< NUM_LEDS; i+=3) {
+    	    leds_setcolor(i, Wheel(j * 5));
+    	    leds_setcolor(i+1, Wheel(j * 5+128));
+    	    leds_setcolor(i+2, 0);
+    	}
+    	leds_show();
+    	if (handle_IR(wait)) return;
+    
+    	for(i=1; i< NUM_LEDS-2; i+=3) {
+    	    leds_setcolor(i, Wheel(j * 5 + 48));
+    	    leds_setcolor(i+1, Wheel(j * 5+128));
+    	    leds_setcolor(i+2, 0);
+    	}
+    	leds_show();
+    	if (handle_IR(wait)) return;
+    
+    	for(i=2; i< NUM_LEDS-2; i+=3) {
+    	    leds_setcolor(i, Wheel(j * 5 + 96));
+    	    leds_setcolor(i+1, Wheel(j * 5+128));
+    	    leds_setcolor(i+2, 0);
+    	}
+    	leds_show();
+    	if (handle_IR(wait)) return;
+        }
     }
-}
-#endif
+    #endif
+#endif // NEOPIXEL_PIN
 
 void loop() {
-    switch (nextdemo) {
-    // Colors on DIY1-3
-    case f_colorWipe:
-	colorDemo = true;
-	colorWipe(demo_color, strip_speed);
-	break;
-    case f_theaterChase:
-	colorDemo = true;
-	theaterChase(demo_color, strip_speed);
-	break;
-
-    // Rainbow anims on DIY4-6
-// This is not cool/wavy enough, the cycle version is, though
-//     case f_rainbow:
-// 	colorDemo = false;
-// 	rainbow(strip_speed);
-// 	break;
-    case f_rainbowCycle:
-	colorDemo = false;
-	rainbowCycle(strip_speed);
-	break;
-    case f_theaterChaseRainbow:
-	colorDemo = false;
-	theaterChaseRainbow(strip_speed);
-	break;
-
-    case f_doubleConvergeRev:
-	colorDemo = false;
-	doubleConverge(false, strip_speed, true);
-	break;
-
-    // Jump3 to Jump7
-    case f_cylon:
-	colorDemo = false;
-	cylon(false, strip_speed);
-	break;
-    case f_cylonTrail:
-	colorDemo = false;
-	cylon(true, strip_speed);
-	break;
-    case f_doubleConverge:
-	colorDemo = false;
-	doubleConverge(false, strip_speed, false);
-	break;
-    case f_doubleConvergeTrail:
-	colorDemo = false;
-	doubleConverge(false, strip_speed, false);
-	doubleConverge(true, strip_speed, false);
-	break;
-
-    // Flash color wheel
-    case f_flash:
-	colorDemo = false;
-	flash(strip_speed);
-	break;
-
 #if 0
-    case f_flash3:
-	colorDemo = false;
-	flash3(strip_speed);
-	break;
-#endif
-    case f_juggle:
-	colorDemo = false;
-	juggle(strip_speed);
-	break;
+    #ifdef NEOPIXEL_PIN
+	switch (nextdemo) {
+	// Colors on DIY1-3
+	case f_colorWipe:
+	    colorDemo = true;
+	    colorWipe(demo_color, strip_speed);
+	    break;
+	case f_theaterChase:
+	    colorDemo = true;
+	    theaterChase(demo_color, strip_speed);
+	    break;
 
-    case f_bpm:
-	colorDemo = false;
-	bpm(strip_speed);
-	break;
+	// Rainbow anims on DIY4-6
+    // This is not cool/wavy enough, the cycle version is, though
+    //     case f_rainbow:
+    // 	colorDemo = false;
+    // 	rainbow(strip_speed);
+    // 	break;
+	case f_rainbowCycle:
+	    colorDemo = false;
+	    rainbowCycle(strip_speed);
+	    break;
+	case f_theaterChaseRainbow:
+	    colorDemo = false;
+	    theaterChaseRainbow(strip_speed);
+	    break;
 
-    default:
-	break;
-    }
+	case f_doubleConvergeRev:
+	    colorDemo = false;
+	    doubleConverge(false, strip_speed, true);
+	    break;
+
+	// Jump3 to Jump7
+	case f_cylon:
+	    colorDemo = false;
+	    cylon(false, strip_speed);
+	    break;
+	case f_cylonTrail:
+	    colorDemo = false;
+	    cylon(true, strip_speed);
+	    break;
+	case f_doubleConverge:
+	    colorDemo = false;
+	    doubleConverge(false, strip_speed, false);
+	    break;
+	case f_doubleConvergeTrail:
+	    colorDemo = false;
+	    doubleConverge(false, strip_speed, false);
+	    doubleConverge(true, strip_speed, false);
+	    break;
+
+	// Flash color wheel
+	case f_flash:
+	    colorDemo = false;
+	    flash(strip_speed);
+	    break;
 
     #if 0
-    if ((uint8_t) nextdemo > 0) {
-	Serial.print("Running new demo: ");
-	Serial.println((uint8_t) nextdemo);
-	Serial.print(" at speed ");
-    } else {
-	Serial.print("Loop done, restarting demo at speed ");
-    }
-    Serial.println(strip_speed);
+	case f_flash3:
+	    colorDemo = false;
+	    flash3(strip_speed);
+	    break;
     #endif
+	case f_juggle:
+	    colorDemo = false;
+	    juggle(strip_speed);
+	    break;
 
-    EVERY_N_MILLISECONDS(40) {
-	gHue++;  // slowly cycle the "base color" through the rainbow
-    }
+	case f_bpm:
+	    colorDemo = false;
+	    bpm(strip_speed);
+	    break;
+
+	default:
+	    break;
+	}
+
+	#if 0
+	if ((uint8_t) nextdemo > 0) {
+	    Serial.print("Running new demo: ");
+	    Serial.println((uint8_t) nextdemo);
+	    Serial.print(" at speed ");
+	} else {
+	    Serial.print("Loop done, restarting demo at speed ");
+	}
+	Serial.println(strip_speed);
+	#endif
+
+	EVERY_N_MILLISECONDS(40) {
+	    gHue++;  // slowly cycle the "base color" through the rainbow
+	}
+    #else
+    // Force the matrix update code to run
+    handle_IR(MX_UPD_TIME);
+    #endif // NEOPIXEL_PIN
     sublime_loop();
+#endif
 }
 
 
 
 void setup() {
+#if 0
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
@@ -2482,6 +2498,7 @@ void setup() {
     irrecv.blink13(true);
 #endif
 
+#ifdef NEOPIXEL_PIN
     Serial.print("Using FastLED on pin ");
     Serial.print(NEOPIXEL_PIN);
     Serial.print(" to drive LEDs: ");
@@ -2497,18 +2514,12 @@ void setup() {
     leds_show();
     Serial.println("LEDs on");
     delay(1000);
+#endif // NEOPIXEL_PIN
 
     aurora_setup();
     sav_setup();
+    matrix_setup();
 
-    // Init Matrix
-    // Serialized, 768 pixels takes 26 seconds for 1000 updates or 26ms per refresh
-    // FastLED.addLeds<NEOPIXEL,MATRIXPIN>(matrixleds, NUMMATRIX).setCorrection(TypicalLEDStrip);
-    // https://github.com/FastLED/FastLED/wiki/Parallel-Output
-    // WS2811_PORTA - pins 12, 13, 14 and 15 or pins 6,7,5 and 8 on the NodeMCU
-    // This is much faster 1000 updates in 10sec
-    //FastLED.addLeds<NEOPIXEL,PIN>(leds, NUMMATRIX); 
-    FastLED.addLeds<WS2811_PORTA,3>(matrixleds, NUMMATRIX/3).setCorrection(TypicalLEDStrip);
     Serial.print("Matrix Size: ");
     Serial.print(mw);
     Serial.print(" ");
@@ -2536,7 +2547,10 @@ void setup() {
     //font_test();
 
     // init first strip demo
+#ifdef NEOPIXEL_PIN
     colorWipe(0x0000FF00, 10);
+#endif // NEOPIXEL_PIN
+#endif
 }
 
 // vim:sts=4:sw=4
