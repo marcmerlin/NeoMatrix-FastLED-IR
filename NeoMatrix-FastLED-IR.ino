@@ -2375,7 +2375,6 @@ bool handle_IR(uint32_t delay_time) {
 #endif // NEOPIXEL_PIN
 
 void loop() {
-#if 0
     #ifdef NEOPIXEL_PIN
 	switch (nextdemo) {
 	// Colors on DIY1-3
@@ -2472,13 +2471,11 @@ void loop() {
     handle_IR(MX_UPD_TIME);
     #endif // NEOPIXEL_PIN
     sublime_loop();
-#endif
 }
 
 
 
 void setup() {
-#if 0
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
@@ -2550,7 +2547,6 @@ void setup() {
 #ifdef NEOPIXEL_PIN
     colorWipe(0x0000FF00, 10);
 #endif // NEOPIXEL_PIN
-#endif
 }
 
 // vim:sts=4:sw=4
