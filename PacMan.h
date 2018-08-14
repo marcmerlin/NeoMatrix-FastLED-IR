@@ -360,7 +360,7 @@ void pacman_setup(uint8_t loopcnt)
 
 uint8_t pacman_loop()
 {
-    uint8_t pcmr = SprPacmanRight.GetFlags();
+    //uint8_t pcmr = SprPacmanRight.GetFlags();
 
     int8_t pcmrx = SprPacmanRight.m_X;
     int8_t pcmry = SprPacmanRight.m_Y;
@@ -370,8 +370,8 @@ uint8_t pacman_loop()
     int8_t gy = SprGhost.m_Y;
     int8_t px = SprPinky.m_X;
     int8_t py = SprPinky.m_Y;
-    int8_t ex = SprEyes.m_X;
-    int8_t ey = SprEyes.m_Y;
+    //int8_t ex = SprEyes.m_X;
+    //int8_t ey = SprEyes.m_Y;
 
     matrix_clear();
     Sprites.UpdateSprites();

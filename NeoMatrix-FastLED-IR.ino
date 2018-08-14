@@ -2466,8 +2466,10 @@ void loop() {
 	EVERY_N_MILLISECONDS(40) {
 	    gHue++;  // slowly cycle the "base color" through the rainbow
 	}
-    #else
-    // Force the matrix update code to run
+    #else // NEOPIXEL_PIN
+    // Force the matrix update code to run if the matrix is being updated
+    // without 1D neopixel effects that would otherwise call handle_IR to slow
+    // themselves down and as a side effect cause a matrix display update
     handle_IR(MX_UPD_TIME);
     #endif // NEOPIXEL_PIN
     sublime_loop();

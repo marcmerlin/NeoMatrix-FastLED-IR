@@ -49,7 +49,6 @@ void fire()
 #else
 	#define FIRE_BASE	MATRIX_HEIGHT/6+1
 #endif
-	static uint8_t currentPaletteIndex = 0;
 	// COOLING: How much does the air cool as it rises?
 	// Less cooling = taller flames.  More cooling = shorter flames.
 	uint8_t cooling = 80;
