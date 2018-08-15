@@ -686,7 +686,7 @@ uint8_t squares(bool reverse) {
 
     // Serial.print("state ");
     // Serial.println(state);
-    if (state > 400) {
+    if (state > 250) {
 	matrix_reset_demo = 1;
 	return 0;
     }
@@ -1663,7 +1663,7 @@ bool handle_IR(uint32_t delay_time) {
 
 
     if (irrecv.decode(&IR_result)) {
-    	irrecv.resume(); // Receive the next value
+    	//irrecv.resume(); // Receive the next value
 	switch (IR_result.value) {
 
 	case IR_RGBZONE_BRIGHT:
