@@ -75,7 +75,6 @@ class Dot {
 		x_pos = map(x_pos, 0, 32, 0, MATRIX_WIDTH-1);	// Scale to Matrix width
 
 		uint8_t y_pos = y >> 10;		// Scaling to get y pixel position 0 - 64
-		//y_pos = map(y_pos, 0, 64, 0, MATRIX_HEIGHT-1);	// Scale to Matrix height
 		y_pos = map(y_pos, 0, 64, 0, MATRIX_HEIGHT-1);	// Scale to Matrix height
    
 		if (yv > 0){				// In case of equal values, just adding 1 or 2 to any pixel's percentage

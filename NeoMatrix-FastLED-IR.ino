@@ -1249,15 +1249,15 @@ uint8_t metd(uint8_t demo) {
 	{  10, 5, 300 },  // 5 color windows-like pattern with circles in and out
 	{  11, 5, 300 },  // color worm patterns going out with circles zomming out
 	{  25, 3, 500 },  // 5 circles turning together, run a bit longer
-	{  29, 5, 300 },
+	{  29, 5, 300 },  // swirly colored dots
 	{  34, 5, 300 },  // single colored lines that extend from center.
-	{  36, 3, 200 },  // whoami?
-	{  37, 3, 200 },  // whoami?
+	{  36, 2, 200 },  // pretty filled spinning circle
+	{  37, 6, 200 },  // music induced rgb color patterns
 	{  52, 5, 300 },  // rectangles/squares/triangles zooming out
-	{  61, 3, 200 },  // whoami?
+	{  61, 5, 200 },  // shapes zooming out from inside
 	{  67, 5, 900 },  // two colors swirling bigger, creating hypno pattern
-	{  70, 3, 200 },  // whoami?
-	{  73, 3, 200 },  // whoami?
+	{  70, 6, 200 },  // 4 fat spinning comets with shapes growing from middle
+	{  73, 3, 2000 }, // circle inside fed by outside attracted color dots
 	{  77, 5, 300 },  // streaming lines of colored pixels with shape zooming in or out
 	{  80, 5, 200 },  // rotating triangles of color
 	{ 105, 2, 400 },  // spinnig changing colors of hypno patterns
@@ -1520,10 +1520,10 @@ void matrix_update() {
 	    // 13 demos: 18-30
 	    if (matrix_state <= 30) ret = aurora(matrix_state-18);
 	    // 16 demos: 31 to 46
-	    if (matrix_state <= 46) ret = metd(matrix_state-31);
+	    else if (matrix_state <= 46) ret = metd(matrix_state-31);
 	    // 12 gifs: 47 to 58
-	    if (matrix_state <= 58) ret = GifAnim(matrix_state-47);
-	    if (matrix_state >= LAST_MATRIX) { Serial.print("Cannot play demo "); Serial.println(matrix_state); };
+	    else if (matrix_state <= 58) ret = GifAnim(matrix_state-47);
+	    else { Serial.print("Cannot play demo "); Serial.println(matrix_state); };
 
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -1579,6 +1579,9 @@ void change_brightness(int8_t change) {
     brightness = constrain(brightness + change, 3, 8);
     led_brightness = min((1 << (brightness+1)) - 1, 255);
     matrix_brightness = (1 << (brightness-1)) - 1;
+    // This is needed if using the ESP32 driver but won't work
+    // if using 2 independent fastled strips (1D + 2D matrix)
+    matrix->setBrightness(matrix_brightness);
 
     Serial.print("Changing brightness ");
     Serial.print(change);
@@ -1662,7 +1665,8 @@ bool handle_IR(uint32_t delay_time) {
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
 
 
-    if (irrecv.decode(&IR_result)) {
+    //if (irrecv.decode(&IR_result)) {
+    if (0) {
     	//irrecv.resume(); // Receive the next value
 	switch (IR_result.value) {
 
@@ -2369,7 +2373,7 @@ void setup() {
     delay(1000);
     Serial.begin(115200);
     Serial.println("Enabling IRin");
-    irrecv.enableIRIn(); // Start the receiver
+    //irrecv.enableIRIn(); // Start the receiver
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
 #ifdef ESP8266
@@ -2381,7 +2385,7 @@ void setup() {
     // this doesn't exist in the ESP8266 IR library, but by using pin D4
     // IR receive happens to make the system LED blink, so it's all good
     Serial.println("Init NON ESP8266, set IR receive to blink system LED");
-    irrecv.blink13(true);
+    //irrecv.blink13(true);
 #endif
 
 #ifdef NEOPIXEL_PIN
