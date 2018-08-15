@@ -24,6 +24,8 @@
 #include "Sublime_Demos.h"
 #include "aurora.h"
 
+extern uint8_t aurora(uint8_t item);
+
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
 // https://learn.adafruit.com/adafruit-gfx-graphics-library/using-fonts
@@ -647,7 +649,7 @@ uint8_t squares(bool reverse) {
 #define sqdelay 2
     static uint16_t state;
     static uint8_t wheel;
-    uint8_t repeat = 3;
+    uint8_t repeat = 2;
     static uint16_t delayframe = sqdelay;
 
 
@@ -913,9 +915,41 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 }
 
 // FIXME: reset decoding counter to 0 between different GIFS?
-uint8_t GifAnim(char *fn, uint16_t frames) {
+uint8_t GifAnim(uint8_t idx) {
+
+    struct Animgif {
+	const char *path;
+	uint16_t loopcnt;
+    };
+
+    #ifdef M32B8X3
+    Animgif animgif[] = { // number of frames in the gif
+    // 12 gifs
+	    {"/gifs/32anim_photon.gif", 44},
+	    {"/gifs/32anim_flower.gif", 30},
+	    {"/gifs/32anim_balls.gif", 38},
+	    {"/gifs/32anim_dance.gif", 100},  // 277
+	    {"/gifs/circles_swap.gif", 16},
+	    {"/gifs/concentric_circles.gif", 40}, // 20
+	    {"/gifs/corkscrew.gif", 29},
+	    {"/gifs/cubeconstruct.gif", 30}, // 76
+	    {"/gifs/cubeslide.gif", 30}, // 272
+	    {"/gifs/runningedgehog.gif", 24}, // 8
+	    {"/gifs/triangles_in.gif", 48},
+	    {"/gifs/wifi.gif", 50}, //254
+    };
+    #else // M32B8M32B8X3X3
+    Animgif animgif[] = {
+	    {"/gifs64/ani-bman-BW.gif", 64}, // 19
+    };
+    #endif
+    uint8_t gifcnt = sizeof(animgif) / sizeof(animgif[0]);
+    // Avoid crashes due to overflows
+    idx = idx % gifcnt;
+
     // fudge factor to control how long GIFs are shown
-    #define gifloop (25 * frames)
+    uint32_t gifloop = 25 * animgif[idx].loopcnt;
+    const char *fn = animgif[idx].path;
     static uint32_t gifanimloop = gifloop;
     static uint16_t delayframe = 2;
     uint8_t repeat = 1;
@@ -923,7 +957,7 @@ uint8_t GifAnim(char *fn, uint16_t frames) {
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	// exit if the gif animation couldn't get setup.
-	if (sav_newgif(fn)) return 0;
+	if (sav_newgif(animgif[idx].path)) return 0;
     }
 
     if (--delayframe) {
@@ -1209,8 +1243,31 @@ uint8_t plasma() {
     return 0;
 }
 
-uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
+uint8_t metd(uint8_t demo) {
+    // 0 to 15
+    uint16_t metd_mapping[][3] = { 
+	{  10, 5, 300 },  // 5 color windows-like pattern with circles in and out
+	{  11, 5, 300 },  // color worm patterns going out with circles zomming out
+	{  25, 3, 500 },  // 5 circles turning together, run a bit longer
+	{  29, 5, 300 },
+	{  34, 5, 300 },  // single colored lines that extend from center.
+	{  36, 3, 200 },  // whoami?
+	{  37, 3, 200 },  // whoami?
+	{  52, 5, 300 },  // rectangles/squares/triangles zooming out
+	{  61, 3, 200 },  // whoami?
+	{  67, 5, 900 },  // two colors swirling bigger, creating hypno pattern
+	{  70, 3, 200 },  // whoami?
+	{  73, 3, 200 },  // whoami?
+	{  77, 5, 300 },  // streaming lines of colored pixels with shape zooming in or out
+	{  80, 5, 200 },  // rotating triangles of color
+	{ 105, 2, 400 },  // spinnig changing colors of hypno patterns
+	{ 110, 5, 300 },  // bubbles going up or right
+    };
+
+    uint8_t dfinit = metd_mapping[demo][1];
+    uint16_t loops = metd_mapping[demo][2];
     static uint8_t delayframe = dfinit;
+    demo = metd_mapping[demo][0];
 
     if (matrix_reset_demo == 1) {
 	Serial.print("Starting ME Table Demo #");
@@ -1316,10 +1373,8 @@ uint8_t metd(uint8_t demo, uint8_t dfinit, uint16_t loops) {
     return 0;
 }
 
-extern uint8_t aurora(uint8_t item);
 
-
-#define LAST_MATRIX 54
+#define LAST_MATRIX 59
 void matrix_change(int demo) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
@@ -1372,7 +1427,7 @@ void matrix_update() {
 	    break;
 
 	case 3: 
-	    ret = metd(52, 5, 300); // rectangles/squares/triangles zooming out
+	    ret = esrr_fade();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1384,230 +1439,98 @@ void matrix_update() {
 	    break;
 
 	case 5: 
-	    ret = metd(77, 5, 300); // streaming lines of colored pixels with shape zooming in or out
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 6: 
-	    ret = GifAnim("/gifs/32anim_photon.gif", 44);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 7: 
-	    ret = panOrBounceBitmap(1, 24);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 8: 
-	    ret = GifAnim("/gifs/32anim_flower.gif", 30);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 9: 
-	    ret = tfsf();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 10: 
-	    ret = metd(80, 5, 200); // rotating triangles of color
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 11: 
-	    ret = GifAnim("/gifs/32anim_balls.gif", 38);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 12: 
-	    ret = demoreel100(1); // Twinlking stars
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 13: 
-	    ret = call_fireworks();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 14: 
-	    ret = demoreel100(2); // color changing pixels sweeping up and down
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 15: 
-	    ret = pride();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 16: 
-	    ret = metd(105, 2, 400); // spinnig changing colors of hypno patterns
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 17: 
-	    ret = call_rain(1); // matrix
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 18: 
-	    ret = call_pacman(3);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 19: 
-	    ret = plasma();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 20: 
-	    ret = metd(110, 5, 300); // bubbles going up or right
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 21: 
-	    ret = demoreel100(3); // colored pixels being exchanged between top and bottom
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 22: 
-	    ret = metd(10, 5, 300); // 5 color windows-like pattern with circles in and out
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 23:  
-	    ret = metd(11, 5, 300);// color worm patterns going out with circles zomming out
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 24: 
 	    ret = tfsf_zoom(1, 30);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 25:  // audio:  colored pixels in a loose circle
-	    ret = metd(29, 5, 300);
+	case 6: 
+	    ret = tfsf();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 26: // audio: colored lines streaming from center
+	case 7:
 	    ret = webwc();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 27: 
+	case 8: 
+	    ret = panOrBounceBitmap(1, 24);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 9: 
+	    ret = pride();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 10: 
+	    ret = demoreel100(1); // Twinlking stars
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 11: 
+	    ret = demoreel100(2); // color changing pixels sweeping up and down
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 12: 
+	    ret = demoreel100(3); // colored pixels being exchanged between top and bottom
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 13: 
+	    ret = call_rain(1); // matrix
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 14: 
 	    ret = call_rain(3); // clouds, rain, lightening
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 28: 
-	    ret = metd(25, 3, 500);// 5 circles turning together, run a bit longer
+	case 15: 
+	    ret = call_pacman(3);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 29: 
-	    ret = esrr_fade();
+	case 16: 
+	    ret = plasma();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 30: 
+	case 17: 
 	    ret = call_fire();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 31: 
-	    ret = metd(67, 5, 900); // two colors swirling bigger, creating hypno pattern
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	//case 32-44: // see default
 	default:
-	    ret = aurora(matrix_state-32);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
+	    // 13 demos: 18-30
+	    if (matrix_state <= 30) ret = aurora(matrix_state-18);
+	    // 16 demos: 31 to 46
+	    if (matrix_state <= 46) ret = metd(matrix_state-31);
+	    // 12 gifs: 47 to 58
+	    if (matrix_state <= 58) ret = GifAnim(matrix_state-47);
+	    if (matrix_state >= LAST_MATRIX) { Serial.print("Cannot play demo "); Serial.println(matrix_state); };
 
-	case 45: 
-	    ret = GifAnim("/gifs/32anim_dance.gif", 100);  // 277
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 46: 
-	    ret = GifAnim("/gifs/circles_swap.gif", 16);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 47: 
-	    ret = GifAnim("/gifs/concentric_circles.gif", 40); // 20
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 48: 
-	    ret = GifAnim("/gifs/corkscrew.gif", 29);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 49: 
-	    ret = GifAnim("/gifs/cubeconstruct.gif", 30); // 76
-	    if (matrix_loop == -1) matrix_loop = ret; 
-	    if (ret) return;
-	    break;
-
-	case 50: 
-	    ret = GifAnim("/gifs/cubeslide.gif", 30); // 272
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 51: 
-	    ret = GifAnim("/gifs/runningedgehog.gif", 24); // 8
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 52: 
-	    ret = GifAnim("/gifs/triangles_in.gif", 48);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 53: 
-	    ret = GifAnim("/gifs/wifi.gif", 50); //254
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case LAST_MATRIX: 
-	    ret = metd(34, 5, 300); // single colored lines that extend from center.
+	    ret = call_fireworks();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;

@@ -7,14 +7,23 @@
 #endif
 File file;
 
-const uint8_t kMatrixWidth = 32;        // known working: 32, 64, 96, 128
-const uint8_t kMatrixHeight = 32;       // known working: 16, 32, 48, 64`
-
 float matrix_gamma = 3.0; // higher number is darker
 
+
+#ifdef M32B8X3
 // 24x32 display, so offset 32x32 gif by -4, 0
 #define OFFSETX -4
 #define OFFSETY 0
+const uint8_t kMatrixWidth = 32; 
+const uint8_t kMatrixHeight = 32; 
+#else // M32B8M32B8X3X3
+#define OFFSETX 0
+#define OFFSETY 0
+const uint8_t kMatrixWidth = 64;
+const uint8_t kMatrixHeight = 64; 
+#endif
+
+
 
 /* template parameters are maxGifWidth, maxGifHeight, lzwMaxBits
  * 
@@ -89,7 +98,7 @@ void sav_setup() {
     Serial.printf("\n");
 }
 
-bool sav_newgif(char *pathname) {
+bool sav_newgif(const char *pathname) {
     SPIFFS.begin();
     if (file) file.close();
     file = SPIFFS.open(pathname, "r");

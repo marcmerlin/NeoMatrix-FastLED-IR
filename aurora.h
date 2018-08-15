@@ -64,6 +64,7 @@ uint8_t aurora(uint8_t item) {
     static uint16_t counter = 1;
     uint16_t loops = 2000;
 
+    // 13 demos, 0 to 12
     if (item == 1 ) { loops = 3000; }
     if (item == 5 ) { loops = 4000; }
     if (item == 7 ) { loops = 5000; }
