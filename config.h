@@ -1,14 +1,28 @@
 #ifndef config_h
 #define config_h
+
+#ifdef ESP32
+// 64x64 matrix with optional 16 pin parallel driver
+#define ESP32_16PINS
+#else
+// ESP8266 shirt with neopixel strips
+#define M32B8X3
+#define NUM_LEDS 48
+#endif
+
+// This uses https://github.com/hpwit/fastled-esp32-16PINS.git
+// instead of https://github.com/samguyer/FastLED.git
+#ifdef ESP32_16PINS
+#define FASTLED_ALLOW_INTERRUPTS 0
+#define FASTLED_SHOW_CORE 0
+#endif // ESP32_16PINS
+
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
 #include <FastLED.h>
 
 #include <LEDMatrix.h>
 #include <LEDSprites.h>
-
-// #define M32B8X3
-// #define NUM_LEDS 48
 
 #ifdef NUM_LEDS
 CRGB leds[NUM_LEDS];
@@ -20,6 +34,54 @@ CRGB leds[NUM_LEDS];
 // Global variables use 32880 bytes (40%) of dynamic memory, leaving 49040 bytes for local variables. Maximum is 81920 bytes.
 // Uploading 287936 bytes from /tmp/arduino_build_498793/NeoMatrix-FastLED-IR.ino.bin to flash at 0x00000000
 //#define NOFONTS 1
+//
+
+// End Config
+//---------------------------------------------------------------------------- 
+
+#if defined(ESP32) && ! defined(ESP32_16PINS)
+#pragma message "Please use https://github.com/samguyer/FastLED.git as stock FastLED is unstable with ESP32"
+#endif
+
+#ifdef ESP32_16PINS
+FASTLED_USING_NAMESPACE
+// -- Task handles for use in the notifications
+static TaskHandle_t FastLEDshowTaskHandle = 0;
+static TaskHandle_t userTaskHandle = 0;
+
+void FastLEDshowESP32()
+{
+    if (userTaskHandle == 0) {
+	const TickType_t xMaxBlockTime = pdMS_TO_TICKS( 200 );
+	// -- Store the handle of the current task, so that the show task can
+	//    notify it when it's done
+	userTaskHandle = xTaskGetCurrentTaskHandle();
+
+	// -- Trigger the show task
+	xTaskNotifyGive(FastLEDshowTaskHandle);
+
+	// -- Wait to be notified that it's done
+	ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
+	userTaskHandle = 0;
+    }
+}
+
+void FastLEDshowTask(void *pvParameters)
+{
+    const TickType_t xMaxBlockTime = pdMS_TO_TICKS( 500 );
+    // -- Run forever...
+    for(;;) {
+	// -- Wait for the trigger
+	ulTaskNotifyTake(pdTRUE,portMAX_DELAY);
+
+	// -- Do the show (synchronously)
+	FastLED.show();
+
+	// -- Notify the calling task
+	xTaskNotifyGive(userTaskHandle);
+    }
+}
+#endif // ESP32_16PINS
 
 
 #ifdef M32B8X3
@@ -58,7 +120,7 @@ FastLED_NeoMatrix *matrix = new FastLED_NeoMatrix(matrixleds, MATRIX_TILE_WIDTH,
 uint8_t led_brightness = 64;
 uint8_t matrix_brightness = 16;
 
-#else
+#else // M32B8X3
 //---------------------------------------------------------------------------- 
 //
 // Used by LEDMatrix
@@ -136,9 +198,41 @@ int wrapX(int x) {
 	return x;
 }
 
-void matrix_clear();
-void matrix_show();
 void aurora_setup();
+
+void matrix_clear() {
+    //FastLED[1].clearLedData();
+    // clear does not work properly with multiple matrices connected via parallel inputs
+    memset(matrixleds, 0, NUMMATRIX*3);
+}
+
+void matrix_show() {
+    //matrix->show();
+
+#ifdef ESP32_16PINS
+    FastLEDshowESP32();
+#else // ESP32_16PINS
+    #ifdef ESP8266
+    // Disable watchdog interrupt so that it does not trigger in the middle of
+    // updates. and break timing of pixels, causing random corruption on interval
+    // https://github.com/esp8266/Arduino/issues/34
+    // Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
+    // in parallel mode, should not affect output. That said, reducing their amount
+    // is still good.
+    // Well, that sure didn't work, it actually made things worse in a demo during
+    // fade, so I'm turning it off again.
+        //ESP.wdtDisable();
+    #endif
+    #ifdef NEOPIXEL_PIN
+        FastLED[1].showLeds(matrix_brightness);
+    #else
+        FastLED.show();
+    #endif
+    #ifdef ESP8266
+        //ESP.wdtEnable(1000);
+    #endif
+#endif // ESP32_16PINS
+}
 
 
 void matrix_setup() {
@@ -154,27 +248,36 @@ void matrix_setup() {
     Serial.print("Neomatrix parallel output, total LEDs: ");
     Serial.println(NUMMATRIX);
 #else
-    // https://github.com/FastLED/FastLED/wiki/Multiple-Controller-Examples
-    FastLED.addLeds<WS2812B, 2, GRB>(matrixleds, 0*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    #ifdef ESP32
-    FastLED.addLeds<WS2812B, 4, GRB>(matrixleds, 1*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B, 5, GRB>(matrixleds, 2*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,12, GRB>(matrixleds, 3*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,13, GRB>(matrixleds, 4*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,14, GRB>(matrixleds, 5*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,15, GRB>(matrixleds, 6*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,16, GRB>(matrixleds, 7*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,18, GRB>(matrixleds, 8*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,19, GRB>(matrixleds, 9*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,21, GRB>(matrixleds,10*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,22, GRB>(matrixleds,11*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,23, GRB>(matrixleds,12*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,25, GRB>(matrixleds,13*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,26, GRB>(matrixleds,14*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
-    FastLED.addLeds<WS2812B,27, GRB>(matrixleds,15*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
-    Serial.print("Neomatrix 16 way output, total LEDs: ");
-    Serial.println(NUMMATRIX);
-    #endif // ESP32
+    #ifdef ESP32_16PINS
+	xTaskCreatePinnedToCore(FastLEDshowTask, "FastLEDshowTask", 2048, NULL, 2, &FastLEDshowTaskHandle, FASTLED_SHOW_CORE);
+	FastLED.addLeds<WS2811_PORTA,NUM_STRIPS,((1<<2) + (1<<4) + (1<<5) + (1<<12)+ (1<<13) + (1<<14) + (1<<15) + (1<<16) + 
+						(1<<18) + (1<<19) + (1<<21) + (1<<22) + (1<<23) + (1<<25) + (1<<26) + (1<<27) 
+						)>(matrixleds, NUM_LEDS_PER_STRIP);
+        Serial.print("Neomatrix 16 way bitbang output, total LEDs: ");
+        Serial.println(NUMMATRIX);
+    #else // ESP32_16PINS
+        // https://github.com/FastLED/FastLED/wiki/Multiple-Controller-Examples
+        FastLED.addLeds<WS2812B, 2, GRB>(matrixleds, 0*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        #ifdef ESP32
+        FastLED.addLeds<WS2812B, 4, GRB>(matrixleds, 1*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B, 5, GRB>(matrixleds, 2*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,12, GRB>(matrixleds, 3*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,13, GRB>(matrixleds, 4*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,14, GRB>(matrixleds, 5*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,15, GRB>(matrixleds, 6*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,16, GRB>(matrixleds, 7*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,18, GRB>(matrixleds, 8*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,19, GRB>(matrixleds, 9*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,21, GRB>(matrixleds,10*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,22, GRB>(matrixleds,11*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,23, GRB>(matrixleds,12*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,25, GRB>(matrixleds,13*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,26, GRB>(matrixleds,14*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP); 
+        FastLED.addLeds<WS2812B,27, GRB>(matrixleds,15*NUM_LEDS_PER_STRIP, NUM_LEDS_PER_STRIP);
+        Serial.print("Neomatrix 16 pin via RMT 8 way parallel output, total LEDs: ");
+        Serial.println(NUMMATRIX);
+        #endif // ESP32
+    #endif // ESP32_16PINS
 #endif
 
     FastLED.setBrightness(matrix_brightness);

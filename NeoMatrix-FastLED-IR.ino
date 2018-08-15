@@ -138,38 +138,8 @@ uint32_t Wheel(byte WheelPos) {
 // ---------------------------------------------------------------------------
 
 
-void matrix_show() {
-#ifdef ESP8266
-// Disable watchdog interrupt so that it does not trigger in the middle of
-// updates. and break timing of pixels, causing random corruption on interval
-// https://github.com/esp8266/Arduino/issues/34
-// Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
-// in parallel mode, should not affect output. That said, reducing their amount
-// is still good.
-// Well, that sure didn't work, it actually made things worse in a demo during
-// fade, so I'm turning it off again.
-    //ESP.wdtDisable();
-#endif
-#ifdef NEOPIXEL_PIN
-    FastLED[1].showLeds(matrix_brightness);
-#else
-    FastLED.show();
-#endif
-#ifdef ESP8266
-    //ESP.wdtEnable(1000);
-#endif
-    //matrix->show();
-}
-
-void matrix_clear() {
-    //FastLED[1].clearLedData();
-    // clear does not work properly with multiple matrices connected via parallel inputs
-    memset(matrixleds, 0, NUMMATRIX*3);
-}
-
-
 void display_resolution() {
-    static uint16_t cnt=1;
+//    static uint16_t cnt=1;
 
     matrix->setTextSize(1);
     // not wide enough;
@@ -220,10 +190,12 @@ void display_resolution() {
 	matrix->print("*");
     }
     
+#if 0
     matrix->setTextColor(matrix->Color(255,0,255)); 
     matrix->setCursor(0, mh-14);
     matrix->print(cnt++);
     if (cnt == 10000) cnt=1;
+#endif
     matrix_show();
 }
 
@@ -389,7 +361,6 @@ uint8_t tfsf() {
 
 // type 0 = up, type 1 = up and down
 uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
-    static uint16_t state;
     static uint16_t direction;
     static uint16_t size;
     static uint8_t l;
@@ -402,7 +373,6 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	state = 1;
 	direction = 1;
 	size = 3;
 	l = 0;
@@ -605,7 +575,6 @@ uint8_t esrr_flashin() {
 uint8_t esrr_fade() {
     static uint16_t state;
     static uint8_t wheel;
-    static uint8_t sp;
     static float spd;
     float spdincr = 0.5;
     uint8_t resetspd = 5;
@@ -617,7 +586,6 @@ uint8_t esrr_fade() {
 	matrix_clear();
 	state = 0;
 	wheel = 0;
-	sp = 0;
 	spd = 1.0;
     }
 
@@ -690,8 +658,6 @@ uint8_t squares(bool reverse) {
 	wheel = 0;
     }
 
-    uint8_t x = mw/2-1;
-    uint8_t y = mh/2-1;
     uint8_t maxsize = max(mh/2,mw/2);
 
     if (--delayframe) {
@@ -815,20 +781,17 @@ uint8_t webwc() {
 
 
 uint8_t scrollText(char str[], uint8_t len) {
-    static uint8_t wheel;
     static int16_t x;
 
     uint8_t repeat = 1;
     char chr[] = " ";
     int8_t fontsize = 14; // real height is twice that.
     int8_t fontwidth = 16;
-    uint8_t size = max(int(mw/8), 1);
 #define stdelay 1
     static uint16_t delayframe = stdelay;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	wheel = 0;
 	x = 7;
 #ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
@@ -2472,6 +2435,7 @@ void loop() {
     // themselves down and as a side effect cause a matrix display update
     handle_IR(MX_UPD_TIME);
     #endif // NEOPIXEL_PIN
+
     sublime_loop();
 }
 
