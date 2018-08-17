@@ -141,7 +141,7 @@ uint32_t Wheel(byte WheelPos) {
 
 
 void display_resolution() {
-//    static uint16_t cnt=1;
+    static uint16_t cnt=1;
 
     matrix->setTextSize(1);
     // not wide enough;
@@ -192,12 +192,10 @@ void display_resolution() {
 	matrix->print("*");
     }
     
-#if 0
     matrix->setTextColor(matrix->Color(255,0,255)); 
     matrix->setCursor(0, mh-14);
     matrix->print(cnt++);
     if (cnt == 10000) cnt=1;
-#endif
     matrix_show();
 }
 
@@ -949,7 +947,6 @@ uint8_t GifAnim(uint8_t idx) {
 
     // fudge factor to control how long GIFs are shown
     uint32_t gifloop = 25 * animgif[idx].loopcnt;
-    const char *fn = animgif[idx].path;
     static uint32_t gifanimloop = gifloop;
     static uint16_t delayframe = 2;
     uint8_t repeat = 1;
@@ -1523,7 +1520,7 @@ void matrix_update() {
 	    else if (matrix_state <= 46) ret = metd(matrix_state-31);
 	    // 12 gifs: 47 to 58
 	    else if (matrix_state <= 58) ret = GifAnim(matrix_state-47);
-	    else { Serial.print("Cannot play demo "); Serial.println(matrix_state); };
+	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_state); };
 
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -1665,9 +1662,8 @@ bool handle_IR(uint32_t delay_time) {
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
 
 
-    //if (irrecv.decode(&IR_result)) {
-    if (0) {
-    	//irrecv.resume(); // Receive the next value
+    if (irrecv.decode(&IR_result)) {
+    	irrecv.resume(); // Receive the next value
 	switch (IR_result.value) {
 
 	case IR_RGBZONE_BRIGHT:
@@ -2373,7 +2369,7 @@ void setup() {
     delay(1000);
     Serial.begin(115200);
     Serial.println("Enabling IRin");
-    //irrecv.enableIRIn(); // Start the receiver
+    irrecv.enableIRIn(); // Start the receiver
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
 #ifdef ESP8266
@@ -2381,12 +2377,18 @@ void setup() {
     // Turn off Wifi
     // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
     WiFi.forceSleepBegin();                  // turn off ESP8266 RF
-#else
+    // No blink13 in ESP8266 lib
+#else // ESP8266
     // this doesn't exist in the ESP8266 IR library, but by using pin D4
     // IR receive happens to make the system LED blink, so it's all good
-    Serial.println("Init NON ESP8266, set IR receive to blink system LED");
-    //irrecv.blink13(true);
+#ifdef ESP32
+    Serial.println("Init ESP32, set IR receive NOT to blink system LED");
+    irrecv.blink13(false);
+#else
+    Serial.println("Init NON ESP8266/ESP32, set IR receive to blink system LED");
+    irrecv.blink13(true);
 #endif
+#endif // ESP8266
 
 #ifdef NEOPIXEL_PIN
     Serial.print("Using FastLED on pin ");
@@ -2419,12 +2421,13 @@ void setup() {
     matrix->begin();
     matrix->setBrightness(matrix_brightness);
     matrix->setTextWrap(false);
-    Serial.println("Init Pixels");
+    Serial.println("Init Pixels / LEDMatrix Test");
     ledmatrix.DrawLine (0, 0, ledmatrix.Width() - 1, ledmatrix.Height() - 1, CRGB(0, 255, 0));
     ledmatrix.DrawPixel(0, 0, CRGB(255, 0, 0));
     ledmatrix.DrawPixel(ledmatrix.Width() - 1, ledmatrix.Height() - 1, CRGB(0, 0, 255));
     matrix->show();
     delay(1000);
+    Serial.println("NeoMatrix Test");
     // speed test
     //while (1) { display_resolution(); yield();};
 
@@ -2434,6 +2437,7 @@ void setup() {
     delay(1000);
     matrix->clear();
 
+    Serial.println("Matrix Libraries Test done, starting loop");
     //font_test();
 
     // init first strip demo

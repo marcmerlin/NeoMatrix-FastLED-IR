@@ -3,19 +3,25 @@
 
 #ifdef ESP32
 // 64x64 matrix with optional 16 pin parallel driver
-#define ESP32_16PINS
+// 55fps without 16PINS, 110fps with 16PINS
+//#define ESP32_16PINS
 #else
 // ESP8266 shirt with neopixel strips
 #define M32B8X3
 #define NUM_LEDS 48
 #endif
 
-// This uses https://github.com/hpwit/fastled-esp32-16PINS.git
-// instead of https://github.com/samguyer/FastLED.git
-#ifdef ESP32_16PINS
-#define FASTLED_ALLOW_INTERRUPTS 0
-#define FASTLED_SHOW_CORE 0
-#endif // ESP32_16PINS
+#ifdef ESP32
+    #ifdef ESP32_16PINS
+    // This uses https://github.com/hpwit/fastled-esp32-16PINS.git
+    // instead of https://github.com/samguyer/FastLED.git
+    #define FASTLED_ALLOW_INTERRUPTS 0
+    #define FASTLED_SHOW_CORE 0
+    #else
+    // Allow infrared
+    #define FASTLED_ALLOW_INTERRUPTS 1
+    #endif // ESP32_16PINS
+#endif
 
 #include <Adafruit_GFX.h>
 #include <FastLED_NeoMatrix.h>
@@ -282,5 +288,4 @@ void matrix_setup() {
 
     FastLED.setBrightness(matrix_brightness);
 }
-
 #endif //config_h
