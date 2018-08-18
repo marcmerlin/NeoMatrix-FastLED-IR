@@ -55,6 +55,7 @@ extern uint8_t aurora(uint8_t item);
 
 
 uint8_t matrix_state = 0;
+uint8_t matrix_demo = demo_mapping[matrix_state];
 // controls how many times a demo should run its pattern
 // init at -1 to indicate that a demo is run for the first time (demo switch)
 int16_t matrix_loop = -1;
@@ -1371,24 +1372,26 @@ uint8_t metd(uint8_t demo) {
 }
 
 
-#define LAST_MATRIX 59
 void matrix_change(int demo) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_reset_demo = 1;
-    if (demo==-128) if (matrix_state-- == 0) matrix_state = LAST_MATRIX;
-    if (demo==+127) if (matrix_state++ == LAST_MATRIX) matrix_state = 0;
+    if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_cnt;
+    if (demo==+127) if (matrix_state++ == demo_cnt) matrix_state = 0;
     // If existing matrix was already >90, any +- change brings it back to 0.
     if (matrix_state > 90) matrix_state = 0;
     if (demo >= 0 && demo < 127) matrix_state = demo;
     // Special one key press demos are shown once and next goes back to the normal loop
     if (demo >= 0 && demo < 90) matrix_loop = 9999;
+    matrix_demo = demo_mapping[matrix_state % demo_cnt];
     Serial.print("Got matrix_change ");
     Serial.print(demo);
-    Serial.print(", switching to matrix demo ");
+    Serial.print(", switching to index ");
     Serial.print(matrix_state);
+    Serial.print(", mapped to matrix demo ");
+    Serial.print(matrix_demo);
     Serial.print(" loop ");
     Serial.println(matrix_loop);
 }
@@ -1403,7 +1406,7 @@ void matrix_update() {
     // reset passthrough color set by some demos
     matrix->setPassThruColor();
 
-    switch (matrix_state) {
+    switch (matrix_demo) {
 	case 0: 
 	    ret = squares(0);
 	    if (matrix_loop == -1) matrix_loop = ret;
@@ -1414,7 +1417,6 @@ void matrix_update() {
 	    ret = squares(1);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
-	    matrix_state = 2;
 	    break;
 
 	case 2: 
@@ -1515,12 +1517,12 @@ void matrix_update() {
 
 	default:
 	    // 13 demos: 18-30
-	    if (matrix_state <= 30) ret = aurora(matrix_state-18);
+	    if (matrix_demo <= 30) ret = aurora(matrix_demo-18);
 	    // 16 demos: 31 to 46
-	    else if (matrix_state <= 46) ret = metd(matrix_state-31);
+	    else if (matrix_demo <= 46) ret = metd(matrix_demo-31);
 	    // 12 gifs: 47 to 58
-	    else if (matrix_state <= 58) ret = GifAnim(matrix_state-47);
-	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_state); };
+	    else if (matrix_demo <= 58) ret = GifAnim(matrix_demo-47);
+	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
 
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -1543,7 +1545,7 @@ void matrix_update() {
     } 
     matrix_reset_demo = 1;
     Serial.print("Done with demo ");
-    Serial.print(matrix_state);
+    Serial.print(matrix_demo);
     Serial.print(" loop ");
     Serial.println(matrix_loop);
     if (matrix_loop-- > 0) return;
@@ -1998,13 +2000,13 @@ bool handle_IR(uint32_t delay_time) {
     // Demos from FastLED
     // fade in 0 to x/256th of the previous value
     void fadeall(uint8_t fade) {
-        for(uint16_t i = 0; i < NUM_LEDS; i++) {  leds[i].nscale8(fade); }
+        for(uint16_t i = 0; i < STRIP_NUM_LEDS; i++) {  leds[i].nscale8(fade); }
     }
     
     void cylon(bool trail, uint8_t wait) {
         static uint8_t hue = 0;
         // First slide the led in one direction
-        for(uint16_t i = 0; i < NUM_LEDS; i++) {
+        for(uint16_t i = 0; i < STRIP_NUM_LEDS; i++) {
     	// Set the i'th led to red
     	leds_setcolor(i, Wheel(hue++));
     	// Show the leds
@@ -2017,7 +2019,7 @@ bool handle_IR(uint32_t delay_time) {
         }
     
         // Now go in the other direction.
-        for(uint16_t i = (NUM_LEDS)-1; i > 0; i--) {
+        for(uint16_t i = (STRIP_NUM_LEDS)-1; i > 0; i--) {
     	// Set the i'th led to red
     	leds_setcolor(i, Wheel(hue++));
     	// Show the leds
@@ -2032,25 +2034,25 @@ bool handle_IR(uint32_t delay_time) {
     
     void doubleConverge(bool trail, uint8_t wait, bool rev) {
         static uint8_t hue;
-        for(uint16_t i = 0; i < NUM_LEDS/2 + 4; i++) {
+        for(uint16_t i = 0; i < STRIP_NUM_LEDS/2 + 4; i++) {
     
-    	if (i < NUM_LEDS/2) {
+    	if (i < STRIP_NUM_LEDS/2) {
     	    if (!rev) {
     		leds_setcolor(i, Wheel(hue++));
-    		leds_setcolor(NUM_LEDS - 1 - i, Wheel(hue++));
+    		leds_setcolor(STRIP_NUM_LEDS - 1 - i, Wheel(hue++));
     	    } else {
-    		leds_setcolor(NUM_LEDS/2 -1 -i, Wheel(hue++));
-    		leds_setcolor(NUM_LEDS/2 + i, Wheel(hue++));
+    		leds_setcolor(STRIP_NUM_LEDS/2 -1 -i, Wheel(hue++));
+    		leds_setcolor(STRIP_NUM_LEDS/2 + i, Wheel(hue++));
     	    }
     	}
     #if 0
     	if (!trail && i>3) {
     	    if (!rev) {
     		leds_setcolor(i - 4, 0);
-    		leds_setcolor(NUM_LEDS - 1 - i + 4, 0);
+    		leds_setcolor(STRIP_NUM_LEDS - 1 - i + 4, 0);
     	    } else {
-    		leds_setcolor(NUM_LEDS/2 -1 -i +4, 0);
-    		leds_setcolor(NUM_LEDS/2 + i -4, 0);
+    		leds_setcolor(STRIP_NUM_LEDS/2 -1 -i +4, 0);
+    		leds_setcolor(STRIP_NUM_LEDS/2 + i -4, 0);
     	    }
     	}
     #endif
@@ -2065,17 +2067,17 @@ bool handle_IR(uint32_t delay_time) {
     void addGlitter( fract8 chanceOfGlitter) 
     {
         if (random8() < chanceOfGlitter) {
-    	leds[ random16(NUM_LEDS) ] += CRGB::White;
+    	leds[ random16(STRIP_NUM_LEDS) ] += CRGB::White;
         }
     }
     
     
     void juggle(uint8_t wait) {
         // eight colored dots, weaving in and out of sync with each other
-        fadeToBlackBy( leds, NUM_LEDS, 20);
+        fadeToBlackBy( leds, STRIP_NUM_LEDS, 20);
         byte dothue = 0;
         for( int i = 0; i < 8; i++) {
-    	leds[beatsin16( i+7, 0, NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
+    	leds[beatsin16( i+7, 0, STRIP_NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
     	dothue += 32;
         }
         leds_show();
@@ -2088,7 +2090,7 @@ bool handle_IR(uint32_t delay_time) {
         uint8_t BeatsPerMinute = 62;
         CRGBPalette16 palette = PartyColors_p;
         uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-        for( int i = 0; i < NUM_LEDS; i++) { //9948
+        for( int i = 0; i < STRIP_NUM_LEDS; i++) { //9948
     	leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
         }
         gHue++;
@@ -2102,11 +2104,11 @@ bool handle_IR(uint32_t delay_time) {
     
         for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
     #if 0
-    	for(i=0; i< NUM_LEDS; i++) {
-    	    leds_setcolor(i, Wheel(((i * 256 / NUM_LEDS) + j) & 255));
+    	for(i=0; i< STRIP_NUM_LEDS; i++) {
+    	    leds_setcolor(i, Wheel(((i * 256 / STRIP_NUM_LEDS) + j) & 255));
     	}
     #endif
-    	fill_rainbow( leds, NUM_LEDS, gHue, 7);
+    	fill_rainbow( leds, STRIP_NUM_LEDS, gHue, 7);
     	addGlitter(80);
     	gHue++;
     	leds_show();
@@ -2120,7 +2122,7 @@ bool handle_IR(uint32_t delay_time) {
     // The animations below are from Adafruit_NeoPixel/examples/strandtest
     // Fill the dots one after the other with a color
     void colorWipe(uint32_t c, uint8_t wait) {
-        for(uint16_t i=0; i<NUM_LEDS; i++) {
+        for(uint16_t i=0; i<STRIP_NUM_LEDS; i++) {
     	leds_setcolor(i, c);
     	leds_show();
     	if (handle_IR(wait/5)) return;
@@ -2132,7 +2134,7 @@ bool handle_IR(uint32_t delay_time) {
         uint16_t i, j;
     
         for(j=0; j<256; j++) {
-    	for(i=0; i<NUM_LEDS; i++) {
+    	for(i=0; i<STRIP_NUM_LEDS; i++) {
     	    leds_setcolor(i, Wheel((i+j) & 255));
     	}
     	leds_show();
@@ -2145,7 +2147,7 @@ bool handle_IR(uint32_t delay_time) {
     void theaterChase(uint32_t c, uint8_t wait) {
         for (int j=0; j<10; j++) {  //do 10 cycles of chasing
     	for (int q=0; q < 3; q++) {
-    	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
+    	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
     		leds_setcolor(i+q, c);    //turn every third pixel on
     	    }
     	    leds_show();
@@ -2154,7 +2156,7 @@ bool handle_IR(uint32_t delay_time) {
     
     	    fadeall(16);
     #if 0
-    	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
+    	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
     		leds_setcolor(i+q, 0);        //turn every third pixel off
     	    }
     #endif
@@ -2166,7 +2168,7 @@ bool handle_IR(uint32_t delay_time) {
     void theaterChaseRainbow(uint8_t wait) {
         for (int j=0; j < 256; j+=7) {     // cycle all 256 colors in the wheel
     	for (int q=0; q < 3; q++) {
-    	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
+    	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
     		leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
     	    }
     	    leds_show();
@@ -2175,7 +2177,7 @@ bool handle_IR(uint32_t delay_time) {
     
     	    fadeall(16);
     #if 0
-    	    for (uint16_t i=0; i < NUM_LEDS; i=i+3) {
+    	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
     		leds_setcolor(i+q, 0);        //turn every third pixel off
     	    }
     #endif
@@ -2190,12 +2192,12 @@ bool handle_IR(uint32_t delay_time) {
         uint16_t i, j;
     
         for(j=0; j<26; j++) {
-    	for(i=0; i< NUM_LEDS; i++) {
+    	for(i=0; i< STRIP_NUM_LEDS; i++) {
     	    leds_setcolor(i, Wheel(j * 10));
     	}
     	leds_show();
     	if (handle_IR(wait*3)) return;
-    	for(i=0; i< NUM_LEDS; i++) {
+    	for(i=0; i< STRIP_NUM_LEDS; i++) {
     	    leds_setcolor(i, 0);
     	}
     	leds_show();
@@ -2210,14 +2212,14 @@ bool handle_IR(uint32_t delay_time) {
         uint16_t i, j;
     
         for(j=0; j<52; j++) {
-    	for(i=0; i< NUM_LEDS-1; i+=2) {
+    	for(i=0; i< STRIP_NUM_LEDS-1; i+=2) {
     	    leds_setcolor(i, Wheel(j * 5));
     	    leds_setcolor(i+1, 0);
     	}
     	leds_show();
     	if (handle_IR(wait*2)) return;
     
-    	for(i=1; i< NUM_LEDS-1; i+=2) {
+    	for(i=1; i< STRIP_NUM_LEDS-1; i+=2) {
     	    leds_setcolor(i, Wheel(j * 5 + 48));
     	    leds_setcolor(i+1, 0);
     	}
@@ -2232,7 +2234,7 @@ bool handle_IR(uint32_t delay_time) {
         uint16_t i, j;
     
         for(j=0; j<52; j++) {
-    	for(i=0; i< NUM_LEDS; i+=3) {
+    	for(i=0; i< STRIP_NUM_LEDS; i+=3) {
     	    leds_setcolor(i, Wheel(j * 5));
     	    leds_setcolor(i+1, Wheel(j * 5+128));
     	    leds_setcolor(i+2, 0);
@@ -2240,7 +2242,7 @@ bool handle_IR(uint32_t delay_time) {
     	leds_show();
     	if (handle_IR(wait)) return;
     
-    	for(i=1; i< NUM_LEDS-2; i+=3) {
+    	for(i=1; i< STRIP_NUM_LEDS-2; i+=3) {
     	    leds_setcolor(i, Wheel(j * 5 + 48));
     	    leds_setcolor(i+1, Wheel(j * 5+128));
     	    leds_setcolor(i+2, 0);
@@ -2248,7 +2250,7 @@ bool handle_IR(uint32_t delay_time) {
     	leds_show();
     	if (handle_IR(wait)) return;
     
-    	for(i=2; i< NUM_LEDS-2; i+=3) {
+    	for(i=2; i< STRIP_NUM_LEDS-2; i+=3) {
     	    leds_setcolor(i, Wheel(j * 5 + 96));
     	    leds_setcolor(i+1, Wheel(j * 5+128));
     	    leds_setcolor(i+2, 0);
@@ -2394,8 +2396,8 @@ void setup() {
     Serial.print("Using FastLED on pin ");
     Serial.print(NEOPIXEL_PIN);
     Serial.print(" to drive LEDs: ");
-    Serial.println(NUM_LEDS);
-    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+    Serial.println(STRIP_NUM_LEDS);
+    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(led_brightness);
     // Turn off all LEDs first, and then light 3 of them for debug.
     leds_show();
@@ -2411,6 +2413,11 @@ void setup() {
     aurora_setup();
     sav_setup();
     matrix_setup();
+
+    Serial.print("last demo index: ");
+    Serial.println(LAST_MATRIX);
+    Serial.print("Last Playable Demo Index: ");
+    Serial.println(demo_cnt);
 
     Serial.print("Matrix Size: ");
     Serial.print(mw);

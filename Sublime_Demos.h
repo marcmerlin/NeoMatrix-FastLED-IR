@@ -97,20 +97,12 @@ void fire()
 	}
 }
 
-	bool storm = 0;
-//void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLength, CRGB rainColor, bool splashes, bool clouds, bool storm)
-void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLength, CRGB rainColor, bool splashes, bool clouds)
-//void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLength, CRGB rainColor, bool splashes, bool clouds)
+void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLength, CRGB rainColor, bool splashes, bool clouds, bool storm)
 {
-	Serial.println("00");
-	Serial.flush();
-	Serial.println("0");
-	Serial.flush();
 	static uint16_t noiseX = random16();
 	static uint16_t noiseY = random16();
 	static uint16_t noiseZ = random16();
 
-	Serial.println("1");
 	//FastLED.delay(1000/map8(speed,16,32));
 	// Add entropy to random number generator; we use a lot of it.
 
@@ -222,27 +214,21 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 
 void theMatrix()
 {
-	Serial.println("a2");
 	yield();
 	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
-	//rain(60, 200, map8(intensity,5,100), 195,            false, false);
-	rain(60, 200, map8(intensity,5,100), 195, CRGB::Green, false, false);
-	//rain(60, 200, map8(intensity,5,100), 195, CRGB::Green, false, false, false);
-	Serial.println("b2");
+	rain(60, 200, map8(intensity,5,100), 195, CRGB::Green, false, false, false);
 }
 
 void coloredRain()
 {
-	Serial.println("aa");
 	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
-	//rain(60, 180, map8(intensity,2,60), 30, solidRainColor, true, false, false);
+	rain(60, 180, map8(intensity,2,60), 30, solidRainColor, true, false, false);
 }
 
 void stormyRain()
 {
-	Serial.println("aaa");
 	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
-	//rain(0, 90, map8(intensity,0,100)+30, 30, solidRainColor, true, true, true);
+	rain(0, 90, map8(intensity,0,100)+30, 30, solidRainColor, true, true, true);
 }
 
 
