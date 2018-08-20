@@ -1665,7 +1665,7 @@ bool handle_IR(uint32_t delay_time) {
 
 
     if (irrecv.decode(&IR_result)) {
-    	irrecv.resume(); // Receive the next value
+    	//irrecv.resume(); // Receive the next value
 	switch (IR_result.value) {
 
 	case IR_RGBZONE_BRIGHT:
@@ -2371,7 +2371,7 @@ void setup() {
     delay(1000);
     Serial.begin(115200);
     Serial.println("Enabling IRin");
-    irrecv.enableIRIn(); // Start the receiver
+    //irrecv.enableIRIn(); // Start the receiver
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
 #ifdef ESP8266
@@ -2385,7 +2385,7 @@ void setup() {
     // IR receive happens to make the system LED blink, so it's all good
 #ifdef ESP32
     Serial.println("Init ESP32, set IR receive NOT to blink system LED");
-    irrecv.blink13(false);
+    //irrecv.blink13(false);
 #else
     Serial.println("Init NON ESP8266/ESP32, set IR receive to blink system LED");
     irrecv.blink13(true);
