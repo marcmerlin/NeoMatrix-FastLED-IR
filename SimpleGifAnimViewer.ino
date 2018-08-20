@@ -16,11 +16,14 @@ float matrix_gamma = 3.0; // higher number is darker
 #define OFFSETY 0
 const uint8_t kMatrixWidth = 32; 
 const uint8_t kMatrixHeight = 32; 
+const uint8_t lzwMaxBits = 11;
 #else // M32B8M32B8X3X3
 #define OFFSETX 0
 #define OFFSETY 0
 const uint8_t kMatrixWidth = 64;
 const uint8_t kMatrixHeight = 64; 
+// More RAM on ESP32
+const uint8_t lzwMaxBits = 12;
 #endif
 
 
@@ -54,7 +57,7 @@ const uint8_t kMatrixHeight = 64;
 // Global variables use 60432 bytes (73%) of dynamic memory, leaving 21488 bytes for local variables. Maximum is 81920 bytes.
 
 // 10 doesn't properly decode the bottom of /gifs/triangles_in.gif, 11 is required.
-GifDecoder<kMatrixWidth, kMatrixHeight, 11> decoder;
+GifDecoder<kMatrixWidth, kMatrixHeight, lzwMaxBits> decoder;
 
 bool fileSeekCallback(unsigned long position) { return file.seek(position); }
 unsigned long filePositionCallback(void) { return file.position(); }
@@ -86,20 +89,31 @@ void sav_setup() {
 
     matrix->precal_gamma(matrix_gamma);
 
-    #ifdef ESP8266
+    Serial.println("SPIFFS Begin (can crash/conflict with IRRemote on ESP32)");
     SPIFFS.begin();
-    Dir dir = SPIFFS.openDir("/");
-    while (dir.next()) {
-	String fileName = dir.fileName();
-	size_t fileSize = dir.fileSize();
-	Serial.printf("FS File: %s, size: %s\n", fileName.c_str(), String(fileSize).c_str());
-    }
+    Serial.println("SPIFFS Directory listing:");
+    #ifdef ESP8266
+        Dir dir = SPIFFS.openDir("/");
+        while (dir.next()) {
+            String fileName = dir.fileName();
+            size_t fileSize = dir.fileSize();
+            Serial.printf("FS File: %s, size: %s\n", fileName.c_str(), String(fileSize).c_str());
+        }
+    #else
+    // ESP32 SPIFFS does not support directory objects
+    // See https://github.com/espressif/arduino-esp32/blob/master/libraries/SPIFFS/examples/SPIFFS_time/SPIFFS_time.ino
+        File dir = SPIFFS.open("/");
+        while (File file = dir.openNextFile()) {
+            Serial.print("FS File: ");
+            Serial.print(file.name());
+            Serial.print(" Size: ");
+            Serial.println(file.size());
+        }
     #endif
-    Serial.printf("\n");
+    Serial.println();
 }
 
 bool sav_newgif(const char *pathname) {
-    SPIFFS.begin();
     if (file) file.close();
     file = SPIFFS.open(pathname, "r");
     Serial.print(pathname);
