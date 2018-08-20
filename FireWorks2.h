@@ -70,13 +70,13 @@ class Dot {
 		fract8 p00, p01, p10, p11;		// percentage of pixel spread to adjacent pixels
     
 		screenscale( x, y, p00, p01, p10, p11);
-    
+
 		uint8_t x_pos = x >> 11;		// Scaling to get x pixel position 0 - 32
 		x_pos = map(x_pos, 0, 32, 0, MATRIX_WIDTH-1);	// Scale to Matrix width
 
 		uint8_t y_pos = y >> 10;		// Scaling to get y pixel position 0 - 64
 		y_pos = map(y_pos, 0, 64, 0, MATRIX_HEIGHT-1);	// Scale to Matrix height
-   
+
 		if (yv > 0){				// In case of equal values, just adding 1 or 2 to any pixel's percentage
 			if (p00 == p01) p01++;		// will ensure than only one pixel will have a higher percentage than  
 			if (p10 == p11) p11++;		// any of the other 3
@@ -150,7 +150,8 @@ class Dot {
 	void GroundLaunch() {
 		gGravity = map8(speed, 0, 6)+3;
 
-		yv = ((14*(MATRIX_HEIGHT+(3*(gGravity*0.8))))-(MATRIX_HEIGHT*5)) + random16(MATRIX_HEIGHT*3);	// Vertical velocity = Minimum velocity + Random maximum difference
+		if (MATRIX_HEIGHT <= 32) yv = ((20*(MATRIX_HEIGHT+(3*(gGravity*0.8))))-(MATRIX_HEIGHT*5)) + random16(MATRIX_HEIGHT*5);	// Vertical velocity = Minimum velocity + Random maximum difference
+		if (MATRIX_HEIGHT > 32)  yv = ((14*(MATRIX_HEIGHT+(3*(gGravity*0.8))))-(MATRIX_HEIGHT*5)) + random16(MATRIX_HEIGHT*3);	// Vertical velocity = Minimum velocity + Random maximum difference
 		xv = random16(350) - 175;			// Generates a signed int value between +/- 175  (Nice width but always inside of frame)      
 		y = 0;						// Ground launch
 //		x = random16(); 				// Horizontal
@@ -187,7 +188,7 @@ void fireworks()
 	CRGB sky1(0,0,17);				// Background sky color (will only work if brightness is set high 128 or up !!)
 	CRGB sky2(32,32,64);				// Alternate sky color to create a star twinkle effect 
 
-	for( uint8_t h = 0; h < MATRIX_WIDTH; h++) {	// All matrixleds will be set to 'sky1' (very dark blue) 
+	for( uint8_t h = 0; h < MATRIX_WIDTH; h++) {	// All leds will be set to 'sky1' (very dark blue) 
 		for( int v = 0; v < MATRIX_HEIGHT; v++) {
 			matrixleds[XY2(h,v)] = sky1;
 		}
@@ -259,8 +260,7 @@ void fireworks()
 void setup() {
   delay( 1000 ); //safety startup delay
   Serial.begin(115200);
-  FastLED.addLeds<WS2811_PORTA,3>(matrixleds, 256).setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(BRIGHTNESS);
+  matrix_setup();
   matrix->begin();
 }
 
