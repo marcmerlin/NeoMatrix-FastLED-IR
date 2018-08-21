@@ -25,6 +25,7 @@
 #include "aurora.h"
 
 extern uint8_t aurora(uint8_t item);
+extern hw_timer_t *timer;
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
@@ -954,8 +955,11 @@ uint8_t GifAnim(uint8_t idx) {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
+	timerAlarmDisable(timer);
+	bool savng = sav_newgif(animgif[idx].path);
+	timerAlarmEnable(timer);
 	// exit if the gif animation couldn't get setup.
-	if (sav_newgif(animgif[idx].path)) return 0;
+	if (savng) return 0;
     }
 
     if (--delayframe) {
@@ -968,7 +972,10 @@ uint8_t GifAnim(uint8_t idx) {
     // simpleanimviewer may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
     // add the matrix_show() delay that is expected by the caller
-    if (sav_loop()) { delay(MX_UPD_TIME); };
+    timerAlarmDisable(timer);
+    bool savl = sav_loop();
+    timerAlarmEnable(timer);
+    if (savl) { delay(MX_UPD_TIME); };
     if (gifanimloop-- == 0) {
 	gifanimloop = gifloop;
 	return 0;
@@ -1665,7 +1672,7 @@ bool handle_IR(uint32_t delay_time) {
 
 
     if (irrecv.decode(&IR_result)) {
-    	//irrecv.resume(); // Receive the next value
+    	irrecv.resume(); // Receive the next value
 	switch (IR_result.value) {
 
 	case IR_RGBZONE_BRIGHT:
@@ -2370,8 +2377,10 @@ void setup() {
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
+    Serial.println("Enabling SPIFFS before IR");
+    sav_setup();
     Serial.println("Enabling IRin");
-    //irrecv.enableIRIn(); // Start the receiver
+    irrecv.enableIRIn(); // Start the receiver
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
 #ifdef ESP8266
@@ -2385,7 +2394,7 @@ void setup() {
     // IR receive happens to make the system LED blink, so it's all good
 #ifdef ESP32
     Serial.println("Init ESP32, set IR receive NOT to blink system LED");
-    //irrecv.blink13(false);
+    irrecv.blink13(false);
 #else
     Serial.println("Init NON ESP8266/ESP32, set IR receive to blink system LED");
     irrecv.blink13(true);
@@ -2411,7 +2420,6 @@ void setup() {
 #endif // NEOPIXEL_PIN
 
     aurora_setup();
-    sav_setup();
     matrix_setup();
 
     Serial.print("last demo index: ");
