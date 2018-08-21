@@ -940,7 +940,29 @@ uint8_t GifAnim(uint8_t idx) {
     };
     #else // M32B8M32B8X3X3
     Animgif animgif[] = {
-	    {"/gifs64/ani-bman-BW.gif", 64}, // 19
+    // 22 gifs
+            {"/gifs64/ani-bman-BW.gif", 64 },	// 19
+            {"/gifs64/149_minion1.gif", 48 },	// 27
+            {"/gifs64/341_minion2.gif", 32 },	// 18
+            {"/gifs64/240_angrybird.gif", 16 },	// 173
+            {"/gifs64/271_mj.gif", 32 },	// 47
+            {"/gifs64/323_rockface.gif", 16 },	// 39
+            {"/gifs64/222_fry.gif", 24 },	// 39
+            {"/gifs64/401_ghostbusters.gif", 32 },// 47
+            {"/gifs64/087_net.gif", 42 },	// 39
+            {"/gifs64/196_colorstar.gif", 48 },	// 39
+            {"/gifs64/200_circlesmoke.gif", 28 },// 24 
+            {"/gifs64/203_waterdrop.gif", 32 },	// 61 
+            {"/gifs64/210_circletriangle.gif", 32 },// 47
+            {"/gifs64/215_fallingcube.gif", 42 },// 75
+            {"/gifs64/231_sphere.gif", 32 },	// 58
+            {"/gifs64/236_spintriangle.gif", 64 },// 41
+            {"/gifs64/255_photon.gif", 32 },	// 43
+            {"/gifs64/257_mesh.gif", 32 },	// 95
+            {"/gifs64/281_plasma.gif", 64 },	// 125
+            {"/gifs64/342_spincircle.gif", 48 },// 15
+            {"/gifs64/444_hand.gif", 64 },	// 73
+            {"/gifs64/469_infection.gif", 64 },	// 30
     };
     #endif
     uint8_t gifcnt = sizeof(animgif) / sizeof(animgif[0]);
@@ -955,9 +977,7 @@ uint8_t GifAnim(uint8_t idx) {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	timerAlarmDisable(timer);
 	bool savng = sav_newgif(animgif[idx].path);
-	timerAlarmEnable(timer);
 	// exit if the gif animation couldn't get setup.
 	if (savng) return 0;
     }
@@ -972,7 +992,6 @@ uint8_t GifAnim(uint8_t idx) {
     // simpleanimviewer may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
     // add the matrix_show() delay that is expected by the caller
-    timerAlarmDisable(timer);
     bool savl = sav_loop();
     timerAlarmEnable(timer);
     if (savl) { delay(MX_UPD_TIME); };
@@ -1527,8 +1546,20 @@ void matrix_update() {
 	    if (matrix_demo <= 30) ret = aurora(matrix_demo-18);
 	    // 16 demos: 31 to 46
 	    else if (matrix_demo <= 46) ret = metd(matrix_demo-31);
+#if M32B8X3
 	    // 12 gifs: 47 to 58
-	    else if (matrix_demo <= 58) ret = GifAnim(matrix_demo-47);
+	    else if (matrix_demo <= 58) {
+#else // M32B8M32B8X3X3
+	    // 12 gifs: 47 to 68
+	    else if (matrix_demo <= 68) {
+#endif
+		// Before a new GIF, give a chance for an IR command to go through
+		if (matrix_loop == -1) delay(3000);
+		// SPIFFS is incompatible with hardware interrupts and crashes.
+		// They need to be turned off a bit early.
+		timerAlarmDisable(timer);
+		ret = GifAnim(matrix_demo-47);
+	    }
 	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
 
 	    if (matrix_loop == -1) matrix_loop = ret;

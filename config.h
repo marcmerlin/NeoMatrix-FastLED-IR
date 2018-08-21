@@ -2,19 +2,18 @@
 #define config_h
 
 
-// Index of the last demo in matrix_change
-// demo_mapping below controls which ones are displayed
-#define LAST_MATRIX 59
-
 // On ESP32, I have a 64x64 direct matrix (not tiled) with 2 options of drivers.
 #ifdef ESP32
     // 64x64 matrix with optional 16 pin parallel driver
     // 55fps without 16PINS, 110fps with 16PINS
     #define ESP32_16PINS
+
+    #define LAST_MATRIX 69
     // Which demos are shown, and in which order
     // 13, 14 buggy
-    uint8_t demo_mapping[] = { LAST_MATRIX, 8, 9, 1, 10, 11, 12, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 0, };
+    uint8_t demo_mapping[] = { 47, LAST_MATRIX, 8, 9, 1, 10, 11, 12, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 0, };
 #else // ESP32
+    #define LAST_MATRIX 59
     // Which demos are shown, and in which order
     uint8_t demo_mapping[] = { LAST_MATRIX, 2, 13, 8, 9, 1, 3, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 4, 21, 22, 23, 24, 25, 5, 26, 27, 28, 29, 30, 6, 31, 32, 33, 34, 35, 7, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 0, };
     // On ESP8266, I drive 3x 32x8 panels plus neopixel strips

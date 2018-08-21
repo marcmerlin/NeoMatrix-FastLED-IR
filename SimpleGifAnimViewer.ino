@@ -7,7 +7,7 @@
 #endif
 File file;
 
-float matrix_gamma = 3.0; // higher number is darker
+float matrix_gamma = 2.4; // higher number is darker
 
 
 #ifdef M32B8X3
