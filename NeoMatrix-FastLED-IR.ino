@@ -940,7 +940,7 @@ uint8_t GifAnim(uint8_t idx) {
     };
     #else // M32B8M32B8X3X3
     Animgif animgif[] = {
-    // 28 gifs
+    // 27 gifs
             {"/gifs64/ani-bman-BW.gif", 64 },	// 19
             {"/gifs64/149_minion1.gif", 48 },	// 27
             {"/gifs64/341_minion2.gif", 32 },	// 18
@@ -962,7 +962,6 @@ uint8_t GifAnim(uint8_t idx) {
             {"/gifs64/208_dancers.gif", 32 },	// 39
             {"/gifs64/210_circletriangle.gif", 32 },// 47
             {"/gifs64/215_fallingcube.gif", 42 },// 75
-            {"/gifs64/231_sphere.gif", 32 },	// 58
             {"/gifs64/236_spintriangle.gif", 64 },// 41
             {"/gifs64/255_photon.gif", 32 },	// 43
             {"/gifs64/257_mesh.gif", 48 },	// 95
@@ -1558,8 +1557,8 @@ void matrix_update() {
 	    // 12 gifs: 47 to 58
 	    else if (matrix_demo <= 58) {
 #else // M32B8M32B8X3X3
-	    // 29 gifs: 47 to 74
-	    else if (matrix_demo <= 74) {
+	    // 28 gifs: 47 to 73
+	    else if (matrix_demo <= 73) {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);

@@ -155,19 +155,23 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 		}
 
 		// Step 5. Add lightning if called for
+		#ifndef ESP32
 		if (storm) {
 			int lightning[MATRIX_WIDTH][MATRIX_HEIGHT];
 
-			if (random16() < 200) {		// Odds of a lightning bolt
-				lightning[scale8(random8(), MATRIX_WIDTH)][MATRIX_HEIGHT-1] = 255;	// Random starting location
+			if (random16() < 72) {		// Odds of a lightning bolt
+				lightning[scale8(random8(), MATRIX_WIDTH-1)][MATRIX_HEIGHT-1] = 255;	// Random starting location
 				for(int ly = MATRIX_HEIGHT-1; ly > 0; ly--) {
-					for (int lx = 1; lx < MATRIX_WIDTH-1; lx++) {
+					for (int lx = 0; lx < MATRIX_WIDTH; lx++) {
 						if (lightning[lx][ly] == 255) {
 							lightning[lx][ly] = 0;
+							// storm crashes here on ESP32. no idea why.
 							uint8_t dir = random8(4);
 							switch (dir) {
 								case 0:
+									// storm also crashes here, again no idea why
 									matrixleds[XY2(lx+1,ly-1,true)] = lightningColor;
+									// but not here
 									lightning[wrapX(lx+1)][ly-1] = 255;	// move down and right
 								break;
 								case 1:
@@ -190,6 +194,7 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 				}
 			}
 		}
+		#endif
 
 		// Step 6. Add clouds if called for
 		if (clouds) {
@@ -215,19 +220,19 @@ void rain(byte backgroundDepth, byte maxBrightness, byte spawnFreq, byte tailLen
 void theMatrix()
 {
 	yield();
-	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
+	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds, ligthening )
 	rain(60, 200, map8(intensity,5,100), 195, CRGB::Green, false, false, false);
 }
 
 void coloredRain()
 {
-	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
-	rain(60, 180, map8(intensity,2,60), 30, solidRainColor, true, false, false);
+	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds, ligthening )
+	rain(60, 180, map8(intensity,2,60), 30, solidRainColor, true, true, false);
 }
 
 void stormyRain()
 {
-	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds )
+	// ( Depth of dots, maximum brightness, frequency of new dots, length of tails, color, splashes, clouds, ligthening )
 	rain(0, 90, map8(intensity,0,100)+30, 30, solidRainColor, true, true, true);
 }
 
