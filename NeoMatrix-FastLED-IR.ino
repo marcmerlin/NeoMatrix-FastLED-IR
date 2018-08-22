@@ -467,37 +467,136 @@ uint8_t esrr() {
 	spd = 1.0;
     }
 
-    matrix->setFont(&TomThumb);
     matrix->setRotation(0);
     matrix->setTextSize(1);
+#if mw == 64
+    //matrix->setFont(FreeMonoBold9pt7b);
+    matrix->setFont(&Century_Schoolbook_L_Bold_12);
+#else
+    matrix->setFont(&TomThumb);
+#endif
     matrix_clear();
 
-
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(16, 15);
+#else
 	matrix->setCursor(7, 6);
+#endif
 	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix->print("EAT");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(9, 31);
+#else
 	matrix->setCursor(3, 14);
+#endif
 	matrix->setTextColor(matrix->Color(192,192,0)); 
 	matrix->print("SLEEP");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(12, 47);
+#else
 	matrix->setCursor(5, 22);
+#endif
 	matrix->setTextColor(matrix->Color(0,255,0));
+#if mw == 64
+	matrix->print("BURN");
+#else
 	matrix->print("RAVE");
+#endif
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(0, 63);
+#else
 	matrix->setCursor(0, 30);
+#endif
 	matrix->setTextColor(matrix->Color(0,192,192));
 	matrix->print("REPEAT");
+    }
+    l++;
+
+    // 400 - 4x50 = 200
+    if (state++ > (l*duration-l*overlap)/spd) {
+	state = 1;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    matrix_reset_demo = 1;
+	    return 0;
+	}
+    }
+
+    matrix_show();
+    return 1;
+}
+
+uint8_t bbb() {
+    static uint16_t state;
+    static float spd;
+    float spdincr = 0.6;
+    uint16_t duration = 100;
+    uint16_t overlap = 50;
+    uint8_t displayall = 18;
+    uint8_t resetspd = 24;
+    uint8_t l = 0;
+
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix_clear();
+	state = 1;
+	spd = 1.0;
+    }
+
+    matrix->setRotation(0);
+    matrix->setTextSize(1);
+#if mw == 64
+    //matrix->setFont(FreeMonoBold9pt7b);
+    matrix->setFont(&Century_Schoolbook_L_Bold_16);
+#else
+    matrix->setFont(&TomThumb);
+#endif
+    matrix_clear();
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(4, 20);
+#else
+	matrix->setCursor(5, 10);
+#endif
+	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix->print("BURN");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(6, 41);
+#else
+	matrix->setCursor(5, 20);
+#endif
+	matrix->setTextColor(matrix->Color(0,255,0)); 
+	matrix->print("BABY");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(4, 62);
+#else
+	matrix->setCursor(5, 30);
+#endif
+	matrix->setTextColor(matrix->Color(0,0,255));
+	matrix->print("BURN");
     }
     l++;
 
@@ -717,7 +816,12 @@ uint8_t webwc() {
 	firstpass = 0;
     }
 
+#if mw == 64
+    //matrix->setFont(FreeMonoBold9pt7b);
+    matrix->setFont(&Century_Schoolbook_L_Bold_12);
+#else
     matrix->setFont(&TomThumb);
+#endif
     matrix->setRotation(0);
     matrix->setTextSize(1);
     if (! didclear) {
@@ -726,7 +830,11 @@ uint8_t webwc() {
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(12, 12);
+#else
 	matrix->setCursor(5, 6);
+#endif
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("WITH");
@@ -735,7 +843,11 @@ uint8_t webwc() {
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 	firstpass = 1;
+#if mw == 64
+	matrix->setCursor(7, 24);
+#else
 	matrix->setCursor(3, 12);
+#endif
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("EVERY");
@@ -743,7 +855,11 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(12, 36);
+#else
 	matrix->setCursor(5, 18);
+#endif
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("BEAT");
@@ -751,7 +867,11 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(4, 48);
+#else
 	matrix->setCursor(2, 24);
+#endif
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("WE ARE");
@@ -759,7 +879,11 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
+#if mw == 64
+	matrix->setCursor(0, 60);
+#else
 	matrix->setCursor(0, 30);
+#endif
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("CLOSER");
@@ -826,6 +950,56 @@ uint8_t scrollText(char str[], uint8_t len) {
     x--;
 
     if (x < (-1 * (int16_t)len * fontwidth)) {
+	matrix_reset_demo = 1;
+	return 0;
+    }
+    matrix_show();
+    return repeat;
+}
+
+
+uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uint8_t len2) {
+    static int16_t x;
+    int16_t len = max(len1, len2);
+
+    uint8_t repeat = 4;
+    int8_t fontsize = 14; // real height is twice that.
+    int8_t fontwidth = 16;
+    uint16_t txtcolor;
+#define stdelay 1
+    static uint16_t delayframe = stdelay;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	x = 1;
+#ifndef NOFONTS
+	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
+#endif
+	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+	matrix->setTextSize(1);
+	matrix->setRotation(0);
+    }
+
+    if (--delayframe) {
+	// reset how long a frame is shown before we switch to the next one
+	delay(MX_UPD_TIME);
+	return repeat;
+    }
+    delayframe = stdelay;
+
+    matrix_clear();
+    matrix->setCursor(MATRIX_WIDTH-len*fontwidth*1.5 + x, 20);
+    txtcolor = Color24toColor16(Wheel(map(x, 0, len*fontwidth, 0, 512)));
+    matrix->setTextColor(txtcolor); 
+    matrix->print(str1);
+    matrix->setCursor(MATRIX_WIDTH-x, MATRIX_HEIGHT-1);
+    txtcolor = Color24toColor16(Wheel(map(x, 0, len*fontwidth, 512, 0)));
+    matrix->setTextColor(txtcolor); 
+    matrix->print(str2);
+    matrix_show();
+    x++;
+
+    if (x > 1.8 * len * fontwidth) {
 	matrix_reset_demo = 1;
 	return 0;
     }
@@ -964,7 +1138,7 @@ uint8_t GifAnim(uint8_t idx) {
             {"/gifs64/215_fallingcube.gif", 42 },// 75
             {"/gifs64/236_spintriangle.gif", 64 },// 41
             {"/gifs64/255_photon.gif", 32 },	// 43
-            {"/gifs64/257_mesh.gif", 48 },	// 95
+            {"/gifs64/257_mesh.gif", 64 },	// 95
             {"/gifs64/284_comets.gif", 64 },	// 89
             {"/gifs64/342_spincircle.gif", 48 },// 15
             {"/gifs64/412_cubes.gif", 28 },	// 24
@@ -1488,84 +1662,99 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case 8: 
+	case 8:
+	    ret = bbb();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 9:
+	    ret = DoublescrollText("Safety", 6, "Third!", 6);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+
+
+
+	case 18: 
 	    ret = panOrBounceBitmap(1, 24);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 9: 
+	case 19: 
 	    ret = pride();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 10: 
+	case 20: 
 	    ret = demoreel100(1); // Twinlking stars
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 11: 
+	case 21: 
 	    ret = demoreel100(2); // color changing pixels sweeping up and down
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 12: 
+	case 22: 
 	    ret = demoreel100(3); // colored pixels being exchanged between top and bottom
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 13: 
+	case 23: 
 	    ret = call_rain(1); // matrix
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 14: 
+	case 24: 
 	    ret = call_rain(3); // clouds, rain, lightening
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 15: 
+	case 25: 
 	    ret = call_pacman(3);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 16: 
+	case 26: 
 	    ret = plasma();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 17: 
+	case 27: 
 	    ret = call_fire();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	default:
-	    // 13 demos: 18-30
-	    if (matrix_demo <= 30) ret = aurora(matrix_demo-18);
-	    // 16 demos: 31 to 46
-	    else if (matrix_demo <= 46) ret = metd(matrix_demo-31);
+	    // 13 demos: 28-40
+	    if (matrix_demo <= 40) ret = aurora(matrix_demo-28);
+	    // 16 demos: 41 to 56
+	    else if (matrix_demo <= 56) ret = metd(matrix_demo-41);
 #if M32B8X3
-	    // 12 gifs: 47 to 58
-	    else if (matrix_demo <= 58) {
+	    // 12 gifs: 57 to 68
+	    else if (matrix_demo <= 68) {
 #else // M32B8M32B8X3X3
-	    // 28 gifs: 47 to 73
-	    else if (matrix_demo <= 73) {
+	    // 28 gifs: 57 to 83
+	    else if (matrix_demo <= 83) {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
 		// SPIFFS is incompatible with hardware interrupts and crashes.
 		// They need to be turned off a bit early.
 		//timerAlarmDisable(timer);
-		ret = GifAnim(matrix_demo-47);
+		ret = GifAnim(matrix_demo-57);
 	    }
 	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
 
