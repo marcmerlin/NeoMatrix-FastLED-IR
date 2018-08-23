@@ -694,27 +694,56 @@ uint8_t esrr_fade() {
 
     if (state == 1) {
 	//wheel+=20;
+#if mw == 64
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_12);
+#else
 	matrix->setFont(&TomThumb);
+#endif
 	matrix->setRotation(0);
 	matrix->setTextSize(1);
 	matrix_clear();
 
+#if mw == 64
+	matrix->setCursor(16, 15);
+#else
 	matrix->setCursor(7, 6);
+#endif
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
 	matrix->print("EAT");
+
+#if mw == 64
+	matrix->setCursor(9, 31);
+#else
 	matrix->setCursor(3, 14);
+#endif
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
 	matrix->print("SLEEP");
+
+
+#if mw == 64
+	matrix->setCursor(12, 47);
+#else
 	matrix->setCursor(5, 22);
+#endif
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
+#if mw == 64
+	matrix->print("BURN");
+#else
 	matrix->print("RAVE");
+#endif
+
+#if mw == 64
+	matrix->setCursor(0, 63);
+#else
 	matrix->setCursor(0, 30);
+#endif
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
@@ -1114,7 +1143,7 @@ uint8_t GifAnim(uint8_t idx) {
     };
     #else // M32B8M32B8X3X3
     Animgif animgif[] = {
-    // 27 gifs
+    // 29 gifs
             {"/gifs64/ani-bman-BW.gif", 64 },	// 19
             {"/gifs64/149_minion1.gif", 48 },	// 27
             {"/gifs64/341_minion2.gif", 32 },	// 18
@@ -1144,6 +1173,8 @@ uint8_t GifAnim(uint8_t idx) {
             {"/gifs64/412_cubes.gif", 28 },	// 24
             {"/gifs64/444_hand.gif", 64 },	// 73
             {"/gifs64/469_infection.gif", 64 },	// 30
+            {"/gifs64/heartTunnel.gif", 64 },	// 23
+            {"/gifs64/tabor.gif", 64 },	   	// 5
     };
     #endif
     uint8_t gifcnt = sizeof(animgif) / sizeof(animgif[0]);
@@ -1590,8 +1621,10 @@ void matrix_change(int demo) {
     // If existing matrix was already >90, any +- change brings it back to 0.
     if (matrix_state > 90) matrix_state = 0;
     if (demo >= 0 && demo < 127) matrix_state = demo;
+#ifdef NEOPIXEL_PIN 
     // Special one key press demos are shown once and next goes back to the normal loop
     if (demo >= 0 && demo < 90) matrix_loop = 9999;
+#endif
     matrix_demo = demo_mapping[matrix_state % demo_cnt];
     Serial.print("Got matrix_change ");
     Serial.print(demo);
@@ -1746,8 +1779,8 @@ void matrix_update() {
 	    // 12 gifs: 57 to 68
 	    else if (matrix_demo <= 68) {
 #else // M32B8M32B8X3X3
-	    // 28 gifs: 57 to 83
-	    else if (matrix_demo <= 83) {
+	    // 29 gifs: 57 to 86
+	    else if (matrix_demo <= 86) {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
@@ -1843,7 +1876,7 @@ void change_speed(int8_t change) {
     Serial.println(strip_speed);
 }
 
-bool is_change() {
+bool is_change(bool force=false) {
     uint32_t newmil = millis();
     // Any change after next button acts as a pattern change for 5 seconds
     // (actually more than 5 secs because millis stops during panel refresh)
@@ -1851,7 +1884,14 @@ bool is_change() {
 	last_change = newmil;
 	return 1;
     }
+    if (force) return 0;
+#ifdef NEOPIXEL_PIN 
     return 0;
+#else
+    // When not running neopixel strip, all keys have direct action without requiring
+    // pressing next pattern first
+    return 1;
+#endif
 }
 
 
@@ -1908,6 +1948,7 @@ bool handle_IR(uint32_t delay_time) {
 	    return 1;
 
 	case IR_RGBZONE_DIM:
+	    if (is_change()) { matrix_loop = 9999; Serial.println("Got IR: Dim, Hang on this demo"); return 1; }
 	    change_brightness(-1);
 	    Serial.println("Got IR: Dim");
 	    return 1;
