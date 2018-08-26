@@ -25,7 +25,9 @@
 #include "aurora.h"
 
 extern uint8_t aurora(uint8_t item);
+#ifdef ESP32
 extern hw_timer_t *timer;
+#endif
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
@@ -1775,7 +1777,7 @@ void matrix_update() {
 	    if (matrix_demo <= 40) ret = aurora(matrix_demo-28);
 	    // 16 demos: 41 to 56
 	    else if (matrix_demo <= 56) ret = metd(matrix_demo-41);
-#if M32B8X3
+#ifdef M32B8X3
 	    // 12 gifs: 57 to 68
 	    else if (matrix_demo <= 68) {
 #else // M32B8M32B8X3X3
