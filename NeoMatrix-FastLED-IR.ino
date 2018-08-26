@@ -994,10 +994,16 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
     int16_t len = max(len1, len2);
 
     uint8_t repeat = 4;
-    int8_t fontsize = 14; // real height is twice that.
+#if mw == 64
+    int8_t fontsize = 14;
     int8_t fontwidth = 16;
-    uint16_t txtcolor;
 #define stdelay 1
+#else
+    int8_t fontsize = 9;
+    int8_t fontwidth = 11;
+#define stdelay 2
+#endif
+    uint16_t txtcolor;
     static uint16_t delayframe = stdelay;
 
     if (matrix_reset_demo == 1) {
@@ -1019,7 +1025,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
     delayframe = stdelay;
 
     matrix_clear();
-    matrix->setCursor(MATRIX_WIDTH-len*fontwidth*1.5 + x, 20);
+    matrix->setCursor(MATRIX_WIDTH-len*fontwidth*1.5 + x, fontsize+6);
     txtcolor = Color24toColor16(Wheel(map(x, 0, len*fontwidth, 0, 512)));
     matrix->setTextColor(txtcolor); 
     matrix->print(str1);
@@ -1624,14 +1630,21 @@ void matrix_change(int demo) {
     if (matrix_state > 90) matrix_state = 0;
     if (demo >= 0 && demo < 127) matrix_state = demo;
 #ifdef NEOPIXEL_PIN 
-    // Special one key press demos are shown once and next goes back to the normal loop
+    // Special one key press where demos are shown forever and next goes back to the normal loop
     if (demo >= 0 && demo < 90) matrix_loop = 9999;
 #endif
-    matrix_demo = demo_mapping[matrix_state % demo_cnt];
     Serial.print("Got matrix_change ");
     Serial.print(demo);
     Serial.print(", switching to index ");
-    Serial.print(matrix_state);
+    if (show_best_demos) {
+	Serial.print(matrix_state % best_cnt);
+	Serial.print(" (bestof mode) ");
+	matrix_demo = best_mapping[matrix_state % best_cnt];
+    } else {
+	Serial.print(matrix_state % demo_cnt);
+	Serial.print(" (full mode) ");
+	matrix_demo = demo_mapping[matrix_state % demo_cnt];
+    }
     Serial.print(", mapped to matrix demo ");
     Serial.print(matrix_demo);
     Serial.print(" loop ");
@@ -1945,12 +1958,19 @@ bool handle_IR(uint32_t delay_time) {
 	switch (IR_result.value) {
 
 	case IR_RGBZONE_BRIGHT:
+	    if (is_change()) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return 1; }
 	    change_brightness(+1);
 	    Serial.println("Got IR: Bright");
 	    return 1;
 
 	case IR_RGBZONE_DIM:
-	    if (is_change()) { matrix_loop = 9999; Serial.println("Got IR: Dim, Hang on this demo"); return 1; }
+	    if (is_change()) { 
+		Serial.println("Got IR: Dim, show all demos again and Hang on this demo");
+		matrix_loop = 9999; 
+		show_best_demos = false;
+		return 1; 
+	    }
+
 	    change_brightness(-1);
 	    Serial.println("Got IR: Dim");
 	    return 1;

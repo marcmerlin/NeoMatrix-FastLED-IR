@@ -11,16 +11,22 @@
     #define LAST_MATRIX 87
     // Which demos are shown, and in which order
     // 24 buggy storm, 25 pacman, 57 BM gif
-    uint8_t demo_mapping[] = { 57, LAST_MATRIX, 2, 23, 1, 20, 21, 22, 23, 3, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 7, 46, 47, 48, 49, 50, 8, 51, 52, 53, 54, 55, 9, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 0, };
+    uint8_t demo_mapping[] = { 57, LAST_MATRIX, 2, 23, 1, 18, 19, 20, 21, 22, 23, 3, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 7, 46, 47, 48, 49, 50, 8, 51, 52, 53, 54, 55, 9, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 0, };
 #else // ESP32
     #define LAST_MATRIX 69
     // Which demos are shown, and in which order
-    uint8_t demo_mapping[] = { LAST_MATRIX, 2, 23, 1, 4, 20, 21, 22, 24, 25, 3, 26, 27, 28, 29, 30, 5, 31, 32, 33, 34, 35, 6, 36, 37, 38, 39, 40, 6, 41, 42, 43, 44, 45, 7, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 0, };
+    // demo_mapping_tfsf  { LAST_MATRIX, 2, 23, 1, 4, 18, 19, 20, 21, 22, 24, 25, 3, 26, 27, 28, 29, 30, 5, 31, 32, 33, 34, 35, 6, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 7, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 0, };
+    uint8_t demo_mapping[] = { LAST_MATRIX, 2, 23, 1, 18, 19, 20, 21, 22, 24, 25, 3, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 7, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 0, };
     // On ESP8266, I drive 3x 32x8 panels plus neopixel strips
     #define M32B8X3
     #define STRIP_NUM_LEDS 48
 #endif
+uint8_t best_mapping[] = { 9, 18, 24, 25, 27, 55, 66, LAST_MATRIX };
 #define demo_cnt (sizeof(demo_mapping)/sizeof(demo_mapping[0]))
+#define best_cnt (sizeof(best_mapping)/sizeof(best_mapping[0]))
+
+// show all demos by default, 
+bool show_best_demos = false;
 
 #ifdef ESP32
     #ifdef ESP32_16PINS
