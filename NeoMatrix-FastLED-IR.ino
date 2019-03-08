@@ -1636,14 +1636,19 @@ void matrix_change(int demo) {
     Serial.print("Got matrix_change ");
     Serial.print(demo);
     Serial.print(", switching to index ");
-    if (show_best_demos) {
-	Serial.print(matrix_state % best_cnt);
-	Serial.print(" (bestof mode) ");
-	matrix_demo = best_mapping[matrix_state % best_cnt];
+    if (matrix_state == 99) {
+	Serial.print(matrix_state);
+	matrix_demo = matrix_state;
     } else {
-	Serial.print(matrix_state % demo_cnt);
-	Serial.print(" (full mode) ");
-	matrix_demo = demo_mapping[matrix_state % demo_cnt];
+	if (show_best_demos) {
+	    Serial.print(matrix_state % best_cnt);
+	    Serial.print(" (bestof mode) ");
+	    matrix_demo = best_mapping[matrix_state % best_cnt];
+	} else {
+	    Serial.print(matrix_state % demo_cnt);
+	    Serial.print(" (full mode) ");
+	    matrix_demo = demo_mapping[matrix_state % demo_cnt];
+	}
     }
     Serial.print(", mapped to matrix demo ");
     Serial.print(matrix_demo);
@@ -2180,13 +2185,13 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_QUICK:
 	    Serial.println("Got IR: Quick (24)");
-	    if (is_change()) { matrix_change(24); return 1; }
+	    //if (is_change()) { matrix_change(24); return 1; }
 	    change_speed(-10);
 	    return 1;
 
 	case IR_RGBZONE_SLOW:
 	    Serial.println("Got IR: Slow (28)");
-	    if (is_change()) { matrix_change(28); return 1; }
+	    //if (is_change()) { matrix_change(28); return 1; }
 	    change_speed(+10);
 	    return 1;
 
