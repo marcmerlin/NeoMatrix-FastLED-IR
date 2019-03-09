@@ -2,9 +2,8 @@
 #define nfldefines_h
 
 #define LEDMATRIX
-#define NEOMATRIX
+//#define NEOMATRIX
 #include "neomatrix_config.h"
-#include <LEDSprites.h>
 
 // On ESP32, I have a 64x64 direct matrix (not tiled) with 2 options of drivers.
 #ifdef ESP32

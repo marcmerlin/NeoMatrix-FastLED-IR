@@ -1,4 +1,6 @@
-#include "nfldefines.h"
+#define LEDMATRIX
+#include "neomatrix_config.h"
+#include <LEDSprites.h>
 
 cLEDSprites Sprites(&ledmatrix);
 
@@ -557,7 +559,7 @@ uint8_t pacman_loop()
 
     Sprites.RenderSprites();
     ledmatrix.DrawLine (ledmatrix.Width()/2, MY_SPRITE_HEIGHT, ledmatrix.Width()/2, ledmatrix.Height() - 1 - MY_SPRITE_HEIGHT, CRGB::Grey);
-    matrix_show();
+    matrix->show();
     return 1;
 }
 // vim:sts=4:sw=4

@@ -1,7 +1,7 @@
 #ifndef aurora_h
 #define aurora_h
 
-#include "nfldefines.h"
+#include "neomatrix_config.h"
 #include "Aurora/Effects.h"
 #include "Aurora/Drawable.h"
 #include "Aurora/Boid.h"
@@ -102,6 +102,6 @@ void aurora_setup() {
     effects.Setup();
 }
 
-#endif
+#endif // aurora_h
 
 // vim:sts=4:sw=4

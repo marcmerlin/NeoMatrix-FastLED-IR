@@ -2,7 +2,7 @@
 #define neomatrix_config_h
 
 #define M16BY16T4
-#define NEOPIXEL_MATRIX
+//#define NEOPIXEL_MATRIX
 #ifndef NEOPIXEL_MATRIX
 #define SMARTMATRIX
 #endif

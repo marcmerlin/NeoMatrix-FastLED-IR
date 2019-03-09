@@ -13,7 +13,7 @@
 // Further adapted by Marc MERLIN for integration in FastLED::NeoMatrix
 // standalone examples.
 
-#include "nfldefines.h"
+#include "neomatrix_config.h"
 
 CRGB& setXY( int x, int y) 
 {

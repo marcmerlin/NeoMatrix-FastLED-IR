@@ -4,7 +4,7 @@
 // Further adapted by Marc MERLIN for integration in FastLED::NeoMatrix
 // standalone examples.
 
-#include "nfldefines.h"
+#include "neomatrix_config.h"
 
 
 static uint8_t intensity = 42;
