@@ -1,7 +1,7 @@
 #ifndef aurora_h
 #define aurora_h
 
-#include "config.h"
+#include "nfldefines.h"
 #include "Aurora/Effects.h"
 #include "Aurora/Drawable.h"
 #include "Aurora/Boid.h"
@@ -79,7 +79,7 @@ uint8_t aurora(uint8_t item) {
 	Serial.println(drawable->name);
 	drawable->start();
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
     }
 
     if (--delayframe) {

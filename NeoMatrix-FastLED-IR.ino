@@ -17,7 +17,7 @@
 
 // Compile WeMos D1 R2 & mini
 
-#include "config.h"
+#include "nfldefines.h"
 #include "Table_Mark_Estes.h"
 #include "PacMan.h"
 #include "FireWorks2.h"
@@ -28,6 +28,35 @@ extern uint8_t aurora(uint8_t item);
 #ifdef ESP32
 extern hw_timer_t *timer;
 #endif
+
+void matrix_show() {
+    //matrix->show();
+
+#ifdef ESP32_16PINS
+    //FastLEDshowESP32();
+    matrix->show();
+#else // ESP32_16PINS
+    #ifdef ESP8266
+    // Disable watchdog interrupt so that it does not trigger in the middle of
+    // updates. and break timing of pixels, causing random corruption on interval
+    // https://github.com/esp8266/Arduino/issues/34
+    // Note that with https://github.com/FastLED/FastLED/pull/596 interrupts, even
+    // in parallel mode, should not affect output. That said, reducing their amount
+    // is still good.
+    // Well, that sure didn't work, it actually made things worse in a demo during
+    // fade, so I'm turning it off again.
+        //ESP.wdtDisable();
+    #endif
+    #ifdef NEOPIXEL_PIN
+        FastLED[1].showLeds(matrix_brightness);
+    #else
+	matrix->show();
+    #endif
+    #ifdef ESP8266
+        //ESP.wdtEnable(1000);
+    #endif
+#endif // ESP32_16PINS
+}
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home 
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
@@ -150,7 +179,7 @@ void display_resolution() {
     matrix->setTextSize(1);
     // not wide enough;
     if (mw<16) return;
-    matrix_clear();
+    matrix->clear();
     // Font is 5x7, if display is too small
     // 8 can only display 1 char
     // 16 can almost display 3 chars
@@ -172,7 +201,7 @@ void display_resolution() {
 	    // we're not tall enough either, so we wait and display
 	    // the 2nd value on top.
 	    matrix_show();
-	    matrix_clear();
+	    matrix->clear();
 	    matrix->setCursor(mw-11, 0);
 	}   
     }
@@ -214,31 +243,31 @@ void font_test() {
     matrix->print("T");
     matrix_show();
     delay(1000);
-    matrix_clear();
+    matrix->clear();
 
     matrix->setFont(&FreeMonoBold12pt7b);
     matrix->setCursor(-1, 31);
     matrix->print("T");
     matrix_show();
     delay(1000);
-    matrix_clear();
+    matrix->clear();
 
     matrix->setFont(&FreeMonoBold18pt7b);
     matrix->setCursor(-1, 31);
     matrix->print("T");
     matrix_show();
     delay(1000);
-    matrix_clear();
+    matrix->clear();
 
     matrix->setFont(&FreeMonoBold24pt7b);
     matrix->setCursor(-1, 31);
     matrix->print("T");
     matrix_show();
-    matrix_clear();
+    matrix->clear();
     delay(1000);
 #endif
 
-    matrix_clear();
+    matrix->clear();
     //matrix->setFont(&Picopixel);
     //matrix->setFont(&Org_01);
     matrix->setFont(&TomThumb);
@@ -285,7 +314,7 @@ uint8_t tfsf() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 1;
 	spd = 1.0;
 	startfade = -1;
@@ -300,7 +329,7 @@ uint8_t tfsf() {
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(0, 26);
 	matrix->setTextColor(matrix->Color(255,0,0));
-	matrix_clear();
+	matrix->clear();
 	matrix->print("T");
 	startfade = l;
     }
@@ -309,7 +338,7 @@ uint8_t tfsf() {
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(0, 26);
 	matrix->setTextColor(matrix->Color(192,192,0)); 
-	matrix_clear();
+	matrix->clear();
 	matrix->print("F");
 	startfade = l;
     }
@@ -318,7 +347,7 @@ uint8_t tfsf() {
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(4, 32);
 	matrix->setTextColor(matrix->Color(0,192,192));
-	matrix_clear();
+	matrix->clear();
 	matrix->print("S");
 	startfade = l;
     }
@@ -327,7 +356,7 @@ uint8_t tfsf() {
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(4, 32);
 	matrix->setTextColor(matrix->Color(0,255,0));
-	matrix_clear();
+	matrix->clear();
 	matrix->print("F");
 	startfade = l;
     }
@@ -338,7 +367,7 @@ uint8_t tfsf() {
     if (startfade < l && (state > (l*duration)/spd))  {
 	matrix->setCursor(1, 29);
 	matrix->setTextColor(matrix->Color(0,0,255));
-	matrix_clear();
+	matrix->clear();
 	matrix->print("8");
 	startfade = l;
     }
@@ -402,7 +431,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
 	matrix->setTextColor(txtcolor); 
 
-	matrix_clear();
+	matrix->clear();
 #ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 #endif
@@ -419,7 +448,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	if (letters[l] == '8') offset = 2 * size/15;
 
 	matrix->setTextColor(txtcolor); 
-	matrix_clear();
+	matrix->clear();
 #ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 #endif
@@ -464,7 +493,7 @@ uint8_t esrr() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 1;
 	spd = 1.0;
     }
@@ -477,7 +506,7 @@ uint8_t esrr() {
 #else
     matrix->setFont(&TomThumb);
 #endif
-    matrix_clear();
+    matrix->clear();
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 #if mw == 64
@@ -554,7 +583,7 @@ uint8_t bbb() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 1;
 	spd = 1.0;
     }
@@ -567,7 +596,7 @@ uint8_t bbb() {
 #else
     matrix->setFont(&TomThumb);
 #endif
-    matrix_clear();
+    matrix->clear();
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 #if mw == 64
@@ -629,7 +658,7 @@ uint8_t esrr_flashin() {
     matrix->setFont(&TomThumb);
     matrix->setRotation(0);
     matrix->setTextSize(1);
-    matrix_clear();
+    matrix->clear();
 
     state++;
     if (!(state % period) || exit) {
@@ -686,7 +715,7 @@ uint8_t esrr_fade() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 0;
 	wheel = 0;
 	spd = 1.0;
@@ -704,7 +733,7 @@ uint8_t esrr_fade() {
 #endif
 	matrix->setRotation(0);
 	matrix->setTextSize(1);
-	matrix_clear();
+	matrix->clear();
 
 #if mw == 64
 	matrix->setCursor(16, 15);
@@ -785,7 +814,7 @@ uint8_t squares(bool reverse) {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 0;
 	wheel = 0;
     }
@@ -803,7 +832,7 @@ uint8_t squares(bool reverse) {
     state++;
     wheel += 10;
 
-    matrix_clear();
+    matrix->clear();
     if (reverse) {
 	for (uint8_t s = maxsize; s >= 1 ; s--) {
 	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, Color24toColor16(Wheel(wheel+(maxsize-s)*10)));
@@ -840,7 +869,7 @@ uint8_t webwc() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 1;
 	spd = 1.0;
 	didclear = 0;
@@ -856,7 +885,7 @@ uint8_t webwc() {
     matrix->setRotation(0);
     matrix->setTextSize(1);
     if (! didclear) {
-	matrix_clear();
+	matrix->clear();
 	didclear = 1;
     }
 
@@ -965,7 +994,7 @@ uint8_t scrollText(char str[], uint8_t len) {
     }
     delayframe = stdelay;
 
-    matrix_clear();
+    matrix->clear();
     matrix->setCursor(x, 24);
     for (uint8_t c=0; c<len; c++) {
 	uint16_t txtcolor = Color24toColor16(Wheel(map(c, 0, len, 0, 512)));
@@ -1024,7 +1053,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
     }
     delayframe = stdelay;
 
-    matrix_clear();
+    matrix->clear();
     matrix->setCursor(MATRIX_WIDTH-len*fontwidth*1.5 + x, fontsize+6);
     txtcolor = Color24toColor16(Wheel(map(x, 0, len*fontwidth, 0, 512)));
     matrix->setTextColor(txtcolor); 
@@ -1063,7 +1092,7 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 0;
 	xf = max(0, (mw-bitmapSize)/2) << 4;
 	yf = max(0, (mh-bitmapSize)/2) << 4;
@@ -1080,7 +1109,7 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     int16_t x = xf >> 4;
     int16_t y = yf >> 4;
 
-    matrix_clear();
+    matrix->clear();
     // pan 24x24 pixmap
     matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
     matrix_show();
@@ -1261,7 +1290,7 @@ uint8_t demoreel100(uint8_t demo) {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 0;
     }
 
@@ -1370,7 +1399,7 @@ uint8_t call_fireworks() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 0;
     }
 
@@ -1386,7 +1415,7 @@ uint8_t call_fire() {
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
-	matrix_clear();
+	matrix->clear();
 	state = 0;
     }
 
@@ -1535,7 +1564,7 @@ uint8_t metd(uint8_t demo) {
 	    bfade = 10;
 	    break;
 	}
-	matrix_clear();
+	matrix->clear();
     }
 
     if (--delayframe) {

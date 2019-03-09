@@ -7,23 +7,20 @@
 #endif
 File file;
 
-float matrix_gamma = 2.4; // higher number is darker
-
 
 #ifdef M32B8X3
 // 24x32 display, so offset 32x32 gif by -4, 0
 #define OFFSETX -4
 #define OFFSETY 0
-const uint8_t kMatrixWidth = 32; 
-const uint8_t kMatrixHeight = 32; 
 const uint8_t lzwMaxBits = 11;
 #else // M32B8M32B8X3X3
 #define OFFSETX 0
 #define OFFSETY 0
-const uint8_t kMatrixWidth = 64;
-const uint8_t kMatrixHeight = 64; 
 // More RAM on ESP32
-const uint8_t lzwMaxBits = 12;
+// 10
+// Sketch uses 385287 bytes (29%) of program storage space. Maximum is 1310720 bytes.
+// Global variables use 115016 bytes (35%) of dynamic memory, leaving 212664 bytes for local variables. Maximum is 327680 bytes.
+const uint8_t lzwMaxBits = 10;
 #endif
 
 
@@ -64,16 +61,15 @@ unsigned long filePositionCallback(void) { return file.position(); }
 int fileReadCallback(void) { return file.read(); }
 int fileReadBlockCallback(void * buffer, int numberOfBytes) { return file.read((uint8_t*)buffer, numberOfBytes); }
 
-void screenClearCallback(void) { matrix_clear(); }
+void screenClearCallback(void) { matrix->clear(); }
 void updateScreenCallback(void) { matrix_show(); }
 
 void drawPixelCallback(int16_t x, int16_t y, uint8_t red, uint8_t green, uint8_t blue) {
   CRGB color = CRGB(matrix->gamma[red], matrix->gamma[green], matrix->gamma[blue]);
   // This works but does not handle out of bounds pixels well (it writes to the last pixel)
   // matrixleds[XY(x+OFFSETX,y+OFFSETY)] = color;
-  matrix->setPassThruColor(color.red*65536 + color.green*256 + color.blue);
   // drawPixel ensures we don't write out of bounds
-  matrix->drawPixel(x+OFFSETX, y+OFFSETY, 0);
+  matrix->drawPixel(x+OFFSETX, y+OFFSETY, color);
 }
 
 // Setup method runs once, when the sketch starts

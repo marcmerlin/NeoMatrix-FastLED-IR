@@ -32,10 +32,10 @@
 // See: http://www.red3d.com/cwr/
 // Rules: Cohesion, Separation, Alignment
 
+#include "matrix.h"
+
 #ifndef PatternFlock_H
 #define PatternFlock_H
-
-#include "matrix.h"
 
 class PatternFlock : public Drawable {
   public:
@@ -94,7 +94,6 @@ class PatternFlock : public Drawable {
         // backgroundLayer.drawLine(location.x, location.y, location.x - velocity.x, location.y - velocity.y, color);
         // effects.leds[XY(location.x, location.y)] += color;
         //backgroundLayer.drawPixel(location.x, location.y, color);
-        matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
         matrix->drawPixel(location.x, location.y, color);
 
         if (applyWind) {
@@ -112,7 +111,6 @@ class PatternFlock : public Drawable {
         // backgroundLayer.drawLine(location.x, location.y, location.x - velocity.x, location.y - velocity.y, color);
         // effects.leds[XY(location.x, location.y)] += color;        
         //backgroundLayer.drawPixel(location.x, location.y, color);
-        matrix->setPassThruColor(color.r*65536+color.g*256+color.b);
         matrix->drawPixel(location.x, location.y, color);
       }
 

@@ -1,19 +1,6 @@
-void matrix_show() {
-    // On my own code, this gets diverted to
-    //FastLED[1].showLeds(matrix_brightness);
-    matrix->show();
-}
-
-// Parallel output on ESP8266 does not clear seconary panels
-void matrix_clear() {
-    //FastLED[1].clearLedData();
-    // clear does not work properly with multiple matrices connected via parallel inputs
-    memset(leds, 0, NUMMATRIX*3);
-}
-
 void loop() {
     pattern.drawFrame();
-    matrix_show();
+    matrix->show();
 }
 
 

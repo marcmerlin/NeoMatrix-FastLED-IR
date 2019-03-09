@@ -1,4 +1,4 @@
-#include "config.h"
+#include "nfldefines.h"
 
 cLEDSprites Sprites(&ledmatrix);
 
@@ -373,7 +373,7 @@ uint8_t pacman_loop()
     //int8_t ex = SprEyes.m_X;
     //int8_t ey = SprEyes.m_Y;
 
-    matrix_clear();
+    matrix->clear();
     Sprites.UpdateSprites();
     Sprites.DetectCollisions();
 #if 0

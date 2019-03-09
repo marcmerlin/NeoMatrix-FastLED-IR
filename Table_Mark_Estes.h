@@ -1,4 +1,4 @@
-#include "config.h"
+#include "nfldefines.h"
 #ifndef table_mark_estes_h
 #define table_mark_estes_h
 
