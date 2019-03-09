@@ -104,7 +104,7 @@ void td_init() {
  steper = random8(2, 8);// steper is used to modify h to generate a color step on each move
   lastmillis = millis();
   lasttest = millis();
-  randomSeed(analogRead(0) - analogRead(3) + analogRead(5));
+  //randomSeed(analogRead(0) - analogRead(3) + analogRead(5));
   hue = random8();//get a starting point for the color progressions
   mscale = 2.2;
   fakenoise();

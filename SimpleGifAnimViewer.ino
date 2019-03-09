@@ -20,7 +20,7 @@ const uint8_t lzwMaxBits = 11;
 // 10
 // Sketch uses 385287 bytes (29%) of program storage space. Maximum is 1310720 bytes.
 // Global variables use 115016 bytes (35%) of dynamic memory, leaving 212664 bytes for local variables. Maximum is 327680 bytes.
-const uint8_t lzwMaxBits = 8;
+const uint8_t lzwMaxBits = 10;
 #endif
 
 
