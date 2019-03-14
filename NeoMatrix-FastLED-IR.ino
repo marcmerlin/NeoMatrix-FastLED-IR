@@ -500,57 +500,57 @@ uint8_t esrr() {
 
     matrix->setRotation(0);
     matrix->setTextSize(1);
-#if mw == 64
-    //matrix->setFont(FreeMonoBold9pt7b);
-    matrix->setFont(&Century_Schoolbook_L_Bold_12);
-#else
-    matrix->setFont(&TomThumb);
-#endif
+    if (mw >= 64)  {
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_12);
+    } else {
+	matrix->setFont(&TomThumb);
+    }
     matrix->clear();
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(16, 15);
-#else
-	matrix->setCursor(7, 6);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(16, 15);
+	} else {
+	    matrix->setCursor(7, 6);
+	}
 	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix->print("EAT");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(9, 31);
-#else
-	matrix->setCursor(3, 14);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(9, 31);
+	} else {
+	    matrix->setCursor(3, 14);
+	}
 	matrix->setTextColor(matrix->Color(192,192,0)); 
 	matrix->print("SLEEP");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(12, 47);
-#else
-	matrix->setCursor(5, 22);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(12, 47);
+	} else {
+	    matrix->setCursor(5, 22);
+	}
 	matrix->setTextColor(matrix->Color(0,255,0));
-#if mw == 64
-	matrix->print("BURN");
-#else
-	matrix->print("RAVE");
-#endif
+	if (mw >= 64) {
+	    matrix->print("BURN");
+	} else {
+	    matrix->print("RAVE");
+	}
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(0, 63);
-#else
-	matrix->setCursor(0, 30);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(0, 63);
+	} else {
+	    matrix->setCursor(0, 30);
+	}
 	matrix->setTextColor(matrix->Color(0,192,192));
 	matrix->print("REPEAT");
     }
@@ -590,42 +590,42 @@ uint8_t bbb() {
 
     matrix->setRotation(0);
     matrix->setTextSize(1);
-#if mw == 64
-    //matrix->setFont(FreeMonoBold9pt7b);
-    matrix->setFont(&Century_Schoolbook_L_Bold_16);
-#else
-    matrix->setFont(&TomThumb);
-#endif
+    if (mw >= 64) {
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_16);
+    } else {
+	matrix->setFont(&TomThumb);
+    }
     matrix->clear();
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(4, 20);
-#else
-	matrix->setCursor(5, 10);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(4, 20);
+	} else {
+	    matrix->setCursor(5, 10);
+	}
 	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix->print("BURN");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(6, 41);
-#else
-	matrix->setCursor(5, 20);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(6, 41);
+	} else {
+	    matrix->setCursor(5, 20);
+	}
 	matrix->setTextColor(matrix->Color(0,255,0)); 
 	matrix->print("BABY");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(4, 62);
-#else
-	matrix->setCursor(5, 30);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(4, 62);
+	} else {
+	    matrix->setCursor(5, 30);
+	}
 	matrix->setTextColor(matrix->Color(0,0,255));
 	matrix->print("BURN");
     }
@@ -725,56 +725,56 @@ uint8_t esrr_fade() {
 
     if (state == 1) {
 	//wheel+=20;
-#if mw == 64
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_12);
-#else
-	matrix->setFont(&TomThumb);
-#endif
+	if (mw >= 64) {
+		//matrix->setFont(FreeMonoBold9pt7b);
+	    matrix->setFont(&Century_Schoolbook_L_Bold_12);
+	} else {
+	    matrix->setFont(&TomThumb);
+	}
 	matrix->setRotation(0);
 	matrix->setTextSize(1);
 	matrix->clear();
 
-#if mw == 64
-	matrix->setCursor(16, 15);
-#else
-	matrix->setCursor(7, 6);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(16, 15);
+	} else {
+	    matrix->setCursor(7, 6);
+	}
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
 	matrix->print("EAT");
 
-#if mw == 64
-	matrix->setCursor(9, 31);
-#else
-	matrix->setCursor(3, 14);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(9, 31);
+	} else {
+	    matrix->setCursor(3, 14);
+	}
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
 	matrix->print("SLEEP");
 
 
-#if mw == 64
-	matrix->setCursor(12, 47);
-#else
-	matrix->setCursor(5, 22);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(12, 47);
+	} else {
+	    matrix->setCursor(5, 22);
+	}
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
-#if mw == 64
-	matrix->print("BURN");
-#else
-	matrix->print("RAVE");
-#endif
+	if (mw >= 64) {
+	    matrix->print("BURN");
+	} else {
+	    matrix->print("RAVE");
+	}
 
-#if mw == 64
-	matrix->setCursor(0, 63);
-#else
-	matrix->setCursor(0, 30);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(0, 63);
+	} else {
+	    matrix->setCursor(0, 30);
+	}
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
@@ -876,12 +876,12 @@ uint8_t webwc() {
 	firstpass = 0;
     }
 
-#if mw == 64
-    //matrix->setFont(FreeMonoBold9pt7b);
-    matrix->setFont(&Century_Schoolbook_L_Bold_12);
-#else
-    matrix->setFont(&TomThumb);
-#endif
+    if (mw >= 64) {
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_12);
+    } else {
+	matrix->setFont(&TomThumb);
+    }
     matrix->setRotation(0);
     matrix->setTextSize(1);
     if (! didclear) {
@@ -890,11 +890,11 @@ uint8_t webwc() {
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(12, 12);
-#else
-	matrix->setCursor(5, 6);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(12, 12);
+	} else {
+	    matrix->setCursor(5, 6);
+	}
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("WITH");
@@ -903,11 +903,11 @@ uint8_t webwc() {
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 	firstpass = 1;
-#if mw == 64
-	matrix->setCursor(7, 24);
-#else
-	matrix->setCursor(3, 12);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(7, 24);
+	} else {
+	    matrix->setCursor(3, 12);
+	}
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("EVERY");
@@ -915,11 +915,11 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(12, 36);
-#else
-	matrix->setCursor(5, 18);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(12, 36);
+	} else {
+	    matrix->setCursor(5, 18);
+	}
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("BEAT");
@@ -927,11 +927,11 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(4, 48);
-#else
-	matrix->setCursor(2, 24);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(4, 48);
+	} else {
+	    matrix->setCursor(2, 24);
+	}
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("WE ARE");
@@ -939,11 +939,11 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-#if mw == 64
-	matrix->setCursor(0, 60);
-#else
-	matrix->setCursor(0, 30);
-#endif
+	if (mw >= 64) {
+	    matrix->setCursor(0, 60);
+	} else {
+	    matrix->setCursor(0, 30);
+	}
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("CLOSER");
@@ -973,7 +973,7 @@ uint8_t scrollText(char str[], uint8_t len) {
     char chr[] = " ";
     int8_t fontsize = 14; // real height is twice that.
     int8_t fontwidth = 16;
-#define stdelay 1
+    uint8_t stdelay = 1;
     static uint16_t delayframe = stdelay;
 
     if (matrix_reset_demo == 1) {
@@ -1021,17 +1021,16 @@ uint8_t scrollText(char str[], uint8_t len) {
 uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uint8_t len2) {
     static int16_t x;
     int16_t len = max(len1, len2);
-
-    uint8_t repeat = 4;
-#if mw == 64
-    int8_t fontsize = 14;
-    int8_t fontwidth = 16;
-#define stdelay 1
-#else
     int8_t fontsize = 9;
     int8_t fontwidth = 11;
-#define stdelay 2
-#endif
+    int8_t stdelay = 2;
+
+    uint8_t repeat = 4;
+    if (mw >= 64) {
+	fontsize = 14;
+	fontwidth = 16;
+	stdelay = 1;
+    }
     uint16_t txtcolor;
     static uint16_t delayframe = stdelay;
 
@@ -1157,6 +1156,8 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 // FIXME: reset decoding counter to 0 between different GIFS?
 uint8_t GifAnim(uint8_t idx) {
 
+    static uint16_t delayframe = 2;
+    uint8_t repeat = 1;
     struct Animgif {
 	const char *path;
 	uint16_t loopcnt;
@@ -1221,8 +1222,6 @@ uint8_t GifAnim(uint8_t idx) {
     // fudge factor to control how long GIFs are shown
     uint32_t gifloop = 25 * animgif[idx].loopcnt;
     static uint32_t gifanimloop = gifloop;
-    static uint16_t delayframe = 2;
-    uint8_t repeat = 1;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -2701,12 +2700,7 @@ void setup() {
     // Time for serial port to work?
     delay(1000);
     Serial.begin(115200);
-    Serial.println("Enabling SPIFFS before IR");
-    sav_setup();
-    Serial.println("Enabling IRin");
-    irrecv.enableIRIn(); // Start the receiver
-    Serial.print("Enabled IRin on pin ");
-    Serial.println(RECV_PIN);
+    Serial.println("Hello World");
 #ifdef ESP8266
     Serial.println("Init ESP8266");
     // Turn off Wifi
@@ -2743,8 +2737,14 @@ void setup() {
     delay(1000);
 #endif // NEOPIXEL_PIN
 
-    aurora_setup();
     matrix_setup();
+    aurora_setup();
+    Serial.println("Enabling SPIFFS before IR");
+    sav_setup();
+    Serial.println("Enabling IRin");
+    irrecv.enableIRIn(); // Start the receiver
+    Serial.print("Enabled IRin on pin ");
+    Serial.println(RECV_PIN);
 
     Serial.print("last demo index: ");
     Serial.println(LAST_MATRIX);
