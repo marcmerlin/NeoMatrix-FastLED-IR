@@ -330,11 +330,7 @@ const uint8_t kMatrixHeight = mh;
 extern "C" {
 #include "user_interface.h"
 }
-// min/max are broken by the ESP8266 include
-#define min(a,b) (a<b)?(a):(b)
-#define max(a,b) (a>b)?(a):(b)
-#endif // ESP8266
-
+#endif
 
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 uint16_t speed = 255;

@@ -1,0 +1,1 @@
+SimpleGifAnimViewer2/LzwDecoder_Impl.h

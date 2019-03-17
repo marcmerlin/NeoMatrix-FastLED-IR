@@ -1,0 +1,1 @@
+SimpleGifAnimViewer2/GifDecoder_Impl.h

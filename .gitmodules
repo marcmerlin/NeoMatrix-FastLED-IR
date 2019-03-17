@@ -1,0 +1,6 @@
+[submodule "demos/FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos"]
+	path = demos/FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos
+	url = https://github.com/marcmerlin/FastLED_NeoMatrix_SmartMatrix_LEDMatrix_GFX_Demos
+[submodule "demos/AnimatedGIFs"]
+	path = demos/AnimatedGIFs
+	url = https://github.com/marcmerlin/AnimatedGIFs
