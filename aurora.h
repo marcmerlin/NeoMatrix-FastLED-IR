@@ -8,7 +8,7 @@
 #include "Aurora/Attractor.h"
 #include "Aurora/Geometry.h"
 
-Effects effects;
+//Effects effects;
 
 
 #include "Aurora/PatternAttract.h"
