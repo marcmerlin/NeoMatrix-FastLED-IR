@@ -8,9 +8,6 @@
 #include "Aurora/Attractor.h"
 #include "Aurora/Geometry.h"
 
-//Effects effects;
-
-
 #include "Aurora/PatternAttract.h"
 PatternAttract attract;
 #include "Aurora/PatternBounce.h"
