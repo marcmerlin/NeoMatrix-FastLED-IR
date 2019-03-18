@@ -79,7 +79,7 @@ void fire()
 		}
 
 		// Step 2.  Heat from each cell drifts 'up' and diffuses a little
-		for (int k = MATRIX_HEIGHT; k > 0; k--) {
+		for (int k = MATRIX_HEIGHT; k > 1; k--) {
 			tempMatrix[x][k] = (tempMatrix[x][k - 1] + tempMatrix[x][k - 2] + tempMatrix[x][k - 2]) / 3;
 		}
 
