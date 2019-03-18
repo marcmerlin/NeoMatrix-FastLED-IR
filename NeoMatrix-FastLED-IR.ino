@@ -20,6 +20,7 @@
 #include "nfldefines.h"
 #include "Table_Mark_Estes.h"
 #include "PacMan.h"
+#define FIREWORKS_INCLUDE
 #include "FireWorks2.h"
 #include "Sublime_Demos.h"
 #include "aurora.h"
