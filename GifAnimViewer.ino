@@ -113,36 +113,6 @@ void sav_setup() {
     decoder.setFileReadCallback(fileReadCallback);
     decoder.setFileReadBlockCallback(fileReadBlockCallback);
 
-#ifdef NEOMATRIX
-    matrix_setup();
-#else
-    // neomatrix_config takes care of starting Serial, but we don't call it in the SMARTMATRIX code path
-    Serial.begin(115200);
-    Serial.println("Running on Native SmartMatrix Backend");
-    // Initialize matrix
-    matrix.addLayer(&backgroundLayer); 
-    matrix.setBrightness(defaultBrightness);
-
-    // for large panels, may want to set the refresh rate lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
-    //matrix.setRefreshRate(90);
-    #if defined(ESP32)
-	// for large panels on ESP32, may want to set the max percentage time dedicated to updating the refresh frames lower, to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly)
-	//matrix.setMaxCalculationCpuPercentage(50);
-
-	// alternatively, for large panels on ESP32, may want to set the calculation refresh rate divider lower to leave more CPU time to decoding GIFs (needed if GIFs are playing back slowly) - this has the same effect as matrix.setMaxCalculationCpuPercentage() but is set with a different parameter
-	//matrix.setCalcRefreshRateDivider(4);
-	#if defined(SPI_FFS)
-	    matrix.begin();
-	#else
-	    // The ESP32 SD Card library is going to want to malloc about 28000 bytes of DMA-capable RAM
-	    // make sure at least that much is left free
-	    matrix.begin(28000);
-	#endif
-    #else // ESP32
-	matrix.begin();
-    #endif // ESP32
-#endif // NEOMATRIX
-
 #ifdef SPI_FFS
     // SPIFFS Begin (can crash/conflict with IRRemote on ESP32)
     SPIFFS.begin();
@@ -174,7 +144,7 @@ void sav_setup() {
 	Serial.println("No SD card");
 	delay(100000); // while 1 loop only triggers watchdog on ESP chips
     }
-#endif
+#endif // SPI_FFS
 }
 
 bool sav_newgif(const char *pathname) {

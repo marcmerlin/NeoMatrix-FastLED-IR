@@ -1,6 +1,8 @@
 #ifndef neomatrix_config_h
 #define neomatrix_config_h
 
+bool init_done = 0;
+
 #define M16BY16T4
 //#define NEOPIXEL_MATRIX
 #ifndef NEOPIXEL_MATRIX
@@ -330,6 +332,9 @@ const uint8_t kMatrixHeight = mh;
 extern "C" {
 #include "user_interface.h"
 }
+-// min/max are broken by the ESP8266 include
+#define min(a,b) (a<b)?(a):(b)
+#define max(a,b) (a>b)?(a):(b)
 #endif
 
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
@@ -354,6 +359,11 @@ int wrapX(int x) {
 
 
 void matrix_setup() {
+    if (init_done) {
+	Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> BUG: matrix_setup called twice");
+	return;
+    }
+    init_done = 1;
     Serial.begin(115200);
     Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Serial.begin");
     matrix_gamma = 2.4; // higher number is darker, needed for Neomatrix more than SmartMatrix
