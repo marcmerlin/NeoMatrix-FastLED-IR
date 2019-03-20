@@ -22,6 +22,7 @@
 #include "PacMan.h"
 #define FIREWORKS_INCLUDE
 #include "FireWorks2.h"
+#define SUBLIME_INCLUDE
 #include "Sublime_Demos.h"
 #include "aurora.h"
 
@@ -1341,11 +1342,8 @@ uint8_t demoreel100(uint8_t demo) {
 
 // Pride2015 by Mark Kriegsman: https://gist.github.com/kriegsman/964de772d64c502760e5
 // This function draws rainbows with an ever-changing, widely-varying set of parameters.
-uint8_t pride()
+uint8_t call_pride()
 {
-    static uint16_t sPseudotime = 0;
-    static uint16_t sLastMillis = 0;
-    static uint16_t sHue16 = 0;
     static uint16_t state;
 
     if (matrix_reset_demo == 1) {
@@ -1353,40 +1351,7 @@ uint8_t pride()
 	state = 0;
     }
 
-
-    uint8_t sat8 = beatsin88( 87, 220, 250);
-    uint8_t brightdepth = beatsin88( 341, 200, 250);
-    uint16_t brightnessthetainc16;
-    uint8_t msmultiplier = beatsin88(147, 23, 60);
-
-    brightnessthetainc16 = beatsin88( map(speed,1,255,150,475), (20 * 256), (40 * 256));
-
-    uint16_t hue16 = sHue16;//gHue * 256;
-    uint16_t hueinc16 = beatsin88(113, 1, 3000);
-
-    uint16_t ms = millis();
-    uint16_t deltams = ms - sLastMillis ;
-    sLastMillis  = ms;
-    sPseudotime += deltams * msmultiplier;
-    sHue16 += deltams * beatsin88( 400, 5, 9);
-    uint16_t brightnesstheta16 = sPseudotime;
-
-    for ( uint16_t i = 0 ; i < NUMMATRIX; i++) {
-	hue16 += hueinc16;
-	uint8_t hue8 = hue16 / 256;
-
-	brightnesstheta16  += brightnessthetainc16;
-	uint16_t b16 = sin16( brightnesstheta16  ) + 32768;
-
-	uint16_t bri16 = (uint32_t)((uint32_t)b16 * (uint32_t)b16) / 65536;
-	uint8_t bri8 = (uint32_t)(((uint32_t)bri16) * brightdepth) / 65536;
-	bri8 += (255 - brightdepth);
-
-	CRGB newcolor = CHSV( hue8, sat8, bri8);
-
-	nblend( matrixleds[matrix->XY(i/mh, i%mh)], newcolor, 64);
-    }
-    
+    pride();
     matrix_show();
     if (state++ < 1000) return 1;
     matrix_reset_demo = 1;
@@ -1766,7 +1731,7 @@ void matrix_update() {
 	    break;
 
 	case 19: 
-	    ret = pride();
+	    ret = call_pride();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
