@@ -24,6 +24,8 @@
 #include "FireWorks2.h"
 #define SUBLIME_INCLUDE
 #include "Sublime_Demos.h"
+#define TWINKLEFOX_INCLUDE
+#include "TwinkleFOX.h"
 #include "aurora.h"
 
 extern uint8_t aurora(uint8_t item);
@@ -1295,6 +1297,7 @@ uint8_t demoreel100(uint8_t demo) {
 	state = 0;
     }
 
+#if mheight <= 64
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
@@ -1303,6 +1306,7 @@ uint8_t demoreel100(uint8_t demo) {
 	return repeat;
     }
     delayframe = demoreeldelay;
+#endif
     state++;
     gHue++;
 
@@ -1310,19 +1314,31 @@ uint8_t demoreel100(uint8_t demo) {
     {
 	if (demo == 1) {
 	    // random colored speckles that blink in and fade smoothly
+#if mheight > 64
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 3);
+#else
 	    fadeToBlackBy( matrixleds, NUMMATRIX, 10);
+#endif
 	    int pos = random16(NUMMATRIX);
 	    matrixleds[pos] += CHSV( gHue + random8(64), 200, 255);
 	}
 	if (demo == 2) {
 	    // a colored dot sweeping back and forth, with fading trails
+#if mheight > 64
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 5);
+#else
 	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
+#endif
 	    int pos = beatsin16( 13, 0, NUMMATRIX-1 );
 	    matrixleds[pos2matrix(pos)] += CHSV( gHue, 255, 192);
 	}
 	if (demo == 3) {
 	    // eight colored dots, weaving in and out of sync with each other
+#if mheight > 64
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 5);
+#else
 	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
+#endif
 	    byte dothue = 0;
 	    for( int i = 0; i < 8; i++) {
 		int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
@@ -1340,8 +1356,21 @@ uint8_t demoreel100(uint8_t demo) {
 }
 
 
-// Pride2015 by Mark Kriegsman: https://gist.github.com/kriegsman/964de772d64c502760e5
-// This function draws rainbows with an ever-changing, widely-varying set of parameters.
+uint8_t call_twinklefox()
+{
+    static uint16_t state;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	state = 0;
+    }
+
+    twinkle_loop();
+    if (state++ < 1000) return 1;
+    matrix_reset_demo = 1;
+    return 0;
+}
+
 uint8_t call_pride()
 {
     static uint16_t state;
@@ -1357,7 +1386,6 @@ uint8_t call_pride()
     matrix_reset_demo = 1;
     return 0;
 }
-
 
 uint8_t call_fireworks() {
     static uint16_t state;
@@ -1656,7 +1684,6 @@ void matrix_update() {
     EVERY_N_MILLISECONDS(40) {
 	gHue++;  // slowly cycle the "base color" through the rainbow
     }
-    sublime_loop();
     // reset passthrough color set by some demos
     matrix->setPassThruColor();
 
@@ -1724,8 +1751,14 @@ void matrix_update() {
 
 
 
-	case 18: 
+	case 12: 
 	    ret = panOrBounceBitmap(1, 24);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 18: 
+	    ret = call_twinklefox();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2360,7 +2393,7 @@ bool handle_IR(uint32_t delay_time) {
     
     // From FastLED's DemoReel
     // ---------------------------------------------
-    void addGlitter( fract8 chanceOfGlitter) 
+    void add2DGlitter( fract8 chanceOfGlitter) 
     {
         if (random8() < chanceOfGlitter) {
     	leds[ random16(STRIP_NUM_LEDS) ] += CRGB::White;
@@ -2405,7 +2438,7 @@ bool handle_IR(uint32_t delay_time) {
     	}
     #endif
     	fill_rainbow( leds, STRIP_NUM_LEDS, gHue, 7);
-    	addGlitter(80);
+    	add2DGlitter(80);
     	gHue++;
     	leds_show();
     	if (handle_IR(wait/5)) return;
@@ -2705,6 +2738,7 @@ void setup() {
 
     matrix_setup();
     aurora_setup();
+    twinklefox_setup();
     Serial.println("Enabling SPIFFS before IR");
     sav_setup();
     Serial.println("Enabling IRin");
