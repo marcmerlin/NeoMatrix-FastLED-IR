@@ -2393,7 +2393,7 @@ bool handle_IR(uint32_t delay_time) {
     
     // From FastLED's DemoReel
     // ---------------------------------------------
-    void add2DGlitter( fract8 chanceOfGlitter) 
+    void add1DGlitter( fract8 chanceOfGlitter) 
     {
         if (random8() < chanceOfGlitter) {
     	leds[ random16(STRIP_NUM_LEDS) ] += CRGB::White;
@@ -2438,7 +2438,7 @@ bool handle_IR(uint32_t delay_time) {
     	}
     #endif
     	fill_rainbow( leds, STRIP_NUM_LEDS, gHue, 7);
-    	add2DGlitter(80);
+    	add1DGlitter(80);
     	gHue++;
     	leds_show();
     	if (handle_IR(wait/5)) return;
