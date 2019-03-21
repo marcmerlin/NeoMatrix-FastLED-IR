@@ -504,7 +504,7 @@ uint8_t esrr() {
 
     matrix->setRotation(0);
     matrix->setTextSize(1);
-    if (mw >= 64)  {
+    if (mheight >= 64)  {
 	//matrix->setFont(FreeMonoBold9pt7b);
 	matrix->setFont(&Century_Schoolbook_L_Bold_12);
     } else {
@@ -513,48 +513,40 @@ uint8_t esrr() {
     matrix->clear();
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(16, 15);
-	} else {
-	    matrix->setCursor(7, 6);
-	}
+	if (mheight >= 96) matrix->setCursor(18, 20);
+	else if (mheight >= 64) matrix->setCursor(18, 15);
+	else matrix->setCursor(7, 6);
+
 	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix->print("EAT");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(9, 31);
-	} else {
-	    matrix->setCursor(3, 14);
-	}
+	if (mheight >= 96) matrix->setCursor(10, 41);
+	else if (mheight >= 64) matrix->setCursor(10, 33);
+	else matrix->setCursor(3, 14);
 	matrix->setTextColor(matrix->Color(192,192,0)); 
 	matrix->print("SLEEP");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(12, 47);
-	} else {
-	    matrix->setCursor(5, 22);
-	}
+	if (mheight >= 96) matrix->setCursor(14, 63);
+	else if (mheight >= 64) matrix->setCursor(14, 47);
+	else matrix->setCursor(5, 22);
+
 	matrix->setTextColor(matrix->Color(0,255,0));
-	if (mw >= 64) {
-	    matrix->print("BURN");
-	} else {
-	    matrix->print("RAVE");
-	}
+
+	if (mheight == 64) matrix->print("BURN");
+	else matrix->print("RAVE");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(0, 63);
-	} else {
-	    matrix->setCursor(0, 30);
-	}
+	if (mheight >= 64) matrix->setCursor(2, 88);
+	else if (mheight >= 64) matrix->setCursor(2, 63);
+	else matrix->setCursor(0, 30);
 	matrix->setTextColor(matrix->Color(0,192,192));
 	matrix->print("REPEAT");
     }
@@ -729,7 +721,7 @@ uint8_t esrr_fade() {
 
     if (state == 1) {
 	//wheel+=20;
-	if (mw >= 64) {
+	if (mheight >= 64) {
 		//matrix->setFont(FreeMonoBold9pt7b);
 	    matrix->setFont(&Century_Schoolbook_L_Bold_12);
 	} else {
@@ -739,46 +731,37 @@ uint8_t esrr_fade() {
 	matrix->setTextSize(1);
 	matrix->clear();
 
-	if (mw >= 64) {
-	    matrix->setCursor(16, 15);
-	} else {
-	    matrix->setCursor(7, 6);
-	}
+	if (mheight >= 96) matrix->setCursor(18, 20);
+	else if (mheight >= 64) matrix->setCursor(18, 15);
+	else matrix->setCursor(7, 6);
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
 	matrix->print("EAT");
 
-	if (mw >= 64) {
-	    matrix->setCursor(9, 31);
-	} else {
-	    matrix->setCursor(3, 14);
-	}
+	if (mheight >= 96) matrix->setCursor(10, 41);
+	else if (mheight >= 64) matrix->setCursor(10, 33);
+	else matrix->setCursor(3, 14);
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
 	matrix->print("SLEEP");
 
-
-	if (mw >= 64) {
-	    matrix->setCursor(12, 47);
-	} else {
-	    matrix->setCursor(5, 22);
-	}
+	if (mheight >= 96) matrix->setCursor(14, 63);
+	else if (mheight >= 64) matrix->setCursor(14, 47);
+	else matrix->setCursor(5, 22);
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
-	if (mw >= 64) {
+	if (mheight == 64) {
 	    matrix->print("BURN");
 	} else {
 	    matrix->print("RAVE");
 	}
 
-	if (mw >= 64) {
-	    matrix->setCursor(0, 63);
-	} else {
-	    matrix->setCursor(0, 30);
-	}
+	if (mheight >= 64) matrix->setCursor(2, 88);
+	else if (mheight >= 64) matrix->setCursor(2, 63);
+	else matrix->setCursor(0, 30);
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	matrix->setTextColor(txtcolor);
@@ -1834,6 +1817,7 @@ void matrix_update() {
 		// SPIFFS is incompatible with hardware interrupts and crashes.
 		// They need to be turned off a bit early.
 		//timerAlarmDisable(timer);
+		if (matrix_loop == -1) matrix->clear();
 		ret = GifAnim(matrix_demo-57);
 	    }
 	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
