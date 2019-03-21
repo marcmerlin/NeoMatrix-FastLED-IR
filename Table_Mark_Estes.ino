@@ -287,7 +287,7 @@ void spire() {
 
   if (counter == 0)
   {
-    radius =  MATRIX_WIDTH / 2 - 3;
+    radius =  MATRIX_HEIGHT / 2 - 3;
     flip = true;
     radius2 =  5;
     flip2 = false;
@@ -298,7 +298,7 @@ void spire() {
   {
     if (radius < 5)
       flip = 1 - flip;
-    if (radius > MATRIX_WIDTH / 2)
+    if (radius > MATRIX_HEIGHT / 2)
       flip = 1 - flip;
     if (flip)
       radius --;
@@ -307,7 +307,7 @@ void spire() {
 
     if (radius2 < 5)
       flip2 = 1 - flip2;
-    if (radius2 > MATRIX_WIDTH / 2)
+    if (radius2 > MATRIX_HEIGHT / 2)
       flip2 = 1 - flip2;
     if (flip2)
       radius2 --;
