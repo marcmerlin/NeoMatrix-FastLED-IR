@@ -315,6 +315,8 @@ uint8_t tfsf() {
     uint8_t resetspd = 5;
     uint8_t l = 0;
     uint8_t repeat = 1;
+    uint8_t fontsize = 1;
+    uint8_t idx = 3;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -325,46 +327,48 @@ uint8_t tfsf() {
     }
 
     matrix->setRotation(0);
-    matrix->setTextSize(2);
+    if (mw >= 48 && mh >=64) fontsize = 3;
+    else if (mw >= 48 && mh >=48) fontsize = 2;
+    matrix->setTextSize(fontsize);
 #ifndef NOFONTS
-    matrix->setFont( &Century_Schoolbook_L_Bold[9] );
-
+    // biggest font is 18, but this spills over
+    matrix->setFont( &Century_Schoolbook_L_Bold[16] );
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(0, 26);
+	matrix->setCursor(0, mh - idx*8*fontsize/3);
 	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix->clear();
 	matrix->print("T");
 	startfade = l;
     }
-    l++;
+    l++; idx--;
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(0, 26);
+	matrix->setCursor(0, mh - idx*8*fontsize/3);
 	matrix->setTextColor(matrix->Color(192,192,0)); 
 	matrix->clear();
 	matrix->print("F");
 	startfade = l;
     }
-    l++;
+    l++; idx--;
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(4, 32);
+	matrix->setCursor(2, mh - idx*8*fontsize/3);
 	matrix->setTextColor(matrix->Color(0,192,192));
 	matrix->clear();
 	matrix->print("S");
 	startfade = l;
     }
-    l++;
+    l++; idx--;
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(4, 32);
+	matrix->setCursor(2, mh - idx*8*fontsize/3);
 	matrix->setTextColor(matrix->Color(0,255,0));
 	matrix->clear();
 	matrix->print("F");
 	startfade = l;
     }
-    l++;
+    l++; idx--;
 #endif
 
 #if 0
@@ -416,7 +420,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; faster = 0; };
     }
 
-    matrix->setTextSize(1);
+    if (mw >= 48 && mh >=64) matrix->setTextSize(3); else matrix->setTextSize(1);
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
@@ -439,7 +443,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 #ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 #endif
-	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
+	matrix->setCursor(3*mw/6-size*1.55+offset, mh*7/12+size*1.60);
 	matrix->print(letters[l]);
 	if (size<18) size++; 
 	else if (zoom_type == 0) { done = 1; delayframe = max((speed - faster*10) * 1, 3); } 
@@ -456,7 +460,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 #ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 #endif
-	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
+	matrix->setCursor(3*mw/6-size*1.55+offset, mh*7/12+size*1.60);
 	matrix->print(letters[l]);
 	if (size>3) size--; else { done = 1; direction = 1; delayframe = max((speed-faster*10)/2, 3); };
     }
@@ -544,7 +548,7 @@ uint8_t esrr() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-	if (mheight >= 64) matrix->setCursor(2, 84);
+	if (mheight >= 64) matrix->setCursor(2, 82);
 	else if (mheight >= 64) matrix->setCursor(2, 63);
 	else matrix->setCursor(0, 30);
 	matrix->setTextColor(matrix->Color(0,192,192));
@@ -759,7 +763,7 @@ uint8_t esrr_fade() {
 	    matrix->print("RAVE");
 	}
 
-	if (mheight >= 64) matrix->setCursor(2, 84);
+	if (mheight >= 64) matrix->setCursor(2, 82);
 	else if (mheight >= 64) matrix->setCursor(2, 63);
 	else matrix->setCursor(0, 30);
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
@@ -918,7 +922,7 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	if (mheight >= 96) matrix->setCursor(0, 84);
+	if (mheight >= 96) matrix->setCursor(0, 82);
 	else if (mheight >= 64) matrix->setCursor(0, 60);
 	else matrix->setCursor(0, 30);
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 6, 0, 255)));
