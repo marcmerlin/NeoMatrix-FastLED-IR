@@ -544,7 +544,7 @@ uint8_t esrr() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-	if (mheight >= 64) matrix->setCursor(2, 88);
+	if (mheight >= 64) matrix->setCursor(2, 84);
 	else if (mheight >= 64) matrix->setCursor(2, 63);
 	else matrix->setCursor(0, 30);
 	matrix->setTextColor(matrix->Color(0,192,192));
@@ -759,7 +759,7 @@ uint8_t esrr_fade() {
 	    matrix->print("RAVE");
 	}
 
-	if (mheight >= 64) matrix->setCursor(2, 88);
+	if (mheight >= 64) matrix->setCursor(2, 84);
 	else if (mheight >= 64) matrix->setCursor(2, 63);
 	else matrix->setCursor(0, 30);
 	txtcolor = Color24toColor16(Wheel((wheel+=24)));
@@ -877,11 +877,9 @@ uint8_t webwc() {
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(12, 12);
-	} else {
-	    matrix->setCursor(5, 6);
-	}
+	if (mheight >= 96) matrix->setCursor(12, 16);
+	else if (mheight >= 64) matrix->setCursor(12, 12);
+	else matrix->setCursor(5, 6);
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("WITH");
@@ -890,11 +888,9 @@ uint8_t webwc() {
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 	firstpass = 1;
-	if (mw >= 64) {
-	    matrix->setCursor(7, 24);
-	} else {
-	    matrix->setCursor(3, 12);
-	}
+	if (mheight >= 96) matrix->setCursor(7, 32);
+	else if (mheight >= 64) matrix->setCursor(7, 24);
+	else matrix->setCursor(3, 12);
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("EVERY");
@@ -902,11 +898,9 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(12, 36);
-	} else {
-	    matrix->setCursor(5, 18);
-	}
+	if (mheight >= 96) matrix->setCursor(12, 48);
+	else if (mheight >= 64) matrix->setCursor(12, 36);
+	else matrix->setCursor(5, 18);
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("BEAT");
@@ -914,11 +908,9 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(4, 48);
-	} else {
-	    matrix->setCursor(2, 24);
-	}
+	if (mheight >= 96) matrix->setCursor(4, 64);
+	else if (mheight >= 64) matrix->setCursor(4, 48);
+	else matrix->setCursor(2, 24);
 	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("WE ARE");
@@ -926,12 +918,10 @@ uint8_t webwc() {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(0, 60);
-	} else {
-	    matrix->setCursor(0, 30);
-	}
-	txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	if (mheight >= 96) matrix->setCursor(0, 84);
+	else if (mheight >= 64) matrix->setCursor(0, 60);
+	else matrix->setCursor(0, 30);
+	txtcolor = Color24toColor16(Wheel(map(l, 0, 6, 0, 255)));
 	matrix->setTextColor(txtcolor); 
 	matrix->print("CLOSER");
     }
