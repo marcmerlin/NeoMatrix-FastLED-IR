@@ -1201,30 +1201,39 @@ uint8_t GifAnim(uint8_t idx) {
 	    {"/gifs/wifi.gif", 50}, //254
     };
     #else // M32B8M32B8X3X3
+    // NO OTA LARGE APP gives the most flash
+    // [SPIFFS] size   : 1980
+    // Compressed 2027520 bytes to 1342102
+    // Wrote 2027520 bytes (1342102 compressed)
+    // Wrote 2027520 bytes (1218503 compressed)
+    // Wrote 2027520 bytes (903495 compressed)
+    
+    // HUGE APP
+    // [SPIFFS] size   : 956
     Animgif animgif[] = {
-    // 29 gifs
+    // 28 gifs
             {"/gifs64/ani-bman-BW.gif", 64 },	// 19
             {"/gifs64/149_minion1.gif", 48 },	// 27
             {"/gifs64/341_minion2.gif", 32 },	// 18
             {"/gifs64/233_mariokick.gif", 32 },	// 16
-            {"/gifs64/457_mariojump.gif", 24 },	// 41
+            {"/gifs64/457_mariosleep.gif", 24 },// 41
             {"/gifs64/240_angrybird.gif", 16 },	// 173
             {"/gifs64/377_batman.gif", 32 },	// 29
 
-            {"/gifs64/271_mj.gif", 32 },	// 47
+            {"/gifs64/271_mj.gif", 32 },	// 47	    // OK
             {"/gifs64/323_rockface.gif", 16 },	// 39
             {"/gifs64/222_fry.gif", 24 },	// 39
-            {"/gifs64/401_ghostbusters.gif", 32 },// 47
+            {"/gifs64/401_ghostbusters.gif", 32 },// 47	    // OK
 
-            {"/gifs64/087_net.gif", 42 },	// 39
-            {"/gifs64/193_redplasma.gif", 32 },	// 38
+            {"/gifs64/087_net.gif", 42 },	// 39	    // OKish
+            {"/gifs64/193_redplasma.gif", 32 },	// 38	    // OK
             {"/gifs64/196_colorstar.gif", 48 },	// 39
             {"/gifs64/200_circlesmoke.gif", 28 },// 24
             {"/gifs64/203_waterdrop.gif", 32 },	// 61
-            {"/gifs64/208_dancers.gif", 32 },	// 39
-            {"/gifs64/210_circletriangle.gif", 32 },// 47
+            {"/gifs64/208_dancers.gif", 32 },	// 39	    // OK
+            {"/gifs64/210_circletriangle.gif", 32 },// 47   // OK
             {"/gifs64/215_fallingcube.gif", 42 },// 75
-            {"/gifs64/236_spintriangle.gif", 64 },// 41
+            {"/gifs64/236_spintriangle.gif", 64 },// 41	    // OK
             {"/gifs64/255_photon.gif", 32 },	// 43
             {"/gifs64/257_mesh.gif", 64 },	// 95
             {"/gifs64/284_comets.gif", 64 },	// 89
@@ -1233,7 +1242,6 @@ uint8_t GifAnim(uint8_t idx) {
             {"/gifs64/444_hand.gif", 64 },	// 73
             {"/gifs64/469_infection.gif", 64 },	// 30
             {"/gifs64/heartTunnel.gif", 64 },	// 23
-            {"/gifs64/tabor.gif", 64 },	   	// 5
     };
     #endif
     uint8_t gifcnt = sizeof(animgif) / sizeof(animgif[0]);
@@ -1843,8 +1851,8 @@ void matrix_update() {
 	    // 12 gifs: 57 to 68
 	    else if (matrix_demo <= 68) {
 #else // M32B8M32B8X3X3
-	    // 29 gifs: 57 to 86
-	    else if (matrix_demo <= 86) {
+	    // 28 gifs: 57 to 85
+	    else if (matrix_demo <= 85) {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
@@ -1890,7 +1898,11 @@ void matrix_update() {
 
 #ifdef NEOPIXEL_PIN
 void leds_show() {
+#ifdef SMARTMATRIX
+    FastLED.show();
+#else
     FastLED[0].showLeds(led_brightness);
+#endif
 }
 void leds_setcolor(uint16_t i, uint32_t c) {
     leds[i] = c;
@@ -2749,8 +2761,9 @@ void setup() {
     leds_show();
     delay(1000);
     leds[0] = CRGB::Red;
-    leds[10] = CRGB::Blue;
-    leds[20] = CRGB::Green;
+    leds[1] = CRGB::Blue;
+    //leds[10] = CRGB::Blue;
+    //leds[20] = CRGB::Green;
     leds_show();
     Serial.println("LEDs on");
     delay(1000);
