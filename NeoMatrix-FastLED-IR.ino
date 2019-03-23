@@ -62,7 +62,7 @@ void matrix_show() {
 #endif // ESP32_16PINS
 }
 
-// Other fonts possible on http://oleddisplay.squix.ch/#/home 
+// Other fonts possible on http://oleddisplay.squix.ch/#/home
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
 // https://learn.adafruit.com/adafruit-gfx-graphics-library/using-fonts
 // Default is 5x7, meaning 4.8 chars wide, 4 chars high
@@ -97,7 +97,7 @@ uint8_t matrix_demo = demo_mapping[matrix_state];
 int16_t matrix_loop = -1;
 
 
-//---------------------------------------------------------------------------- 
+//----------------------------------------------------------------------------
 
 #ifdef ESP8266
 #include <IRremoteESP8266.h>
@@ -192,7 +192,7 @@ void display_resolution() {
     matrix->setCursor(0, 0);
     matrix->setTextColor(matrix->Color(255,0,0));
     if (mw>10) matrix->print(mw/10);
-    matrix->setTextColor(matrix->Color(255,128,0)); 
+    matrix->setTextColor(matrix->Color(255,128,0));
     matrix->print(mw % 10);
     matrix->setTextColor(matrix->Color(0,255,0));
     matrix->print('x');
@@ -207,29 +207,29 @@ void display_resolution() {
 	    matrix_show();
 	    matrix->clear();
 	    matrix->setCursor(mw-11, 0);
-	}   
+	}
     }
-    matrix->setTextColor(matrix->Color(0,255,128)); 
+    matrix->setTextColor(matrix->Color(0,255,128));
     matrix->print(mh/10);
-    matrix->setTextColor(matrix->Color(0,128,255));  
+    matrix->setTextColor(matrix->Color(0,128,255));
     matrix->print(mh % 10);
     // enough room for a 2nd line
     if ((mw>25 && mh >14) || mh>16) {
 	matrix->setCursor(0, mh-7);
-	matrix->setTextColor(matrix->Color(0,255,255)); 
+	matrix->setTextColor(matrix->Color(0,255,255));
 	if (mw>16) matrix->print('*');
-	matrix->setTextColor(matrix->Color(255,0,0)); 
+	matrix->setTextColor(matrix->Color(255,0,0));
 	matrix->print('R');
 	matrix->setTextColor(matrix->Color(0,255,0));
 	matrix->print('G');
-	matrix->setTextColor(matrix->Color(0,0,255)); 
+	matrix->setTextColor(matrix->Color(0,0,255));
 	matrix->print("B");
-	matrix->setTextColor(matrix->Color(255,255,0)); 
+	matrix->setTextColor(matrix->Color(255,255,0));
 	// this one could be displayed off screen, but we don't care :)
 	matrix->print("*");
     }
-    
-    matrix->setTextColor(matrix->Color(255,0,255)); 
+
+    matrix->setTextColor(matrix->Color(255,0,255));
     matrix->setCursor(0, mh-14);
     matrix->print(cnt++);
     if (cnt == 10000) cnt=1;
@@ -278,7 +278,7 @@ void font_test() {
     //matrix->setFont(&Tiny3x3a2pt7b);
     matrix->setTextSize(1);
 
-    matrix->setTextColor(matrix->Color(255,0,255)); 
+    matrix->setTextColor(matrix->Color(255,0,255));
     matrix->setCursor(0, 6);
     matrix->print(cnt++);
 
@@ -287,7 +287,7 @@ void font_test() {
     matrix->print("Eat");
 
     matrix->setCursor(0, 18);
-    matrix->setTextColor(matrix->Color(255,128,0)); 
+    matrix->setTextColor(matrix->Color(255,128,0));
     matrix->print("Sleep");
 
     matrix->setCursor(0, 24);
@@ -348,8 +348,8 @@ uint8_t tfsf() {
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(0, mh - idx*8*fontsize/3);
 	matrix->clear();
-	//matrix->setTextColor(matrix->Color(192,192,0)); 
-	matrix->setPassThruColor(CRGB(192,192,0)); 
+	//matrix->setTextColor(matrix->Color(192,192,0));
+	matrix->setPassThruColor(CRGB(192,192,0));
 	matrix->print("F");
 	matrix->setPassThruColor();
 	startfade = l;
@@ -447,7 +447,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 
 	matrix->clear();
 	//uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
-	// matrix->setTextColor(txtcolor); 
+	// matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 0, 255)));
 
 #ifndef NOFONTS
@@ -456,8 +456,8 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
 	matrix->print(letters[l]);
 	matrix->setPassThruColor();
-	if (size<18) size++; 
-	else if (zoom_type == 0) { done = 1; delayframe = max((speed - faster*10) * 1, 3); } 
+	if (size<18) size++;
+	else if (zoom_type == 0) { done = 1; delayframe = max((speed - faster*10) * 1, 3); }
 	     else direction = 2;
 
     } else if (zoom_type == 1) {
@@ -465,7 +465,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 
 	matrix->clear();
 	//uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 255, 0)));
-	//matrix->setTextColor(txtcolor); 
+	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
 	if (letters[l] == 'T') offset = -2 * size/15;
 	if (letters[l] == '8') offset = 2 * size/15;
@@ -496,7 +496,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     dont_exit =  0;
     // Serial.print("delayframe on last letter ");
     // Serial.println(delayframe);
-    // After showing the last letter, pause longer 
+    // After showing the last letter, pause longer
     // unless it's a zoom in zoom out.
     if (zoom_type == 0) delayframe *= 5; else delayframe *= 3;
     return repeat;
@@ -547,7 +547,7 @@ uint8_t esrr() {
 	else if (mheight >= 64) matrix->setCursor(10, 33);
 	else matrix->setCursor(3, 14);
 
-	//matrix->setTextColor(matrix->Color(192,192,0)); 
+	//matrix->setTextColor(matrix->Color(192,192,0));
 	matrix->setPassThruColor(CRGB(192,192,0));
 	matrix->print("SLEEP");
 	matrix->setPassThruColor();
@@ -638,7 +638,7 @@ uint8_t bbb() {
 	} else {
 	    matrix->setCursor(5, 20);
 	}
-	matrix->setTextColor(matrix->Color(0,255,0)); 
+	matrix->setTextColor(matrix->Color(0,255,0));
 	matrix->print("BABY");
     }
     l++;
@@ -691,7 +691,7 @@ uint8_t esrr_flashin() {
 	matrix->setTextColor(matrix->Color(255,0,255));
 	matrix->print("EAT");
 	matrix->setCursor(3, 14);
-	matrix->setTextColor(matrix->Color(255,255,0)); 
+	matrix->setTextColor(matrix->Color(255,255,0));
 	matrix->print("SLEEP");
 	matrix->setCursor(5, 22);
 	matrix->setTextColor(matrix->Color(0,255,255));
@@ -800,7 +800,7 @@ uint8_t esrr_fade() {
 	matrix->setPassThruColor();
     }
 
-     
+
     if (state > 40/spd && state < 100/spd)  {
 	//fadeToBlackBy( matrixleds, NUMMATRIX, 20*spd);
 	// For reasons I don't understand, fadetoblack causes display corruption in this case
@@ -913,7 +913,7 @@ uint8_t webwc() {
 	else if (mheight >= 64) matrix->setCursor(12, 12);
 	else matrix->setCursor(5, 6);
 	//txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
-	//matrix->setTextColor(txtcolor); 
+	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("WITH");
     }
@@ -925,7 +925,7 @@ uint8_t webwc() {
 	else if (mheight >= 64) matrix->setCursor(7, 24);
 	else matrix->setCursor(3, 12);
 	//txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
-	//matrix->setTextColor(txtcolor); 
+	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("EVERY");
     }
@@ -936,7 +936,7 @@ uint8_t webwc() {
 	else if (mheight >= 64) matrix->setCursor(12, 36);
 	else matrix->setCursor(5, 18);
 	//txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
-	//matrix->setTextColor(txtcolor); 
+	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("BEAT");
     }
@@ -947,7 +947,7 @@ uint8_t webwc() {
 	else if (mheight >= 64) matrix->setCursor(4, 48);
 	else matrix->setCursor(2, 24);
 	//txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
-	//matrix->setTextColor(txtcolor); 
+	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("WE ARE");
     }
@@ -958,7 +958,7 @@ uint8_t webwc() {
 	else if (mheight >= 64) matrix->setCursor(0, 60);
 	else matrix->setCursor(0, 30);
 	//txtcolor = Color24toColor16(Wheel(map(l, 0, 6, 0, 255)));
-	//matrix->setTextColor(txtcolor); 
+	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("CLOSER");
 	matrix->setPassThruColor();
@@ -1013,7 +1013,7 @@ uint8_t scrollText(char str[], uint8_t len) {
     matrix->setCursor(x, 24);
     for (uint8_t c=0; c<len; c++) {
 	//uint16_t txtcolor = Color24toColor16(Wheel(map(c, 0, len, 0, 512)));
-	//matrix->setTextColor(txtcolor); 
+	//matrix->setTextColor(txtcolor);
 	//Serial.print(txtcolor, HEX);
 	//Serial.print(" >");
 	matrix->setPassThruColor(Wheel(map(c, 0, len, 0, 512)));
@@ -1073,13 +1073,13 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
     matrix->clear();
     matrix->setCursor(MATRIX_WIDTH-len*fontwidth*1.5 + x, fontsize+6);
     //txtcolor = Color24toColor16(Wheel(map(x, 0, len*fontwidth, 0, 512)));
-    //matrix->setTextColor(txtcolor); 
+    //matrix->setTextColor(txtcolor);
     matrix->setPassThruColor(Wheel(map(x, 0, len*fontwidth, 0, 512)));
     matrix->print(str1);
 
     matrix->setCursor(MATRIX_WIDTH-x, MATRIX_HEIGHT-1);
     //txtcolor = Color24toColor16(Wheel(map(x, 0, len*fontwidth, 512, 0)));
-    //matrix->setTextColor(txtcolor); 
+    //matrix->setTextColor(txtcolor);
     matrix->setPassThruColor(Wheel(map(x, 0, len*fontwidth, 512, 0)));
     matrix->print(str2);
     matrix_show();
@@ -1105,7 +1105,7 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     // scroll speed in 1/16th
     static int16_t xfc;
     static int16_t yfc;
-    // scroll down and right by moving upper left corner off screen 
+    // scroll down and right by moving upper left corner off screen
     // more up and left (which means negative numbers)
     static int16_t xfdir;
     static int16_t yfdir;
@@ -1133,7 +1133,7 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     // pan 24x24 pixmap
     matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
     matrix_show();
-     
+
     // Only pan if the display size is smaller than the pixmap
     // but not if the difference is too small or it'll look bad.
     if (bitmapSize-mw>2) {
@@ -1160,16 +1160,16 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 	if (yf >= (mh-bitmapSize) << 4) { yfdir = -1; updDir = true ; };
 	if (yf <= 0)           { yfdir =  1; updDir = true ; };
     }
-    
+
     if (updDir) {
 	// Add -1, 0 or 1 but bind result to 1 to 1.
 	// Let's take 3 is a minimum speed, otherwise it's too slow.
 	xfc = constrain(xfc + random(-1, 2), 3, 16);
 	yfc = constrain(xfc + random(-1, 2), 3, 16);
     }
-    if (state++ == 600) { 
+    if (state++ == 600) {
 	matrix_reset_demo = 1;
-	return 0; 
+	return 0;
     }
     return 3;
 }
@@ -1219,8 +1219,8 @@ uint8_t GifAnim(uint8_t idx) {
             {"/gifs64/087_net.gif", 42 },	// 39
             {"/gifs64/193_redplasma.gif", 32 },	// 38
             {"/gifs64/196_colorstar.gif", 48 },	// 39
-            {"/gifs64/200_circlesmoke.gif", 28 },// 24 
-            {"/gifs64/203_waterdrop.gif", 32 },	// 61 
+            {"/gifs64/200_circlesmoke.gif", 28 },// 24
+            {"/gifs64/203_waterdrop.gif", 32 },	// 61
             {"/gifs64/208_dancers.gif", 32 },	// 39
             {"/gifs64/210_circletriangle.gif", 32 },// 47
             {"/gifs64/215_fallingcube.gif", 42 },// 75
@@ -1287,7 +1287,7 @@ uint16_t pos2matrix(uint16_t pos) {
     // 0 256 or 512
     uint16_t paneloffset = panel * panelwidth * panelheight;
     // 23 => line 0 panel 2, 39, line 1 panel 1
-    uint16_t line = pos/ledwidth; 
+    uint16_t line = pos/ledwidth;
     // 0-23 - [0-2]*8 gives 0 to 7 for each panel
     uint16_t lineoffset = (pos % ledwidth) - panel*panelwidth;
 
@@ -1304,7 +1304,7 @@ uint8_t demoreel100(uint8_t demo) {
     #define demoreeldelay 1
 
     static uint16_t state;
-    static uint8_t gHue = 0; 
+    static uint8_t gHue = 0;
     uint8_t repeat = 2;
     static uint16_t delayframe = demoreeldelay;
 
@@ -1363,7 +1363,7 @@ uint8_t demoreel100(uint8_t demo) {
 	      dothue += 32;
 	    }
 	}
-    } else { 
+    } else {
 	matrix_reset_demo = 1;
 	return 0;
     }
@@ -1528,7 +1528,7 @@ uint8_t plasma() {
 
 uint8_t metd(uint8_t demo) {
     // 0 to 15
-    uint16_t metd_mapping[][3] = { 
+    uint16_t metd_mapping[][3] = {
 	{  10, 5, 300 },  // 5 color windows-like pattern with circles in and out
 	{  11, 5, 300 },  // color worm patterns going out with circles zomming out
 	{  25, 3, 500 },  // 5 circles turning together, run a bit longer
@@ -1668,7 +1668,7 @@ void matrix_change(int demo) {
     // If existing matrix was already >90, any +- change brings it back to 0.
     if (matrix_state > 90) matrix_state = 0;
     if (demo >= 0 && demo < 127) matrix_state = demo;
-#ifdef NEOPIXEL_PIN 
+#ifdef NEOPIXEL_PIN
     // Special one key press where demos are shown forever and next goes back to the normal loop
     if (demo >= 0 && demo < 90) matrix_loop = 9999;
 #endif
@@ -1705,43 +1705,43 @@ void matrix_update() {
     matrix->setPassThruColor();
 
     switch (matrix_demo) {
-	case 0: 
+	case 0:
 	    ret = squares(0);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 1: 
+	case 1:
 	    ret = squares(1);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 2: 
+	case 2:
 	    ret = esrr();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 3: 
+	case 3:
 	    ret = esrr_fade();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 4: 
+	case 4:
 	    ret = tfsf_zoom(0, 30);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 5: 
+	case 5:
 	    ret = tfsf_zoom(1, 30);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 6: 
+	case 6:
 	    ret = tfsf();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -1768,67 +1768,67 @@ void matrix_update() {
 
 
 
-	case 12: 
+	case 12:
 	    ret = panOrBounceBitmap(1, 24);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 18: 
+	case 18:
 	    ret = call_twinklefox();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 19: 
+	case 19:
 	    ret = call_pride();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 20: 
+	case 20:
 	    ret = demoreel100(1); // Twinlking stars
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 21: 
+	case 21:
 	    ret = demoreel100(2); // color changing pixels sweeping up and down
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 22: 
+	case 22:
 	    ret = demoreel100(3); // colored pixels being exchanged between top and bottom
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 23: 
+	case 23:
 	    ret = call_rain(1); // matrix
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 24: 
+	case 24:
 	    ret = call_rain(3); // clouds, rain, lightening
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 25: 
+	case 25:
 	    ret = call_pacman(3);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 26: 
+	case 26:
 	    ret = plasma();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 27: 
+	case 27:
 	    ret = call_fire();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -1860,13 +1860,13 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case LAST_MATRIX: 
+	case LAST_MATRIX:
 	    ret = call_fireworks();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
-	case 99: 
+	case 99:
 	    char str[] = "Thank You :)";
 	    ret = scrollText(str, sizeof(str));
 	    if (matrix_loop == -1) matrix_loop = ret;
@@ -1874,7 +1874,7 @@ void matrix_update() {
 	    break;
 
 
-    } 
+    }
     matrix_reset_demo = 1;
     Serial.print("Done with demo ");
     Serial.print(matrix_demo);
@@ -1950,7 +1950,7 @@ bool is_change(bool force=false) {
 	return 1;
     }
     if (force) return 0;
-#ifdef NEOPIXEL_PIN 
+#ifdef NEOPIXEL_PIN
     return 0;
 #else
     // When not running neopixel strip, all keys have direct action without requiring
@@ -2014,11 +2014,11 @@ bool handle_IR(uint32_t delay_time) {
 	    return 1;
 
 	case IR_RGBZONE_DIM:
-	    if (is_change()) { 
+	    if (is_change()) {
 		Serial.println("Got IR: Dim, show all demos again and Hang on this demo");
-		matrix_loop = 9999; 
+		matrix_loop = 9999;
 		show_best_demos = false;
-		return 1; 
+		return 1;
 	    }
 
 	    change_brightness(-1);
@@ -2351,7 +2351,7 @@ bool handle_IR(uint32_t delay_time) {
     void fadeall(uint8_t fade) {
         for(uint16_t i = 0; i < STRIP_NUM_LEDS; i++) {  leds[i].nscale8(fade); }
     }
-    
+
     void cylon(bool trail, uint8_t wait) {
         static uint8_t hue = 0;
         // First slide the led in one direction
@@ -2366,7 +2366,7 @@ bool handle_IR(uint32_t delay_time) {
     	// Wait a little bit before we loop around and do it again
     	if (handle_IR(wait/4)) return;
         }
-    
+
         // Now go in the other direction.
         for(uint16_t i = (STRIP_NUM_LEDS)-1; i > 0; i--) {
     	// Set the i'th led to red
@@ -2380,11 +2380,11 @@ bool handle_IR(uint32_t delay_time) {
     	if (handle_IR(wait/4)) return;
         }
     }
-    
+
     void doubleConverge(bool trail, uint8_t wait, bool rev) {
         static uint8_t hue;
         for(uint16_t i = 0; i < STRIP_NUM_LEDS/2 + 4; i++) {
-    
+
     	if (i < STRIP_NUM_LEDS/2) {
     	    if (!rev) {
     		leds_setcolor(i, Wheel(hue++));
@@ -2410,17 +2410,17 @@ bool handle_IR(uint32_t delay_time) {
     	if (handle_IR(wait/3)) return;
         }
     }
-    
+
     // From FastLED's DemoReel
     // ---------------------------------------------
-    void add1DGlitter( fract8 chanceOfGlitter) 
+    void add1DGlitter( fract8 chanceOfGlitter)
     {
         if (random8() < chanceOfGlitter) {
     	leds[ random16(STRIP_NUM_LEDS) ] += CRGB::White;
         }
     }
-    
-    
+
+
     void juggle(uint8_t wait) {
         // eight colored dots, weaving in and out of sync with each other
         fadeToBlackBy( leds, STRIP_NUM_LEDS, 20);
@@ -2432,7 +2432,7 @@ bool handle_IR(uint32_t delay_time) {
         leds_show();
         if (handle_IR(wait/3)) return;
     }
-    
+
     void bpm(uint8_t wait)
     {
         // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
@@ -2446,11 +2446,11 @@ bool handle_IR(uint32_t delay_time) {
         leds_show();
         if (handle_IR(wait/3)) return;
     }
-    
+
     // Slightly different, this makes the rainbow equally distributed throughout
     void rainbowCycle(uint8_t wait) {
         uint16_t i, j;
-    
+
         for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
     #if 0
     	for(i=0; i< STRIP_NUM_LEDS; i++) {
@@ -2464,10 +2464,10 @@ bool handle_IR(uint32_t delay_time) {
     	if (handle_IR(wait/5)) return;
         }
     }
-    
-    
-    
-    
+
+
+
+
     // The animations below are from Adafruit_NeoPixel/examples/strandtest
     // Fill the dots one after the other with a color
     void colorWipe(uint32_t c, uint8_t wait) {
@@ -2477,11 +2477,11 @@ bool handle_IR(uint32_t delay_time) {
     	if (handle_IR(wait/5)) return;
         }
     }
-    
+
     #if 0
     void rainbow(uint8_t wait) {
         uint16_t i, j;
-    
+
         for(j=0; j<256; j++) {
     	for(i=0; i<STRIP_NUM_LEDS; i++) {
     	    leds_setcolor(i, Wheel((i+j) & 255));
@@ -2491,7 +2491,7 @@ bool handle_IR(uint32_t delay_time) {
         }
     }
     #endif
-    
+
     //Theatre-style crawling lights.
     void theaterChase(uint32_t c, uint8_t wait) {
         for (int j=0; j<10; j++) {  //do 10 cycles of chasing
@@ -2500,9 +2500,9 @@ bool handle_IR(uint32_t delay_time) {
     		leds_setcolor(i+q, c);    //turn every third pixel on
     	    }
     	    leds_show();
-    
+
     	    if (handle_IR(wait)) return;
-    
+
     	    fadeall(16);
     #if 0
     	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
@@ -2512,7 +2512,7 @@ bool handle_IR(uint32_t delay_time) {
     	}
         }
     }
-    
+
     //Theatre-style crawling lights with rainbow effect
     void theaterChaseRainbow(uint8_t wait) {
         for (int j=0; j < 256; j+=7) {     // cycle all 256 colors in the wheel
@@ -2521,9 +2521,9 @@ bool handle_IR(uint32_t delay_time) {
     		leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
     	    }
     	    leds_show();
-    
+
     	    if (handle_IR(wait)) return;
-    
+
     	    fadeall(16);
     #if 0
     	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
@@ -2533,13 +2533,13 @@ bool handle_IR(uint32_t delay_time) {
     	}
         }
     }
-    
-    
+
+
     // Local stuff I wrote
     // Flash 25 colors in the color wheel
     void flash(uint8_t wait) {
         uint16_t i, j;
-    
+
         for(j=0; j<26; j++) {
     	for(i=0; i< STRIP_NUM_LEDS; i++) {
     	    leds_setcolor(i, Wheel(j * 10));
@@ -2553,13 +2553,13 @@ bool handle_IR(uint32_t delay_time) {
     	if (handle_IR(wait*3)) return;
         }
     }
-    
+
     #if 0
     // Flash different color on every other led
     // Not currently called, looks too much like TheatreRainbow
     void flash2(uint8_t wait) {
         uint16_t i, j;
-    
+
         for(j=0; j<52; j++) {
     	for(i=0; i< STRIP_NUM_LEDS-1; i+=2) {
     	    leds_setcolor(i, Wheel(j * 5));
@@ -2567,7 +2567,7 @@ bool handle_IR(uint32_t delay_time) {
     	}
     	leds_show();
     	if (handle_IR(wait*2)) return;
-    
+
     	for(i=1; i< STRIP_NUM_LEDS-1; i+=2) {
     	    leds_setcolor(i, Wheel(j * 5 + 48));
     	    leds_setcolor(i+1, 0);
@@ -2576,12 +2576,12 @@ bool handle_IR(uint32_t delay_time) {
     	if (handle_IR(wait*2)) return;
         }
     }
-    
+
     // Flash different colors on every other 2 out of 3 leds
     // not a great demo, really...
     void flash3(uint8_t wait) {
         uint16_t i, j;
-    
+
         for(j=0; j<52; j++) {
     	for(i=0; i< STRIP_NUM_LEDS; i+=3) {
     	    leds_setcolor(i, Wheel(j * 5));
@@ -2590,7 +2590,7 @@ bool handle_IR(uint32_t delay_time) {
     	}
     	leds_show();
     	if (handle_IR(wait)) return;
-    
+
     	for(i=1; i< STRIP_NUM_LEDS-2; i+=3) {
     	    leds_setcolor(i, Wheel(j * 5 + 48));
     	    leds_setcolor(i+1, Wheel(j * 5+128));
@@ -2598,7 +2598,7 @@ bool handle_IR(uint32_t delay_time) {
     	}
     	leds_show();
     	if (handle_IR(wait)) return;
-    
+
     	for(i=2; i< STRIP_NUM_LEDS-2; i+=3) {
     	    leds_setcolor(i, Wheel(j * 5 + 96));
     	    leds_setcolor(i+1, Wheel(j * 5+128));
