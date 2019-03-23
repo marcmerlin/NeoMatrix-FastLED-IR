@@ -21,15 +21,17 @@
 #if mheight == 96
     // Using RGBPanel via SmartMatrix
 
-    #define LAST_MATRIX 87
+    #define LAST_MATRIX 86
     // Which demos are shown, and in which order
     // 8 burn baby burn, 9 safety third
     // 21 not enough dots
     // 25 pacman, 12 smiley face, fix 28, 31, 35 wave looks bad, 37 also looks bad, 39 not big enough
     // 32 also looks bad on mismatched size
-    uint8_t demo_mapping[] = { 5, LAST_MATRIX, 2, 23, 18, 19, 3, 22, 20, 24, 4, 26, 27, 29, 5, 30, 33, 34, 36, 6, 40, 41, 42, 7, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, };
-    // 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86,
-    uint8_t best_mapping[] = { 5, 25, 27, 55, 66, LAST_MATRIX };
+    uint8_t demo_mapping[] = { 5, LAST_MATRIX, 2, 23, 18, 19, 3, 22, 20, 24, 4, 26, 27, 29, 5, 30, 33, 34, 36, 6, 40, 41, 42, 7, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 
+    64, 67, 68, 69, 73, 76, };
+// 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86
+    
+    uint8_t best_mapping[] = { 5, 23, 24, 27, 55, LAST_MATRIX };
 
     #define RECV_PIN 34
 
