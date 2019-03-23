@@ -726,7 +726,6 @@ uint8_t esrr_flashin() {
 }
 #endif
 
-// FIXME: still get some display problems on fade
 uint8_t esrr_fade() {
     static uint16_t state;
     static uint8_t wheel;
@@ -1096,7 +1095,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
-uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
+uint8_t panOrBounce (uint16_t *x, uint16_t *y, uint16_t bitmapSize, bool reset = false ) {
     static uint16_t state;
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
@@ -1110,10 +1109,7 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     static int16_t xfdir;
     static int16_t yfdir;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
-	matrix->clear();
-	state = 0;
+    if (reset) {
 	xf = max(0, (mw-bitmapSize)/2) << 4;
 	yf = max(0, (mh-bitmapSize)/2) << 4;
 	xfc = 6;
@@ -1122,51 +1118,64 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
 	yfdir = -1;
     }
 
-
-    bool updDir = false;
+    bool changeDir = false;
 
     // Get actual x/y by dividing by 16.
-    int16_t x = xf >> 4;
-    int16_t y = yf >> 4;
+    *x = xf >> 4;
+    *y = yf >> 4;
+
+    // Only pan if the display size is smaller than the pixmap
+    // but not if the difference is too small or it'll look bad.
+    if (bitmapSize-mw>2) {
+	xf += xfc*xfdir;
+	if (xf >= 0)                      { xfdir = -1; changeDir = true ; };
+	// we don't go negative past right corner, go back positive
+	if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  changeDir = true ; };
+    }
+    if (bitmapSize-mh>2) {
+	yf += yfc*yfdir;
+	// we shouldn't display past left corner, reverse direction.
+	if (yf >= 0)                      { yfdir = -1; changeDir = true ; };
+	if (yf <= ((mh-bitmapSize) << 4)) { yfdir = 1;  changeDir = true ; };
+    }
+    // only bounce a pixmap if it's smaller than the display size
+    if (mw>bitmapSize) {
+	xf += xfc*xfdir;
+	// Deal with bouncing off the 'walls'
+	if (xf >= (mw-bitmapSize) << 4) { xfdir = -1; changeDir = true ; };
+	if (xf <= 0)           { xfdir =  1; changeDir = true ; };
+    }
+    if (mh>bitmapSize) {
+	yf += yfc*yfdir;
+	if (yf >= (mh-bitmapSize) << 4) { yfdir = -1; changeDir = true ; };
+	if (yf <= 0)           { yfdir =  1; changeDir = true ; };
+    }
+
+    if (changeDir) {
+	// Add -1, 0 or 1 but bind result to 1 to 1.
+	// Let's take 3 is a minimum speed, otherwise it's too slow.
+	xfc = constrain(xfc + random(-1, 2), 3, 16);
+	yfc = constrain(xfc + random(-1, 2), 3, 16);
+    }
+}
+
+uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint16_t bitmapSize) {
+    static uint16_t state;
+    uint16_t x, y;
+
+    if (matrix_reset_demo == 1) {
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 0;
+	panOrBounce(&x, &y, bitmapSize, 1);
+    }
+    panOrBounce(&x, &y, bitmapSize);
 
     matrix->clear();
     // pan 24x24 pixmap
     matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
     matrix_show();
 
-    // Only pan if the display size is smaller than the pixmap
-    // but not if the difference is too small or it'll look bad.
-    if (bitmapSize-mw>2) {
-	xf += xfc*xfdir;
-	if (xf >= 0)                      { xfdir = -1; updDir = true ; };
-	// we don't go negative past right corner, go back positive
-	if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  updDir = true ; };
-    }
-    if (bitmapSize-mh>2) {
-	yf += yfc*yfdir;
-	// we shouldn't display past left corner, reverse direction.
-	if (yf >= 0)                      { yfdir = -1; updDir = true ; };
-	if (yf <= ((mh-bitmapSize) << 4)) { yfdir = 1;  updDir = true ; };
-    }
-    // only bounce a pixmap if it's smaller than the display size
-    if (mw>bitmapSize) {
-	xf += xfc*xfdir;
-	// Deal with bouncing off the 'walls'
-	if (xf >= (mw-bitmapSize) << 4) { xfdir = -1; updDir = true ; };
-	if (xf <= 0)           { xfdir =  1; updDir = true ; };
-    }
-    if (mh>bitmapSize) {
-	yf += yfc*yfdir;
-	if (yf >= (mh-bitmapSize) << 4) { yfdir = -1; updDir = true ; };
-	if (yf <= 0)           { yfdir =  1; updDir = true ; };
-    }
-
-    if (updDir) {
-	// Add -1, 0 or 1 but bind result to 1 to 1.
-	// Let's take 3 is a minimum speed, otherwise it's too slow.
-	xfc = constrain(xfc + random(-1, 2), 3, 16);
-	yfc = constrain(xfc + random(-1, 2), 3, 16);
-    }
     if (state++ == 600) {
 	matrix_reset_demo = 1;
 	return 0;
@@ -1174,7 +1183,7 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint8_t bitmapSize) {
     return 3;
 }
 
-// FIXME: reset decoding counter to 0 between different GIFS?
+// FIXME: reset decoding counter to 0 between different GIFS
 uint8_t GifAnim(uint8_t idx) {
 
     static uint16_t delayframe = 2;
