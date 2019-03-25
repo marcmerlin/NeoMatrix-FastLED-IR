@@ -28,15 +28,14 @@
 #include "TwinkleFOX.h"
 #include "aurora.h"
 
-extern uint8_t aurora(uint8_t item);
 #ifdef ESP32
 extern hw_timer_t *timer;
 #endif
 
 void matrix_show() {
-    //matrix->show();
-
-#ifdef ESP32_16PINS
+#ifdef SMARTMATRIX
+    matrix->show();
+#elif defined(ESP32_16PINS)
     //FastLEDshowESP32();
     matrix->show();
 #else // ESP32_16PINS
@@ -1185,6 +1184,9 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint16_t bitmapSize) {
 
 // FIXME: reset decoding counter to 0 between different GIFS
 uint8_t GifAnim(uint8_t idx) {
+    uint16_t x, y;
+    extern int OFFSETX, OFFSETY;
+    uint16_t bitmapSize = 64;
 
     static uint16_t delayframe = 2;
     uint8_t repeat = 1;
@@ -1253,7 +1255,7 @@ uint8_t GifAnim(uint8_t idx) {
             {"/gifs64/heartTunnel.gif", 64 },	// 23
     };
     #endif
-    uint8_t gifcnt = sizeof(animgif) / sizeof(animgif[0]);
+    uint8_t gifcnt = ARRAY_SIZE(animgif);
     // Avoid crashes due to overflows
     idx = idx % gifcnt;
 
@@ -1266,6 +1268,7 @@ uint8_t GifAnim(uint8_t idx) {
 	bool savng = sav_newgif(animgif[idx].path);
 	// exit if the gif animation couldn't get setup.
 	if (savng) return 0;
+	panOrBounce(&x, &y, bitmapSize, 1);
     }
 
     if (--delayframe) {
@@ -1275,7 +1278,15 @@ uint8_t GifAnim(uint8_t idx) {
     }
     delayframe = 1;
 
-    // simpleanimviewer may or may not run show() depending on whether
+    // used by sav_loop
+    OFFSETX = 0;
+    OFFSETY = 16;
+    panOrBounce(&x, &y, bitmapSize);
+    //OFFSETX = x;
+    //OFFSETY = y;
+    //matrix->clear();
+
+    // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
     // add the matrix_show() delay that is expected by the caller
     bool savl = sav_loop();
