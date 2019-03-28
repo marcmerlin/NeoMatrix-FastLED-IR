@@ -2,6 +2,7 @@
 #define neomatrix_config_h
 
 bool init_done = 0;
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #define M16BY16T4
 //#define NEOPIXEL_MATRIX
@@ -45,6 +46,8 @@ bool init_done = 0;
     #include <FastLED_NeoMatrix.h>
     #pragma message "Compiling for NEOMATRIX"
 #else
+    // CHANGEME, see MatrixHardware_ESP32_V0.h in SmartMatrix/src
+    #define GPIOPINOUT 3
     #pragma message "Compiling for SMARTMATRIX with NEOMATRIX API"
     #include <SmartLEDShieldV4.h>  // if you're using SmartLED Shield V4 hardware
     #include <SmartMatrix3.h>
@@ -85,7 +88,6 @@ const uint16_t NUMMATRIX = mw*mh;
 const uint16_t NUM_LEDS = NUMMATRIX; 
 const uint8_t MATRIX_HEIGHT = mh;
 const uint8_t MATRIX_WIDTH = mw;
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 /// SmartMatrix Defines
 #define COLOR_DEPTH 24         // known working: 24, 48 - If the sketch uses type `rgb24` directly, COLOR_DEPTH must be 24
@@ -138,7 +140,6 @@ const uint16_t NUMMATRIX = mw*mh;
 const uint16_t NUM_LEDS = NUMMATRIX; 
 const uint8_t MATRIX_HEIGHT = mh;
 const uint8_t MATRIX_WIDTH = mw;
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #ifdef LEDMATRIX
 // cLEDMatrix defines 
@@ -205,7 +206,6 @@ const uint16_t NUMMATRIX = mw*mh;
 const uint16_t NUM_LEDS = NUMMATRIX; 
 const uint8_t MATRIX_HEIGHT = mh;
 const uint8_t MATRIX_WIDTH = mw;
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #ifdef LEDMATRIX
 // cLEDMatrix defines 
@@ -254,7 +254,6 @@ const uint16_t NUMMATRIX = mw*mh;
 const uint16_t NUM_LEDS = NUMMATRIX; 
 const uint8_t MATRIX_HEIGHT = mh;
 const uint8_t MATRIX_WIDTH = mw;
-#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
 
 #ifdef LEDMATRIX
 // cLEDMatrix defines 
@@ -332,10 +331,10 @@ const uint8_t kMatrixHeight = mh;
 extern "C" {
 #include "user_interface.h"
 }
--// min/max are broken by the ESP8266 include
+// min/max are broken by the ESP8266 include
 #define min(a,b) (a<b)?(a):(b)
 #define max(a,b) (a>b)?(a):(b)
-#endif
+#endif // ESP8266
 
 uint8_t gHue = 0; // rotating "base color" used by many of the patterns
 uint16_t speed = 255;
