@@ -24,8 +24,8 @@ PatternIncrementalDrift incrementaldrift;
 PatternIncrementalDrift2 incrementaldrift2;
 #include "Aurora/PatternPendulumWave.h"
 PatternPendulumWave pendulumwave;
-#include "Aurora/PatternRadar.h"
-PatternRadar radar;
+//#include "Aurora/PatternRadar.h"
+//PatternRadar radar;
 #include "Aurora/PatternSpiral.h"
 PatternSpiral spiral;
 #include "Aurora/PatternSpiro.h"
@@ -44,7 +44,7 @@ Drawable* items[] = {
     &incrementaldrift,
     &incrementaldrift2,
     &pendulumwave,
-    &radar,
+ //   &radar,
     &spiral,
     &spiro,
     &swirl,
@@ -61,11 +61,11 @@ uint8_t aurora(uint8_t item) {
     static uint16_t counter = 1;
     uint16_t loops = 2000;
 
-    // 13 demos, 0 to 12
+    // 12 demos, 0 to 11
     if (item == 1 ) { loops = 3000; }
     if (item == 5 ) { loops = 4000; }
     if (item == 7 ) { loops = 5000; }
-    if (item == 10) { loops = 5000; }
+    if (item == 9) { loops = 5000; }
 
     if (matrix_reset_demo == 1) {
 	counter = 0;
