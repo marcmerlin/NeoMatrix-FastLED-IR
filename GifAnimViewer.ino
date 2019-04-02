@@ -1,35 +1,33 @@
 #define BASICSPIFFS
 #define NEOMATRIX
-#define SPI_FFS
+
+#include "FFat.h"
+#define FSO FFat
+#define FSOFAT
 
 #if defined(ESP8266)
-    #include <FS.h>
-    #define SPI_FFS
-    #if matrix_size == 64
-        #define GIF_DIRECTORY "/gifs64/"
-    #else
-        #define GIF_DIRECTORY "/gifs/"
-    #endif
+    #include <SPIFFS.h>
+    #define FSO SPIFFS
+    #define matrix_size 32
+    // Needs trailing slash
+    #define GIF_DIRECTORY "/gifs/"
+    int OFFSETX = -4;
+    int OFFSETY = 0;
     extern "C" {
         #include "user_interface.h"
     }
     const int lzwMaxBits = 11;
 #elif defined(ESP32)
-    #include <SPIFFS.h>
-    #define SPI_FFS
-    // Do NOT add a trailing slash, or things will fail
-    #if matrix_size == 64
-        #define GIF_DIRECTORY "/gifs64"
-    #else
-        #define GIF_DIRECTORY "/gifs"
-    #endif
+    #define matrix_size 64
+    // Do NOT add a trailing slash, or things will fail for SPIFFS
+    #define GIF_DIRECTORY "/gifs64"
+    int OFFSETX = 0;
+    int OFFSETY = 0;
     const int lzwMaxBits = 12;
 #endif
 
 // If the matrix is a different size than the GIFs, allow panning through the GIF
 // while displaying it, or bouncing it around if it's smaller than the display
-int OFFSETX = 0;
-int OFFSETY = 0;
 
 // ---------------------------------------------------------------------
 #define GIFANIM_INCLUDE

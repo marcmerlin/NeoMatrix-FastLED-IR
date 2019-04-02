@@ -15,7 +15,7 @@
 // on chips that are capable of it. This allows IR + Neopixel to work on Teensy v3.1 and most
 // other 32bit CPUs.
 
-// Compile WeMos D1 R2 & mini
+// Compile WeMos D1 R2 & mini or ESP32-dev
 
 #include "nfldefines.h"
 #include "Table_Mark_Estes.h"
@@ -416,7 +416,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static int16_t faster = 0;
     static bool dont_exit;
     static uint16_t delayframe;
-    char letters[] = { 'T', 'F', 'S', 'F' };
+    const char letters[] = { 'T', 'F', 'S', 'F' };
     bool done = 0;
     uint8_t repeat = 4;
 
@@ -979,7 +979,7 @@ uint8_t webwc() {
 }
 
 
-uint8_t scrollText(char str[], uint8_t len) {
+uint8_t scrollText(const char str[], uint8_t len) {
     static int16_t x;
 
     uint8_t repeat = 1;
@@ -1196,7 +1196,7 @@ uint8_t GifAnim(uint8_t idx) {
     };
 
     #ifdef M32B8X3
-    Animgif animgif[] = { // number of frames in the gif
+    const Animgif animgif[] = { // number of frames in the gif
     // 12 gifs
 	    {"/gifs/32anim_photon.gif", 44},
 	    {"/gifs/32anim_flower.gif", 30},
@@ -1212,16 +1212,7 @@ uint8_t GifAnim(uint8_t idx) {
 	    {"/gifs/wifi.gif", 50}, //254
     };
     #else // M32B8M32B8X3X3
-    // NO OTA LARGE APP gives the most flash
-    // [SPIFFS] size   : 1980
-    // Compressed 2027520 bytes to 1342102
-    // Wrote 2027520 bytes (1342102 compressed)
-    // Wrote 2027520 bytes (1218503 compressed)
-    // Wrote 2027520 bytes (903495 compressed)
-    
-    // HUGE APP
-    // [SPIFFS] size   : 956
-    Animgif animgif[] = {
+    const Animgif animgif[] = {
     // 28 gifs
             {"/gifs64/ani-bman-BW.gif", 64 },	// 19
             {"/gifs64/149_minion1.gif", 48 },	// 27
@@ -1549,14 +1540,14 @@ uint8_t plasma() {
     if (OldPlasmaTime > PlasmaTime) PlasmaShift = (random8(0, 5) * 32) + 64;
 
     matrix_show();
-    if (state++ < 3000) return 1;
+    if (state++ < 1000) return 1;
     matrix_reset_demo = 1;
     return 0;
 }
 
 uint8_t metd(uint8_t demo) {
     // 0 to 15
-    uint16_t metd_mapping[][3] = {
+    const uint16_t metd_mapping[][3] = {
 	{  10, 5, 300 },  // 5 color windows-like pattern with circles in and out
 	{  11, 5, 300 },  // color worm patterns going out with circles zomming out
 	{  25, 3, 500 },  // 5 circles turning together, run a bit longer
@@ -1863,10 +1854,10 @@ void matrix_update() {
 	    break;
 
 	default:
-	    // 13 demos: 28-40
-	    if (matrix_demo <= 40) ret = aurora(matrix_demo-28);
-	    // 16 demos: 41 to 56
-	    else if (matrix_demo <= 56) ret = metd(matrix_demo-41);
+	    // 13 demos: 28-39
+	    if (matrix_demo <= 39) ret = aurora(matrix_demo-28);
+	    // 16 demos: 40 to 55
+	    else if (matrix_demo <= 55) ret = metd(matrix_demo-41);
 #ifdef M32B8X3
 	    // 12 gifs: 57 to 68
 	    else if (matrix_demo <= 68) {
@@ -1895,7 +1886,7 @@ void matrix_update() {
 	    break;
 
 	case 99:
-	    char str[] = "Thank You :)";
+	    const char str[] = "Thank You :)";
 	    ret = scrollText(str, sizeof(str));
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -2782,18 +2773,26 @@ void setup() {
     delay(1000);
     leds[0] = CRGB::Red;
     leds[1] = CRGB::Blue;
-    //leds[10] = CRGB::Blue;
-    //leds[20] = CRGB::Green;
+    leds[2] = CRGB::Green;
+    leds[10] = CRGB::Blue;
+    leds[20] = CRGB::Green;
     leds_show();
     Serial.println("LEDs on");
     delay(1000);
 #endif // NEOPIXEL_PIN
 
+    Serial.println("Init SmartMatrix");
     matrix_setup();
-    aurora_setup();
-    twinklefox_setup();
-    Serial.println("Enabling SPIFFS before IR");
+    Serial.println("Init SPIFFS/FFat");
     sav_setup();
+    Serial.println("Init Aurora");
+    aurora_setup();
+    Serial.println("Init TwinkleFox");
+    twinklefox_setup();
+    Serial.println("Init Fireworks");
+    fireworks_setup();
+    Serial.println("Init sublime");
+    sublime_setup();
     Serial.println("Enabling IRin");
     irrecv.enableIRIn(); // Start the receiver
     Serial.print("Enabled IRin on pin ");
