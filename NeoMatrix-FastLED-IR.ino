@@ -135,7 +135,6 @@ int32_t demo_color = 0x00FF00; // Green
 static int16_t strip_speed = 50;
 
 
-
 uint32_t last_change = millis();
 
 // ---------------------------------------------------------------------------
@@ -731,7 +730,7 @@ uint8_t esrr_fade() {
     static float spd;
     float spdincr = 0.5;
     uint8_t resetspd = 5;
-    uint16_t txtcolor;
+    //uint16_t txtcolor;
 
 
     if (matrix_reset_demo == 1) {
@@ -882,7 +881,7 @@ uint8_t webwc() {
     uint8_t displayall = 18;
     uint8_t resetspd = 24;
     uint8_t l = 0;
-    uint16_t txtcolor;
+    //uint16_t txtcolor;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1047,7 +1046,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
 	fontwidth = 16;
 	stdelay = 1;
     }
-    uint16_t txtcolor;
+    //uint16_t txtcolor;
     static uint16_t delayframe = stdelay;
 
     if (matrix_reset_demo == 1) {
@@ -1094,8 +1093,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
-uint8_t panOrBounce (uint16_t *x, uint16_t *y, uint16_t bitmapSize, bool reset = false ) {
-    static uint16_t state;
+void panOrBounce (uint16_t *x, uint16_t *y, uint16_t bitmapSize, bool reset = false ) {
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
     static int16_t xf;
@@ -1244,6 +1242,42 @@ uint8_t GifAnim(uint8_t idx) {
             {"/gifs64/444_hand.gif", 64 },	// 73
             {"/gifs64/469_infection.gif", 64 },	// 30
             {"/gifs64/heartTunnel.gif", 64 },	// 23
+
+	#if 0
+	/gifs64/ani-bman-BW.gif
+	/gifs64/087_net.gif
+	/gifs64/149_minion1.gif
+	/gifs64/196_colorstar.gif
+	/gifs64/200_circlesmoke.gif
+	/gifs64/203_waterdrop.gif
+	/gifs64/210_circletriangle.gif
+	/gifs64/215_fallingcube.gif
+	/gifs64/222_fry.gif
+	/gifs64/255_photon.gif
+	/gifs64/257_mesh.gif
+	/gifs64/271_mj.gif
+	/gifs64/341_minion2.gif
+	/gifs64/342_spincircle.gif
+	/gifs64/401_ghostbusters.gif
+	/gifs64/444_hand.gif
+	/gifs64/469_infection.gif
+	/gifs64/193_redplasma.gif
+	/gifs64/208_dancers.gif
+	/gifs64/284_comets.gif
+	/gifs64/377_batman.gif
+	/gifs64/412_cubes.gif
+	/gifs64/236_spintriangle.gif
+	/gifs64/226_flyingfire.gif
+	/gifs64/264_expandcircle.gif
+	/gifs64/281_plasma.gif
+	/gifs64/286_greenplasma.gif
+	/gifs64/291_circle2sphere.gif
+	/gifs64/364_colortoroid.gif
+	/gifs64/470_scrollcubestron.gif
+	/gifs64/358_spinningpattern.gif
+	/gifs64/328_spacetime.gif
+	/gifs64/218_circleslices.gif
+	#endif
     };
     #endif
     uint8_t gifcnt = ARRAY_SIZE(animgif);
@@ -1325,7 +1359,6 @@ uint8_t demoreel100(uint8_t demo) {
     static uint16_t state;
     static uint8_t gHue = 0;
     uint8_t repeat = 2;
-    static uint16_t delayframe = demoreeldelay;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1334,6 +1367,7 @@ uint8_t demoreel100(uint8_t demo) {
     }
 
 #if mheight <= 64
+    static uint16_t delayframe = demoreeldelay;
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
@@ -1461,6 +1495,7 @@ uint8_t call_rain(uint8_t which) {
     static uint16_t delayframe = raindelay;
 
     if (matrix_reset_demo == 1) {
+	sublime_reset();
 	matrix_reset_demo = 0;
 	state = 0;
     }
@@ -1540,7 +1575,7 @@ uint8_t plasma() {
     if (OldPlasmaTime > PlasmaTime) PlasmaShift = (random8(0, 5) * 32) + 64;
 
     matrix_show();
-    if (state++ < 1000) return 1;
+    if (state++ < 500) return 1;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -1857,12 +1892,12 @@ void matrix_update() {
 	    // 13 demos: 28-39
 	    if (matrix_demo <= 39) ret = aurora(matrix_demo-28);
 	    // 16 demos: 40 to 55
-	    else if (matrix_demo <= 55) ret = metd(matrix_demo-41);
+	    else if (matrix_demo <= 55) ret = metd(matrix_demo-40);
 #ifdef M32B8X3
-	    // 12 gifs: 57 to 68
-	    else if (matrix_demo <= 68) {
+	    // 12 gifs: 56 to 67
+	    else if (matrix_demo <= 67) {
 #else // M32B8M32B8X3X3
-	    // 28 gifs: 57 to 85
+	    // 28 gifs: 56 to 85
 	    else if (matrix_demo <= 85) {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
@@ -1871,7 +1906,7 @@ void matrix_update() {
 		// They need to be turned off a bit early.
 		//timerAlarmDisable(timer);
 		if (matrix_loop == -1) matrix->clear();
-		ret = GifAnim(matrix_demo-57);
+		ret = GifAnim(matrix_demo-56);
 	    }
 	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
 
@@ -2472,10 +2507,11 @@ bool handle_IR(uint32_t delay_time) {
 
     // Slightly different, this makes the rainbow equally distributed throughout
     void rainbowCycle(uint8_t wait) {
-        uint16_t i, j;
+        uint16_t j;
 
         for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
     #if 0
+        uint16_t i;
     	for(i=0; i< STRIP_NUM_LEDS; i++) {
     	    leds_setcolor(i, Wheel(((i * 256 / STRIP_NUM_LEDS) + j) & 255));
     	}
@@ -2782,7 +2818,17 @@ void setup() {
 #endif // NEOPIXEL_PIN
 
     Serial.println("Init SmartMatrix");
-    matrix_setup();
+    // Leave enough RAM for other code.
+    // lsbMsbTransitionBit of 2 requires 12288 RAM, 39960 available, leaving 27672 free: 
+    // Raised lsbMsbTransitionBit to 2/7 to fit in RAM
+    // lsbMsbTransitionBit of 2 gives 100 Hz refresh, 120 requested: 
+    // lsbMsbTransitionBit of 3 gives 191 Hz refresh, 120 requested: 
+    // Raised lsbMsbTransitionBit to 3/7 to meet minimum refresh rate
+    // Descriptors for lsbMsbTransitionBit 3/7 with 16 rows require 6144 bytes of DMA RAM
+    // SmartMatrix Mallocs Complete
+    // Heap/32-bit Memory Available: 181472 bytes total,  85748 bytes largest free block
+    // 8-bit/DMA Memory Available  :  95724 bytes total,  39960 bytes largest free block
+    matrix_setup(25000);
     Serial.println("Init SPIFFS/FFat");
     sav_setup();
     Serial.println("Init Aurora");
