@@ -1468,7 +1468,7 @@ uint8_t call_fire() {
 
     fire();
     matrix_show();
-    if (state++ < 3000) return 2;
+    if (state++ < 1500) return 1;
     matrix_reset_demo = 1;
     return 0;
 }
