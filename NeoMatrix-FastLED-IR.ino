@@ -1214,17 +1214,14 @@ uint8_t GifAnim(uint8_t idx) {
     // 32 gifs
 	    //{ "/gifs64/ani-bman-BW.gif",	10 }, 
 	    { "/gifs64/087_net.gif",		10 }, 
-	    { "/gifs64/149_minion1.gif",	10 }, 
 	    { "/gifs64/196_colorstar.gif",	10 }, 
 	    { "/gifs64/200_circlesmoke.gif",	10 }, 
 	    { "/gifs64/203_waterdrop.gif",	10 }, 
 	    { "/gifs64/210_circletriangle.gif",	10 }, 
 	    { "/gifs64/215_fallingcube.gif",	10 }, 
-	    { "/gifs64/222_fry.gif",		10 }, 
 	    { "/gifs64/255_photon.gif",		10 }, 
 	    { "/gifs64/257_mesh.gif",		10 }, 
 	    { "/gifs64/271_mj.gif",		10 }, 
-	    { "/gifs64/341_minion2.gif",	10 }, 
 	    { "/gifs64/342_spincircle.gif",	10 }, 
 	    { "/gifs64/401_ghostbusters.gif",	10 }, 
 	    { "/gifs64/444_hand.gif",		10 }, 
@@ -1249,36 +1246,18 @@ uint8_t GifAnim(uint8_t idx) {
 
     // 28 gifs
 	#if 0
-            {"/gifs64/ani-bman-BW.gif",		 10 },	// 19
             {"/gifs64/149_minion1.gif",		 10 },	// 27
             {"/gifs64/341_minion2.gif",		 10 },	// 18
             {"/gifs64/233_mariokick.gif",	 10 },	// 16
             {"/gifs64/457_mariosleep.gif",	 10 },  // 41
             {"/gifs64/240_angrybird.gif",	 10 },	// 173
-            {"/gifs64/377_batman.gif",		 10 },	// 29
-
-            {"/gifs64/271_mj.gif",		 10 },	// 47	    // OK
             {"/gifs64/323_rockface.gif",	 10 },	// 39
-            {"/gifs64/222_fry.gif",		 10 },	// 39
-            {"/gifs64/401_ghostbusters.gif",	 10 },  // 47	    // OK
-
-            {"/gifs64/087_net.gif",		 10 },	// 39	    // OKish
-            {"/gifs64/193_redplasma.gif",	 10 },	// 38	    // OK
-            {"/gifs64/196_colorstar.gif",	 10 },	// 39
-            {"/gifs64/200_circlesmoke.gif",	 10 },// 24
-            {"/gifs64/203_waterdrop.gif",	 10 },	// 61
-            {"/gifs64/208_dancers.gif",		 10 },	// 39	    // OK
-            {"/gifs64/210_circletriangle.gif",	 10 },// 47   // OK
-            {"/gifs64/215_fallingcube.gif",	 10 },// 75
-            {"/gifs64/236_spintriangle.gif",	 10 },// 41	    // OK
-            {"/gifs64/255_photon.gif",		 10 },	// 43
-            {"/gifs64/257_mesh.gif",		 10 },	// 95
-            {"/gifs64/284_comets.gif",		 10 },	// 89
-            {"/gifs64/342_spincircle.gif",	 10 },// 15
-            {"/gifs64/412_cubes.gif",		 10 },	// 24
-            {"/gifs64/444_hand.gif",		 10 },	// 73
-            {"/gifs64/469_infection.gif",	 10 },	// 30
             {"/gifs64/heartTunnel.gif",		 10 },	// 23
+
+            { "/gifs64/ani-bman-BW.gif",	10 },
+	    { "/gifs64/149_minion1.gif",	10 }, 
+	    { "/gifs64/341_minion2.gif",	10 }, 
+	    { "/gifs64/222_fry.gif",		10 }, 
 	#endif
 
     #endif
@@ -1318,7 +1297,6 @@ uint8_t GifAnim(uint8_t idx) {
     // it's time to decode the next frame. If it did not, wait here to
     // add the matrix_show() delay that is expected by the caller
     bool savl = sav_loop();
-    //timerAlarmEnable(timer);
     if (savl) { delay(MX_UPD_TIME); };
     if (gifanimloop-- == 0) {
 	gifanimloop = gifloop;
@@ -1905,9 +1883,6 @@ void matrix_update() {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
-		// SPIFFS is incompatible with hardware interrupts and crashes.
-		// They need to be turned off a bit early.
-		//timerAlarmDisable(timer);
 		if (matrix_loop == -1) matrix->clear();
 		ret = GifAnim(matrix_demo-56);
 	    }
