@@ -1190,7 +1190,7 @@ uint8_t GifAnim(uint8_t idx) {
     uint8_t repeat = 1;
     struct Animgif {
 	const char *path;
-	uint16_t loopcnt;
+	uint16_t looptime;
     };
 
     #ifdef M32B8X3
@@ -1199,7 +1199,7 @@ uint8_t GifAnim(uint8_t idx) {
 	    {"/gifs/32anim_photon.gif",		10 },
 	    {"/gifs/32anim_flower.gif",		10 },
 	    {"/gifs/32anim_balls.gif",		10 },
-	    {"/gifs/32anim_dance.gif",		10 0},  // 277
+	    {"/gifs/32anim_dance.gif",		10 },  // 277
 	    {"/gifs/circles_swap.gif",		10 },
 	    {"/gifs/concentric_circles.gif",	10 }, // 20
 	    {"/gifs/corkscrew.gif",		10 },
@@ -1211,37 +1211,38 @@ uint8_t GifAnim(uint8_t idx) {
     };
     #else // M32B8M32B8X3X3
     const Animgif animgif[] = {
-    // 32 gifs
-	    //{ "/gifs64/ani-bman-BW.gif",	10 }, 
-	    { "/gifs64/087_net.gif",		10 }, 
-	    { "/gifs64/196_colorstar.gif",	10 }, 
-	    { "/gifs64/200_circlesmoke.gif",	10 }, 
-	    { "/gifs64/203_waterdrop.gif",	10 }, 
-	    { "/gifs64/210_circletriangle.gif",	10 }, 
-	    { "/gifs64/215_fallingcube.gif",	10 }, 
-	    { "/gifs64/255_photon.gif",		10 }, 
-	    { "/gifs64/257_mesh.gif",		10 }, 
-	    { "/gifs64/271_mj.gif",		10 }, 
-	    { "/gifs64/342_spincircle.gif",	10 }, 
-	    { "/gifs64/401_ghostbusters.gif",	10 }, 
-	    { "/gifs64/444_hand.gif",		10 }, 
-	    { "/gifs64/469_infection.gif",	10 }, 
-	    { "/gifs64/193_redplasma.gif",	10 }, 
-	    { "/gifs64/208_dancers.gif",	10 }, 
-	    { "/gifs64/284_comets.gif",		10 }, 
-	    { "/gifs64/377_batman.gif",		10 }, 
-	    { "/gifs64/412_cubes.gif",		10 }, 
-	    { "/gifs64/236_spintriangle.gif",	10 }, 
-	    { "/gifs64/226_flyingfire.gif",	10 }, 
-	    { "/gifs64/264_expandcircle.gif",	10 }, 
-	    { "/gifs64/281_plasma.gif",		10 }, 
-	    { "/gifs64/286_greenplasma.gif",	10 }, 
-	    { "/gifs64/291_circle2sphere.gif",	10 }, 
-	    { "/gifs64/364_colortoroid.gif",	10 }, 
-	    { "/gifs64/470_scrollcubestron.gif",10 }, 
-	    { "/gifs64/358_spinningpattern.gif",10 }, 
-	    { "/gifs64/328_spacetime.gif",	10 }, 
-	    { "/gifs64/218_circleslices.gif",	10 }, 
+    // 32 gifs (actually 31)
+	    { "/gifs64/087_net.gif",		 05 }, 
+	    { "/gifs64/196_colorstar.gif",	 10 }, 
+	    { "/gifs64/200_circlesmoke.gif",	 10 }, 
+	    { "/gifs64/203_waterdrop.gif",	 10 }, 
+	    { "/gifs64/210_circletriangle.gif",	 10 }, 
+	    { "/gifs64/215_fallingcube.gif",	 15 }, 
+	    { "/gifs64/255_photon.gif",		 10 }, 
+	    { "/gifs64/257_mesh.gif",		 20 }, 
+	    { "/gifs64/271_mj.gif",		 15 }, 
+	    { "/gifs64/342_spincircle.gif",	 20 }, 
+	    { "/gifs64/401_ghostbusters.gif",	 05 }, 
+	    { "/gifs64/444_hand.gif",		 10 }, 
+	    { "/gifs64/469_infection.gif",	 05 }, 
+	    { "/gifs64/193_redplasma.gif",	 10 }, 
+	    { "/gifs64/208_dancers.gif",	 25 }, 
+	    { "/gifs64/284_comets.gif",		 15 }, 
+	    { "/gifs64/377_batman.gif",		 05 }, 
+	    { "/gifs64/412_cubes.gif",		 20 }, 
+	    { "/gifs64/236_spintriangle.gif",	 20 }, 
+	    { "/gifs64/226_flyingfire.gif",	 10 }, 
+	    { "/gifs64/264_expandcircle.gif",	 10 }, 
+	    { "/gifs64/281_plasma.gif",		 20 }, 
+	    { "/gifs64/286_greenplasma.gif",	 15 }, 
+	    { "/gifs64/291_circle2sphere.gif",	 15 }, 
+	    { "/gifs64/364_colortoroid.gif",	 25 }, 
+	    { "/gifs64/470_scrollcubestron.gif", 20 }, 
+	    { "/gifs64/358_spinningpattern.gif", 10 }, 
+	    { "/gifs64/328_spacetime.gif",	 20 }, 
+	    { "/gifs64/218_circleslices.gif",	 10 }, 
+	    { "/gifs64/ani-bman-BW.gif",	 10 }, 
+            { "/gifs64/heartTunnel.gif",	 10 },
     };
 
     // 28 gifs
@@ -1252,7 +1253,6 @@ uint8_t GifAnim(uint8_t idx) {
             {"/gifs64/457_mariosleep.gif",	 10 },  // 41
             {"/gifs64/240_angrybird.gif",	 10 },	// 173
             {"/gifs64/323_rockface.gif",	 10 },	// 39
-            {"/gifs64/heartTunnel.gif",		 10 },	// 23
 
             { "/gifs64/ani-bman-BW.gif",	10 },
 	    { "/gifs64/149_minion1.gif",	10 }, 
@@ -1264,16 +1264,14 @@ uint8_t GifAnim(uint8_t idx) {
     uint8_t gifcnt = ARRAY_SIZE(animgif);
     // Avoid crashes due to overflows
     idx = idx % gifcnt;
-
-    // fudge factor to control how long GIFs are shown
-    uint32_t gifloop = 100 * animgif[idx].loopcnt;
-    static uint32_t gifanimloop = gifloop;
+    static uint8_t gifloopsec;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	bool savng = sav_newgif(animgif[idx].path);
 	// exit if the gif animation couldn't get setup.
 	if (savng) return 0;
+	gifloopsec = animgif[idx].looptime;
 	matrix->clear();
 	panOrBounce(&x, &y, bitmapSize, 1);
     }
@@ -1298,10 +1296,8 @@ uint8_t GifAnim(uint8_t idx) {
     // add the matrix_show() delay that is expected by the caller
     bool savl = sav_loop();
     if (savl) { delay(MX_UPD_TIME); };
-    if (gifanimloop-- == 0) {
-	gifanimloop = gifloop;
-	return 0;
-    }
+
+    EVERY_N_SECONDS(1) { if (!gifloopsec--) return 0; };
     return repeat;
 }
 
