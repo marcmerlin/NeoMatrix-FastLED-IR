@@ -312,7 +312,7 @@ uint8_t tfsf() {
     uint16_t duration = 100;
     uint8_t resetspd = 5;
     uint8_t l = 0;
-    uint8_t repeat = 1;
+    uint8_t repeat = 2;
     uint8_t fontsize = 1;
     uint8_t idx = 3;
 
@@ -824,7 +824,7 @@ uint8_t squares(bool reverse) {
 #define sqdelay 2
     static uint16_t state;
     static uint8_t wheel;
-    uint8_t repeat = 2;
+    uint8_t repeat = 1;
     static uint16_t delayframe = sqdelay;
 
 
@@ -1186,7 +1186,6 @@ uint8_t GifAnim(uint8_t idx) {
     extern int OFFSETX, OFFSETY;
     uint16_t bitmapSize = 64;
 
-    static uint16_t delayframe = 2;
     uint8_t repeat = 1;
     struct Animgif {
 	const char *path;
@@ -1241,8 +1240,8 @@ uint8_t GifAnim(uint8_t idx) {
 	    { "/gifs64/358_spinningpattern.gif", 10 }, 
 	    { "/gifs64/328_spacetime.gif",	 20 }, 
 	    { "/gifs64/218_circleslices.gif",	 10 }, 
-	    { "/gifs64/ani-bman-BW.gif",	 10 }, 
             { "/gifs64/heartTunnel.gif",	 10 },
+	    { "/gifs64/ani-bman-BW.gif",	 10 }, 
     };
 
     // 28 gifs
@@ -1276,13 +1275,6 @@ uint8_t GifAnim(uint8_t idx) {
 	panOrBounce(&x, &y, bitmapSize, 1);
     }
 
-    if (--delayframe) {
-	// Serial.println("delayed frame");
-	delay(MX_UPD_TIME);
-	return repeat;
-    }
-    delayframe = 1;
-
     // used by sav_loop
     OFFSETX = 0;
     OFFSETY = 16;
@@ -1297,7 +1289,10 @@ uint8_t GifAnim(uint8_t idx) {
     bool savl = sav_loop();
     if (savl) { delay(MX_UPD_TIME); };
 
-    EVERY_N_SECONDS(1) { if (!gifloopsec--) return 0; };
+    EVERY_N_SECONDS(1) { 
+	Serial.print(gifloopsec); Serial.print(" ");
+	if (!gifloopsec--) { Serial.println(); return 0; };
+    }
     return repeat;
 }
 
@@ -1413,7 +1408,7 @@ uint8_t call_twinklefox()
     }
 
     twinkle_loop();
-    if (state++ < 1000) return 1;
+    if (state++ < 1000) return 2;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -1445,7 +1440,7 @@ uint8_t call_fireworks() {
 
     fireworks();
     matrix_show();
-    if (state++ < 3000) return 1;
+    if (state++ < 5000) return 1;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -1461,7 +1456,7 @@ uint8_t call_fire() {
 
     fire();
     matrix_show();
-    if (state++ < 3000) return 1;
+    if (state++ < 3000) return 2;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -1490,7 +1485,7 @@ uint8_t call_rain(uint8_t which) {
     if (which == 2) coloredRain();
     if (which == 3) stormyRain();
     matrix_show();
-    if (state++ < 500) return 1;
+    if (state++ < 500) return 2;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -1611,7 +1606,7 @@ uint8_t metd(uint8_t demo) {
 
     if (--delayframe) {
 	delay(MX_UPD_TIME);
-	return 1;
+	return 2;
     }
     delayframe = dfinit;
 
@@ -1683,7 +1678,7 @@ uint8_t metd(uint8_t demo) {
 
     td_loop();
     matrix_show();
-    if (counter < loops) return 1;
+    if (counter < loops) return 2;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -1692,6 +1687,8 @@ uint8_t metd(uint8_t demo) {
 void matrix_change(int demo) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
+    // Clear screen when changing demos.
+    matrix->clear();
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_reset_demo = 1;
@@ -1733,8 +1730,6 @@ void matrix_update() {
     EVERY_N_MILLISECONDS(40) {
 	gHue++;  // slowly cycle the "base color" through the rainbow
     }
-    // reset passthrough color set by some demos
-    matrix->setPassThruColor();
 
     switch (matrix_demo) {
 	case 0:
@@ -1880,7 +1875,6 @@ void matrix_update() {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
-		if (matrix_loop == -1) matrix->clear();
 		ret = GifAnim(matrix_demo-56);
 	    }
 	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
@@ -1909,7 +1903,7 @@ void matrix_update() {
     Serial.print(matrix_demo);
     Serial.print(" loop ");
     Serial.println(matrix_loop);
-    if (matrix_loop-- > 0) return;
+    if (--matrix_loop > 0) return;
     matrix_change(127);
 }
 
