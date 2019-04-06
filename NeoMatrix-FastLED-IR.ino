@@ -175,7 +175,7 @@ uint32_t Wheel(byte WheelPos) {
 // ---------------------------------------------------------------------------
 
 
-void display_resolution() {
+void display_stats() {
     static uint16_t cnt=1;
 
     matrix->setTextSize(1);
@@ -225,6 +225,19 @@ void display_resolution() {
 	matrix->setTextColor(matrix->Color(255,255,0));
 	// this one could be displayed off screen, but we don't care :)
 	matrix->print("*");
+    }
+
+    if (mh >=31) {
+	matrix->setTextColor(matrix->Color(128,255,128));
+	matrix->setCursor(0, mh-21);
+	matrix->print(demo_cnt);
+	matrix->print(" demos");
+    }
+    if (mh >= 35) {
+	matrix->setTextColor(matrix->Color(255,128,128));
+	matrix->setCursor(0, mh-28);
+	matrix->print(best_cnt);
+	matrix->print(" best");
     }
 
     matrix->setTextColor(matrix->Color(255,0,255));
@@ -1210,7 +1223,7 @@ uint8_t GifAnim(uint8_t idx) {
     };
     #else // M32B8M32B8X3X3
     const Animgif animgif[] = {
-    // 32 gifs (actually 31)
+    // 31 gifs
 	    { "/gifs64/087_net.gif",		 05 }, 
 	    { "/gifs64/196_colorstar.gif",	 10 }, 
 	    { "/gifs64/200_circlesmoke.gif",	 10 }, 
@@ -1246,17 +1259,16 @@ uint8_t GifAnim(uint8_t idx) {
 
     // 28 gifs
 	#if 0
-            {"/gifs64/149_minion1.gif",		 10 },	// 27
-            {"/gifs64/341_minion2.gif",		 10 },	// 18
-            {"/gifs64/233_mariokick.gif",	 10 },	// 16
-            {"/gifs64/457_mariosleep.gif",	 10 },  // 41
-            {"/gifs64/240_angrybird.gif",	 10 },	// 173
-            {"/gifs64/323_rockface.gif",	 10 },	// 39
-
-            { "/gifs64/ani-bman-BW.gif",	10 },
-	    { "/gifs64/149_minion1.gif",	10 }, 
-	    { "/gifs64/341_minion2.gif",	10 }, 
-	    { "/gifs64/222_fry.gif",		10 }, 
+            { "/gifs64/149_minion1.gif",	 10 },	// 27
+            { "/gifs64/341_minion2.gif",	 10 },	// 18
+            { "/gifs64/233_mariokick.gif",	 10 },	// 16
+            { "/gifs64/457_mariosleep.gif",	 10 },  // 41
+            { "/gifs64/240_angrybird.gif",	 10 },	// 173
+            { "/gifs64/323_rockface.gif",	 10 },	// 39
+            { "/gifs64/ani-bman-BW.gif",	 10 },
+	    { "/gifs64/149_minion1.gif",	 10 }, 
+	    { "/gifs64/341_minion2.gif",	 10 }, 
+	    { "/gifs64/222_fry.gif",		 10 }, 
 	#endif
 
     #endif
@@ -1870,8 +1882,8 @@ void matrix_update() {
 	    // 12 gifs: 56 to 67
 	    else if (matrix_demo <= 67) {
 #else // M32B8M32B8X3X3
-	    // 32 gifs: 56 to 89
-	    else if (matrix_demo <= 85) {
+	    // 31 gifs: 56 to 86
+	    else if (matrix_demo <= 86) {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
@@ -2825,20 +2837,13 @@ void setup() {
     matrix->begin();
     matrix->setBrightness(matrix_brightness);
     matrix->setTextWrap(false);
-    Serial.println("Init Pixels / LEDMatrix Test");
-    ledmatrix.DrawLine (0, 0, ledmatrix.Width() - 1, ledmatrix.Height() - 1, CRGB(0, 255, 0));
-    ledmatrix.DrawPixel(0, 0, CRGB(255, 0, 0));
-    ledmatrix.DrawPixel(ledmatrix.Width() - 1, ledmatrix.Height() - 1, CRGB(0, 0, 255));
-    matrix->show();
-    delay(1000);
     Serial.println("NeoMatrix Test");
     // speed test
-    //while (1) { display_resolution(); yield();};
-
-    matrix->clear();
+    // I only get 50fps with SmartMatrix 96x64, but good enough I guess
+    // while (1) { display_stats(); yield();};
     // init first matrix demo
-    display_resolution();
-    delay(1000);
+    display_stats();
+    delay(3000);
     matrix->clear();
 
     Serial.println("Matrix Libraries Test done, starting loop");
