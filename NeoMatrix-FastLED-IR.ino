@@ -2073,7 +2073,7 @@ bool handle_IR(uint32_t delay_time) {
 	    Serial.println(matrix_state);
 	    return 1;
 
-	case IR_RGBZONE_POWE2R:
+	case IR_RGBZONE_POWER2:
 	    Serial.println("Got IR: Power2");
 	case IR_RGBZONE_POWER:
 	    if (is_change()) { matrix_change(-128); return 1; }
