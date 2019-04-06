@@ -1523,6 +1523,7 @@ uint8_t call_pacman(uint8_t loopcnt) {
 }
 
 // Adapted from	LEDText/examples/TextExample3 by Aaron Liddiment
+// bright and annoying, I took it down to just a very quick show.
 uint8_t plasma() {
     #define PLASMA_X_FACTOR  24
     #define PLASMA_Y_FACTOR  24
@@ -1556,7 +1557,7 @@ uint8_t plasma() {
     if (OldPlasmaTime > PlasmaTime) PlasmaShift = (random8(0, 5) * 32) + 64;
 
     matrix_show();
-    if (state++ < 500) return 1;
+    if (state++ < 200) return 1;
     matrix_reset_demo = 1;
     return 0;
 }
@@ -2072,11 +2073,9 @@ bool handle_IR(uint32_t delay_time) {
 
 	case IR_RGBZONE_POWER:
 	    if (is_change()) { matrix_change(-128); return 1; }
-	    nextdemo = f_colorWipe;
-	    demo_color = 0x000000;
-	    strip_speed = 1;
-	    Serial.println("Got IR: Power");
-	    Serial.println("Hit slower speed to restart panel anim");
+	    Serial.println("Got IR: Power, show all demos again and Hang on this demo");
+	    matrix_loop = 9999;
+	    show_best_demos = false;
 	    return 1;
 
 	case IR_RGBZONE_RED:
