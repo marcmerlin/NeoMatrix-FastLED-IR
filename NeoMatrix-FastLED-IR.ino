@@ -1706,12 +1706,12 @@ void matrix_change(int demo) {
     matrix_reset_demo = 1;
     if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_cnt;
     if (demo==+127) if (matrix_state++ == demo_cnt) matrix_state = 0;
-    // If existing matrix was already >90, any +- change brings it back to 0.
-    if (matrix_state > 90) matrix_state = 0;
+    // If existing matrix was already >98, any +- change brings it back to 0.
+    if (matrix_state >= 98) matrix_state = 0;
     if (demo >= 0 && demo < 127) matrix_state = demo;
 #ifdef NEOPIXEL_PIN
     // Special one key press where demos are shown forever and next goes back to the normal loop
-    if (demo >= 0 && demo < 90) matrix_loop = 9999;
+    if (demo >= 0 && demo < 99) matrix_loop = 9999;
 #endif
     Serial.print("Got matrix_change ");
     Serial.print(demo);
