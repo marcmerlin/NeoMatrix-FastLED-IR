@@ -1196,96 +1196,98 @@ uint8_t GifAnim(uint8_t idx) {
     #ifdef M32B8X3
     const Animgif animgif[] = { // number of frames in the gif
     // 12 gifs
-	    {"/gifs/32anim_photon.gif", 44},
-	    {"/gifs/32anim_flower.gif", 30},
-	    {"/gifs/32anim_balls.gif", 38},
-	    {"/gifs/32anim_dance.gif", 100},  // 277
-	    {"/gifs/circles_swap.gif", 16},
-	    {"/gifs/concentric_circles.gif", 40}, // 20
-	    {"/gifs/corkscrew.gif", 29},
-	    {"/gifs/cubeconstruct.gif", 30}, // 76
-	    {"/gifs/cubeslide.gif", 30}, // 272
-	    {"/gifs/runningedgehog.gif", 24}, // 8
-	    {"/gifs/triangles_in.gif", 48},
-	    {"/gifs/wifi.gif", 50}, //254
+	    {"/gifs/32anim_photon.gif",		10 },
+	    {"/gifs/32anim_flower.gif",		10 },
+	    {"/gifs/32anim_balls.gif",		10 },
+	    {"/gifs/32anim_dance.gif",		10 0},  // 277
+	    {"/gifs/circles_swap.gif",		10 },
+	    {"/gifs/concentric_circles.gif",	10 }, // 20
+	    {"/gifs/corkscrew.gif",		10 },
+	    {"/gifs/cubeconstruct.gif",		10 }, // 76
+	    {"/gifs/cubeslide.gif",		10 }, // 272
+	    {"/gifs/runningedgehog.gif",	10 }, // 8
+	    {"/gifs/triangles_in.gif",		10 },
+	    {"/gifs/wifi.gif",			10 }, //254
     };
     #else // M32B8M32B8X3X3
     const Animgif animgif[] = {
-    // 28 gifs
-            {"/gifs64/ani-bman-BW.gif", 64 },	// 19
-            {"/gifs64/149_minion1.gif", 48 },	// 27
-            {"/gifs64/341_minion2.gif", 32 },	// 18
-            {"/gifs64/233_mariokick.gif", 32 },	// 16
-            {"/gifs64/457_mariosleep.gif", 24 },// 41
-            {"/gifs64/240_angrybird.gif", 16 },	// 173
-            {"/gifs64/377_batman.gif", 32 },	// 29
-
-            {"/gifs64/271_mj.gif", 32 },	// 47	    // OK
-            {"/gifs64/323_rockface.gif", 16 },	// 39
-            {"/gifs64/222_fry.gif", 24 },	// 39
-            {"/gifs64/401_ghostbusters.gif", 32 },// 47	    // OK
-
-            {"/gifs64/087_net.gif", 42 },	// 39	    // OKish
-            {"/gifs64/193_redplasma.gif", 32 },	// 38	    // OK
-            {"/gifs64/196_colorstar.gif", 48 },	// 39
-            {"/gifs64/200_circlesmoke.gif", 28 },// 24
-            {"/gifs64/203_waterdrop.gif", 32 },	// 61
-            {"/gifs64/208_dancers.gif", 32 },	// 39	    // OK
-            {"/gifs64/210_circletriangle.gif", 32 },// 47   // OK
-            {"/gifs64/215_fallingcube.gif", 42 },// 75
-            {"/gifs64/236_spintriangle.gif", 64 },// 41	    // OK
-            {"/gifs64/255_photon.gif", 32 },	// 43
-            {"/gifs64/257_mesh.gif", 64 },	// 95
-            {"/gifs64/284_comets.gif", 64 },	// 89
-            {"/gifs64/342_spincircle.gif", 48 },// 15
-            {"/gifs64/412_cubes.gif", 28 },	// 24
-            {"/gifs64/444_hand.gif", 64 },	// 73
-            {"/gifs64/469_infection.gif", 64 },	// 30
-            {"/gifs64/heartTunnel.gif", 64 },	// 23
-
-	#if 0
-	/gifs64/ani-bman-BW.gif
-	/gifs64/087_net.gif
-	/gifs64/149_minion1.gif
-	/gifs64/196_colorstar.gif
-	/gifs64/200_circlesmoke.gif
-	/gifs64/203_waterdrop.gif
-	/gifs64/210_circletriangle.gif
-	/gifs64/215_fallingcube.gif
-	/gifs64/222_fry.gif
-	/gifs64/255_photon.gif
-	/gifs64/257_mesh.gif
-	/gifs64/271_mj.gif
-	/gifs64/341_minion2.gif
-	/gifs64/342_spincircle.gif
-	/gifs64/401_ghostbusters.gif
-	/gifs64/444_hand.gif
-	/gifs64/469_infection.gif
-	/gifs64/193_redplasma.gif
-	/gifs64/208_dancers.gif
-	/gifs64/284_comets.gif
-	/gifs64/377_batman.gif
-	/gifs64/412_cubes.gif
-	/gifs64/236_spintriangle.gif
-	/gifs64/226_flyingfire.gif
-	/gifs64/264_expandcircle.gif
-	/gifs64/281_plasma.gif
-	/gifs64/286_greenplasma.gif
-	/gifs64/291_circle2sphere.gif
-	/gifs64/364_colortoroid.gif
-	/gifs64/470_scrollcubestron.gif
-	/gifs64/358_spinningpattern.gif
-	/gifs64/328_spacetime.gif
-	/gifs64/218_circleslices.gif
-	#endif
+    // 32 gifs
+	    //{ "/gifs64/ani-bman-BW.gif",	10 }, 
+	    { "/gifs64/087_net.gif",		10 }, 
+	    { "/gifs64/149_minion1.gif",	10 }, 
+	    { "/gifs64/196_colorstar.gif",	10 }, 
+	    { "/gifs64/200_circlesmoke.gif",	10 }, 
+	    { "/gifs64/203_waterdrop.gif",	10 }, 
+	    { "/gifs64/210_circletriangle.gif",	10 }, 
+	    { "/gifs64/215_fallingcube.gif",	10 }, 
+	    { "/gifs64/222_fry.gif",		10 }, 
+	    { "/gifs64/255_photon.gif",		10 }, 
+	    { "/gifs64/257_mesh.gif",		10 }, 
+	    { "/gifs64/271_mj.gif",		10 }, 
+	    { "/gifs64/341_minion2.gif",	10 }, 
+	    { "/gifs64/342_spincircle.gif",	10 }, 
+	    { "/gifs64/401_ghostbusters.gif",	10 }, 
+	    { "/gifs64/444_hand.gif",		10 }, 
+	    { "/gifs64/469_infection.gif",	10 }, 
+	    { "/gifs64/193_redplasma.gif",	10 }, 
+	    { "/gifs64/208_dancers.gif",	10 }, 
+	    { "/gifs64/284_comets.gif",		10 }, 
+	    { "/gifs64/377_batman.gif",		10 }, 
+	    { "/gifs64/412_cubes.gif",		10 }, 
+	    { "/gifs64/236_spintriangle.gif",	10 }, 
+	    { "/gifs64/226_flyingfire.gif",	10 }, 
+	    { "/gifs64/264_expandcircle.gif",	10 }, 
+	    { "/gifs64/281_plasma.gif",		10 }, 
+	    { "/gifs64/286_greenplasma.gif",	10 }, 
+	    { "/gifs64/291_circle2sphere.gif",	10 }, 
+	    { "/gifs64/364_colortoroid.gif",	10 }, 
+	    { "/gifs64/470_scrollcubestron.gif",10 }, 
+	    { "/gifs64/358_spinningpattern.gif",10 }, 
+	    { "/gifs64/328_spacetime.gif",	10 }, 
+	    { "/gifs64/218_circleslices.gif",	10 }, 
     };
+
+    // 28 gifs
+	#if 0
+            {"/gifs64/ani-bman-BW.gif",		 10 },	// 19
+            {"/gifs64/149_minion1.gif",		 10 },	// 27
+            {"/gifs64/341_minion2.gif",		 10 },	// 18
+            {"/gifs64/233_mariokick.gif",	 10 },	// 16
+            {"/gifs64/457_mariosleep.gif",	 10 },  // 41
+            {"/gifs64/240_angrybird.gif",	 10 },	// 173
+            {"/gifs64/377_batman.gif",		 10 },	// 29
+
+            {"/gifs64/271_mj.gif",		 10 },	// 47	    // OK
+            {"/gifs64/323_rockface.gif",	 10 },	// 39
+            {"/gifs64/222_fry.gif",		 10 },	// 39
+            {"/gifs64/401_ghostbusters.gif",	 10 },  // 47	    // OK
+
+            {"/gifs64/087_net.gif",		 10 },	// 39	    // OKish
+            {"/gifs64/193_redplasma.gif",	 10 },	// 38	    // OK
+            {"/gifs64/196_colorstar.gif",	 10 },	// 39
+            {"/gifs64/200_circlesmoke.gif",	 10 },// 24
+            {"/gifs64/203_waterdrop.gif",	 10 },	// 61
+            {"/gifs64/208_dancers.gif",		 10 },	// 39	    // OK
+            {"/gifs64/210_circletriangle.gif",	 10 },// 47   // OK
+            {"/gifs64/215_fallingcube.gif",	 10 },// 75
+            {"/gifs64/236_spintriangle.gif",	 10 },// 41	    // OK
+            {"/gifs64/255_photon.gif",		 10 },	// 43
+            {"/gifs64/257_mesh.gif",		 10 },	// 95
+            {"/gifs64/284_comets.gif",		 10 },	// 89
+            {"/gifs64/342_spincircle.gif",	 10 },// 15
+            {"/gifs64/412_cubes.gif",		 10 },	// 24
+            {"/gifs64/444_hand.gif",		 10 },	// 73
+            {"/gifs64/469_infection.gif",	 10 },	// 30
+            {"/gifs64/heartTunnel.gif",		 10 },	// 23
+	#endif
+
     #endif
     uint8_t gifcnt = ARRAY_SIZE(animgif);
     // Avoid crashes due to overflows
     idx = idx % gifcnt;
 
     // fudge factor to control how long GIFs are shown
-    uint32_t gifloop = 25 * animgif[idx].loopcnt;
+    uint32_t gifloop = 100 * animgif[idx].loopcnt;
     static uint32_t gifanimloop = gifloop;
 
     if (matrix_reset_demo == 1) {
@@ -1293,6 +1295,7 @@ uint8_t GifAnim(uint8_t idx) {
 	bool savng = sav_newgif(animgif[idx].path);
 	// exit if the gif animation couldn't get setup.
 	if (savng) return 0;
+	matrix->clear();
 	panOrBounce(&x, &y, bitmapSize, 1);
     }
 
@@ -1897,7 +1900,7 @@ void matrix_update() {
 	    // 12 gifs: 56 to 67
 	    else if (matrix_demo <= 67) {
 #else // M32B8M32B8X3X3
-	    // 28 gifs: 56 to 85
+	    // 32 gifs: 56 to 89
 	    else if (matrix_demo <= 85) {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
