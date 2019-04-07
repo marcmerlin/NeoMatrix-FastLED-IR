@@ -1946,12 +1946,10 @@ void change_brightness(int8_t change) {
 	return;
     }
     last_brightness_change = millis();
-    brightness = constrain(brightness + change, 3, 8);
+    brightness = constrain(brightness + change, 2, 8);
     led_brightness = min((1 << (brightness+1)) - 1, 255);
     matrix_brightness = (1 << (brightness-1)) - 1;
-    // This is needed if using the ESP32 driver but won't work
-    // if using 2 independent fastled strips (1D + 2D matrix)
-    matrix->setBrightness(matrix_brightness);
+    uint8_t smartmatrix_brightness = min( (1 << (brightness+2)), 255);
 
     Serial.print("Changing brightness ");
     Serial.print(change);
@@ -1959,8 +1957,17 @@ void change_brightness(int8_t change) {
     Serial.print(brightness);
     Serial.print(" led value ");
     Serial.print(led_brightness);
-    Serial.print(" matrix value ");
+#ifdef SMARTMATRIX
+    Serial.print(" neomatrix value ");
+    Serial.println(smartmatrix_brightness);
+    matrixLayer.setBrightness(smartmatrix_brightness);
+#else
+    Serial.print(" neomatrix value ");
     Serial.println(matrix_brightness);
+    // This is needed if using the ESP32 driver but won't work
+    // if using 2 independent fastled strips (1D + 2D matrix)
+    matrix->setBrightness(matrix_brightness);
+#endif
 }
 
 void change_speed(int8_t change) {
@@ -2836,8 +2843,9 @@ void setup() {
     Serial.println(mh);
     // Turn off dithering https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
     FastLED.setDither( 0 );
+    // Set brightness as appropriate for backend
+    change_brightness( 0 );
     matrix->begin();
-    matrix->setBrightness(matrix_brightness);
     matrix->setTextWrap(false);
     Serial.println("NeoMatrix Test");
     // speed test

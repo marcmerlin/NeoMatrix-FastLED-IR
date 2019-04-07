@@ -3,6 +3,7 @@
 
 #define LEDMATRIX
 //#define NEOMATRIX
+#define DISABLE_MATRIX_TEST
 #include "neomatrix_config.h"
 
 #ifdef ESP8266
