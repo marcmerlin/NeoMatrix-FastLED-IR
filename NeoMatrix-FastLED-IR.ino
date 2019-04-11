@@ -28,9 +28,36 @@
 #include "TwinkleFOX.h"
 #include "aurora.h"
 
-#ifdef ESP32
-extern hw_timer_t *timer;
-#endif
+const uint16_t PROGMEM RGB_bmp[64] = {
+      // 10: multicolor smiley face
+        0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, 
+	0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000, 
+	0x00F, 0x000, 0xF00, 0x000, 0x000, 0xF00, 0x000, 0x00F, 
+	0x00F, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x00F, 
+	0x00F, 0x000, 0x0F0, 0x000, 0x000, 0x0F0, 0x000, 0x00F, 
+	0x00F, 0x000, 0x000, 0x0F4, 0x0F3, 0x000, 0x000, 0x00F, 
+	0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000, 
+	0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, };
+
+// Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
+void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
+    uint16_t RGB_bmp_fixed[w * h];
+    for (uint16_t pixel=0; pixel<w*h; pixel++) {
+	uint8_t r,g,b;
+	uint16_t color = pgm_read_word(bitmap + pixel);
+
+	b = (color & 0xF00) >> 8;
+	g = (color & 0x0F0) >> 4;
+	r = color & 0x00F;
+	// expand from 4/4/4 bits per color to 5/6/5
+	b = map(b, 0, 15, 0, 31);
+	g = map(g, 0, 15, 0, 63);
+	r = map(r, 0, 15, 0, 31);
+	RGB_bmp_fixed[pixel] = (r << 11) + (g << 5) + b;
+    }
+    matrix->drawRGBBitmap(x, y, RGB_bmp_fixed, w, h);
+}
+
 
 void matrix_show() {
 #ifdef SMARTMATRIX
@@ -829,6 +856,41 @@ uint8_t esrr_fade() {
 	}
     }
     matrix_show();
+    return 2;
+}
+
+
+uint8_t display_text(const char *text, uint16_t x, uint16_t y) {
+    static uint16_t state;
+    uint16_t loopcnt = 300;
+
+
+    if (matrix_reset_demo == 1) {
+	state = 0;
+	matrix_reset_demo = 0;
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
+	if (mheight >= 64) {
+		//matrix->setFont(FreeMonoBold9pt7b);
+	    matrix->setFont(&Century_Schoolbook_L_Bold_16);
+	} else {
+	    matrix->setFont(&TomThumb);
+	}
+	matrix->clear();
+    }
+
+    state++;
+
+    matrix->setCursor(x, y);
+    matrix->setPassThruColor(Wheel(map(state, 0, loopcnt, 0, 512)));
+    matrix->print(text);
+    matrix->setPassThruColor();
+    matrix_show();
+
+    if (state > loopcnt) {
+	matrix_reset_demo = 1;
+	return 0;
+    }
     return 2;
 }
 
@@ -1902,13 +1964,16 @@ void matrix_update() {
 	    break;
 
 	case 99:
+#ifdef M32B8X3
 	    const char str[] = "Thank You :)";
 	    ret = scrollText(str, sizeof(str));
+#else
+	    fixdrawRGBBitmap(28, 87, RGB_bmp, 8, 8);
+	    ret = display_text("Thank\n  You\n  Very\n Much", 0, 14);
+#endif
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
-
-
     }
     matrix_reset_demo = 1;
     Serial.print("Done with demo ");
