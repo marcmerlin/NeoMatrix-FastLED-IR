@@ -1,12 +1,9 @@
 #define BASICSPIFFS
 #define NEOMATRIX
 
-#include "FFat.h"
-#define FSO FFat
-#define FSOFAT
 
 #if defined(ESP8266)
-    #include <SPIFFS.h>
+    #include <FS.h>
     #define FSO SPIFFS
     #define matrix_size 32
     // Needs trailing slash
@@ -18,6 +15,9 @@
     }
     const int lzwMaxBits = 11;
 #elif defined(ESP32)
+    #include "FFat.h"
+    #define FSO FFat
+    #define FSOFAT
     #define matrix_size 64
     // Do NOT add a trailing slash, or things will fail for SPIFFS
     #define GIF_DIRECTORY "/gifs64"
