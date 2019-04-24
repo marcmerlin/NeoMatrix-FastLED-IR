@@ -1168,7 +1168,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
-void panOrBounce (uint16_t *x, uint16_t *y, uint16_t bitmapSize, bool reset = false ) {
+void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool reset = false ) {
     // keep integer math, deal with values 16 times too big
     // start by showing upper left of big bitmap or centering if the display is big
     static int16_t xf;
@@ -1182,8 +1182,8 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t bitmapSize, bool reset = fa
     static int16_t yfdir;
 
     if (reset) {
-	xf = max(0, (mw-bitmapSize)/2) << 4;
-	yf = max(0, (mh-bitmapSize)/2) << 4;
+	xf = max(0, (mw-sizeX)/2) << 4;
+	yf = max(0, (mh-sizeY)/2) << 4;
 	xfc = 6;
 	yfc = 3;
 	xfdir = -1;
@@ -1198,28 +1198,28 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t bitmapSize, bool reset = fa
 
     // Only pan if the display size is smaller than the pixmap
     // but not if the difference is too small or it'll look bad.
-    if (bitmapSize-mw>2) {
+    if (sizeX-mw>2) {
 	xf += xfc*xfdir;
-	if (xf >= 0)                      { xfdir = -1; changeDir = true ; };
+	if (xf >= 0)                 { xfdir = -1; changeDir = true ; };
 	// we don't go negative past right corner, go back positive
-	if (xf <= ((mw-bitmapSize) << 4)) { xfdir = 1;  changeDir = true ; };
+	if (xf <= ((mw-sizeX) << 4)) { xfdir = 1;  changeDir = true ; };
     }
-    if (bitmapSize-mh>2) {
+    if (sizeY-mh>2) {
 	yf += yfc*yfdir;
 	// we shouldn't display past left corner, reverse direction.
-	if (yf >= 0)                      { yfdir = -1; changeDir = true ; };
-	if (yf <= ((mh-bitmapSize) << 4)) { yfdir = 1;  changeDir = true ; };
+	if (yf >= 0)                 { yfdir = -1; changeDir = true ; };
+	if (yf <= ((mh-sizeY) << 4)) { yfdir = 1;  changeDir = true ; };
     }
     // only bounce a pixmap if it's smaller than the display size
-    if (mw>bitmapSize) {
+    if (mw>sizeX) {
 	xf += xfc*xfdir;
 	// Deal with bouncing off the 'walls'
-	if (xf >= (mw-bitmapSize) << 4) { xfdir = -1; changeDir = true ; };
+	if (xf >= (mw-sizeX) << 4) { xfdir = -1; changeDir = true ; };
 	if (xf <= 0)           { xfdir =  1; changeDir = true ; };
     }
-    if (mh>bitmapSize) {
+    if (mh>sizeY) {
 	yf += yfc*yfdir;
-	if (yf >= (mh-bitmapSize) << 4) { yfdir = -1; changeDir = true ; };
+	if (yf >= (mh-sizeY) << 4) { yfdir = -1; changeDir = true ; };
 	if (yf <= 0)           { yfdir =  1; changeDir = true ; };
     }
 
@@ -1239,9 +1239,8 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint16_t bitmapSize) {
 	matrix_reset_demo = 0;
 	matrix->clear();
 	state = 0;
-	panOrBounce(&x, &y, bitmapSize, 1);
     }
-    panOrBounce(&x, &y, bitmapSize);
+    panOrBounce(&x, &y, bitmapSize, bitmapSize);
 
     matrix->clear();
     // pan 24x24 pixmap
@@ -1285,7 +1284,7 @@ uint8_t GifAnim(uint8_t idx) {
     };
     #else // M32B8M32B8X3X3
     const Animgif animgif[] = {
-    // 31 gifs
+    // 32 gifs
 	    { "/gifs64/087_net.gif",		 05 }, 
 	    { "/gifs64/196_colorstar.gif",	 10 }, 
 	    { "/gifs64/200_circlesmoke.gif",	 10 }, 
@@ -1316,6 +1315,7 @@ uint8_t GifAnim(uint8_t idx) {
 	    { "/gifs64/328_spacetime.gif",	 20 }, 
 	    { "/gifs64/218_circleslices.gif",	 10 }, 
             { "/gifs64/heartTunnel.gif",	 10 },
+            { "/gifs64/sonic.gif",		 10 },
 	    { "/gifs64/ani-bman-BW.gif",	 10 }, 
     };
 
@@ -1346,13 +1346,12 @@ uint8_t GifAnim(uint8_t idx) {
 	if (savng) return 0;
 	gifloopsec = animgif[idx].looptime;
 	matrix->clear();
-	panOrBounce(&x, &y, bitmapSize, 1);
     }
 
     // used by sav_loop
     OFFSETX = 0;
     OFFSETY = 16;
-    panOrBounce(&x, &y, bitmapSize);
+    panOrBounce(&x, &y, bitmapSize, bitmapSize);
     //OFFSETX = x;
     //OFFSETY = y;
     //matrix->clear();
@@ -1368,6 +1367,95 @@ uint8_t GifAnim(uint8_t idx) {
 	if (!gifloopsec--) { Serial.println(); return 0; };
     }
     return repeat;
+}
+
+uint8_t scrollBigtext() {
+    // 64x96 pixels, chars are 5(6)x7, 10.6 chars across, 13.7 lines of displays
+    static uint16_t state = 0;
+    static uint8_t resetcnt = 3;
+    uint16_t loopcnt = 1000;
+    uint16_t x, y;
+
+#if 0
+    static const char* text[] = {
+	"function nodeIsImport(elt) {",
+	"  return elt.localName === 'link' && elt.rel === IMPORT_LINK_TYPE; }",
+	"function generateScriptDataUrl(script) {",
+	"  var scriptContent = generateScriptContent(script);",
+	"  return 'data:text/javascript;charset=utf-8,' + encodeURIComponent(scriptContent); }",
+	"function generateScriptContent(script) {",
+	"  return script.textContent + generateSourceMapHint(script); }",
+	"function generateSourceMapHint(script) {",
+	"  var owner = script.ownerDocument;",
+	"  owner.__importedScripts = owner.__importedScripts || 0;",
+	"  var moniker = script.ownerDocument.baseURI;",
+	"  var num = owner.__importedScripts ? '-' + owner.__importedScripts : '';",
+	"  owner.__importedScripts++;",
+	"  return '\\n//# sourceURL=' + moniker + num + '.js\\n'; }",
+	"function cloneStyle(style) {",
+	"  var clone = style.ownerDocument.createElement('style');",
+	"  clone.textContent = style.textContent;",
+	"  path.resolveUrlsInStyle(clone);",
+	"  return clone; }",
+    };
+#endif
+    static const char* text[] = {
+	"if (sizeX-mw>2) { xf += xfc*xfdir;",
+	"  if (xf >= 0)                 { xfdir = -1; changeDir = true ; };",
+	"  // we don't go negative past right corner, go back positive",
+	"  if (xf <= ((mw-sizeX) << 4)) { xfdir = 1;  changeDir = true ; }; }",
+	"if (sizeY-mh>2) { yf += yfc*yfdir;",
+	"  // we shouldn't display past left corner, reverse direction.",
+	"  if (yf >= 0)                 { yfdir = -1; changeDir = true ; };",
+	"  if (yf <= ((mh-sizeY) << 4)) { yfdir = 1;  changeDir = true ; }; }",
+	"  // only bounce a pixmap if it's smaller than the display size",
+	"if (mw>sizeX) { xf += xfc*xfdir;",
+	"  // Deal with bouncing off the 'walls'",
+	"  if (xf >= (mw-sizeX) << 4) { xfdir = -1; changeDir = true ; };",
+	"  if (xf <= 0)           { xfdir =  1; changeDir = true ; }; }",
+	"if (mh>sizeY) { yf += yfc*yfdir;",
+	"  if (yf >= (mh-sizeY) << 4) { yfdir = -1; changeDir = true ; };",
+	"  if (yf <= 0)           { yfdir =  1; changeDir = true ; }; }",
+	"if (changeDir) {",
+	"  // Add -1, 0 or 1 but bind result to 1 to 1.",
+	"  // Let's take 3 is a minimum speed, otherwise it's too slow.",
+	"  xfc = constrain(xfc + random(-1, 2), 3, 16);",
+	"  yfc = constrain(xfc + random(-1, 2), 3, 16); }",
+    };
+    const uint8_t textlines = ARRAY_SIZE(text);
+    static uint32_t textcolor[textlines];
+
+    if (matrix_reset_demo == 1) {
+	state = 0;
+	matrix_reset_demo = 0;
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
+	// default font is 5x7, but you really need 6x8 for spacing
+	matrix->setFont(NULL);
+	for (uint8_t i=0; i<=textlines-1; i++) {
+	    textcolor[i] = random8(96) * 65536 + (127 + random8(128))* 256, random8(96);
+	    //Serial.print("Setup color mapping: ");
+	    //Serial.println(textcolor[i], HEX);
+	}
+    }
+
+    state++;
+    panOrBounce(&x, &y, 54*6, ARRAY_SIZE(text)*7);
+
+    matrix->clear();
+    for (uint8_t i=0; i<=textlines-1; i++) {
+	matrix->setPassThruColor(textcolor[i]);
+	matrix->setCursor(x, y+8*i);
+	matrix->print(text[i]);
+    }
+    matrix->setPassThruColor();
+    matrix_show();
+
+    if (state > loopcnt) {
+	matrix_reset_demo = 1;
+	return 0;
+    }
+    return resetcnt;
 }
 
 
@@ -1866,8 +1954,11 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-
-
+	case 10:
+	    ret = scrollBigtext();
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
 
 	case 12:
 	    ret = panOrBounceBitmap(1, 24);
@@ -1944,8 +2035,8 @@ void matrix_update() {
 	    // 12 gifs: 56 to 67
 	    else if (matrix_demo <= 67) {
 #else // M32B8M32B8X3X3
-	    // 31 gifs: 56 to 86
-	    else if (matrix_demo <= 86) {
+	    // 32 gifs: 56 to 87
+	    else if (matrix_demo <= 87) {
 #endif
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
