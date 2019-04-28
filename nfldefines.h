@@ -44,6 +44,7 @@
     // 10 scroll code
     // 12 smiley face, not meant for high res
     // 13-17 unused
+    // 19 pride, not good enough with thin dots
     // 21 not enough dots
     // 25 pacman,
     // 27 last pattern
@@ -51,13 +52,13 @@
     // 70 dancing people, 73 rubix cubes moving, 47 spin triangles, 77 plasma, 80 colortoroid
     // 82 spinningpattern, 83 spacetime, 85 hearttunnel, 86 sonic, 87 BM, 96 MJ
     const uint8_t demo_mapping[] = {
-	10, 70, 96, 81, 17, 2, 18, 5, 19, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
+	10, 70, 96, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
 	// aurora (removed 38 and 41)
 	30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42,
 	// table mark estes. 
 	45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 
-	// gifs. 
-	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
+	// gifs. removed 87 BM
+	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 88, 89, 
 	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 
     };
 

@@ -1760,7 +1760,9 @@ uint8_t metd(uint8_t demo) {
 	    bfade = 3;
 	    break;
 	case 110:
-	    bfade = 10;
+	    // this kills the trail but also makes the colors too dark
+	    // not true in the original demo.
+	    // bfade = 10;
 	    break;
 	}
 	matrix->clear();
