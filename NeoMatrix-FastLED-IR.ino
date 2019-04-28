@@ -63,7 +63,7 @@ void matrix_show() {
 #ifdef SMARTMATRIX
     matrix->show();
 #elif defined(ESP32_16PINS)
-    //FastLEDshowESP32();
+    //FastLEDshowESP32(); // FIXME
     matrix->show();
 #else // ESP32_16PINS
     #ifdef ESP8266
@@ -540,7 +540,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     return repeat;
 }
 
-uint8_t esrr() {
+uint8_t esrr_bbb() { // or burn baby burn
     static uint16_t state;
     static float spd;
     float spdincr = 0.6;
@@ -1716,17 +1716,17 @@ uint8_t plasma() {
 }
 
 uint8_t metd(uint8_t demo) {
-    // 0 to 15
+    // 0 to 12
+    // add new demos at the end or the number selections will be off
     const uint16_t metd_mapping[][3] = {
 	{  10, 5, 300 },  // 5 color windows-like pattern with circles in and out
 	{  11, 5, 300 },  // color worm patterns going out with circles zomming out
 	{  25, 3, 500 },  // 5 circles turning together, run a bit longer
-	{  29, 5, 300 },  // swirly colored dots
+	{  29, 5, 300 },  // swirly RGB colored dots meant to go to music
 	{  34, 5, 300 },  // single colored lines that extend from center.
-	{  36, 2, 200 },  // pretty filled spinning circle
-	{  37, 6, 200 },  // music induced rgb color patterns
+//	{  36, 2, 200 },  // circles of color, too similar to 34 and broken on non square display
+//	{  37, 6, 200 },  // other kinds of swirly colored pixels, too close to 29
 	{  52, 5, 300 },  // rectangles/squares/triangles zooming out
-	{  61, 5, 200 },  // shapes zooming out from inside
 	{  67, 5, 900 },  // two colors swirling bigger, creating hypno pattern
 	{  70, 6, 200 },  // 4 fat spinning comets with shapes growing from middle
 	{  73, 3, 2000 }, // circle inside fed by outside attracted color dots
@@ -1792,22 +1792,20 @@ uint8_t metd(uint8_t demo) {
     case 34:
 	Raudio3();
 	break;
-    case 36: // unused, circles of color, too similar to 34
+#if 0
+    case 36: // unused, circles of color, too similar to 34 and broken on non square display
 	Raudio5();
 	break;
     case 37: // unused, other kinds of loose colored pixels, too close to 29
 	Raudio();
         adjuster();
 	break;
+#endif
     case 52:
 	rmagictime();
 	bkboxer();
 	starer();
 	if (flip && !flip2) adjuster();
-	break;
-    case 61: // unused, too similar to 52
-	starer();
-	bkboxer();
 	break;
     case 67:
 	hypnoduck2();
@@ -1861,12 +1859,12 @@ void matrix_change(int demo) {
     if (demo >= 0 && demo < 127) matrix_state = demo;
 #ifdef NEOPIXEL_PIN
     // Special one key press where demos are shown forever and next goes back to the normal loop
-    if (demo >= 0 && demo < 99) matrix_loop = 9999;
+    if (demo >= 0 && demo < 126) matrix_loop = 9999;
 #endif
     Serial.print("Got matrix_change ");
     Serial.print(demo);
     Serial.print(", switching to index ");
-    if (matrix_state == 99) {
+    if (matrix_state == 126) {
 	Serial.print(matrix_state);
 	matrix_demo = matrix_state;
     } else {
@@ -1907,7 +1905,7 @@ void matrix_update() {
 	    break;
 
 	case 2:
-	    ret = esrr();
+	    ret = esrr_bbb(); // or burn baby burn
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -1962,6 +1960,12 @@ void matrix_update() {
 
 	case 12:
 	    ret = panOrBounceBitmap(1, 24);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
+	    break;
+
+	case 17:
+	    ret = call_fireworks();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2027,17 +2031,18 @@ void matrix_update() {
 	    break;
 
 	default:
-	    // 13 demos: 28-39
-	    if (matrix_demo <= 39) ret = aurora(matrix_demo-28);
-	    // 16 demos: 40 to 55
-	    else if (matrix_demo <= 55) ret = metd(matrix_demo-40);
+	    // aurora 13 demo
+	    if      (matrix_demo >= 30 && matrix_demo <= 42) ret = aurora(matrix_demo-30);
+	    // table 13 demos
+	    else if (matrix_demo >= 45 && matrix_demo <= 57) ret = metd(matrix_demo-45);
 #ifdef M32B8X3
-	    // 12 gifs: 56 to 67
-	    else if (matrix_demo <= 67) {
+	    // 12 gifs
+	    else if (matrix_demo >= 70 && matrix_demo <= 81)
 #else // M32B8M32B8X3X3
-	    // 32 gifs: 56 to 87
-	    else if (matrix_demo <= 87) {
+	    // 32 gifs
+	    else if (matrix_demo >= 70 && matrix_demo <= 101)
 #endif
+	    {
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
 		ret = GifAnim(matrix_demo-56);
@@ -2048,13 +2053,7 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case LAST_MATRIX:
-	    ret = call_fireworks();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 99:
+	case 126:
 #ifdef M32B8X3
 	    const char str[] = "Thank You :)";
 	    ret = scrollText(str, sizeof(str));
@@ -2473,7 +2472,7 @@ bool handle_IR(uint32_t delay_time) {
 	case IR_RGBZONE_AUTO:
 	    Serial.println("Got IR: AUTO/bpm (32)");
 	    if (is_change()) { matrix_change(32); return 1; }
-	    matrix_change(99);
+	    matrix_change(127);
 	    nextdemo = f_bpm;
 	    return 1;
 
@@ -2641,7 +2640,7 @@ bool handle_IR(uint32_t delay_time) {
         uint8_t BeatsPerMinute = 62;
         CRGBPalette16 palette = PartyColors_p;
         uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-        for( int i = 0; i < STRIP_NUM_LEDS; i++) { //9948
+        for( int i = 0; i < STRIP_NUM_LEDS; i++) { 
     	leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
         }
         gHue++;
@@ -2988,8 +2987,6 @@ void setup() {
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
 
-    Serial.print("last demo index: ");
-    Serial.println(LAST_MATRIX);
     Serial.print("Last Playable Demo Index: ");
     Serial.println(demo_cnt);
 
@@ -3012,13 +3009,16 @@ void setup() {
     delay(3000);
     matrix->clear();
 
-    Serial.println("Matrix Libraries Test done, starting loop");
+    Serial.println("Matrix Libraries Test done");
     //font_test();
 
     // init first strip demo
 #ifdef NEOPIXEL_PIN
     colorWipe(0x0000FF00, 10);
+    Serial.println("Neopixel strip init done");
 #endif // NEOPIXEL_PIN
+
+    Serial.println("Starting loop");
 }
 
 // vim:sts=4:sw=4
