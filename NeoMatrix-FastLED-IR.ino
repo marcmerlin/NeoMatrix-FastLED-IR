@@ -1270,18 +1270,18 @@ uint8_t GifAnim(uint8_t idx) {
     #ifdef M32B8X3
     const Animgif animgif[] = { // number of frames in the gif
     // 12 gifs
-	    {"/gifs/32anim_photon.gif",		10 },
+	    {"/gifs/32anim_photon.gif",		10 },	// 70
 	    {"/gifs/32anim_flower.gif",		10 },
 	    {"/gifs/32anim_balls.gif",		10 },
-	    {"/gifs/32anim_dance.gif",		10 },  // 277
+	    {"/gifs/32anim_dance.gif",		10 },
 	    {"/gifs/circles_swap.gif",		10 },
-	    {"/gifs/concentric_circles.gif",	10 }, // 20
+	    {"/gifs/concentric_circles.gif",	10 },	// 75
 	    {"/gifs/corkscrew.gif",		10 },
-	    {"/gifs/cubeconstruct.gif",		10 }, // 76
-	    {"/gifs/cubeslide.gif",		10 }, // 272
-	    {"/gifs/runningedgehog.gif",	10 }, // 8
-	    {"/gifs/triangles_in.gif",		10 },
-	    {"/gifs/wifi.gif",			10 }, //254
+	    {"/gifs/cubeconstruct.gif",		10 },
+	    {"/gifs/cubeslide.gif",		10 },
+	    {"/gifs/runningedgehog.gif",	10 },
+	    {"/gifs/triangles_in.gif",		10 },	// 80
+	    {"/gifs/wifi.gif",			10 },
     };
     #else // M32B8M32B8X3X3
     const Animgif animgif[] = {
@@ -1348,8 +1348,9 @@ uint8_t GifAnim(uint8_t idx) {
     }
 
     // used by sav_loop
-    OFFSETX = 0;
-    OFFSETY = 16;
+#ifndef M32B8X3
+    //OFFSETY = 16;
+#endif
 
     // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
@@ -2243,29 +2244,29 @@ bool handle_IR(uint32_t delay_time) {
 	    return 1;
 
 	case IR_RGBZONE_RED:
-	    Serial.println("Got IR: Red (1)");
-	    if (is_change()) { matrix_change(1); return 1; }
+	    Serial.println("Got IR: Red (0)");
+	    if (is_change()) { matrix_change(0); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFF0000;
 	    return 1;
 
 	case IR_RGBZONE_GREEN:
-	    Serial.println("Got IR: Green (2)");
-	    if (is_change()) { matrix_change(2); return 1; }
+	    Serial.println("Got IR: Green (3)");
+	    if (is_change()) { matrix_change(3); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00FF00;
 	    return 1;
 
 	case IR_RGBZONE_BLUE:
-	    Serial.println("Got IR: Blue (3)");
-	    if (is_change()) { matrix_change(3); return 1; }
+	    Serial.println("Got IR: Blue (5)");
+	    if (is_change()) { matrix_change(5); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x0000FF;
 	    return 1;
 
 	case IR_RGBZONE_WHITE:
-	    Serial.println("Got IR: White (4)");
-	    if (is_change()) { matrix_change(4); return 1; }
+	    Serial.println("Got IR: White (7)");
+	    if (is_change()) { matrix_change(7); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFFFFFF;
 	    return 1;
@@ -2273,29 +2274,29 @@ bool handle_IR(uint32_t delay_time) {
 
 
 	case IR_RGBZONE_RED2:
-	    Serial.println("Got IR: Red2 (5)");
-	    if (is_change()) { matrix_change(5); return 1; }
+	    Serial.println("Got IR: Red2 (9)");
+	    if (is_change()) { matrix_change(9); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xCE6800;
 	    return 1;
 
 	case IR_RGBZONE_GREEN2:
-	    Serial.println("Got IR: Green2 (6)");
-	    if (is_change()) { matrix_change(6); return 1; }
+	    Serial.println("Got IR: Green2 (11)");
+	    if (is_change()) { matrix_change(11); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00BB00;
 	    return 1;
 
 	case IR_RGBZONE_BLUE2:
-	    Serial.println("Got IR: Blue2 (7)");
-	    if (is_change()) { matrix_change(7); return 1; }
+	    Serial.println("Got IR: Blue2 (13)");
+	    if (is_change()) { matrix_change(13); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x0000BB;
 	    return 1;
 
 	case IR_RGBZONE_PINK:
-	    Serial.println("Got IR: Pink (8)");
-	    if (is_change()) { matrix_change(8); return 1; }
+	    Serial.println("Got IR: Pink (15)");
+	    if (is_change()) { matrix_change(15); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFF50FE;
 	    return 1;
@@ -2303,29 +2304,29 @@ bool handle_IR(uint32_t delay_time) {
 
 
 	case IR_RGBZONE_ORANGE:
-	    Serial.println("Got IR: Orange (9)");
-	    if (is_change()) { matrix_change(9); return 1; }
+	    Serial.println("Got IR: Orange (17)");
+	    if (is_change()) { matrix_change(17); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFF8100;
 	    return 1;
 
 	case IR_RGBZONE_BLUE3:
-	    Serial.println("Got IR: Green2 (10)");
-	    if (is_change()) { matrix_change(10); return 1; }
+	    Serial.println("Got IR: Green2 (19)");
+	    if (is_change()) { matrix_change(19); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00BB00;
 	    return 1;
 
 	case IR_RGBZONE_PURPLED:
-	    Serial.println("Got IR: DarkPurple (11)");
-	    if (is_change()) { matrix_change(11); return 1; }
+	    Serial.println("Got IR: DarkPurple (21)");
+	    if (is_change()) { matrix_change(21); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x270041;
 	    return 1;
 
 	case IR_RGBZONE_PINK2:
-	    Serial.println("Got IR: Pink2 (12)");
-	    if (is_change()) { matrix_change(12); return 1; }
+	    Serial.println("Got IR: Pink2 (23)");
+	    if (is_change()) { matrix_change(23); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFFB9FF;
 	    Serial.println("Got IR: Pink2");
@@ -2334,29 +2335,29 @@ bool handle_IR(uint32_t delay_time) {
 
 
 	case IR_RGBZONE_ORANGE2:
-	    Serial.println("Got IR: Orange2 (13)");
-	    if (is_change()) { matrix_change(13); return 1; }
+	    Serial.println("Got IR: Orange2 (25)");
+	    if (is_change()) { matrix_change(25); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFFCA49;
 	    return 1;
 
 	case IR_RGBZONE_GREEN3:
-	    Serial.println("Got IR: Green2 (14)");
-	    if (is_change()) { matrix_change(14); return 1; }
+	    Serial.println("Got IR: Green2 (27)");
+	    if (is_change()) { matrix_change(27); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x006A00;
 	    return 1;
 
 	case IR_RGBZONE_PURPLE:
-	    Serial.println("Got IR: DarkPurple2 (15)");
-	    if (is_change()) { matrix_change(15); return 1; }
+	    Serial.println("Got IR: DarkPurple2 (29)");
+	    if (is_change()) { matrix_change(29); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x2B0064;
 	    return 1;
 
 	case IR_RGBZONE_BLUEL:
-	    Serial.println("Got IR: BlueLight (16)");
-	    if (is_change()) { matrix_change(16); return 1; }
+	    Serial.println("Got IR: BlueLight (31)");
+	    if (is_change()) { matrix_change(31); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x50A7FF;
 	    return 1;
@@ -2364,79 +2365,79 @@ bool handle_IR(uint32_t delay_time) {
 
 
 	case IR_RGBZONE_YELLOW:
-	    Serial.println("Got IR: Yellow (17)");
-	    if (is_change()) { matrix_change(17); return 1; }
+	    Serial.println("Got IR: Yellow (33)");
+	    if (is_change()) { matrix_change(33); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xF0FF00;
 	    return 1;
 
 	case IR_RGBZONE_GREEN4:
-	    Serial.println("Got IR: Green2 (18)");
-	    if (is_change()) { matrix_change(18); return 1; }
+	    Serial.println("Got IR: Green2 (35)");
+	    if (is_change()) { matrix_change(35); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00BB00;
 	    return 1;
 
 	case IR_RGBZONE_PURPLE2:
-	    Serial.println("Got IR: Purple2 (19)");
-	    if (is_change()) { matrix_change(19); return 1; }
+	    Serial.println("Got IR: Purple2 (37)");
+	    if (is_change()) { matrix_change(37); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x660265;
 	    return 1;
 
 	case IR_RGBZONE_BLUEL2:
-	    Serial.println("Got IR: BlueLight2 (20)");
-	    if (is_change()) { matrix_change(20); return 1; }
+	    Serial.println("Got IR: BlueLight2 (39)");
+	    if (is_change()) { matrix_change(39); return 1; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x408BD8;
 	    return 1;
 
 
 	case IR_RGBZONE_RU:
-	    matrix_change(21);
-	    Serial.print("Got IR: Red UP switching to matrix state 21");
+	    matrix_change(41);
+	    Serial.print("Got IR: Red UP switching to matrix state 41");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_GU:
-	    matrix_change(22);
-	    Serial.print("Got IR: Green UP switching to matrix state 22");
+	    matrix_change(42);
+	    Serial.print("Got IR: Green UP switching to matrix state 42");
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BU:
-	    matrix_change(23);
-	    Serial.print("Got IR: Blue UP switching to matrix state 23");
+	    matrix_change(43);
+	    Serial.print("Got IR: Blue UP switching to matrix state 43");
 	    Serial.println(matrix_state);
 	    return 1;
 
 
 	case IR_RGBZONE_RD:
-	    Serial.print("Got IR: Red DOWN switching to matrix state 25");
-	    matrix_change(25);
+	    Serial.print("Got IR: Red DOWN switching to matrix state 44");
+	    matrix_change(44);
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_GD:
-	    Serial.print("Got IR: Green DOWN switching to matrix state 26");
-	    matrix_change(26);
+	    Serial.print("Got IR: Green DOWN switching to matrix state 45");
+	    matrix_change(45);
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_BD:
-	    Serial.print("Got IR: Blue DOWN switching to matrix state 27");
-	    matrix_change(27);
+	    Serial.print("Got IR: Blue DOWN switching to matrix state 47");
+	    matrix_change(47);
 	    Serial.println(matrix_state);
 	    return 1;
 
 	case IR_RGBZONE_QUICK:
-	    Serial.println("Got IR: Quick (24)");
+	    Serial.println("Got IR: Quick");
 	    //if (is_change()) { matrix_change(24); return 1; }
 	    change_speed(-10);
 	    return 1;
 
 	case IR_RGBZONE_SLOW:
-	    Serial.println("Got IR: Slow (28)");
+	    Serial.println("Got IR: Slow)");
 	    //if (is_change()) { matrix_change(28); return 1; }
 	    change_speed(+10);
 	    return 1;
@@ -2445,86 +2446,86 @@ bool handle_IR(uint32_t delay_time) {
 
 
 	case IR_RGBZONE_DIY1:
-	    Serial.println("Got IR: DIY1 (29)");
-	    if (is_change()) { matrix_change(29); return 1; }
+	    Serial.println("Got IR: DIY1 (49)");
+	    if (is_change()) { matrix_change(49); return 1; }
 	    // this uses the last color set
 	    nextdemo = f_colorWipe;
 	    Serial.println("Got IR: DIY1 colorWipe");
 	    return 1;
 
 	case IR_RGBZONE_DIY2:
-	    Serial.println("Got IR: DIY2 (30)");
-	    if (is_change()) { matrix_change(30); return 1; }
+	    Serial.println("Got IR: DIY2 (51)");
+	    if (is_change()) { matrix_change(51); return 1; }
 	    // this uses the last color set
 	    nextdemo = f_theaterChase;
 	    Serial.println("Got IR: DIY2/theaterChase");
 	    return 1;
 
 	case IR_RGBZONE_DIY3:
-	    Serial.println("Got IR: DIY3 (31)");
-	    if (is_change()) { matrix_change(31); return 1; }
+	    Serial.println("Got IR: DIY3 (53)");
+	    if (is_change()) { matrix_change(53); return 1; }
 	    nextdemo = f_juggle;
 	    Serial.println("Got IR: DIY3/Juggle");
 	    return 1;
 
 	case IR_RGBZONE_AUTO:
-	    Serial.println("Got IR: AUTO/bpm (32)");
-	    if (is_change()) { matrix_change(32); return 1; }
-	    matrix_change(127);
+	    Serial.println("Got IR: AUTO/bpm (55)");
+	    if (is_change()) { matrix_change(55); return 1; }
+	    matrix_change(126);
 	    nextdemo = f_bpm;
 	    return 1;
 
 
 	// From here, we jump numbers more quickly to cover ranges of demos 32-44
 	case IR_RGBZONE_DIY4:
-	    Serial.println("Got IR: DIY4 (35)");
-	    if (is_change()) { matrix_change(35); return 1; }
+	    Serial.println("Got IR: DIY4 (57)");
+	    if (is_change()) { matrix_change(57); return 1; }
 	    nextdemo = f_rainbowCycle;
 	    Serial.println("Got IR: DIY4/rainbowCycle");
 	    return 1;
 
 	case IR_RGBZONE_DIY5:
-	    Serial.println("Got IR: DIY5 (38)");
-	    if (is_change()) { matrix_change(38); return 1; }
+	    Serial.println("Got IR: DIY5 (59)");
+	    if (is_change()) { matrix_change(59); return 1; }
 	    nextdemo = f_theaterChaseRainbow;
 	    Serial.println("Got IR: DIY5/theaterChaseRainbow");
 	    return 1;
 
 	case IR_RGBZONE_DIY6:
-	    Serial.println("Got IR: DIY6 (41)");
-	    if (is_change()) { matrix_change(41); return 1; }
+	    Serial.println("Got IR: DIY6 (61)");
+	    if (is_change()) { matrix_change(61); return 1; }
 	    nextdemo = f_doubleConvergeRev;
 	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
 	    return 1;
 
 	case IR_RGBZONE_FLASH:
-	    Serial.println("Got IR: FLASH (43)");
-	    if (is_change()) { matrix_change(43); return 1; }
+	    Serial.println("Got IR: FLASH (63)");
+	    if (is_change()) { matrix_change(63); return 1; }
 	    nextdemo = f_flash;
 	    return 1;
 
 	// And from here, jump across a few GIF anims (45-53)
 	case IR_RGBZONE_JUMP3:
-	    Serial.println("Got IR: JUMP3/Cylon (45)");
-	    if (is_change()) { matrix_change(45); return 1; }
+	    Serial.println("Got IR: JUMP3/Cylon (65)");
+	    if (is_change()) { matrix_change(65); return 1; }
 	    nextdemo = f_cylon;
 	    return 1;
 
 	case IR_RGBZONE_JUMP7:
-	    Serial.println("Got IR: JUMP7/CylonWithTrail (47)");
-	    if (is_change()) { matrix_change(47); return 1; }
+	    Serial.println("Got IR: JUMP7/CylonWithTrail (67)");
+	    if (is_change()) { matrix_change(67); return 1; }
 	    nextdemo = f_cylonTrail;
 	    return 1;
 
 	case IR_RGBZONE_FADE3:
-	    Serial.println("Got IR: FADE3/DoubleConverge (49)");
-	    if (is_change()) { matrix_change(49); return 1; }
+	    Serial.println("Got IR: FADE3/DoubleConverge (69)");
+	    if (is_change()) { matrix_change(69); return 1; }
 	    nextdemo = f_doubleConverge;
 	    return 1;
 
 	case IR_RGBZONE_FADE7:
-	    Serial.println("Got IR: FADE7/DoubleConvergeTrail (51)");
-	    if (is_change()) { matrix_change(51); return 1; }
+	    Serial.println("Got IR: FADE7/DoubleConvergeTrail (71)");
+	    if (is_change()) { matrix_change(71); return 1; }
 	    nextdemo = f_doubleConvergeTrail;
 	    return 1;
 

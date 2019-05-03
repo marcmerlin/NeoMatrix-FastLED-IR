@@ -43,7 +43,8 @@
     // 9 safety third (24x32 shirt only)
     // 10 scroll code
     // 12 smiley face, not meant for high res
-    // 13-17 unused
+    // 13-16 unused
+    // 17 fireworks
     // 19 pride, not good enough with thin dots
     // 21 not enough dots
     // 25 pacman,
@@ -52,10 +53,13 @@
     // 78 MJ, 84  dancing people, 87 rubix cubes moving, 88 spin triangles, 91 plasma,
     // 94 colortoroid, 96 spinningpattern, 97 spacetime, 99 hearttunnel, 100 sonic, 101 BM
     const uint8_t demo_mapping[] = {
+	//                 5                10                 15
 	10, 84, 78, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
 	// aurora (removed 38 and 41)
+	//          20                  25
 	30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42,
 	// table mark estes. 
+	//      30                  35                  40
 	45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 
 	// gifs. removed 101 BM
 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
