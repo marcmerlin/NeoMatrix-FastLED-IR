@@ -49,20 +49,20 @@
     // 25 pacman,
     // 27 last pattern
     // 56 hypno
-    // 70 dancing people, 73 rubix cubes moving, 47 spin triangles, 77 plasma, 80 colortoroid
-    // 82 spinningpattern, 83 spacetime, 85 hearttunnel, 86 sonic, 87 BM, 96 MJ
+    // 78 MJ, 84  dancing people, 87 rubix cubes moving, 88 spin triangles, 91 plasma,
+    // 94 colortoroid, 96 spinningpattern, 97 spacetime, 99 hearttunnel, 100 sonic, 101 BM
     const uint8_t demo_mapping[] = {
-	10, 70, 96, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
+	10, 84, 78, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
 	// aurora (removed 38 and 41)
 	30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42,
 	// table mark estes. 
 	45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 
-	// gifs. removed 87 BM
-	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 88, 89, 
-	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 
+	// gifs. removed 101 BM
+	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
+	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 
     };
 
-    const uint8_t best_mapping[] = { 5, 17, 23, 24, 27, 56, 70, 73, 77, 80, 82, 83, 87, 91, 100 };
+    const uint8_t best_mapping[] = { 5, 17, 23, 24, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
 
     #define RECV_PIN 34
 
@@ -86,7 +86,7 @@
 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
 	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 
     };
-    const uint8_t best_mapping[] = { 9, 17, 25, 27, 56, 70, 73, 77, 80, 82, 83, 87, 91, 100 };
+    const uint8_t best_mapping[] = { 9, 17, 25, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, 101, };
 
     #define RECV_PIN 34
 #elif mheight == 32

@@ -1286,41 +1286,40 @@ uint8_t GifAnim(uint8_t idx) {
     #else // M32B8M32B8X3X3
     const Animgif animgif[] = {
     // 32 gifs
-	    { "/gifs64/087_net.gif",		 05 }, 
+	    { "/gifs64/087_net.gif",		 05 },  // 70
 	    { "/gifs64/196_colorstar.gif",	 10 }, 
 	    { "/gifs64/200_circlesmoke.gif",	 10 }, 
 	    { "/gifs64/203_waterdrop.gif",	 10 }, 
 	    { "/gifs64/210_circletriangle.gif",	 10 }, 
-	    { "/gifs64/215_fallingcube.gif",	 15 }, 
+	    { "/gifs64/215_fallingcube.gif",	 15 },  // 75
 	    { "/gifs64/255_photon.gif",		 10 }, 
 	    { "/gifs64/257_mesh.gif",		 20 }, 
 	    { "/gifs64/271_mj.gif",		 15 }, 
-	    { "/gifs64/342_spincircle.gif",	 20 }, 
-	    { "/gifs64/401_ghostbusters.gif",	 05 }, 
+	    { "/gifs64/342_spincircle.gif",	 20 },
+	    { "/gifs64/401_ghostbusters.gif",	 05 },  // 80 
 	    { "/gifs64/444_hand.gif",		 10 }, 
 	    { "/gifs64/469_infection.gif",	 05 }, 
 	    { "/gifs64/193_redplasma.gif",	 10 }, 
-	    { "/gifs64/208_dancers.gif",	 25 }, 
-	    { "/gifs64/284_comets.gif",		 15 }, 
+	    { "/gifs64/208_dancers.gif",	 25 },
+	    { "/gifs64/284_comets.gif",		 15 },  // 85 
 	    { "/gifs64/377_batman.gif",		 05 }, 
 	    { "/gifs64/412_cubes.gif",		 20 }, 
 	    { "/gifs64/236_spintriangle.gif",	 20 }, 
-	    { "/gifs64/226_flyingfire.gif",	 10 }, 
-	    { "/gifs64/264_expandcircle.gif",	 10 }, 
+	    { "/gifs64/226_flyingfire.gif",	 10 },
+	    { "/gifs64/264_expandcircle.gif",	 10 },  // 90 
 	    { "/gifs64/281_plasma.gif",		 20 }, 
 	    { "/gifs64/286_greenplasma.gif",	 15 }, 
 	    { "/gifs64/291_circle2sphere.gif",	 15 }, 
-	    { "/gifs64/364_colortoroid.gif",	 25 }, 
-	    { "/gifs64/470_scrollcubestron.gif", 20 }, 
+	    { "/gifs64/364_colortoroid.gif",	 25 },
+	    { "/gifs64/470_scrollcubestron.gif", 20 },  // 95
 	    { "/gifs64/358_spinningpattern.gif", 10 }, 
 	    { "/gifs64/328_spacetime.gif",	 20 }, 
 	    { "/gifs64/218_circleslices.gif",	 10 }, 
             { "/gifs64/heartTunnel.gif",	 10 },
-            { "/gifs64/sonic.gif",		 10 },
-	    { "/gifs64/ani-bman-BW.gif",	 10 }, 
+            { "/gifs64/sonic.gif",		 10 },  // 100
+	    { "/gifs64/ani-bman-BW.gif",	 10 },  // 101
     };
 
-    // 28 gifs
 	#if 0
             { "/gifs64/149_minion1.gif",	 10 },	// 27
             { "/gifs64/341_minion2.gif",	 10 },	// 18
@@ -1328,7 +1327,6 @@ uint8_t GifAnim(uint8_t idx) {
             { "/gifs64/457_mariosleep.gif",	 10 },  // 41
             { "/gifs64/240_angrybird.gif",	 10 },	// 173
             { "/gifs64/323_rockface.gif",	 10 },	// 39
-            { "/gifs64/ani-bman-BW.gif",	 10 },
 	    { "/gifs64/149_minion1.gif",	 10 }, 
 	    { "/gifs64/341_minion2.gif",	 10 }, 
 	    { "/gifs64/222_fry.gif",		 10 }, 
@@ -2050,7 +2048,7 @@ void matrix_update() {
 	    {
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
-		ret = GifAnim(matrix_demo-56);
+		ret = GifAnim(matrix_demo-70);
 	    }
 	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
 
