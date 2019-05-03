@@ -1239,6 +1239,7 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint16_t bitmapSize) {
 	matrix_reset_demo = 0;
 	matrix->clear();
 	state = 0;
+	panOrBounce(&x, &y, bitmapSize, bitmapSize, true);
     }
     panOrBounce(&x, &y, bitmapSize, bitmapSize);
 
@@ -1345,6 +1346,7 @@ uint8_t GifAnim(uint8_t idx) {
 	// exit if the gif animation couldn't get setup.
 	if (savng) return 0;
 	gifloopsec = animgif[idx].looptime;
+	panOrBounce(&x, &y, bitmapSize, bitmapSize, true);
 	matrix->clear();
     }
 
@@ -1428,6 +1430,7 @@ uint8_t scrollBigtext() {
     if (matrix_reset_demo == 1) {
 	state = 0;
 	matrix_reset_demo = 0;
+	panOrBounce(&x, &y, 54*6, ARRAY_SIZE(text)*7, true);
 	matrix->setRotation(0);
 	matrix->setTextSize(1);
 	// default font is 5x7, but you really need 6x8 for spacing
