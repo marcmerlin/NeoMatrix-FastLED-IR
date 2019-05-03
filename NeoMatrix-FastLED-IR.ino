@@ -1344,17 +1344,12 @@ uint8_t GifAnim(uint8_t idx) {
 	// exit if the gif animation couldn't get setup.
 	if (savng) return 0;
 	gifloopsec = animgif[idx].looptime;
-	panOrBounce(&x, &y, bitmapSize, bitmapSize, true);
 	matrix->clear();
     }
 
     // used by sav_loop
     OFFSETX = 0;
     OFFSETY = 16;
-    panOrBounce(&x, &y, bitmapSize, bitmapSize);
-    //OFFSETX = x;
-    //OFFSETY = y;
-    //matrix->clear();
 
     // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
