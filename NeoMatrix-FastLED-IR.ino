@@ -1231,7 +1231,7 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
     }
 }
 
-uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint16_t bitmapSize) {
+uint8_t panOrBounceBitmap (const uint16_t *bitmap, uint16_t bitmapSize) {
     static uint16_t state;
     uint16_t x, y;
 
@@ -1245,7 +1245,7 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint16_t bitmapSize) {
 
     matrix->clear();
     // pan 24x24 pixmap
-    matrix->drawRGBBitmap(x, y, (const uint16_t *) bitmap24, bitmapSize, bitmapSize);
+    matrix->drawRGBBitmap(x, y, bitmap, bitmapSize, bitmapSize);
     matrix_show();
 
     if (state++ == 600) {
@@ -1257,10 +1257,6 @@ uint8_t panOrBounceBitmap (uint8_t bitmapnum, uint16_t bitmapSize) {
 
 // FIXME: reset decoding counter to 0 between different GIFS
 uint8_t GifAnim(uint8_t idx) {
-    uint16_t x, y;
-    extern int OFFSETX, OFFSETY;
-    uint16_t bitmapSize = 64;
-
     uint8_t repeat = 1;
     struct Animgif {
 	const char *path;
@@ -1349,6 +1345,11 @@ uint8_t GifAnim(uint8_t idx) {
 
     // used by sav_loop
 #ifndef M32B8X3
+    extern int OFFSETX;
+    OFFSETX = -4;
+#else
+    extern int FACTY;
+    FACTY = 1.5;
     //OFFSETY = 16;
 #endif
 
@@ -1958,7 +1959,7 @@ void matrix_update() {
 	    break;
 
 	case 12:
-	    ret = panOrBounceBitmap(1, 24);
+	    ret = panOrBounceBitmap(bitmap24, 24);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2102,8 +2103,6 @@ void change_brightness(int8_t change) {
     last_brightness_change = millis();
     brightness = constrain(brightness + change, 2, 8);
     led_brightness = min((1 << (brightness+1)) - 1, 255);
-    matrix_brightness = (1 << (brightness-1)) - 1;
-    uint8_t smartmatrix_brightness = min( (1 << (brightness+2)), 255);
 
     Serial.print("Changing brightness ");
     Serial.print(change);
@@ -2112,10 +2111,12 @@ void change_brightness(int8_t change) {
     Serial.print(" led value ");
     Serial.print(led_brightness);
 #ifdef SMARTMATRIX
+    uint8_t smartmatrix_brightness = min( (1 << (brightness+2)), 255);
     Serial.print(" neomatrix value ");
     Serial.println(smartmatrix_brightness);
     matrixLayer.setBrightness(smartmatrix_brightness);
 #else
+    matrix_brightness = (1 << (brightness-1)) - 1;
     Serial.print(" neomatrix value ");
     Serial.println(matrix_brightness);
     // This is needed if using the ESP32 driver but won't work

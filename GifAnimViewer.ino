@@ -1,6 +1,10 @@
 #define BASICSPIFFS
 #define NEOMATRIX
 
+int OFFSETX = 0;
+int OFFSETY = 0;
+int FACTX = 0;
+int FACTY = 0;
 
 #if defined(ESP8266)
     #include <FS.h>
@@ -8,8 +12,6 @@
     #define matrix_size 32
     // Needs trailing slash
     #define GIF_DIRECTORY "/gifs/"
-    int OFFSETX = -4;
-    int OFFSETY = 0;
     extern "C" {
         #include "user_interface.h"
     }
@@ -21,8 +23,6 @@
     #define matrix_size 64
     // Do NOT add a trailing slash, or things will fail for SPIFFS
     #define GIF_DIRECTORY "/gifs64"
-    int OFFSETX = 0;
-    int OFFSETY = 0;
     const int lzwMaxBits = 12;
 #endif
 
