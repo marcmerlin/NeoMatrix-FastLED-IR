@@ -1,4 +1,5 @@
 #define BASICSPIFFS
+// Enable NEOMATRIX API even if neomatrix_config.h selects the SmartMatrix backend
 #define NEOMATRIX
 
 int OFFSETX = 0;
@@ -9,7 +10,7 @@ int FACTY = 0;
 #if defined(ESP8266)
     #include <FS.h>
     #define FSO SPIFFS
-    #define matrix_size 32
+    #define gif_size 32
     // Needs trailing slash
     #define GIF_DIRECTORY "/gifs/"
     extern "C" {
@@ -20,7 +21,7 @@ int FACTY = 0;
     #include "FFat.h"
     #define FSO FFat
     #define FSOFAT
-    #define matrix_size 64
+    #define gif_size 64
     // Do NOT add a trailing slash, or things will fail for SPIFFS
     #define GIF_DIRECTORY "/gifs64"
     const int lzwMaxBits = 12;
