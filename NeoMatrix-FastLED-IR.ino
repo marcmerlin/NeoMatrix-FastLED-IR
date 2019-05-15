@@ -168,12 +168,6 @@ uint32_t last_change = millis();
 // Shared functions
 // ---------------------------------------------------------------------------
 
-uint16_t Color24toColor16(uint32_t color) {
-  return ((uint16_t)(((color & 0xFF0000) >> 16) & 0xF8) << 8) |
-         ((uint16_t)(((color & 0x00FF00) >>  8) & 0xFC) << 3) |
-                    (((color & 0x0000FF) >>  0)         >> 3);
-}
-
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
 uint32_t Wheel(byte WheelPos) {
@@ -484,14 +478,19 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	if (letters[l] == '8') offset = 2 * size/15;
 
 	matrix->clear();
-	//uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
+	//uint16_t txtcolor = matrix->Color24to16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
 	// matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 0, 255)));
 
 #ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 #endif
+
+#ifdef M32B8X3
+	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
+#else
 	matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
+#endif
 	matrix->print(letters[l]);
 	matrix->setPassThruColor();
 	if (size<18) size++;
@@ -502,7 +501,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	int8_t offset = 0; // adjust some letters left or right as needed
 
 	matrix->clear();
-	//uint16_t txtcolor = Color24toColor16(Wheel(map(letters[l], '0', 'Z', 255, 0)));
+	//uint16_t txtcolor = matrix->Color24to16(Wheel(map(letters[l], '0', 'Z', 255, 0)));
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
 	if (letters[l] == 'T') offset = -2 * size/15;
@@ -511,7 +510,11 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 #ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 #endif
+#ifdef M32B8X3
+	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
+#else
 	matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
+#endif
 	matrix->print(letters[l]);
 	matrix->setPassThruColor();
 	if (size>3) size--; else { done = 1; direction = 1; delayframe = max((speed-faster*10)/2, 3); };
@@ -798,7 +801,7 @@ uint8_t esrr_fade() {
 	if (mheight >= 96) matrix->setCursor(18, 20);
 	else if (mheight >= 64) matrix->setCursor(18, 15);
 	else matrix->setCursor(7, 6);
-	//txtcolor = Color24toColor16(Wheel((wheel+=24)));
+	//txtcolor = matrix->Color24to16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -807,7 +810,7 @@ uint8_t esrr_fade() {
 	if (mheight >= 96) matrix->setCursor(10, 41);
 	else if (mheight >= 64) matrix->setCursor(10, 33);
 	else matrix->setCursor(3, 14);
-	//txtcolor = Color24toColor16(Wheel((wheel+=24)));
+	//txtcolor = matrix->Color24to16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -816,7 +819,7 @@ uint8_t esrr_fade() {
 	if (mheight >= 96) matrix->setCursor(14, 63);
 	else if (mheight >= 64) matrix->setCursor(14, 47);
 	else matrix->setCursor(5, 22);
-	//txtcolor = Color24toColor16(Wheel((wheel+=24)));
+	//txtcolor = matrix->Color24to16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -829,7 +832,7 @@ uint8_t esrr_fade() {
 	if (mheight >= 64) matrix->setCursor(2, 82);
 	else if (mheight >= 64) matrix->setCursor(2, 63);
 	else matrix->setCursor(0, 30);
-	//txtcolor = Color24toColor16(Wheel((wheel+=24)));
+	//txtcolor = matrix->Color24to16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -926,11 +929,11 @@ uint8_t squares(bool reverse) {
     matrix->clear();
     if (reverse) {
 	for (uint8_t s = maxsize; s >= 1 ; s--) {
-	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, Color24toColor16(Wheel(wheel+(maxsize-s)*10)));
+	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, matrix->Color24to16(Wheel(wheel+(maxsize-s)*10)));
 	}
     } else {
 	for (uint8_t s = 1; s <= maxsize; s++) {
-	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, Color24toColor16(Wheel(wheel+s*10)));
+	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, matrix->Color24to16(Wheel(wheel+s*10)));
 	}
     }
 
@@ -984,7 +987,7 @@ uint8_t webwc() {
 	if (mheight >= 96) matrix->setCursor(12, 16);
 	else if (mheight >= 64) matrix->setCursor(12, 12);
 	else matrix->setCursor(5, 6);
-	//txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	//txtcolor = matrix->Color24to16(Wheel(map(l, 0, 5, 0, 255)));
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("WITH");
@@ -996,7 +999,7 @@ uint8_t webwc() {
 	if (mheight >= 96) matrix->setCursor(7, 32);
 	else if (mheight >= 64) matrix->setCursor(7, 24);
 	else matrix->setCursor(3, 12);
-	//txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	//txtcolor = matrix->Color24to16(Wheel(map(l, 0, 5, 0, 255)));
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("EVERY");
@@ -1007,7 +1010,7 @@ uint8_t webwc() {
 	if (mheight >= 96) matrix->setCursor(12, 48);
 	else if (mheight >= 64) matrix->setCursor(12, 36);
 	else matrix->setCursor(5, 18);
-	//txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	//txtcolor = matrix->Color24to16(Wheel(map(l, 0, 5, 0, 255)));
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("BEAT");
@@ -1018,7 +1021,7 @@ uint8_t webwc() {
 	if (mheight >= 96) matrix->setCursor(4, 64);
 	else if (mheight >= 64) matrix->setCursor(4, 48);
 	else matrix->setCursor(2, 24);
-	//txtcolor = Color24toColor16(Wheel(map(l, 0, 5, 0, 255)));
+	//txtcolor = matrix->Color24to16(Wheel(map(l, 0, 5, 0, 255)));
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("WE ARE");
@@ -1029,7 +1032,7 @@ uint8_t webwc() {
 	if (mheight >= 96) matrix->setCursor(0, 82);
 	else if (mheight >= 64) matrix->setCursor(0, 60);
 	else matrix->setCursor(0, 30);
-	//txtcolor = Color24toColor16(Wheel(map(l, 0, 6, 0, 255)));
+	//txtcolor = matrix->Color24to16(Wheel(map(l, 0, 6, 0, 255)));
 	//matrix->setTextColor(txtcolor);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("CLOSER");
@@ -1084,7 +1087,7 @@ uint8_t scrollText(const char str[], uint8_t len) {
     matrix->clear();
     matrix->setCursor(x, 24);
     for (uint8_t c=0; c<len; c++) {
-	//uint16_t txtcolor = Color24toColor16(Wheel(map(c, 0, len, 0, 512)));
+	//uint16_t txtcolor = matrix->Color24to16(Wheel(map(c, 0, len, 0, 512)));
 	//matrix->setTextColor(txtcolor);
 	//Serial.print(txtcolor, HEX);
 	//Serial.print(" >");
@@ -1144,13 +1147,13 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
 
     matrix->clear();
     matrix->setCursor(MATRIX_WIDTH-len*fontwidth*1.5 + x, fontsize+6);
-    //txtcolor = Color24toColor16(Wheel(map(x, 0, len*fontwidth, 0, 512)));
+    //txtcolor = matrix->Color24to16(Wheel(map(x, 0, len*fontwidth, 0, 512)));
     //matrix->setTextColor(txtcolor);
     matrix->setPassThruColor(Wheel(map(x, 0, len*fontwidth, 0, 512)));
     matrix->print(str1);
 
     matrix->setCursor(MATRIX_WIDTH-x, MATRIX_HEIGHT-1);
-    //txtcolor = Color24toColor16(Wheel(map(x, 0, len*fontwidth, 512, 0)));
+    //txtcolor = matrix->Color24to16(Wheel(map(x, 0, len*fontwidth, 512, 0)));
     //matrix->setTextColor(txtcolor);
     matrix->setPassThruColor(Wheel(map(x, 0, len*fontwidth, 512, 0)));
     matrix->print(str2);
