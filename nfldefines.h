@@ -53,6 +53,7 @@
     // 78 MJ, 84  dancing people, 87 rubix cubes moving, 88 spin triangles, 91 plasma,
     // 94 colortoroid, 96 spinningpattern, 97 spacetime, 99 hearttunnel, 100 sonic, 101 BM
     const uint8_t demo_mapping[] = {
+	102, 103, 104, 105,
 	//                 5                10                 15
 	10, 84, 78, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
 	// aurora (removed 38 and 41)

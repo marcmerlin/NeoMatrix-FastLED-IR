@@ -1230,7 +1230,7 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
 	// Add -1, 0 or 1 but bind result to 1 to 1.
 	// Let's take 3 is a minimum speed, otherwise it's too slow.
 	xfc = constrain(xfc + random(-1, 2), 3, 16);
-	yfc = constrain(xfc + random(-1, 2), 3, 16);
+	yfc = constrain(yfc + random(-1, 2), 3, 16);
     }
 }
 
@@ -1325,6 +1325,15 @@ uint8_t GifAnim(uint8_t idx) {
             { "/gifs64/heartTunnel.gif",	 10, 0, 0, 10, 15 },
             { "/gifs64/sonic.gif",		 10, 0, 0, 10, 15 },  // 100
 	    { "/gifs64/ani-bman-BW.gif",	 10, 0, 0, 10, 15 },  // 101
+	    { "/gifs64/ab1_colors.gif",		 10, 0, 16, 10, 10 },
+//	    { "/gifs64/ab2_grey.gif",		 10, 0, 16, 10, 10 },
+	    { "/gifs64/ab2_lgrey.gif",		 10, 0, 16, 10, 10 },
+//	    { "/gifs64/ab2_white.gif",		 10, 0, 16, 10, 10 }, 
+            { "/gifs64/ab3_s.gif",		 10, 0, 16, 10, 10 },
+            { "/gifs64/ab4_grey.gif",		 10, -16, 0, 15, 15 },// 105
+	    //{ "/gifs64/ab4_w.gif",		 10, 0, 16, 10, 10 },
+
+
 
 	#if 0
             { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15 },
@@ -1421,7 +1430,7 @@ uint8_t scrollBigtext() {
 	"  // Add -1, 0 or 1 but bind result to 1 to 1.",
 	"  // Let's take 3 is a minimum speed, otherwise it's too slow.",
 	"  xfc = constrain(xfc + random(-1, 2), 3, 16);",
-	"  yfc = constrain(xfc + random(-1, 2), 3, 16); }",
+	"  yfc = constrain(yfc + random(-1, 2), 3, 16); }",
     };
     const uint8_t textlines = ARRAY_SIZE(text);
     static uint32_t textcolor[textlines];
@@ -2044,7 +2053,7 @@ void matrix_update() {
 	    else if (matrix_demo >= 70 && matrix_demo <= 81)
 #else // M32B8M32B8X3X3
 	    // 32 gifs
-	    else if (matrix_demo >= 70 && matrix_demo <= 101)
+	    else if (matrix_demo >= 70 && matrix_demo <= 108)
 #endif
 	    {
 		// Before a new GIF, give a chance for an IR command to go through
@@ -3002,7 +3011,6 @@ void setup() {
     FastLED.setDither( 0 );
     // Set brightness as appropriate for backend
     change_brightness( 0 );
-    matrix->begin();
     matrix->setTextWrap(false);
     Serial.println("NeoMatrix Test");
     // speed test
