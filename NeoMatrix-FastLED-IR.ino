@@ -1260,7 +1260,10 @@ uint8_t panOrBounceBitmap (const uint16_t *bitmap, uint16_t bitmapSize) {
 
 // FIXME: reset decoding counter to 0 between different GIFS
 uint8_t GifAnim(uint8_t idx) {
+    uint16_t x, y;
     uint8_t repeat = 1;
+    static int8_t scrollx = 0;
+    static int8_t scrolly = 0;
     struct Animgif {
 	const char *path;
 	uint16_t looptime;
@@ -1268,6 +1271,8 @@ uint8_t GifAnim(uint8_t idx) {
 	int8_t offy;
 	int8_t factx;
 	int8_t facty;
+	int8_t scrollx;
+	int8_t scrolly;
     };
     extern int OFFSETX;
     extern int OFFSETY;
@@ -1277,74 +1282,79 @@ uint8_t GifAnim(uint8_t idx) {
     #ifdef M32B8X3
     const Animgif animgif[] = { // number of frames in the gif
     // 12 gifs
-	    {"/gifs/32anim_photon.gif",		10, -4, 0, 10, 10 },	// 70
-	    {"/gifs/32anim_flower.gif",		10, -4, 0, 10, 10 },
-	    {"/gifs/32anim_balls.gif",		10, -4, 0, 10, 10 },
-	    {"/gifs/32anim_dance.gif",		10, -4, 0, 10, 10 },
-	    {"/gifs/circles_swap.gif",		10, -4, 0, 10, 10 },
-	    {"/gifs/concentric_circles.gif",	10, -4, 0, 10, 10 },	// 75
-	    {"/gifs/corkscrew.gif",		10, -4, 0, 10, 10 },
-	    {"/gifs/cubeconstruct.gif",		10, -4, 0, 10, 10 },
-	    {"/gifs/cubeslide.gif",		10, -4, 0, 10, 10 },
-	    {"/gifs/runningedgehog.gif",	10, -4, 0, 10, 10 },
-	    {"/gifs/triangles_in.gif",		10, -4, 0, 10, 10 },	// 80
-	    {"/gifs/wifi.gif",			10, -4, 0, 10, 10 },
-    };
+	    {"/gifs/32anim_photon.gif",		10, -4, 0, 10, 10, 0, 0 },	// 70
+	    {"/gifs/32anim_flower.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/32anim_balls.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/32anim_dance.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/circles_swap.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/concentric_circles.gif",	10, -4, 0, 10, 10, 0, 0 },	// 75
+	    {"/gifs/corkscrew.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/cubeconstruct.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/cubeslide.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/runningedgehog.gif",	10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/triangles_in.gif",		10, -4, 0, 10, 10, 0, 0 },	// 80
+	    {"/gifs/wifi.gif",			10, -4, 0, 10, 10, 0, 0 },
+   , 0, 0 };
     #else // M32B8M32B8X3X3
     const Animgif animgif[] = {
     // 32 gifs
-	    { "/gifs64/087_net.gif",		 05, 0, 0, 10, 15 },  // 70
-	    { "/gifs64/196_colorstar.gif",	 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/200_circlesmoke.gif",	 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/203_waterdrop.gif",	 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/210_circletriangle.gif",	 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/215_fallingcube.gif",	 15, 0, 0, 10, 15 },  // 75
-	    { "/gifs64/255_photon.gif",		 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/257_mesh.gif",		 20, 0, 0, 10, 15 }, 
-	    { "/gifs64/271_mj.gif",		 15, -16, 0, 15, 15 }, 
-	    { "/gifs64/342_spincircle.gif",	 20, 0, 0, 10, 15 },
-	    { "/gifs64/401_ghostbusters.gif",	 05, 0, 0, 10, 15 },  // 80 
-	    { "/gifs64/444_hand.gif",		 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/469_infection.gif",	 05, 0, 0, 10, 15 }, 
-	    { "/gifs64/193_redplasma.gif",	 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/208_dancers.gif",	 25, 0, 0, 10, 15 },
-	    { "/gifs64/284_comets.gif",		 15, 0, 0, 10, 15 },  // 85 
-	    { "/gifs64/377_batman.gif",		 05, 0, 0, 10, 15 }, 
-	    { "/gifs64/412_cubes.gif",		 20, 0, 0, 10, 15 }, 
-	    { "/gifs64/236_spintriangle.gif",	 20, 0, 0, 10, 15 }, 
-	    { "/gifs64/226_flyingfire.gif",	 10, 0, 0, 10, 15 },
-	    { "/gifs64/264_expandcircle.gif",	 10, 0, 0, 10, 15 },  // 90 
-	    { "/gifs64/281_plasma.gif",		 20, 0, 0, 10, 15 }, 
-	    { "/gifs64/286_greenplasma.gif",	 15, 0, 0, 10, 15 }, 
-	    { "/gifs64/291_circle2sphere.gif",	 15, 0, 0, 10, 15 }, 
-	    { "/gifs64/364_colortoroid.gif",	 25, 0, 0, 10, 15 },
-	    { "/gifs64/470_scrollcubestron.gif", 20, 0, 0, 10, 15 },  // 95
-	    { "/gifs64/358_spinningpattern.gif", 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/328_spacetime.gif",	 20, 0, 0, 10, 15 }, 
-	    { "/gifs64/218_circleslices.gif",	 10, 0, 0, 10, 15 }, 
-            { "/gifs64/heartTunnel.gif",	 10, 0, 0, 10, 15 },
-            { "/gifs64/sonic.gif",		 10, 0, 0, 10, 15 },  // 100
-	    { "/gifs64/ani-bman-BW.gif",	 10, 0, 0, 10, 15 },  // 101
-	    { "/gifs64/ab1_colors.gif",		 10, 0, 16, 10, 10 },
-//	    { "/gifs64/ab2_grey.gif",		 10, 0, 16, 10, 10 },
-	    { "/gifs64/ab2_lgrey.gif",		 10, 0, 16, 10, 10 },
-//	    { "/gifs64/ab2_white.gif",		 10, 0, 16, 10, 10 }, 
-            { "/gifs64/ab3_s.gif",		 10, 0, 16, 10, 10 },
-            { "/gifs64/ab4_grey.gif",		 10, -16, 0, 15, 15 },// 105
-	    //{ "/gifs64/ab4_w.gif",		 10, 0, 16, 10, 10 },
-
+	    { "/gifs64/087_net.gif",		 05, 0, 0, 10, 15, 0, 0 },  // 70
+	    { "/gifs64/196_colorstar.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/200_circlesmoke.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/203_waterdrop.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/210_circletriangle.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/215_fallingcube.gif",	 15, 0, 0, 10, 15, 0, 0 },  // 75
+	    { "/gifs64/255_photon.gif",		 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/257_mesh.gif",		 20, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/271_mj.gif",		 15, -16, 0, 15, 15, 0, 0 }, 
+	    { "/gifs64/342_spincircle.gif",	 20, 0, 0, 10, 15, 0, 0 },
+	    { "/gifs64/401_ghostbusters.gif",	 05, 0, 0, 10, 15, 0, 0 },  // 80 
+	    { "/gifs64/444_hand.gif",		 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/469_infection.gif",	 05, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/193_redplasma.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/208_dancers.gif",	 25, 0, 0, 10, 15, 0, 0 },
+	    { "/gifs64/284_comets.gif",		 15, 0, 0, 10, 15, 0, 0 },  // 85 
+	    { "/gifs64/377_batman.gif",		 05, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/412_cubes.gif",		 20, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/236_spintriangle.gif",	 20, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/226_flyingfire.gif",	 10, 0, 0, 10, 15, 0, 0 },
+	    { "/gifs64/264_expandcircle.gif",	 10, 0, 0, 10, 15, 0, 0 },  // 90 
+	    { "/gifs64/281_plasma.gif",		 20, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/286_greenplasma.gif",	 15, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/291_circle2sphere.gif",	 15, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/364_colortoroid.gif",	 25, 0, 0, 10, 15, 0, 0 },
+	    { "/gifs64/470_scrollcubestron.gif", 20, 0, 0, 10, 15, 0, 0 },  // 95
+	    { "/gifs64/358_spinningpattern.gif", 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/328_spacetime.gif",	 20, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/218_circleslices.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
+            { "/gifs64/heartTunnel.gif",	 10, 0, 0, 10, 15, 0, 0 },
+            { "/gifs64/sonic.gif",		 10, 0, 0, 10, 15, 0, 0 },  // 100
+	    { "/gifs64/ab1_colors.gif",		 10, 0, 0, 10, 10, 64, 64 },
+	    { "/gifs64/ab2_lgrey.gif",		 10, 0, 0, 10, 10, 64, 64 }, // skip
+            { "/gifs64/ab3_s.gif",		 10, 0, 0, 10, 10, 64, 64 }, // color lines
+            { "/gifs64/ab4_g.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB sign 
+//
+	    { "/gifs64/BM_Man_Scroll.gif",	 10, 0, 0, 10, 15, 0, 0 },  // 105
+// -- non animated, those scroll up/down
+	    { "/gifs64/BM_green_arms.gif",	 10, -16, -16, 15, 15, 64, 64 },    // 106
+	    { "/gifs64/BM_lady_fire.gif",	 10, 0, 0, 10, 10, 64, 64 },	    // 107
+	    { "/gifs64/BM_logo.gif",		 10, 0, 0, 10, 10, 64, 64 },	    // 108
+	    { "/gifs64/BM_TheMan_Blue.gif",	 10, -16, -16, 15, 15, 64, 64 },    // 109
+//	    { "/gifs64/ab2_grey.gif",		 10, 0, 0, 10, 10, 64, 64 },
+//	    { "/gifs64/ab2_white.gif",		 10, 0, 0, 10, 10, 64, 64 }, 
+	    //{ "/gifs64/ab4_w.gif",		 10, 0, 0, 10, 10, 64, 64 },
 
 
 	#if 0
-            { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15 },
-            { "/gifs64/341_minion2.gif",	 10, 0, 0, 10, 15 },
-            { "/gifs64/233_mariokick.gif",	 10, 0, 0, 10, 15 },
-            { "/gifs64/457_mariosleep.gif",	 10, 0, 0, 10, 15 },
-            { "/gifs64/240_angrybird.gif",	 10, 0, 0, 10, 15 },
-            { "/gifs64/323_rockface.gif",	 10, 0, 0, 10, 15 },
-	    { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/341_minion2.gif",	 10, 0, 0, 10, 15 }, 
-	    { "/gifs64/222_fry.gif",		 10, 0, 0, 10, 15 }, 
+            { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15, 0, 0 },
+            { "/gifs64/341_minion2.gif",	 10, 0, 0, 10, 15, 0, 0 },
+            { "/gifs64/233_mariokick.gif",	 10, 0, 0, 10, 15, 0, 0 },
+            { "/gifs64/457_mariosleep.gif",	 10, 0, 0, 10, 15, 0, 0 },
+            { "/gifs64/240_angrybird.gif",	 10, 0, 0, 10, 15, 0, 0 },
+            { "/gifs64/323_rockface.gif",	 10, 0, 0, 10, 15, 0, 0 },
+	    { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/341_minion2.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
+	    { "/gifs64/222_fry.gif",		 10, 0, 0, 10, 15, 0, 0 }, 
 	#endif
     };
     #endif
@@ -1363,9 +1373,21 @@ uint8_t GifAnim(uint8_t idx) {
 	OFFSETY = animgif[idx].offy;
 	FACTX =   animgif[idx].factx;
 	FACTY =   animgif[idx].facty;
+	scrollx = animgif[idx].scrollx;
+	scrolly = animgif[idx].scrolly;
 	matrix->clear();
+	panOrBounce(&x, &y, scrollx, scrolly, true);
     }
 
+    if (scrollx || scrolly) {
+	panOrBounce(&x, &y, scrollx, scrolly);
+	OFFSETX = animgif[idx].offx + x;
+	OFFSETY = animgif[idx].offy + y;
+	matrix->clear();
+	//Serial.print(x);
+	//Serial.print(" ");
+	//Serial.println(y);
+    }
     // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
     // add the matrix_show() delay that is expected by the caller
@@ -1382,8 +1404,8 @@ uint8_t GifAnim(uint8_t idx) {
 uint8_t scrollBigtext() {
     // 64x96 pixels, chars are 5(6)x7, 10.6 chars across, 13.7 lines of displays
     static uint16_t state = 0;
-    static uint8_t resetcnt = 3;
-    uint16_t loopcnt = 1000;
+    static uint8_t resetcnt = 1;
+    uint16_t loopcnt = 700;
     uint16_t x, y;
 
 #if 0
@@ -2053,7 +2075,8 @@ void matrix_update() {
 	    else if (matrix_demo >= 70 && matrix_demo <= 81)
 #else // M32B8M32B8X3X3
 	    // 32 gifs
-	    else if (matrix_demo >= 70 && matrix_demo <= 108)
+	    //else if (matrix_demo >= 70 && matrix_demo <= 109)
+	    else if (matrix_demo >= 70 && matrix_demo <= 104)
 #endif
 	    {
 		// Before a new GIF, give a chance for an IR command to go through
