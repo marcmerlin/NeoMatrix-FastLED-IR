@@ -38,16 +38,16 @@
 
     // Which demos are shown, and in which order
     // 0 unused
-    // 2 essr_bbb
-    // 8 burn baby burn,
+    // 2 essbr
+    // 8 burn baby burn, 64x64 only
     // 9 safety third (24x32 shirt and 64x64 only)
     // 10 scroll code
     // 12 smiley face, not meant for high res
     // 13-16 unused
     // 17 fireworks
     // 19 pride, not good enough with thin dots
-    // 21 not enough dots
-    // 25 pacman,
+    // 21 color sweeping, not enough dots for 64x96
+    // 25 pacman, not for anything but 24x32
     // 27 last pattern
     // 56 hypno
     // 78 MJ, 84  dancing people, 87 rubix cubes moving, 88 spin triangles, 91 plasma,
@@ -67,7 +67,7 @@
 	//              65                  70
 	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 
 	101, 105, 
-	108, 109, 110, 111, 112, 113 // BM
+	108, 109, 110, 111, 112, // BM
     };
 
     const uint8_t best_mapping[] = { 5, 17, 23, 24, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
@@ -81,7 +81,7 @@
     // Which demos are shown, and in which order
     const uint8_t demo_mapping[] = {
 	//                 5                10                 15
-	108, 10, 78, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
+	108, 10, 8, 17, 2, 18, 9, 3, 20, 19, 22, 23, 24, 21, 26, 27, 7,
 	// aurora (removed 38 and 41)
 	//          20                  25
 	30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42,
@@ -93,8 +93,7 @@
 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
 	//              65                  70
 	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 
-	101, 105, 
-	108, 109, 110, 111, 112, 113 // BM
+	108, 109, 111, 112, // BM
     };
     const uint8_t best_mapping[] = { 5, 17, 23, 24, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
 

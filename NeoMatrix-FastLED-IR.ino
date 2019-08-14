@@ -373,7 +373,7 @@ uint8_t tfsf() {
 	matrix->setCursor(0, mh - idx*8*fontsize/3);
 	matrix->clear();
 	//matrix->setTextColor(matrix->Color(255,0,0));
-	matrix->setPassThruColor(CRGB(255,0,0));
+	matrix->setPassThruColor(CRGB(0,255,0));
 	matrix->print("T");
 	matrix->setPassThruColor();
 	startfade = l;
@@ -406,7 +406,7 @@ uint8_t tfsf() {
 	matrix->setCursor(2, mh - idx*8*fontsize/3);
 	matrix->clear();
 	//matrix->setTextColor(matrix->Color(0,255,0));
-	matrix->setPassThruColor(CRGB(0,255,0));
+	matrix->setPassThruColor(CRGB(255,0,0));
 	matrix->print("F");
 	matrix->setPassThruColor();
 	startfade = l;
@@ -483,7 +483,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->clear();
 	//uint16_t txtcolor = matrix->Color24to16(Wheel(map(letters[l], '0', 'Z', 0, 255)));
 	// matrix->setTextColor(txtcolor);
-	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 0, 255)));
+	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
 
 #ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
@@ -506,7 +506,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	matrix->clear();
 	//uint16_t txtcolor = matrix->Color24to16(Wheel(map(letters[l], '0', 'Z', 255, 0)));
 	//matrix->setTextColor(txtcolor);
-	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
+	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 64, 192)));
 	if (letters[l] == 'T') offset = -2 * size/15;
 	if (letters[l] == '8') offset = 2 * size/15;
 
@@ -546,7 +546,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     return repeat;
 }
 
-uint8_t esrr_bbb() { // or burn baby burn
+uint8_t esrbr() { // or burn baby burn
     static uint16_t state;
     static float spd;
     float spdincr = 0.6;
@@ -605,14 +605,14 @@ uint8_t esrr_bbb() { // or burn baby burn
 
 	//matrix->setTextColor(matrix->Color(0,255,0));
 	matrix->setPassThruColor(CRGB(0,255,0));
-	if (mheight == 64) matrix->print("BURN");
+	if (mheight >= 64) matrix->print("BURN");
 	else matrix->print("RAVE");
 	matrix->setPassThruColor();
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-	if (mheight >= 64) matrix->setCursor(2, 82);
+	if (mheight >= 96) matrix->setCursor(2, 82);
 	else if (mheight >= 64) matrix->setCursor(2, 63);
 	else matrix->setCursor(0, 30);
 
@@ -714,7 +714,7 @@ uint8_t bbb() {
 
 // This is too jarring on the eyes at night
 #if 0
-uint8_t esrr_flashin() {
+uint8_t esrbr_flashin() {
     #define esrflashperiod 30
     static uint16_t state = 0;
     static uint16_t period = esrflashperiod;
@@ -770,7 +770,7 @@ uint8_t esrr_flashin() {
 }
 #endif
 
-uint8_t esrr_fade() {
+uint8_t esrbr_fade() {
     static uint16_t state;
     static uint8_t wheel;
     static float spd;
@@ -832,8 +832,8 @@ uint8_t esrr_fade() {
 	    matrix->print("RAVE");
 	}
 
-	if (mheight >= 64) matrix->setCursor(2, 82);
-	else if (mheight >= 64) matrix->setCursor(2, 63);
+	if (mheight >= 96) matrix->setCursor(2, 82);
+	else if (mheight == 64) matrix->setCursor(2, 63);
 	else matrix->setCursor(0, 30);
 	//txtcolor = matrix->Color24to16(Wheel((wheel+=24)));
         //Serial.println(txtcolor, HEX);
@@ -1160,6 +1160,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
     //matrix->setTextColor(txtcolor);
     matrix->setPassThruColor(Wheel(map(x, 0, len*fontwidth, 512, 0)));
     matrix->print(str2);
+    matrix->setPassThruColor();
     matrix_show();
     x++;
 
@@ -1303,7 +1304,7 @@ uint8_t GifAnim(uint8_t idx) {
 	    { "/gifs64/087_net.gif",		 05, 0, 0, 10, 10, 0, 0 },  // 70
 	    { "/gifs64/196_colorstar.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/200_circlesmoke.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
-	    { "/gifs64/203_waterdrop.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
+	    { "/gifs64/203_waterdrop.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
 	    { "/gifs64/210_circletriangle.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/215_fallingcube.gif",	 15, 0, 0, 10, 10, 0, 0 },  // 75
 	    { "/gifs64/255_photon.gif",		 10, 0, 0, 10, 10, 0, 0 }, 
@@ -1316,7 +1317,7 @@ uint8_t GifAnim(uint8_t idx) {
 	    { "/gifs64/193_redplasma.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/208_dancers.gif",	 25, 0, 0, 10, 10, 0, 0 },
 	    { "/gifs64/284_comets.gif",		 15, 0, 0, 10, 10, 0, 0 },  // 85 
-	    { "/gifs64/377_batman.gif",		 05, 0, 0, 10, 10, 0, 0 }, 
+	    { "/gifs64/377_batman.gif",		 07, 0, -20, 10, 15, 0, 0 }, 
 	    { "/gifs64/412_cubes.gif",		 20, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/236_spintriangle.gif",	 20, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/226_flyingfire.gif",	 10, 0, 0, 10, 10, 0, 0 },
@@ -1325,7 +1326,7 @@ uint8_t GifAnim(uint8_t idx) {
 	    { "/gifs64/286_greenplasma.gif",	 15, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/291_circle2sphere.gif",	 15, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/364_colortoroid.gif",	 25, 0, 0, 10, 10, 0, 0 },
-	    { "/gifs64/470_scrollcubestron.gif", 20, 0, 0, 10, 10, 0, 0 },  // 95
+	    { "/gifs64/470_scrollcubestron.gif", 25, 0, 0, 10, 10, 0, 0 },  // 95
 	    { "/gifs64/358_spinningpattern.gif", 10, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/328_spacetime.gif",	 20, 0, 0, 10, 10, 0, 0 }, 
 	    { "/gifs64/218_circleslices.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
@@ -1341,10 +1342,10 @@ uint8_t GifAnim(uint8_t idx) {
 //
 	    { "/gifs64/BM_Man_Scroll.gif",	 10, 0, 0, 10, 10, 0, 0 },  // 108
 // -- non animated, those scroll up/down
-	    { "/gifs64/BM_green_arms.gif",	 10, 0, 0, 10, 10, 64, 64 },
+	    { "/gifs64/BM_green_arms.gif",	 10, -12, 0, 10, 10, 36, 64 },
 	    { "/gifs64/BM_lady_fire.gif",	 10, 0, 0, 10, 10, 64, 64 },	// 110
 	    { "/gifs64/BM_logo.gif",		 10, 0, 0, 10, 10, 64, 64 },
-	    { "/gifs64/BM_TheMan_Blue.gif",	 10, 0, 0, 10, 10, 64, 64 },    // 112
+	    { "/gifs64/BM_TheMan_Blue.gif",	 10, -12, -2, 10, 10, 36, 64 },    // 112
 
 	#if 0
             { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15, 0, 0 },
@@ -1385,7 +1386,7 @@ uint8_t GifAnim(uint8_t idx) {
 	    { "/gifs64/286_greenplasma.gif",	 15, 0, 0, 10, 15, 0, 0 }, 
 	    { "/gifs64/291_circle2sphere.gif",	 15, 0, 0, 10, 15, 0, 0 }, 
 	    { "/gifs64/364_colortoroid.gif",	 25, 0, 0, 10, 15, 0, 0 },
-	    { "/gifs64/470_scrollcubestron.gif", 20, 0, 0, 10, 15, 0, 0 },  // 95
+	    { "/gifs64/470_scrollcubestron.gif", 25, 0, 0, 10, 15, 0, 0 },  // 95
 	    { "/gifs64/358_spinningpattern.gif", 10, 0, 0, 10, 15, 0, 0 }, 
 	    { "/gifs64/328_spacetime.gif",	 20, 0, 0, 10, 15, 0, 0 }, 
 	    { "/gifs64/218_circleslices.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
@@ -1992,13 +1993,13 @@ void matrix_update() {
 	    break;
 
 	case 2:
-	    ret = esrr_bbb(); // or burn baby burn
+	    ret = esrbr(); // or eat sleep rave/burn repeat
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
 
 	case 3:
-	    ret = esrr_fade();
+	    ret = esrbr_fade(); // or es burn repeat
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
 	    break;
@@ -2033,7 +2034,7 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case 9:
+	case 9: // not 64x96
 	    ret = DoublescrollText("Safety", 6, "Third!", 6);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -2045,7 +2046,7 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case 12:
+	case 12: // not anything but 24x32
 	    ret = panOrBounceBitmap(bitmap24, 24);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -2063,7 +2064,7 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case 19:
+	case 19: // not 64x96
 	    ret = call_pride();
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
