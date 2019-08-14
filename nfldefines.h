@@ -9,7 +9,7 @@
 #ifdef ESP8266
     #define mheight 32
 #elif defined(ESP32)
-    #ifdef NEOMATRIX
+    #ifdef M64BY64
 	#define mheight 64
     #else
 	#define mheight 96
@@ -40,7 +40,7 @@
     // 0 unused
     // 2 essr_bbb
     // 8 burn baby burn,
-    // 9 safety third (24x32 shirt only)
+    // 9 safety third (24x32 shirt and 64x64 only)
     // 10 scroll code
     // 12 smiley face, not meant for high res
     // 13-16 unused
@@ -51,7 +51,7 @@
     // 27 last pattern
     // 56 hypno
     // 78 MJ, 84  dancing people, 87 rubix cubes moving, 88 spin triangles, 91 plasma,
-    // 94 colortoroid, 96 spinningpattern, 97 spacetime, 99 hearttunnel, 100 sonic, 101 BM
+    // 94 colortoroid, 96 spinningpattern, 97 spacetime, 99 hearttunnel, 100 sonic
     const uint8_t demo_mapping[] = {
 	//                 5                10                 15
 	10, 84, 78, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
@@ -66,8 +66,8 @@
 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
 	//              65                  70
 	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 
-	101, 103, 104, 
-	// 105, 106, 107, 108, 109,
+	101, 105, 
+	108, 109, 110, 111, 112, 113 // BM
     };
 
     const uint8_t best_mapping[] = { 5, 17, 23, 24, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
@@ -78,23 +78,25 @@
     CRGB leds[STRIP_NUM_LEDS];
     #define NEOPIXEL_PIN 13
 #elif mheight == 64
-    // 64x64 matrix with optional 16 pin parallel driver
-    // 55fps without 16PINS, 110fps with 16PINS
-    #define ESP32_16PINS
-
     // Which demos are shown, and in which order
-    // 25 pacman, 57 BM gif
     const uint8_t demo_mapping[] = {
-	87, 10, 17, 2, 21, 18, 5, 19, 3, 20, 21, 4, 22, 8, 23, 24, 6, 26, 27, 7,
-	// aurora (removed 38)
-	30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 41, 42,
-	// table mark estes	
+	//                 5                10                 15
+	108, 10, 78, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
+	// aurora (removed 38 and 41)
+	//          20                  25
+	30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42,
+	// table mark estes. 
+	//      30                  35                  40
 	45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 
-	// gifs
+	// gifs. removed 101 BM
+	//              45                  50                  55                  60
 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
-	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 
+	//              65                  70
+	90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 
+	101, 105, 
+	108, 109, 110, 111, 112, 113 // BM
     };
-    const uint8_t best_mapping[] = { 9, 17, 25, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, 101, };
+    const uint8_t best_mapping[] = { 5, 17, 23, 24, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
 
     #define RECV_PIN 34
 #elif mheight == 32
@@ -113,9 +115,7 @@
     // 70 hypno, 75 dance girl, 81 sonix???
     const uint8_t best_mapping[] = { 5, 12, 17, 24, 25, 27, 70, 75, 81 };
 
-    #define M32B8X3
     #define STRIP_NUM_LEDS 48
-
     CRGB leds[STRIP_NUM_LEDS];
     #define NEOPIXEL_PIN D1 // GPIO5
 
