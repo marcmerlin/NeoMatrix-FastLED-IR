@@ -28,6 +28,9 @@
 #include "TwinkleFOX.h"
 #include "aurora.h"
 
+// Compute how many GIFs have been defined (called in setup)
+uint8_t gif_cnt;
+
 const uint16_t PROGMEM RGB_bmp[64] = {
       // 10: multicolor smiley face
         0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, 
@@ -1405,9 +1408,11 @@ uint8_t GifAnim(uint8_t idx) {
 	    { "/gifs64/BM_TheMan_Blue.gif",	 10, 0, 0, 15, 15, 64, 64 },    // 112
     };
     #endif
-    uint8_t gifcnt = ARRAY_SIZE(animgif);
+    gif_cnt = ARRAY_SIZE(animgif);
+    // Compute gif_cnt and exit
+    if (idx == 255) return 0;
     // Avoid crashes due to overflows
-    idx = idx % gifcnt;
+    idx = idx % gif_cnt;
     static uint8_t gifloopsec;
 
     if (matrix_reset_demo == 1) {
@@ -2117,14 +2122,7 @@ void matrix_update() {
 	    if      (matrix_demo >= 30 && matrix_demo <= 42) ret = aurora(matrix_demo-30);
 	    // table 13 demos
 	    else if (matrix_demo >= 45 && matrix_demo <= 57) ret = metd(matrix_demo-45);
-#ifdef M32B8X3
-	    // 12 gifs
-	    else if (matrix_demo >= 70 && matrix_demo <= 81)
-#else // M32B8M32B8X3X3
-	    // 32 gifs
-	    //else if (matrix_demo >= 70 && matrix_demo <= 109)
-	    else if (matrix_demo >= 70 && matrix_demo <= 104)
-#endif
+	    else if (matrix_demo >= 70 && matrix_demo < 70+gif_cnt)
 	    {
 		// Before a new GIF, give a chance for an IR command to go through
 		//if (matrix_loop == -1) delay(3000);
@@ -3069,6 +3067,10 @@ void setup() {
     irrecv.enableIRIn(); // Start the receiver
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
+
+    GifAnim(255); // Compute how many GIFs are defined
+    Serial.print("Number of GIFs defined: ");
+    Serial.println(gif_cnt);
 
     Serial.print("Last Playable Demo Index: ");
     Serial.println(demo_cnt);
