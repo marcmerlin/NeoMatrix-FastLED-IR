@@ -4,7 +4,9 @@
 // Multi color remote: https://www.amazon.com/gp/product/B00PBOJNZS
 // http://htmlcolorcodes.com/
 #define IR_RGBZONE_BRIGHT	0xFF3AC5
+#define IR_RGBZONE_BRIGHT2	0xB3D4B87F
 #define IR_RGBZONE_DIM		0xFFBA45
+#define IR_RGBZONE_DIM2		0x44490A7B
 #define IR_RGBZONE_NEXT		0xFF827D
 #define IR_RGBZONE_NEXT2	0x3195A31F
 #define IR_RGBZONE_POWER	0xFF02FD

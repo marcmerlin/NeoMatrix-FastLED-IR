@@ -2174,7 +2174,11 @@ void leds_setcolor(uint16_t i, uint32_t c) {
 #endif // NEOPIXEL_PIN
 
 void change_brightness(int8_t change) {
+#ifdef M64BY64
+    static uint8_t brightness = 6;
+#else
     static uint8_t brightness = 5;
+#endif
     static uint32_t last_brightness_change = 0 ;
 
     if (millis() - last_brightness_change < 300) {
@@ -2291,13 +2295,15 @@ bool handle_IR(uint32_t delay_time) {
 	switch (IR_result.value) {
 
 	case IR_RGBZONE_BRIGHT:
-	    if (is_change()) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return 1; }
+	case IR_RGBZONE_BRIGHT2:
+	    if (is_change(true)) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return 1; }
 	    change_brightness(+1);
 	    Serial.println("Got IR: Bright");
 	    return 1;
 
 	case IR_RGBZONE_DIM:
-	    if (is_change()) {
+	case IR_RGBZONE_DIM2:
+	    if (is_change(true)) {
 		Serial.println("Got IR: Dim, show all demos again and Hang on this demo");
 		matrix_loop = 9999;
 		show_best_demos = false;
