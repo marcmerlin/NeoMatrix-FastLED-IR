@@ -1403,10 +1403,10 @@ uint8_t GifAnim(uint8_t idx) {
 //
 	    { "/gifs64/BM_Man_Scroll.gif",	 10, 0, 0, 10, 15, 0, 0 },  // 108
 // -- non animated, those scroll up/down
-	    { "/gifs64/BM_green_arms.gif",	 10, 0, 0, 15, 15, 64, 64 },
+	    { "/gifs64/BM_green_arms.gif",	 10, -16, -8, 15, 15, 64, 64 },
 	    { "/gifs64/BM_lady_fire.gif",	 10, 0, 0, 10, 10, 64, 64 },	// 110
 	    { "/gifs64/BM_logo.gif",		 10, 0, 0, 10, 10, 64, 64 },
-	    { "/gifs64/BM_TheMan_Blue.gif",	 10, 0, 0, 15, 15, 64, 64 },    // 112
+	    { "/gifs64/BM_TheMan_Blue.gif",	 10, -16, -16, 15, 15, 64, 64 },    // 112
     };
     #endif
     gif_cnt = ARRAY_SIZE(animgif);
@@ -1688,7 +1688,7 @@ uint8_t call_fireworks() {
 
     fireworks();
     matrix_show();
-    if (state++ < 5000) return 1;
+    if (state++ < 500) return 1;
     matrix_reset_demo = 1;
     return 0;
 }
