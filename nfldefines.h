@@ -38,9 +38,14 @@
 
     // Which demos are shown, and in which order
     // 0 unused
-    // 2 essbr
-    // 8 burn baby burn, 64x64 only
-    // 9 safety third (24x32 shirt and 64x64 only)
+    // 2 TF BM essbr
+    // 3 TF BM essbr fade
+    // 4 TF tfsf zoom
+    // 5 TF tfsf zoom
+    // 6 TF tfsf zoom
+    // 7 with every beat
+    // 8 BM burn baby burn, 64x64 only
+    // 9 BM safety third (24x32 shirt and 64x64 only)
     // 10 scroll code
     // 12 smiley face, not meant for high res
     // 13-16 unused
@@ -48,20 +53,22 @@
     // 19 pride, not good enough with thin dots
     // 21 color sweeping, not enough dots for 64x96
     // 25 pacman, not for anything but 24x32
-    // 27 last pattern
+    // 35 aurora spiro1
+    // 36 aurora spiro2
     // 56 hypno
     // 78 MJ, 84  dancing people, 87 rubix cubes moving, 88 spin triangles, 91 plasma,
     // 94 colortoroid, 96 spinningpattern, 97 spacetime, 99 hearttunnel, 100 sonic
     const uint8_t demo_mapping[] = {
 	//                 5                10                 15
-	10, 84, 78, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
+	//10, 84, 78, 17, 2, 18, 5, 3, 20, 4, 22, 23, 24, 6, 26, 27, 7,
+	10, 84, 78, 17, 2, 18, 9, 3, 20, 56, 22, 23, 24, 88, 26, 27, 7,
 	// aurora (removed 38 and 41)
 	//          20                  25
 	30, 31, 32, 33, 34, 35, 36, 37, 39, 40, 42,
 	// table mark estes. 
 	//      30                  35                  40
 	45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 
-	// gifs. removed 101 BM
+	// gifs
 	//              45                  50                  55                  60
 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
 	//              65                  70
@@ -70,7 +77,8 @@
 	108, 109, 110, 111, 112, // BM
     };
 
-    const uint8_t best_mapping[] = { 5, 17, 23, 24, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
+    //const uint8_t best_mapping[] = { 17, 23, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, 108, 109, 110, 111, 112 };
+    const uint8_t best_mapping[] = {  2, 23, 27, 56, 78, 84, 3, 87, 88, 91, 94, 9, 96, 97, 99, 100, 8, 108, 109, 110, 111, 112, 35, 36 };
 
     #define RECV_PIN 34
 
@@ -88,7 +96,7 @@
 	// table mark estes. 
 	//      30                  35                  40
 	45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 
-	// gifs. removed 101 BM
+	// gifs
 	//              45                  50                  55                  60
 	70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 
 	//              65                  70
