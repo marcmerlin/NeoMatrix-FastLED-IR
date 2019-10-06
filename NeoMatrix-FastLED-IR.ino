@@ -2034,7 +2034,7 @@ void matrix_update() {
 	    if (ret) return;
 	    break;
 
-	case 9: // not 64x96
+	case 9:
 	    ret = DoublescrollText("Safety", 6, "Third!", 6);
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
@@ -2245,6 +2245,36 @@ bool is_change(bool force=false) {
     return 1;
 #endif
 }
+
+// Allow checking for a pause command, p over serial or power over IR
+bool check_IR_serial() {
+    char readchar;
+
+    decode_results IR_result;
+
+    if (Serial.available()) readchar = Serial.read(); else readchar = 0;
+    if (readchar == 'p') return 1;
+
+    if (irrecv.decode(&IR_result)) {
+    	irrecv.resume(); // Receive the next value
+	switch (IR_result.value) {
+	case IR_RGBZONE_POWER2:
+	    Serial.println("Got IR: Power2");
+	case IR_RGBZONE_POWER:
+	    return 1;
+
+	case IR_JUNK:
+	    return 0;
+
+	default:
+	    Serial.print("Got unknown IR value: ");
+	    Serial.println(IR_result.value, HEX);
+	    return 0;
+	}
+    }
+    return 0;
+}
+
 
 
 bool handle_IR(uint32_t delay_time) {
@@ -3006,8 +3036,6 @@ void loop() {
 
 
 void setup() {
-    // Time for serial port to work?
-    delay(1000);
     Serial.begin(115200);
     Serial.println("Hello World");
 #ifdef ESP8266
@@ -3035,9 +3063,7 @@ void setup() {
     Serial.println(STRIP_NUM_LEDS);
     FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
     FastLED.setBrightness(led_brightness);
-    // Turn off all LEDs first, and then light 3 of them for debug.
-    leds_show();
-    delay(1000);
+    // Turn off all LEDs and light 3 of them for debug.
     leds[0] = CRGB::Red;
     leds[1] = CRGB::Blue;
     leds[2] = CRGB::Green;
@@ -3045,10 +3071,9 @@ void setup() {
     leds[20] = CRGB::Green;
     leds_show();
     Serial.println("LEDs on");
-    delay(1000);
 #endif // NEOPIXEL_PIN
 
-    Serial.println("Init SmartMatrix");
+    Serial.println("Init Smart or FastLED Matrix");
     // Leave enough RAM for other code.
     // lsbMsbTransitionBit of 2 requires 12288 RAM, 39960 available, leaving 27672 free: 
     // Raised lsbMsbTransitionBit to 2/7 to fit in RAM
@@ -3088,17 +3113,29 @@ void setup() {
     Serial.println(mh);
     // Turn off dithering https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
     FastLED.setDither( 0 );
-    // Set brightness as appropriate for backend
+    // Set brightness as appropriate for backend by sending a null change from the default
     change_brightness( 0 );
     matrix->setTextWrap(false);
-    Serial.println("NeoMatrix Test");
+    Serial.println("Matrix Test");
     // speed test
     // I only get 50fps with SmartMatrix 96x64, but good enough I guess
     // while (1) { display_stats(); yield();};
     // init first matrix demo
+    matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
+    matrix_show();
+    int i = 100;
+    Serial.println("Pause for debug greyish screen");
+    while (i--) {
+	if (check_IR_serial()) {
+	    Serial.println("Will pause on debug white screen");
+	    i = 60000;
+	}
+	delay(10);
+    }
+    Serial.println("Done with debug grey screen, display stats");
+
     display_stats();
-    delay(3000);
-    matrix->clear();
+    delay(2000);
 
     Serial.println("Matrix Libraries Test done");
     //font_test();
