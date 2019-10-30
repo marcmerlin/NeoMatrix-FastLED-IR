@@ -18,6 +18,11 @@
 #error "Matrix config undefined, please set height"
 #endif
 
+#ifdef ESP32
+// Use https://github.com/lbernstone/IR32.git instead of IRRemote
+//#define ESP32RMTIR
+#endif
+
 // On ESP32, I have a 64x64 direct matrix (not tiled) with 2 options of drivers.
 #if mheight == 96
     // Using RGBPanel via SmartMatrix
@@ -83,7 +88,7 @@
     };
 
 #ifndef BM
-    const uint8_t best_mapping[] = { 17, 23, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, 108, 109, 110, 111, 112 };
+    const uint8_t best_mapping[] = { 17, 23, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, 101, 105, 106, };
 #else
     const uint8_t best_mapping[] = {  2, 23, 27, 56, 78, 84, 3, 87, 88, 91, 94, 9, 96, 97, 99, 100, 8, 108, 109, 110, 111, 112, 35, 36 };
 #endif

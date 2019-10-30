@@ -131,14 +131,23 @@ int16_t matrix_loop = -1;
 #ifdef ESP8266
 #include <IRremoteESP8266.h>
 #else
-#include <IRremote.h>
+    #ifdef ESP32RMTIR
+    #include <IRRecv.h> // https://github.com/lbernstone/IR32.git
+    #else
+    #include <IRremote.h>
+    #endif
 #endif
 
 // This file contains codes I captured and mapped myself
 // using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
 
+#ifndef ESP32RMTIR
 IRrecv irrecv(RECV_PIN);
+#else
+IRRecv irrecv;
+#endif
+
 
 typedef enum {
     f_nothing = 0,
@@ -605,7 +614,7 @@ uint8_t esrbr() { // or burn baby burn
 
 	//matrix->setTextColor(matrix->Color(0,255,0));
 	matrix->setPassThruColor(CRGB(0,255,0));
-	if (mheight >= 64) matrix->print("BURN");
+	if (mheight == 64) matrix->print("BURN");
 	else matrix->print("RAVE");
 	matrix->setPassThruColor();
     }
@@ -2250,14 +2259,21 @@ bool is_change(bool force=false) {
 bool check_IR_serial() {
     char readchar;
 
-    decode_results IR_result;
-
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
     if (readchar == 'p') return 1;
 
+    char* rcvGroup = NULL;
+    uint32_t result; 
+#ifndef ESP32RMTIR
+    decode_results IR_result;
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
-	switch (IR_result.value) {
+	result = IR_result.value;
+#else
+    if (irrecv.available()) {
+	result = irrecv.read(rcvGroup);
+#endif
+	switch (result) {
 	case IR_RGBZONE_POWER2:
 	    Serial.println("Got IR: Power2");
 	case IR_RGBZONE_POWER:
@@ -2268,7 +2284,9 @@ bool check_IR_serial() {
 
 	default:
 	    Serial.print("Got unknown IR value: ");
-	    Serial.println(IR_result.value, HEX);
+	    Serial.print(rcvGroup);
+	    Serial.print(" / ");
+	    Serial.println(result, HEX);
 	    return 0;
 	}
     }
@@ -2280,8 +2298,6 @@ bool check_IR_serial() {
 bool handle_IR(uint32_t delay_time) {
     int8_t new_pattern = 0;
     char readchar;
-
-    decode_results IR_result;
 
     // Instead of waiting without doing anything, update the matrix pattern.
     for (uint16_t i=0; i<delay_time / MX_UPD_TIME; i++) {
@@ -2319,11 +2335,18 @@ bool handle_IR(uint32_t delay_time) {
     else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
 
-
+    char* rcvGroup = NULL;
+    uint32_t result; 
+#ifndef ESP32RMTIR
+    decode_results IR_result;
     if (irrecv.decode(&IR_result)) {
     	irrecv.resume(); // Receive the next value
-	switch (IR_result.value) {
-
+	result = IR_result.value;
+#else
+    if (irrecv.available()) {
+	result = irrecv.read(rcvGroup);
+#endif
+	switch (result) {
 	case IR_RGBZONE_BRIGHT:
 	case IR_RGBZONE_BRIGHT2:
 	    if (is_change(true)) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return 1; }
@@ -2653,7 +2676,9 @@ bool handle_IR(uint32_t delay_time) {
 
 	default:
 	    Serial.print("Got unknown IR value: ");
-	    Serial.println(IR_result.value, HEX);
+	    Serial.print(rcvGroup);
+	    Serial.print(" / ");
+	    Serial.println(result, HEX);
 	    // Allow pausing the current demo to inspect it in slow motion
 	    //delay(1000);
 	    return 0;
@@ -3044,16 +3069,18 @@ void setup() {
     // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
     WiFi.forceSleepBegin();                  // turn off ESP8266 RF
     // No blink13 in ESP8266 lib
-#else // ESP8266
     // this doesn't exist in the ESP8266 IR library, but by using pin D4
     // IR receive happens to make the system LED blink, so it's all good
-#ifdef ESP32
-    Serial.println("Init ESP32, set IR receive NOT to blink system LED");
-    irrecv.blink13(false);
-#else
-    Serial.println("Init NON ESP8266/ESP32, set IR receive to blink system LED");
-    irrecv.blink13(true);
-#endif
+#else // ESP8266
+    #ifdef ESP32
+	#ifndef ESP32RMTIR
+	Serial.println("Init ESP32, set IR receive NOT to blink system LED");
+	irrecv.blink13(false);
+	#endif
+    #else
+	Serial.println("Init NON ESP8266/ESP32, set IR receive to blink system LED");
+	irrecv.blink13(true);
+    #endif
 #endif // ESP8266
 
 #ifdef NEOPIXEL_PIN
@@ -3096,7 +3123,11 @@ void setup() {
     Serial.println("Init sublime");
     sublime_setup();
     Serial.println("Enabling IRin");
+#ifndef ESP32RMTIR
     irrecv.enableIRIn(); // Start the receiver
+#else
+    irrecv.start(RECV_PIN);
+#endif
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
 
