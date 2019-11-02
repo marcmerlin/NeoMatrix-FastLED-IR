@@ -65,9 +65,6 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
 void matrix_show() {
 #ifdef SMARTMATRIX
     matrix->show();
-#elif defined(ESP32_16PINS)
-    //FastLEDshowESP32(); // FIXME
-    matrix->show();
 #else // ESP32_16PINS
     #ifdef ESP8266
     // Disable watchdog interrupt so that it does not trigger in the middle of
@@ -108,9 +105,7 @@ void matrix_show() {
 //#include <Fonts/FreeMonoBold12pt7b.h>
 //#include <Fonts/FreeMonoBold18pt7b.h>
 //#include <Fonts/FreeMonoBold24pt7b.h>
-#ifndef NOFONTS
 #include "fonts.h"
-#endif
 
 // Choose your prefered pixmap
 #include "smileytongue24.h"
@@ -368,62 +363,64 @@ uint8_t tfsf() {
 	state = 1;
 	spd = 1.0;
 	startfade = -1;
+	matrix->setRotation(0);
+	// biggest font is 18, but this spills over
+	matrix->setFont( &Century_Schoolbook_L_Bold[16] );
+	if (mw >= 48 && mh >=48) fontsize = 2;
+	matrix->setTextSize(fontsize);
     }
 
-    matrix->setRotation(0);
-    if (mw >= 48 && mh >=64) fontsize = 3;
-    else if (mw >= 48 && mh >=48) fontsize = 2;
-    matrix->setTextSize(fontsize);
-#ifndef NOFONTS
-    // biggest font is 18, but this spills over
-    matrix->setFont( &Century_Schoolbook_L_Bold[16] );
-
-    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(0, mh - idx*8*fontsize/3);
-	matrix->clear();
-	matrix->setTextColor(matrix->Color(255,0,0));
-	matrix->print("T");
-	startfade = l;
+    if (mw >= 48 && mh >=64) {
+	
     }
-    l++; idx--;
+    else 
+    {
+	if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	    matrix->setCursor(0, mh - idx*8*fontsize/3);
+	    matrix->clear();
+	    matrix->setTextColor(matrix->Color(255,0,0));
+	    matrix->print("T");
+	    startfade = l;
+	}
+	l++; idx--;
 
-    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(0, mh - idx*8*fontsize/3);
-	matrix->clear();
-	matrix->setTextColor(matrix->Color(192,192,0));
-	matrix->print("F");
-	startfade = l;
-    }
-    l++; idx--;
+	if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	    matrix->setCursor(0, mh - idx*8*fontsize/3);
+	    matrix->clear();
+	    matrix->setTextColor(matrix->Color(192,192,0));
+	    matrix->print("F");
+	    startfade = l;
+	}
+	l++; idx--;
 
-    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(2, mh - idx*8*fontsize/3);
-	matrix->clear();
-	matrix->setTextColor(matrix->Color(0,192,192));
-	matrix->print("S");
-	startfade = l;
-    }
-    l++; idx--;
+	if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	    matrix->setCursor(2, mh - idx*8*fontsize/3);
+	    matrix->clear();
+	    matrix->setTextColor(matrix->Color(0,192,192));
+	    matrix->print("S");
+	    startfade = l;
+	}
+	l++; idx--;
 
-    if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
-	matrix->setCursor(2, mh - idx*8*fontsize/3);
-	matrix->clear();
-	matrix->setTextColor(matrix->Color(0,255,0));
-	matrix->print("F");
-	startfade = l;
-    }
-    l++; idx--;
-#endif
+	if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
+	    matrix->setCursor(2, mh - idx*8*fontsize/3);
+	    matrix->clear();
+	    matrix->setTextColor(matrix->Color(0,255,0));
+	    matrix->print("F");
+	    startfade = l;
+	}
+	l++; idx--;
 
-#if 0
-    if (startfade < l && (state > (l*duration)/spd))  {
-	matrix->setCursor(1, 29);
-	matrix->clear();
-	matrix->setTextColor(matrix->Color(0,255,0));
-	matrix->print("8");
-	startfade = l;
+        #if 0
+	if (startfade < l && (state > (l*duration)/spd))  {
+	    matrix->setCursor(1, 29);
+	    matrix->clear();
+	    matrix->setTextColor(matrix->Color(0,255,0));
+	    matrix->print("8");
+	    startfade = l;
+	}
+	#endif
     }
-#endif
 
     if (startfade > -1)  {
 	for (uint16_t i = 0; i < NUMMATRIX; i++) matrixleds[i].nscale8(248-spd*2);
@@ -462,9 +459,9 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	size = 3;
 	l = 0;
 	if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; faster = 0; };
+	matrix->setTextSize(1);
     }
 
-    if (mw >= 48 && mh >=64) matrix->setTextSize(3); else matrix->setTextSize(1);
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
@@ -477,22 +474,29 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     if (dont_exit == 0) { dont_exit = 1; return 0; }
     if (direction == 1) {
 	int8_t offset = 0; // adjust some letters left or right as needed
-	if (letters[l] == 'T') offset = -2 * size/15;
-	if (letters[l] == '8') offset = 2 * size/15;
-
 	matrix->clear();
-	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
-
-#ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
-#endif
+	if (mw >= 48 && mh >=64) {
+	    matrix->setPassThruColor(0xD7E1EB);
+	    matrix->setCursor(10-size*0.55+offset, 36+size*0.75);
+	    matrix->print("TF");
+	    matrix->setPassThruColor(0x05C1FF);
+	    matrix->setCursor(24-size*0.55+offset, 68+size*0.75);
+	    matrix->print("SF");
+	} else {
+	    if (letters[l] == 'T') offset = -2 * size/15;
+	    if (letters[l] == '8') offset = 2 * size/15;
 
-#ifdef M32B8X3
-	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
-#else
-	matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
-#endif
-	matrix->print(letters[l]);
+	    matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
+
+
+    #ifdef M32B8X3
+	    matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
+    #else
+	    matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
+    #endif
+	    matrix->print(letters[l]);
+	}
 	matrix->setPassThruColor();
 	if (size<18) size++;
 	else if (zoom_type == 0) { done = 1; delayframe = max((speed - faster*10) * 1, 3); }
@@ -503,18 +507,25 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 
 	matrix->clear();
 	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 64, 192)));
-	if (letters[l] == 'T') offset = -2 * size/15;
-	if (letters[l] == '8') offset = 2 * size/15;
-
-#ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
-#endif
-#ifdef M32B8X3
-	matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
-#else
-	matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
-#endif
-	matrix->print(letters[l]);
+	if (mw >= 48 && mh >=64) {
+	    matrix->setPassThruColor(0xD7E1EB);
+	    matrix->setCursor(10-size*0.55+offset, 36+size*0.75);
+	    matrix->print("TF");
+	    matrix->setPassThruColor(0x05C1FF);
+	    matrix->setCursor(24-size*0.55+offset, 68+size*0.75);
+	    matrix->print("SF");
+	} else {
+	    if (letters[l] == 'T') offset = -2 * size/15;
+	    if (letters[l] == '8') offset = 2 * size/15;
+
+    #ifdef M32B8X3
+	    matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
+    #else
+	    matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
+    #endif
+	    matrix->print(letters[l]);
+	}   
 	matrix->setPassThruColor();
 	if (size>3) size--; else { done = 1; direction = 1; delayframe = max((speed-faster*10)/2, 3); };
     }
@@ -1040,9 +1051,7 @@ uint8_t scrollText(const char str[], uint8_t len) {
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	x = 7;
-#ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
-#endif
 	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
 	matrix->setTextSize(1);
 	matrix->setRotation(0);
@@ -1101,9 +1110,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	x = 1;
-#ifndef NOFONTS
 	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
-#endif
 	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
 	matrix->setTextSize(1);
 	matrix->setRotation(0);

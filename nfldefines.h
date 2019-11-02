@@ -37,17 +37,13 @@
     // 8-bit/DMA Memory Available  :  46728 bytes total,  40976 bytes largest free block
 
 
-    //TODO: enable swirl on 24 diplay but not big display
-    //TODO2: make sure all other except radar are turned on
-
-
     // Which demos are shown, and in which order
     // 0 unused
-    // 2 TF BM essbr
-    // 3 TF BM essbr fade
+    // 2 BM essbr
+    // 3 BM essbr fade
     // 4 TF tfsf zoom
-    // 5 TF tfsf zoom
-    // 6 TF tfsf zoom
+    // 5 TF tfsf zoom2
+    // 6 tfsf letters
     // 7 with every beat
     // 8 BM burn baby burn, 64x64 only
     // 9 BM safety third (24x32 shirt and 64x64 only)
@@ -66,7 +62,8 @@
     const uint8_t demo_mapping[] = {
 	//                 5                10                 15
     #ifndef BM
-	10, 84, 78, 17, 2, 18, 5, 3, 20, 4,  22, 23, 24, 6,  26, 27, 7,
+      //10, 84, 78, 17, 2, 18, 5, 3, 20, 4,  22, 23, 24, 6,  26, 27, 7,
+	10, 84, 78, 17, 2, 18, 5, 3, 20, 4,  22, 23, 24, 88,  26, 27, 7,
     #else
 	10, 84, 78, 17, 2, 18, 9, 3, 20, 56, 22, 23, 24, 88, 26, 27, 7,
     #endif
@@ -88,7 +85,7 @@
     };
 
 #ifndef BM
-    const uint8_t best_mapping[] = { 17, 23, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, 101, 105, 106, };
+    const uint8_t best_mapping[] = { 5, 17, 23, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, 101, 105, 106, };
 #else
     const uint8_t best_mapping[] = {  2, 23, 27, 56, 78, 84, 3, 87, 88, 91, 94, 9, 96, 97, 99, 100, 8, 108, 109, 110, 111, 112, 35, 36 };
 #endif
