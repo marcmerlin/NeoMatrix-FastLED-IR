@@ -584,12 +584,12 @@ void hypnoduck4()
 
     zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CRGB::Black);
   else
-  { if (flip)
+  { //if (flip)
       zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CHSV(h + 35, 255, 155));
-    else
-      zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CRGB::White);
+    //else
+    //  zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CRGB::White);
   }
-  for (uint32_t jj = 890; jj > 166 - (counter % 160); jj -= 5)
+  for (uint32_t jj = 890; jj > 166 - (counter % 160); jj -= 3)
   {
     xangle =  (sin8(jj + quash * h) - 128.0) / 128.0;
     yangle =  (cos8(jj + quash * h) - 128.0) / 128.0;
