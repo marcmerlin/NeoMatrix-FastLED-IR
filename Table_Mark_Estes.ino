@@ -589,7 +589,10 @@ void hypnoduck4()
     //else
     //  zeds.DrawFilledRectangle(0, 0, MATRIX_WIDTH  - 1, MATRIX_HEIGHT  - 1, CRGB::White);
   }
-  for (uint32_t jj = 890; jj > 166 - (counter % 160); jj -= 3)
+#define hd4size 1200 // 890 for 64x64, need 1200 for 96x96
+#define hdcenter 120 // 166 for 64x64, decrease to 120 for 96x96
+#define hd4step 3 // 5 is ok for 64x64, but need to decrease to 3 or 2 for 96x96
+  for (uint32_t jj = hd4size; jj > 166 - (counter % 160); jj -= hd4step)
   {
     xangle =  (sin8(jj + quash * h) - 128.0) / 128.0;
     yangle =  (cos8(jj + quash * h) - 128.0) / 128.0;

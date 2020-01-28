@@ -348,33 +348,92 @@ void font_test() {
 uint8_t tfsf() {
     static uint16_t state;
     static float spd;
-    static int8_t startfade;
-    float spdincr = 0.6;
-    uint16_t duration = 100;
-    uint8_t resetspd = 5;
     uint8_t l = 0;
-    uint8_t repeat = 2;
-    uint8_t fontsize = 1;
-    uint8_t idx = 3;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-	startfade = -1;
-	matrix->setRotation(0);
-	// biggest font is 18, but this spills over
-	matrix->setFont( &Century_Schoolbook_L_Bold[16] );
-	if (mw >= 48 && mh >=48) fontsize = 2;
-	matrix->setTextSize(fontsize);
-    }
-
+    // For a bigger screen, no need to flash the letters one after another
+    // this is a quick and dirty display of them all.
     if (mw >= 48 && mh >=64) {
-	
-    }
-    else 
-    {
+	static bool didclear;
+	static bool firstpass;
+	float spdincr = 0.6;
+	uint16_t duration = 100;
+	uint16_t overlap = 70;
+	uint8_t displayall = 18;
+	uint8_t resetspd = 24;
+	// compat from tfsf_zoom, hardcoded size and location in this display
+	uint8_t size = 18;
+	uint8_t offset = 0;
+
+	if (matrix_reset_demo == 1) {
+	    matrix_reset_demo = 0;
+	    matrix->clear();
+	    state = 1;
+	    spd = 1.0;
+	    didclear = 0;
+	    firstpass = 0;
+	    matrix->setFont( &Century_Schoolbook_L_Bold[size] );
+	    matrix->setRotation(0);
+	    matrix->setTextSize(1);
+	}
+
+	if (! didclear) {
+	    matrix->clear();
+	    didclear = 1;
+	}
+
+	//if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	    //matrix->setPassThruColor(0xD7E1EB);
+	    matrix->setPassThruColor(0x77818B);
+	    matrix->setCursor(10-size*0.55+offset, 36+size*0.75);
+	    matrix->print("TF");
+	//}
+	l++;
+
+	//if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	    firstpass = 1;
+	    //matrix->setPassThruColor(0x05C1FF);
+	    matrix->setPassThruColor(0x00618F);
+	    matrix->setCursor(24-size*0.55+offset, 68+size*0.75);
+	    matrix->print("SF");
+	//}
+	l++;
+
+	matrix->setPassThruColor();
+	if (state++ > (l*duration-l*overlap)/spd) {
+	    state = 1;
+	    spd += spdincr;
+	    if (spd > resetspd) {
+		matrix_reset_demo = 1;
+		return 0;
+	    }
+	}
+
+	//if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
+
+	matrix_show();
+	return 2;
+    } else {
+	static int8_t startfade;
+	float spdincr = 0.6;
+	uint16_t duration = 100;
+	uint8_t resetspd = 5;
+	uint8_t repeat = 2;
+	uint8_t fontsize = 1;
+	uint8_t idx = 3;
+
+	if (matrix_reset_demo == 1) {
+	    matrix_reset_demo = 0;
+	    matrix->clear();
+	    state = 1;
+	    spd = 1.0;
+	    startfade = -1;
+	    matrix->setRotation(0);
+	    // biggest font is 18, but this spills over
+	    matrix->setFont( &Century_Schoolbook_L_Bold[16] );
+	    if (mw >= 48 && mh >=48) fontsize = 2;
+	    matrix->setTextSize(fontsize);
+	}
+
 	if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	    matrix->setCursor(0, mh - idx*8*fontsize/3);
 	    matrix->clear();
@@ -411,7 +470,7 @@ uint8_t tfsf() {
 	}
 	l++; idx--;
 
-        #if 0
+	#if 0
 	if (startfade < l && (state > (l*duration)/spd))  {
 	    matrix->setCursor(1, 29);
 	    matrix->clear();
@@ -420,25 +479,24 @@ uint8_t tfsf() {
 	    startfade = l;
 	}
 	#endif
-    }
 
-    if (startfade > -1)  {
-	for (uint16_t i = 0; i < NUMMATRIX; i++) matrixleds[i].nscale8(248-spd*2);
-    }
-    l++;
-
-    if (state++ > ((l+0.5)*duration)/spd) {
-	state = 1;
-	startfade = -1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    matrix_reset_demo = 1;
-	    return 0;
+	if (startfade > -1)  {
+	    for (uint16_t i = 0; i < NUMMATRIX; i++) matrixleds[i].nscale8(248-spd*2);
 	}
-    }
+	l++;
 
-    matrix_show();
-    return repeat;
+	if (state++ > ((l+0.5)*duration)/spd) {
+	    state = 1;
+	    startfade = -1;
+	    spd += spdincr;
+	    if (spd > resetspd) {
+		matrix_reset_demo = 1;
+		return 0;
+	    }
+	}
+	matrix_show();
+	return repeat;
+    }
 }
 
 // type 0 = up, type 1 = up and down
@@ -956,16 +1014,16 @@ uint8_t webwc() {
 	spd = 1.0;
 	didclear = 0;
 	firstpass = 0;
+	if (mw >= 64) {
+	    //matrix->setFont(FreeMonoBold9pt7b);
+	    matrix->setFont(&Century_Schoolbook_L_Bold_12);
+	} else {
+	    matrix->setFont(&TomThumb);
+	}
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
     }
 
-    if (mw >= 64) {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_12);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
-    matrix->setRotation(0);
-    matrix->setTextSize(1);
     if (! didclear) {
 	matrix->clear();
 	didclear = 1;
@@ -1018,10 +1076,10 @@ uint8_t webwc() {
 	else matrix->setCursor(0, 30);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("CLOSER");
-	matrix->setPassThruColor();
     }
     l++;
 
+    matrix->setPassThruColor();
     if (state++ > (l*duration-l*overlap)/spd) {
 	state = 1;
 	spd += spdincr;
@@ -1772,10 +1830,10 @@ uint8_t plasma() {
     return 0;
 }
 
-uint8_t metd(uint8_t demo) {
+uint8_t tmed(uint8_t demo) {
     // 0 to 12
     // add new demos at the end or the number selections will be off
-    const uint16_t metd_mapping[][3] = {
+    const uint16_t tmed_mapping[][3] = {
 	{  10, 5, 300 },  // 5 color windows-like pattern with circles in and out
 	{  11, 5, 300 },  // color worm patterns going out with circles zomming out
 	{  25, 3, 500 },  // 5 circles turning together, run a bit longer
@@ -1793,10 +1851,10 @@ uint8_t metd(uint8_t demo) {
 	{ 110, 5, 300 },  // bubbles going up or right
     };
 
-    uint8_t dfinit = metd_mapping[demo][1];
-    uint16_t loops = metd_mapping[demo][2];
+    uint8_t dfinit = tmed_mapping[demo][1];
+    uint16_t loops = tmed_mapping[demo][2];
     static uint8_t delayframe = dfinit;
-    demo = metd_mapping[demo][0];
+    demo = tmed_mapping[demo][0];
 
     if (matrix_reset_demo == 1) {
 	Serial.print("Starting ME Table Demo #");
@@ -2093,7 +2151,7 @@ void matrix_update() {
 	    // aurora 13 demo
 	    if      (matrix_demo >= 30 && matrix_demo <= 42) ret = aurora(matrix_demo-30);
 	    // table 13 demos
-	    else if (matrix_demo >= 45 && matrix_demo <= 57) ret = metd(matrix_demo-45);
+	    else if (matrix_demo >= 45 && matrix_demo <= 57) ret = tmed(matrix_demo-45);
 	    else if (matrix_demo >= 70 && matrix_demo < 70+gif_cnt)
 	    {
 		// Before a new GIF, give a chance for an IR command to go through
