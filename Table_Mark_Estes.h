@@ -30,10 +30,8 @@ void corner();
 void bkringer();
 void ringer();
 void whitewarp();
+void warp();
 void spire();
-void Raudio();
-void Raudio3();
-void Raudio5();
 void rmagictime();
 void bkboxer();
 void starer();
@@ -46,8 +44,10 @@ void hypnoduck4();
 void solid2();
 void bubbles();
 void homer2();
-
-
-
+void circlearc();
+void confetti();
+void confetti2();
+void Roundhole();
+void solid();
 #endif
 

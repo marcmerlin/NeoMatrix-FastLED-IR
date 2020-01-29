@@ -283,6 +283,46 @@ void whitewarp() {
    // zeds(xfire[howmany - 1], yfire[howmany - 1]) = CRGB::White;
 }
 
+void warp() {
+  if (counter == 0 )
+  {
+    howmany = random (MIDLX * 7 / 5, MATRIX_WIDTH * 7 / 5);
+
+    for (int i = 0; i < howmany; i++) {
+      fcount[i] = random8(); //angle
+      fcolor[i] = blender + random(45);//color
+      fpeed[i] = random(2, 12);
+      xfire[i] = driftx;
+      yfire[i] = drifty;
+
+    }
+  }
+
+  for (int i = 0; i < howmany; i++)
+  {
+    xfire[i] = xfire[i] + (fpeed[i] / 4.0) * (sin8(fcount[i] + h ) - 128.0) / 128.0;
+    yfire[i] = yfire[i] + ( fpeed[i] / 4.0) * (cos8(fcount[i] + h ) - 128.0) / 128.0;
+    if (!flip)
+      zeds(xfire[i], yfire[i]) = CHSV(fcolor[i], 255, 255);//random colors
+    else if (!flip2)
+      zeds(xfire[i], yfire[i]) = CRGB::White;
+    else
+      zeds(xfire[i], yfire[i]) = CHSV(blender*64/howmany, 255, 255); //one shade of color
+
+    if (xfire[i] < 0 || yfire[i] < 0 || xfire[i] > MATRIX_WIDTH || yfire[i] > MATRIX_HEIGHT) {
+      xfire[i] = driftx;
+      yfire[i] = drifty;
+      fcount[i] = random8(); //angle
+      fcolor[i] = random8();;
+      fpeed[i] = random8(2, 8);
+    }
+  }
+  if (!flip2)
+    zeds(xfire[howmany - 1], yfire[howmany - 1]) = CHSV(blender*64/howmany , 255, 255);
+  else
+    zeds(xfire[howmany - 1], yfire[howmany - 1]) = CRGB::White;
+}
+
 void spire() {
 
   if (counter == 0)
@@ -335,38 +375,6 @@ void spire() {
   xer = driftx - radius * (cos8(2 * h + 43) - 128.0) / 128.0;
   yer = drifty - radius * (sin8(2 * h + 43) - 128.0) / 128.0;
   zeds.DrawCircle(xer, yer, dot, CHSV(h - 43, 255, 255));
-}
-
-
-void Raudio()  // rotating ring,  dots  , freq rotates, colors do not
-{
-  for (int i = 0; i < MATRIX_WIDTH ; i++) {
-    xangle =  (sin8(i * mstep  +  h) - 128.0) / 128.0;
-    yangle =  (cos8(i * mstep  +  h) - 128.0) / 128.0;
-    zeds(MIDLX + xangle * (MATRIX_WIDTH / 2 - faudio[i] / mscale) , MIDLY + yangle * (MATRIX_HEIGHT / 2 - faudio[i] / mscale)) = CHSV(i * mstep , 255, 255);
-  }
-  audioprocess();
-}
-
-void Raudio3()//star shaped colors rotate
-{
-  for (int i = 0; i < MATRIX_WIDTH ; i++) {
-    xangle =  (sin8(i * mstep  + h) - 128.0) / 128.0;
-    yangle =  (cos8(i * mstep  + h) - 128.0) / 128.0;
-    zeds.DrawLine(MIDLX + xangle * 2 , MIDLY + yangle * 2 , MIDLX  + xangle * ( 2 + (faudio[i] ) / (mscale)) , MIDLY  + yangle * ( 2 + (faudio[i] ) / (mscale)), CHSV(i * mstep , 255, 255));
-  }
-  //zeds.DrawFilledRectangle(MIDLX - 1, MIDLY - 1, MIDLX + 1, MIDLY + 1, CHSV(h, 255, 255));
-  audioprocess();
-}
-
-void Raudio5()  // multi color  ring witht variable height
-{
-  for (byte i = 0; i < MATRIX_WIDTH ; i++) {
-    xangle =  (sin8(i * mstep  - h) - 128.0) / 128.0;
-    yangle =  (cos8(i * mstep  - h) - 128.0) / 128.0;
-    zeds.DrawLine(MIDLX + MIDLX * xangle, MIDLY + MIDLY * yangle, MIDLX + xangle * (MIDLX - faudio[i] / (mscale )) , MIDLY + yangle * (MIDLY - faudio[i] / (mscale )), CHSV(i * mstep  + 2 * h, 255, 255));
-  }
-  audioprocess();
 }
 
 void rmagictime()
@@ -450,8 +458,11 @@ void starer() {
 }
 
 void hypnoduck2()
-// growing spirals
 {
+  // MM FLAGS
+  flip = 0; // force whitewarp
+  //flip2 controls white or color
+  flip3 = 0; // force whitewarp
   if (counter == 0)
     dot = random(2, 4);
   if (!flip2)
@@ -707,6 +718,215 @@ void homer2() {// growing egg
   zeds.DrawFilledCircle( MIDLX  , MIDLY, dot  , CHSV(h, 255, 55 + 100 * dot / MIDLX));
 }
 
+void circlearc()// arc of circles
+{
+  if (counter % 888 == 0 || counter == 0)
+  {
 
+    bfade = random (2, 6);
+    howmany = random (3, 6);
+    radius2 = 64 / howmany;
+    radius3 = random (MATRIX_WIDTH - (MATRIX_WIDTH >> 2), MATRIX_WIDTH + (MATRIX_WIDTH >> 2));
+    poffset = random(1, 6);
+    inner = random(5,  MIDLX / 2);
+
+
+  }
+  if ( counter % 20 == 0) {
+    radius3 = radius3 + directn;
+
+    if (radius3 <  MATRIX_WIDTH - (MATRIX_WIDTH >> 2) ||  radius3 > MATRIX_WIDTH + (MATRIX_WIDTH >> 2))
+      directn = 0 - directn;
+  }
+  switch (poffset)
+  {
+    case 1:  // four -all headed in different direcitons
+      for (int i = 0; i < howmany * 4; i++)
+      {
+        zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner, CHSV(h, 255, 255));
+        //  zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner, CHSV(h  + 128, 255, 255));
+
+        if ( flip2) {
+          zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 64, 255, 255));
+          //   zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+        }
+      }
+      for (int i = 0; i < howmany * 4; i++)
+      {
+        //   zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner, CHSV(h, 255, 255));
+        zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner, CHSV(h  + 128, 255, 255));
+
+        if ( flip2) {
+          //     zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 64, 255, 255));
+          zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+        }
+      }
+      break;
+
+    case 2:// white 4 headed in dirrerent directions
+      for (int i = 0; i < howmany * 4; i++)
+      {
+        if (flip2) {
+          zeds.DrawFilledCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner, CHSV(h, 255, 255));
+          //     zeds.DrawFilledCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner, CHSV(h  + 128, 255, 255));
+          zeds.DrawCircle( radius3 * (sin8(i * radius2 - h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner, CRGB::White);
+          //      zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner, CRGB::White);
+        }
+        zeds.DrawFilledCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 64, 255, 255));
+        //    zeds.DrawFilledCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+
+        zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CRGB::White);
+        //    zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CRGB::White);
+
+      }
+      for (int i = 0; i < howmany * 4; i++)
+      {
+        if (flip2) {
+          //      zeds.DrawFilledCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner, CHSV(h, 255, 255));
+          zeds.DrawFilledCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner, CHSV(h  + 128, 255, 255));
+          //       zeds.DrawCircle( radius3 * (sin8(i * radius2 - h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner, CRGB::White);
+          zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner, CRGB::White);
+        }
+        //     zeds.DrawFilledCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 64, 255, 255));
+        zeds.DrawFilledCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+
+        //    zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CRGB::White);
+        zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CRGB::White);
+
+      }
+
+
+      break;
+    case 3:// some filled circles
+      for (int i = 0; i < howmany * 4; i++)
+      {
+        zeds.DrawFilledCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner / 2, CHSV(h, 255, 255));
+        //  zeds.DrawFilledCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner / 2, CHSV(h  + 128, 255, 255));
+        if (flip2) {
+          zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner , CHSV(h - 32, 255, 255));
+          //   zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner , CHSV(h  + 128, 255, 255));
+        }
+        if (flip3) {
+          zeds.DrawFilledCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner / 2, CHSV(h + 87, 255, 255));
+          //     zeds.DrawFilledCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner / 2, CHSV(h  - 64, 255, 255));
+          if (flip2)
+          {
+            zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 87 - 32, 255, 255));
+            //     zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+          }
+        }
+      }
+      for (int i = 0; i < howmany * 4; i++)
+      {
+        //   zeds.DrawFilledCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner / 2, CHSV(h, 255, 255));
+        zeds.DrawFilledCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner / 2, CHSV(h  - 87, 255, 255));
+        if (flip2) {
+          //     zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner , CHSV(h, 255, 255));
+          zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner , CHSV(h  - 87 - 32, 255, 255));
+        }
+        if (flip3) {
+          //     zeds.DrawFilledCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner / 2, CHSV(h -87+32, 255, 255));
+          zeds.DrawFilledCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner / 2, CHSV(h  - 87 + 32, 255, 255));
+          if (flip2)
+          {
+            //     zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h -87 + 32, 255, 255));
+            zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CHSV(h  + -87 - 32, 255, 255));
+          }
+        }
+      }
+
+      break;
+    case 4:// 8  opposite directions  littles
+      for (int i = 0; i < howmany * 4; i++)
+      {
+
+
+        zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner / 2, CHSV(h, 255, 255));
+        //  zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner / 2, CHSV(h  + 128, 255, 255));
+
+        if (flip) {
+          zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner / 2, CHSV(h + 64, 255, 255));
+          //  zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner / 2, CHSV(h  - 64, 255, 255));
+        }
+        else
+        {
+          zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 64, 255, 255));
+          //      zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+        }
+      }
+      for (int i = 0; i < howmany * 4; i++)
+      {
+
+
+        //   zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner / 2, CHSV(h, 255, 255));
+        zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  - h % 64 + 128) - 128.0) / 128, inner / 2, CHSV(h  + 128, 255, 255));
+
+        if (flip) {
+          //     zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner / 2, CHSV(h + 64, 255, 255));
+          zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner / 2, CHSV(h  - 64, 255, 255));
+        }
+        else
+        {
+          //       zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 64, 255, 255));
+          zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  -  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  - h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+        }
+      }
+      break;
+    default:// four headed together
+      for (int i = 0; i < howmany * 4; i++)
+      {
+        // zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner, CHSV(h, 255, 255));
+        zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  +  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  + h % 64 + 128) - 128.0) / 128, inner, CHSV(h  + 128, 255, 255));
+        if (flip2)
+        {
+          //      zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 64, 255, 255));
+          zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  +  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  + h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+        }
+      }
+      for (int i = 0; i < howmany * 4; i++)
+      {
+        zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64) - 128.0) / 128,   radius3 * (cos8(i * radius2 -  h % 64) - 128.0) / 128, inner, CHSV(h, 255, 255));
+        //   zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  +  h % 64 + 128) - 128.0) / 128,  MATRIX_HEIGHT - radius3 * (cos8(i * radius2  + h % 64 + 128) - 128.0) / 128, inner, CHSV(h  + 128, 255, 255));
+        if (flip2)
+        {
+          zeds.DrawCircle( radius3 * (sin8(i * radius2 -  h % 64 - 64) - 128.0) / 128,   MATRIX_HEIGHT - radius3 * (cos8(i * radius2 -  h % 64 - 64) - 128.0) / 128, inner, CHSV(h + 64, 255, 255));
+          //    zeds.DrawCircle( MATRIX_WIDTH - radius3 * (sin8(i * radius2  +  h % 64 + 64) - 128.0) / 128,  radius3 * (cos8(i * radius2  + h % 64 + 64) - 128.0) / 128, inner, CHSV(h  - 64, 255, 255));
+        }
+      }
+
+      break;
+  }
+}
+
+void confetti() {
+  if (random8() < 224)
+    zeds.DrawCircle(random(MATRIX_WIDTH), random(MATRIX_HEIGHT), random(1, 7), CHSV(random8(), 255, 255));
+  else
+    zeds.DrawCircle(random(MATRIX_WIDTH), random(MATRIX_HEIGHT), random(1, 7), CHSV(h + 128 , 255, 255));
+}
+
+void confetti2() {
+  if (random8() > blender)
+    zeds(random(MATRIX_WIDTH), random(MATRIX_HEIGHT)) += CHSV(h + random(32) + 128, 255, 255);
+  else
+    zeds.DrawFilledCircle(random(MATRIX_WIDTH), random(MATRIX_HEIGHT), random(1, 9), CHSV(h + random(32) + 128 , 255, 255));
+}
+
+void Roundhole()// eff4
+{
+  solid();
+  for (uint16_t y = 0; y < byte(MATRIX_HEIGHT < 255 ? MATRIX_HEIGHT : 255) ; y += dot)
+  {
+    zeds.DrawCircle(driftx, drifty, MATRIX_HEIGHT - y, CHSV(h * 2 + y * steper, 255, 255));
+
+  }
+}
+
+void solid()
+{
+  if (counter == 0)
+    rr = random8();
+  zeds.DrawFilledRectangle(0 , 0,  MATRIX_WIDTH, MATRIX_HEIGHT, CHSV(rr + h, 255, 90));
+}
 
 // vim:sts=2:sw=2

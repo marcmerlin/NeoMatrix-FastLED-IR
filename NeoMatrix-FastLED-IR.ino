@@ -354,11 +354,10 @@ uint8_t tfsf() {
     // this is a quick and dirty display of them all.
     if (mw >= 48 && mh >=64) {
 	static bool didclear;
-	static bool firstpass;
 	float spdincr = 0.6;
 	uint16_t duration = 100;
 	uint16_t overlap = 70;
-	uint8_t displayall = 18;
+	//uint8_t displayall = 18;
 	uint8_t resetspd = 24;
 	// compat from tfsf_zoom, hardcoded size and location in this display
 	uint8_t size = 18;
@@ -370,7 +369,6 @@ uint8_t tfsf() {
 	    state = 1;
 	    spd = 1.0;
 	    didclear = 0;
-	    firstpass = 0;
 	    matrix->setFont( &Century_Schoolbook_L_Bold[size] );
 	    matrix->setRotation(0);
 	    matrix->setTextSize(1);
@@ -390,7 +388,6 @@ uint8_t tfsf() {
 	l++;
 
 	//if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	    firstpass = 1;
 	    //matrix->setPassThruColor(0x05C1FF);
 	    matrix->setPassThruColor(0x00618F);
 	    matrix->setCursor(24-size*0.55+offset, 68+size*0.75);
@@ -1833,23 +1830,27 @@ uint8_t plasma() {
 uint8_t tmed(uint8_t demo) {
     // 0 to 12
     // add new demos at the end or the number selections will be off
+    // make sure 77 runs long enough
     const uint16_t tmed_mapping[][3] = {
-	{  10, 5, 300 },  // 5 color windows-like pattern with circles in and out
-	{  11, 5, 300 },  // color worm patterns going out with circles zomming out
-	{  25, 3, 500 },  // 5 circles turning together, run a bit longer
-	{  29, 5, 300 },  // swirly RGB colored dots meant to go to music
-	{  34, 5, 300 },  // single colored lines that extend from center.
-//	{  36, 2, 200 },  // circles of color, too similar to 34 and broken on non square display
-//	{  37, 6, 200 },  // other kinds of swirly colored pixels, too close to 29
-	{  52, 5, 300 },  // rectangles/squares/triangles zooming out
-	{  67, 5, 900 },  // two colors swirling bigger, creating hypno pattern
-	{  70, 6, 200 },  // 4 fat spinning comets with shapes growing from middle
-	{  73, 3, 2000 }, // circle inside fed by outside attracted color dots
-	{  77, 5, 300 },  // streaming lines of colored pixels with shape zooming in or out
-	{  80, 5, 200 },  // rotating triangles of color
-	{ 105, 2, 400 },  // spinnig changing colors of hypno patterns
-	{ 110, 5, 300 },  // bubbles going up or right
+	{   4, 6, 200 },  // 00 concentric colors and shapes
+	{  10, 5, 300 },  //    5 color windows-like pattern with circles in and out
+	{  11, 5, 300 },  //    color worm patterns going out with circles zomming out
+	{  25, 3, 500 },  //    5 circles turning together, run a bit longer
+	{  52, 5, 300 },  //    rectangles/squares/triangles zooming out
+	{  60, 6, 200 },  // 05 opposite concentric colors and shapes (52 reversed)
+	{  62, 6, 200 },  //    lots of patterns: stars and rectangles, bk triangles, big balls
+	{  67, 5, 900 },  //    two colors swirling bigger, creating hypno pattern
+	{  70, 6, 200 },  //    4 fat spinning comets with shapes growing from middle sometimes
+	{  77, 5, 300 },  //    streaming lines of colored pixels with shape zooming in or out
+	{  80, 5, 200 },  // 10 rotating triangles of color
+	{ 104, 6, 200 },  //    circles mixing in the middle
+	{ 105, 2, 400 },  //    spinnig changing colors of hypno patterns
+
     };
+//	{  29, 5, 300 },  // XX swirly RGB colored dots meant to go to music
+//	{  34, 5, 300 },  // XX single colored lines that extend from center, meant for music
+//	{  73, 3, 2000 }, // XX circle inside fed by outside attracted color dots
+//	{ 110, 5, 300 },  // XX bubbles going up or right
 
     uint8_t dfinit = tmed_mapping[demo][1];
     uint16_t loops = tmed_mapping[demo][2];
@@ -1890,6 +1891,15 @@ uint8_t tmed(uint8_t demo) {
     delayframe = dfinit;
 
     switch (demo) {
+    case 4:
+      Roundhole();
+      if (flip3)
+        bkstarer();
+      else
+        bkringer();
+      // boxer();
+      adjuster();
+      break;
     case 10:
 	corner();
 	bkringer();
@@ -1903,34 +1913,52 @@ uint8_t tmed(uint8_t demo) {
 	spire();
 	if (flip3) adjuster();
 	break;
-    case 29:
-	Raudio();
-	break;
-    case 34:
-	Raudio3();
-	break;
-#if 0
-    case 36: // unused, circles of color, too similar to 34 and broken on non square display
-	Raudio5();
-	break;
-    case 37: // unused, other kinds of loose colored pixels, too close to 29
-	Raudio();
-        adjuster();
-	break;
-#endif
     case 52:
 	rmagictime();
 	bkboxer();
 	starer();
 	if (flip && !flip2) adjuster();
 	break;
+    case 60:
+      if (flip3)
+        bkringer();
+      else
+        bkboxer();
+      if (flip2)
+        ringer();
+      else
+        starer();
+      break;
+    case 62:
+      if (flip)
+        boxer();
+      else
+        ringer();
+      if (flip2)
+        bkstarer();
+      else
+        bkboxer();
+      if (flip3)
+        warp();
+      else {
+        confetti2();
+        adjuster();
+      }
+      break;
     case 67:
+        // MM FLAGS
+        flip = 0; // force whitewarp
+        //flip2 controls white or color
+        flip3 = 0; // force whitewarp
+
 	hypnoduck2();
 	break;
     case 70:
-	// TODO, inspect each sub-demo
-	if (flip2) boxer();
-	else if (flip3) bkringer();
+        // MM FLAGS
+	if (!flip2) flip3 = 1;
+
+        if (flip2) boxer(); // outward going box
+        else if (flip3) bkringer(); // back collapsing circles
 	spin2();
 	if (!flip && flip2 && !flip3) adjuster();
 	break;
@@ -1944,6 +1972,9 @@ uint8_t tmed(uint8_t demo) {
     case 80:
 	starz();
 	break;
+    case 104:
+        circlearc();
+        break;
     case 105:
 	hypnoduck4();
 	break;
