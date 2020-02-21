@@ -1886,6 +1886,11 @@ uint8_t tmed(uint8_t demo) {
 	case 52:
 	    bfade = 3;
 	    break;
+	// Remove delay on pattern only based on ringer/bkringer
+	case 60:
+	  ringdelay = 0;
+	  bringdelay = 0;
+	  break;
 	case 110:
 	    // this kills the trail but also makes the colors too dark
 	    // not true in the original demo.
@@ -1941,6 +1946,8 @@ uint8_t tmed(uint8_t demo) {
         starer();
       break;
     case 62:
+      // MM FLAGS
+      flip3 = 1; // I don't like confetti2
       if (flip)
         boxer();
       else
