@@ -6,6 +6,7 @@
 #define DISABLE_MATRIX_TEST
 #include "neomatrix_config.h"
 
+#define HAS_FS
 #ifdef ESP8266
     #define mheight 32
 #elif defined(ESP32)
@@ -14,6 +15,8 @@
     #else
 	#define mheight 96
     #endif
+#elif defined(ARDUINOONPC)
+    #define mheight 192
 #else
 #error "Matrix config undefined, please set height"
 #endif
@@ -24,7 +27,7 @@
 #endif
 
 // On ESP32, I have a 64x64 direct matrix (not tiled) with 2 options of drivers.
-#if mheight == 96
+#if mheight == 96 || mheight == 192
     // Using RGBPanel via SmartMatrix
 
     // Memory After GIF init:
@@ -90,11 +93,15 @@
     const uint8_t best_mapping[] = {  2, 23, 27, 56, 78, 84, 3, 87, 88, 91, 94, 9, 96, 97, 99, 100, 8, 108, 109, 110, 111, 112, 35, 36 };
 #endif
 
+#ifndef ARDUINOONPC
     #define RECV_PIN 34
 
     #define STRIP_NUM_LEDS 48
     CRGB leds[STRIP_NUM_LEDS];
     #define NEOPIXEL_PIN 13
+#else
+    #undef HAS_FS
+#endif
 #elif mheight == 64
     // Which demos are shown, and in which order
     const uint8_t demo_mapping[] = {

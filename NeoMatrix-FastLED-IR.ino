@@ -27,11 +27,14 @@
 #define TWINKLEFOX_INCLUDE
 #include "TwinkleFOX.h"
 #include "aurora.h"
-#include "GifAnimViewer.h"
 #include "Table_Mark_Estes_Impl.h"
 
+#ifdef HAS_FS
+#include "GifAnimViewer.h"
+#endif
+
 // Compute how many GIFs have been defined (called in setup)
-uint8_t gif_cnt;
+uint8_t gif_cnt = 0;
 
 const uint16_t PROGMEM RGB_bmp[64] = {
       // 10: multicolor smiley face
@@ -125,24 +128,26 @@ int16_t matrix_loop = -1;
 
 //----------------------------------------------------------------------------
 
-#ifdef ESP8266
-#include <IRremoteESP8266.h>
-#else
-    #ifdef ESP32RMTIR
-    #include <IRRecv.h> // https://github.com/lbernstone/IR32.git
-    #else
-    #include <IRremote.h>
-    #endif
-#endif
-
 // This file contains codes I captured and mapped myself
 // using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
 
-#ifndef ESP32RMTIR
-IRrecv irrecv(RECV_PIN);
-#else
-IRRecv irrecv;
+#ifdef RECV_PIN
+    #ifdef ESP8266
+    #include <IRremoteESP8266.h>
+    #else
+	#ifdef ESP32RMTIR
+	#include <IRRecv.h> // https://github.com/lbernstone/IR32.git
+	#else
+	#include <IRremote.h>
+	#endif
+    #endif
+
+    #ifndef ESP32RMTIR
+    IRrecv irrecv(RECV_PIN);
+    #else
+    IRRecv irrecv;
+    #endif
 #endif
 
 
@@ -1292,6 +1297,7 @@ uint8_t panOrBounceBitmap (const uint16_t *bitmap, uint16_t bitmapSize) {
 
 // FIXME: reset decoding counter to 0 between different GIFS
 uint8_t GifAnim(uint8_t idx) {
+#ifdef HAS_FS
     uint16_t x, y;
     uint8_t repeat = 1;
     static int8_t scrollx = 0;
@@ -1480,6 +1486,9 @@ uint8_t GifAnim(uint8_t idx) {
 	if (!gifloopsec--) { Serial.println(); return 0; };
     }
     return repeat;
+#else
+    return 0;
+#endif
 }
 
 uint8_t scrollBigtext() {
@@ -2315,17 +2324,19 @@ bool check_IR_serial() {
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
     if (readchar == 'p') return 1;
 
+#ifdef RECV_PIN
     char* rcvGroup = NULL;
-    uint32_t result; 
-#ifndef ESP32RMTIR
-    decode_results IR_result;
-    if (irrecv.decode(&IR_result)) {
-    	irrecv.resume(); // Receive the next value
-	result = IR_result.value;
-#else
-    if (irrecv.available()) {
-	result = irrecv.read(rcvGroup);
-#endif
+    uint32_t result = 0; 
+
+    #ifndef ESP32RMTIR
+	decode_results IR_result;
+	if (irrecv.decode(&IR_result)) {
+	    irrecv.resume(); // Receive the next value
+	    result = IR_result.value;
+    #else
+	if (irrecv.available()) {
+	    result = irrecv.read(rcvGroup);
+    #endif
 	switch (result) {
 	case IR_RGBZONE_POWER2:
 	    Serial.println("Got IR: Power2");
@@ -2343,6 +2354,7 @@ bool check_IR_serial() {
 	    return 0;
 	}
     }
+#endif
     return 0;
 }
 
@@ -2388,17 +2400,19 @@ bool handle_IR(uint32_t delay_time) {
     else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
 
+#ifdef RECV_PIN
     char* rcvGroup = NULL;
     uint32_t result; 
-#ifndef ESP32RMTIR
-    decode_results IR_result;
-    if (irrecv.decode(&IR_result)) {
-    	irrecv.resume(); // Receive the next value
-	result = IR_result.value;
-#else
-    if (irrecv.available()) {
-	result = irrecv.read(rcvGroup);
-#endif
+
+    #ifndef ESP32RMTIR
+	decode_results IR_result;
+	if (irrecv.decode(&IR_result)) {
+	    irrecv.resume(); // Receive the next value
+	    result = IR_result.value;
+    #else
+	if (irrecv.available()) {
+	    result = irrecv.read(rcvGroup);
+    #endif
 	switch (result) {
 	case IR_RGBZONE_BRIGHT:
 	case IR_RGBZONE_BRIGHT2:
@@ -2737,6 +2751,7 @@ bool handle_IR(uint32_t delay_time) {
 	    return 0;
 	}
     }
+#endif
     return 0;
 }
 
@@ -3124,7 +3139,9 @@ void setup() {
     // No blink13 in ESP8266 lib
     // this doesn't exist in the ESP8266 IR library, but by using pin D4
     // IR receive happens to make the system LED blink, so it's all good
-#else // ESP8266
+#endif // ESP8266
+
+#ifndef ARDUINOONPC
     #ifdef ESP32
 	#ifndef ESP32RMTIR
 	Serial.println("Init ESP32, set IR receive NOT to blink system LED");
@@ -3134,7 +3151,7 @@ void setup() {
 	Serial.println("Init NON ESP8266/ESP32, set IR receive to blink system LED");
 	irrecv.blink13(true);
     #endif
-#endif // ESP8266
+#endif
 
 #ifdef NEOPIXEL_PIN
     Serial.print("Using FastLED on pin ");
@@ -3165,8 +3182,10 @@ void setup() {
     // Heap/32-bit Memory Available: 181472 bytes total,  85748 bytes largest free block
     // 8-bit/DMA Memory Available  :  95724 bytes total,  39960 bytes largest free block
     matrix_setup(25000);
+#ifdef HAS_FS
     Serial.println("Init SPIFFS/FFat");
     sav_setup();
+#endif
     Serial.println("Init Aurora");
     aurora_setup();
     Serial.println("Init TwinkleFox");
@@ -3176,13 +3195,15 @@ void setup() {
     Serial.println("Init sublime");
     sublime_setup();
     Serial.println("Enabling IRin");
-#ifndef ESP32RMTIR
-    irrecv.enableIRIn(); // Start the receiver
-#else
-    irrecv.start(RECV_PIN);
-#endif
+#ifdef RECV_PIN
+    #ifndef ESP32RMTIR
+	irrecv.enableIRIn(); // Start the receiver
+    #else
+	irrecv.start(RECV_PIN);
+    #endif
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
+#endif
 
     GifAnim(255); // Compute how many GIFs are defined
     Serial.print("Number of GIFs defined: ");
