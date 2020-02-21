@@ -27,6 +27,8 @@
 #define TWINKLEFOX_INCLUDE
 #include "TwinkleFOX.h"
 #include "aurora.h"
+#include "GifAnimViewer.h"
+#include "Table_Mark_Estes_Impl.h"
 
 // Compute how many GIFs have been defined (called in setup)
 uint8_t gif_cnt;
@@ -1832,7 +1834,7 @@ uint8_t tmed(uint8_t demo) {
     // add new demos at the end or the number selections will be off
     // make sure 77 runs long enough
     const uint16_t tmed_mapping[][3] = {
-	{   4, 6, 200 },  // 00 concentric colors and shapes
+	{   4, 2, 200 },  // 00 concentric colors and shapes
 	{  10, 5, 300 },  //    5 color windows-like pattern with circles in and out
 	{  11, 5, 300 },  //    color worm patterns going out with circles zomming out
 	{  25, 3, 500 },  //    5 circles turning together, run a bit longer
