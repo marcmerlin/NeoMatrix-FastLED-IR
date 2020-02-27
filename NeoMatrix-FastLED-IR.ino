@@ -68,9 +68,7 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
 
 
 void matrix_show() {
-#ifdef SMARTMATRIX
-    matrix->show();
-#else // ESP32_16PINS
+#ifdef FASTLED_NEOMATRIX
     #ifdef ESP8266
     // Disable watchdog interrupt so that it does not trigger in the middle of
     // updates. and break timing of pixels, causing random corruption on interval
@@ -90,7 +88,9 @@ void matrix_show() {
     #ifdef ESP8266
         //ESP.wdtEnable(1000);
     #endif
-#endif // ESP32_16PINS
+#else
+    matrix->show();
+#endif
 }
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home
@@ -1498,30 +1498,16 @@ uint8_t scrollBigtext() {
     uint16_t loopcnt = 700;
     uint16_t x, y;
 
-#if 0
     static const char* text[] = {
-	"function nodeIsImport(elt) {",
-	"  return elt.localName === 'link' && elt.rel === IMPORT_LINK_TYPE; }",
-	"function generateScriptDataUrl(script) {",
-	"  var scriptContent = generateScriptContent(script);",
-	"  return 'data:text/javascript;charset=utf-8,' + encodeURIComponent(scriptContent); }",
-	"function generateScriptContent(script) {",
-	"  return script.textContent + generateSourceMapHint(script); }",
-	"function generateSourceMapHint(script) {",
-	"  var owner = script.ownerDocument;",
-	"  owner.__importedScripts = owner.__importedScripts || 0;",
-	"  var moniker = script.ownerDocument.baseURI;",
-	"  var num = owner.__importedScripts ? '-' + owner.__importedScripts : '';",
-	"  owner.__importedScripts++;",
-	"  return '\\n//# sourceURL=' + moniker + num + '.js\\n'; }",
-	"function cloneStyle(style) {",
-	"  var clone = style.ownerDocument.createElement('style');",
-	"  clone.textContent = style.textContent;",
-	"  path.resolveUrlsInStyle(clone);",
-	"  return clone; }",
-    };
-#endif
-    static const char* text[] = {
+	"if (reset) {",
+	"  xf = max(0, (mw-sizeX)/2) << 4;",
+	"  yf = max(0, (mh-sizeY)/2) << 4;",
+	"  xfc = 6; yfc = 3; xfdir = -1; yfdir = -1; }",
+	"bool changeDir = false;",
+	"// Get actual x/y by dividing by 16.",
+	"*x = xf >> 4; *y = yf >> 4;",
+	"// Only pan if the display size is smaller than the pixmap",
+	"// but not if the difference is too small or it'll look bad.",
 	"if (sizeX-mw>2) { xf += xfc*xfdir;",
 	"  if (xf >= 0)                 { xfdir = -1; changeDir = true ; };",
 	"  // we don't go negative past right corner, go back positive",
