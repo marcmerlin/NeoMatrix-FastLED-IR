@@ -364,14 +364,14 @@ uint8_t pacman_loop()
 {
     //uint8_t pcmr = SprPacmanRight.GetFlags();
 
-    int8_t pcmrx = SprPacmanRight.m_X;
-    int8_t pcmry = SprPacmanRight.m_Y;
-    int8_t pcmlx = SprPacmanLeft.m_X;
-    int8_t pcmly = SprPacmanLeft.m_Y;
-    int8_t gx = SprGhost.m_X;
-    int8_t gy = SprGhost.m_Y;
-    int8_t px = SprPinky.m_X;
-    int8_t py = SprPinky.m_Y;
+    int16_t pcmrx = SprPacmanRight.m_X;
+    int16_t pcmry = SprPacmanRight.m_Y;
+    int16_t pcmlx = SprPacmanLeft.m_X;
+    int16_t pcmly = SprPacmanLeft.m_Y;
+    int16_t gx = SprGhost.m_X;
+    int16_t gy = SprGhost.m_Y;
+    int16_t px = SprPinky.m_X;
+    int16_t py = SprPinky.m_Y;
     //int8_t ex = SprEyes.m_X;
     //int8_t ey = SprEyes.m_Y;
 

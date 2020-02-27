@@ -42,7 +42,7 @@ void bluefado(byte bbc) {
 void fakenoise()
 {
   faudio[0] = random(1, MIDLY);
-  for (byte i = 1; i < MATRIX_WIDTH; i++) {
+  for ( uint16_t i = 1; i < MATRIX_WIDTH; i++) {
     faudio[i] = faudio[i - 1] + random(10) - 7;
     faudio[i] = constrain(faudio[i ], 1, MATRIX_HEIGHT - 2);
   }
