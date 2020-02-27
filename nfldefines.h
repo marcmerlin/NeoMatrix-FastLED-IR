@@ -87,21 +87,22 @@
     #endif
     };
 
-#ifndef BM
-    const uint8_t best_mapping[] = { 2, 5, 3, 23, 27, 35,  56, 77, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
-#else
-    const uint8_t best_mapping[] = {  2, 23, 27, 56, 78, 84, 3, 87, 88, 91, 94, 9, 96, 97, 99, 100, 8, 108, 109, 110, 111, 112, 35, 36 };
-#endif
+    #ifndef BM
+        const uint8_t best_mapping[] = { 2, 5, 3, 23, 27, 35,  56, 77, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
+    #else
+        const uint8_t best_mapping[] = {  2, 23, 27, 56, 78, 84, 3, 87, 88, 91, 94, 9, 96, 97, 99, 100, 8, 108, 109, 110, 111, 112, 35, 36 };
+    #endif
+    
+    #ifndef ARDUINOONPC
+        #define RECV_PIN 34
+    
+        #define STRIP_NUM_LEDS 48
+        CRGB leds[STRIP_NUM_LEDS];
+        #define NEOPIXEL_PIN 13
+    #else
+        #undef HAS_FS
+    #endif
 
-#ifndef ARDUINOONPC
-    #define RECV_PIN 34
-
-    #define STRIP_NUM_LEDS 48
-    CRGB leds[STRIP_NUM_LEDS];
-    #define NEOPIXEL_PIN 13
-#else
-    #undef HAS_FS
-#endif
 #elif mheight == 64
     // Which demos are shown, and in which order
     const uint8_t demo_mapping[] = {
@@ -123,6 +124,7 @@
     const uint8_t best_mapping[] = { 17, 23, 24, 27, 56, 78, 84, 87, 88, 91, 94, 96, 97, 99, 100, };
 
     #define RECV_PIN 34
+
 #elif mheight == 32
     // Which demos are shown, and in which order
     // skip 8 burn, 9 safety third
@@ -145,7 +147,7 @@
 
     #define RECV_PIN D4
 #else
-#error "unknown matrix height, no idea what demos to run"
+    #error "unknown matrix height, no idea what demos to run"
 #endif
 
 #define demo_cnt ARRAY_SIZE(demo_mapping)
