@@ -30,7 +30,22 @@
 #include "Table_Mark_Estes_Impl.h"
 
 #ifdef HAS_FS
+// defines FSO
 #include "GifAnimViewer.h"
+#endif
+
+#ifdef WIFI
+    #ifdef ESP32
+	#include <WiFi.h>
+	#include <AsyncTCP.h>
+    #elif defined(ESP8266)
+	#include <ESP8266WiFi.h>
+	#include <ESPAsyncTCP.h>
+    #endif
+    #include <DNSServer.h>
+    #include "ESPAsyncWebServer.h"
+    DNSServer dnsServer;
+    AsyncWebServer server(80);
 #endif
 
 // Compute how many GIFs have been defined (called in setup)
@@ -1996,7 +2011,7 @@ uint8_t tmed(uint8_t demo) {
 }
 
 
-void matrix_change(int demo) {
+void matrix_change(int16_t demo) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
     // Clear screen when changing demos.
@@ -2016,6 +2031,7 @@ void matrix_change(int demo) {
     Serial.print("Got matrix_change ");
     Serial.print(demo);
     Serial.print(", switching to index ");
+    // Thank you special demo
     if (matrix_state == 126) {
 	Serial.print(matrix_state);
 	matrix_demo = matrix_state;
@@ -3117,7 +3133,73 @@ void loop() {
     #endif // NEOPIXEL_PIN
 
     sublime_loop();
+
+#ifdef WIFI
+    dnsServer.processNextRequest();
+#endif
 }
+
+#ifdef WIFI
+    String DemoOptions = "";
+
+    String processor(const String& var){
+#if 0
+      if(var == "MIN_BRIGHTNESS") return String(minBrightness);
+      if(var == "MAX_BRIGHTNESS") return String(maxBrightness);
+      if(var == "CURRENT_BRIGHTNESS") return String(currentBrightness);
+#endif
+      if(var == "CURRENT_INDEX") return String(matrix_demo);
+      if(var == "LIST_DEMO_OPTIONS") return DemoOptions;
+      return String();
+    }
+
+    class CaptiveRequestHandler : public AsyncWebHandler {
+    public:
+      CaptiveRequestHandler() {}
+      virtual ~CaptiveRequestHandler() {}
+
+      bool canHandle(AsyncWebServerRequest *request){
+	//request->addInterestingHeader("ANY");
+	return true;
+      }
+
+      void handleRequest(AsyncWebServerRequest *request) {
+	// handle other file requests
+	if (request->url() == "/styles.css"){
+	  request->send(FSO, "/www/styles.css", "text/css");
+	}
+	else { // handle parameters
+	  if(request->hasParam("next")){
+	    Serial.println("NEXT pressed");
+	    matrix_change(127);
+	  }
+	  if(request->hasParam("prev")){
+	    Serial.println("PREVIOUS pressed");
+	    matrix_change(-128);
+	  }
+    #if 0
+	  if(request->hasParam("brightness")){
+	    AsyncWebParameter* p = request->getParam("brightness");
+	    currentBrightness = p->value().toInt();
+	    Serial.print("New brightness: ");
+	    Serial.println(currentBrightness);
+	  }
+    #endif
+	  if(request->hasParam("newDemoIndex")){
+	    AsyncWebParameter* p = request->getParam("newDemoIndex");
+	    int16_t newIndex = p->value().toInt();
+	    Serial.print("Demo file index: ");
+	    Serial.println(newIndex);
+	    matrix_change(newIndex);
+	  }
+
+	  // catch everything else
+	  //Send index.htm with template processor function
+	  request->send(FSO, "/www/index.htm", "text/html", false, processor);
+	}
+      }
+    };
+#endif
 
 
 
@@ -3243,6 +3325,18 @@ void setup() {
     colorWipe(0x0000FF00, 10);
     Serial.println("Neopixel strip init done");
 #endif // NEOPIXEL_PIN
+
+#ifdef WIFI
+    Serial.println("Configuring access point...");
+    #include "wifi_secrets.h"
+    WiFi.softAP(WIFI_SSID, WIFI_PASSWORD);
+    
+    dnsServer.start(53, "*", WiFi.softAPIP());
+    server.addHandler(new CaptiveRequestHandler());
+    server.begin();
+    Serial.print("WIFI AP Started. IP Address: ");
+    Serial.println(WiFi.softAPIP());
+#endif
 
     Serial.println("Starting loop");
 }

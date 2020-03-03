@@ -15,7 +15,7 @@ PatternBounce bounce;
 #include "Aurora/PatternCube.h"
 PatternCube cube;
 #include "Aurora/PatternFlock.h"
-PatternFlock flock;
+PatternFlock Aflock;
 #include "Aurora/PatternFlowField.h"
 PatternFlowField flowfield;
 #include "Aurora/PatternIncrementalDrift.h"
@@ -39,7 +39,7 @@ AuroraDrawable* items[] = {
     &attract,
     &bounce,
     &cube,
-    &flock,
+    &Aflock,
     &flowfield,
     &incrementaldrift,
     &incrementaldrift2,

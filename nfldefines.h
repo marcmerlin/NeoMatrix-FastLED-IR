@@ -99,6 +99,7 @@
         #define STRIP_NUM_LEDS 48
         CRGB leds[STRIP_NUM_LEDS];
         #define NEOPIXEL_PIN 13
+	#define WIFI
     #else
         #undef HAS_FS
     #endif
