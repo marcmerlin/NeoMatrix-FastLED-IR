@@ -63,6 +63,7 @@ namespace Aiko {
     handlerList_.add(handler);
   }
 
+  // allow 2 queues: one that is ISR safe, and one that is not. Say which queue to add the job, in.
   void EventManager::addHandler(void (*handlerFunction)(), unsigned int period, bool in_ISR, unsigned int delay) {
     EventHandler* handler = static_cast<EventHandler*>(malloc(sizeof(EventHandler)));
     handler->callback_  = functionCallback(handlerFunction);
@@ -76,6 +77,7 @@ namespace Aiko {
     addHandler(handlerFunction, 0, delay);
   }
 
+  // Specify whether to run the default queue, or the ISR safe queue
   void EventManager::loop(bool run_ISR, unsigned long time) {
     if (!isRunning_) start(time);
     long elapsed = time - lastLoopTime_;
