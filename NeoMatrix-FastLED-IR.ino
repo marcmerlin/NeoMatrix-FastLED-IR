@@ -3199,6 +3199,11 @@ void loop() {
 	}
       }
     };
+
+#if 0
+DemoOptions += "<option value='" + String(i) + "'>" + file.name() + "</option>";
+#endif
+
 #endif
 
 
@@ -3307,7 +3312,7 @@ void setup() {
     Serial.println("Pause for debug greyish screen");
     while (i--) {
 	if (check_IR_serial()) {
-	    Serial.println("Will pause on debug white screen");
+	    Serial.println("Will pause on debug screen");
 	    i = 60000;
 	}
 	delay(10);
