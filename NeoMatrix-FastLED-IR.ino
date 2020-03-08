@@ -67,7 +67,8 @@ const uint16_t PROGMEM RGB_bmp[64] = {
 
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
-    uint16_t RGB_bmp_fixed[w * h];
+    // work around "a15 cannot be used in asm here" compiler bug when using an array on ESP8266
+    static uint16_t *RGB_bmp_fixed = (uint16_t *) mallocordie("RGB_bmp_fixed", w*h*2, false);
     for (uint16_t pixel=0; pixel<w*h; pixel++) {
 	uint8_t r,g,b;
 	uint16_t color = pgm_read_word(bitmap + pixel);
@@ -568,7 +569,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	    matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
 
 
-    #ifdef M32B8X3
+    #ifdef M32BY8X3
 	    matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
     #else
 	    matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
@@ -597,7 +598,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
 	    if (letters[l] == 'T') offset = -2 * size/15;
 	    if (letters[l] == '8') offset = 2 * size/15;
 
-    #ifdef M32B8X3
+    #ifdef M32BY8X3
 	    matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
     #else
 	    matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
@@ -1333,7 +1334,7 @@ uint8_t GifAnim(uint8_t idx) {
     extern int FACTY;
     extern int FACTX;
 
-    #ifdef M32B8X3
+    #ifdef M32BY8X3
     const Animgif animgif[] = { // number of frames in the gif
     // 12 gifs
 	    {"/gifs/32anim_photon.gif",		10, -4, 0, 10, 10, 0, 0 },	// 70
@@ -1349,7 +1350,7 @@ uint8_t GifAnim(uint8_t idx) {
 	    {"/gifs/triangles_in.gif",		10, -4, 0, 10, 10, 0, 0 },	// 80
 	    {"/gifs/wifi.gif",			10, -4, 0, 10, 10, 0, 0 },
     };
-    #elif defined(M64BY64) // M32B8X3X3
+    #elif defined(M64BY64) // M32BY8X3X3
     const Animgif animgif[] = {
 	    { "/gifs64/087_net.gif",		 05, 0, 0, 10, 10, 0, 0 },  // 70
 	    { "/gifs64/196_colorstar.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
@@ -2219,7 +2220,7 @@ void Matrix_Handler() {
 	    break;
 
 	case 126:
-#ifdef M32B8X3
+#ifdef M32BY8X3
 	    const char str[] = "Thank You :)";
 	    ret = scrollText(str, sizeof(str));
 #else
@@ -3106,9 +3107,8 @@ void setup() {
     // No blink13 in ESP8266 lib
     // this doesn't exist in the ESP8266 IR library, but by using pin D4
     // IR receive happens to make the system LED blink, so it's all good
-#endif // ESP8266
-
-#ifndef ARDUINOONPC
+    //irrecv.blink13(true);
+#elif !defined(ARDUINOONPC)
     #ifdef ESP32
 	Serial.println("If things hang very soon, make sure you don't have PSRAM enabled on a non PSRAM board");
 	#ifndef ESP32RMTIR
