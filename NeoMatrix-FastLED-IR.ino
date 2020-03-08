@@ -29,6 +29,9 @@
 #include "aurora.h"
 #include "Table_Mark_Estes_Impl.h"
 
+#include "AikoEvents_Impl.h"
+using namespace Aiko;
+
 #ifdef HAS_FS
 // defines FSO
 #include "GifAnimViewer.h"
@@ -130,8 +133,6 @@ void matrix_show() {
 // Choose your prefered pixmap
 #include "smileytongue24.h"
 
-// How many ms used for each matrix update
-#define MX_UPD_TIME 10
 
 
 uint8_t matrix_state = 0;
@@ -139,6 +140,7 @@ uint8_t matrix_demo = demo_mapping[matrix_state];
 // controls how many times a demo should run its pattern
 // init at -1 to indicate that a demo is run for the first time (demo switch)
 int16_t matrix_loop = -1;
+uint32_t waitmillis = 0;
 
 
 //----------------------------------------------------------------------------
@@ -179,7 +181,6 @@ typedef enum {
     f_doubleConvergeRev = 9,
     f_doubleConvergeTrail = 10,
     f_flash = 11,
-    //f_flash3 = 12,
     f_juggle = 12,
     f_bpm = 13,
 } StripDemo;
@@ -543,7 +544,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
 	// Serial.println("delayed frame");
-	delay(MX_UPD_TIME);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
 	return repeat;
     }
     delayframe = max((speed / 10) - faster , 1);
@@ -985,7 +986,7 @@ uint8_t squares(bool reverse) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
-	delay(MX_UPD_TIME);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
 	return repeat;
     }
     delayframe = sqdelay;
@@ -1136,7 +1137,7 @@ uint8_t scrollText(const char str[], uint8_t len) {
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
-	delay(MX_UPD_TIME);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
 	return repeat;
     }
     delayframe = stdelay;
@@ -1195,7 +1196,7 @@ uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uin
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
-	delay(MX_UPD_TIME);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
 	return repeat;
     }
     delayframe = stdelay;
@@ -1493,8 +1494,10 @@ uint8_t GifAnim(uint8_t idx) {
     // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
     // add the matrix_show() delay that is expected by the caller
-    bool savl = sav_loop();
-    if (savl) { delay(MX_UPD_TIME); };
+    //bool savl = sav_loop();
+    sav_loop();
+    // Not needed anymore with Aiko, it handles calling frequency
+    //if (savl) { delay(MX_UPD_TIME); };
 
     EVERY_N_SECONDS(1) { 
 	Serial.print(gifloopsec); Serial.print(" ");
@@ -1630,7 +1633,7 @@ uint8_t demoreel100(uint8_t demo) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
-	delay(MX_UPD_TIME);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
 	return repeat;
     }
     delayframe = demoreeldelay;
@@ -1740,6 +1743,8 @@ uint8_t call_fire() {
 	state = 0;
     }
 
+    // rotate palette
+    sublime_loop();
     fire();
     matrix_show();
     if (state++ < 1500) return 1;
@@ -1748,7 +1753,7 @@ uint8_t call_fire() {
 }
 
 uint8_t call_rain(uint8_t which) {
-    #define raindelay 4
+    #define raindelay 2
     static uint16_t state;
     static uint16_t delayframe = raindelay;
 
@@ -1762,7 +1767,7 @@ uint8_t call_rain(uint8_t which) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
-	delay(MX_UPD_TIME);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
 	return 1;
     }
     delayframe = raindelay;
@@ -1789,7 +1794,7 @@ uint8_t call_pacman(uint8_t loopcnt) {
 	// reset how long a frame is shown before we switch to the next one
 	//Serial.print("delayed frame ");
 	//Serial.println(delayframe);
-	delay(MX_UPD_TIME);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
 	return 1;
     }
     delayframe = pacmandelay;
@@ -1902,7 +1907,7 @@ uint8_t tmed(uint8_t demo) {
     }
 
     if (--delayframe) {
-	delay(MX_UPD_TIME);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
 	return 2;
     }
     delayframe = dfinit;
@@ -2020,7 +2025,7 @@ void matrix_change(int16_t demo) {
     matrix_loop = -1;
     matrix_reset_demo = 1;
     if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_cnt;
-    if (demo==+127) if (matrix_state++ == demo_cnt) matrix_state = 0;
+    if (demo==+127) if (++matrix_state == demo_cnt) matrix_state = 0;
     // If existing matrix was already >98, any +- change brings it back to 0.
     if (matrix_state >= 98) matrix_state = 0;
     if (demo >= 0 && demo < 127) matrix_state = demo;
@@ -2052,7 +2057,7 @@ void matrix_change(int16_t demo) {
     Serial.println(matrix_loop);
 }
 
-void matrix_update() {
+void Matrix_Handler() {
     uint8_t ret;
 
     EVERY_N_MILLISECONDS(40) {
@@ -2205,8 +2210,6 @@ void matrix_update() {
 	    else if (matrix_demo >= 45 && matrix_demo <= 57) ret = tmed(matrix_demo-45);
 	    else if (matrix_demo >= 70 && matrix_demo < 70+gif_cnt)
 	    {
-		// Before a new GIF, give a chance for an IR command to go through
-		//if (matrix_loop == -1) delay(3000);
 		ret = GifAnim(matrix_demo-70);
 	    }
 	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
@@ -2242,7 +2245,7 @@ void matrix_update() {
 
 #ifdef NEOPIXEL_PIN
 void leds_show() {
-#ifdef SMARTMATRIX
+#ifndef FASTLED_NEOMATRIX
     FastLED.show();
 #else
     FastLED[0].showLeds(led_brightness);
@@ -2334,7 +2337,6 @@ bool check_IR_serial() {
     if (readchar == 'p') return 1;
 
 #ifdef RECV_PIN
-    char* rcvGroup = NULL;
     uint32_t result = 0; 
 
     #ifndef ESP32RMTIR
@@ -2343,12 +2345,13 @@ bool check_IR_serial() {
 	    irrecv.resume(); // Receive the next value
 	    result = IR_result.value;
     #else
+	char* rcvGroup = NULL;
 	if (irrecv.available()) {
 	    result = irrecv.read(rcvGroup);
     #endif
 	switch (result) {
 	case IR_RGBZONE_POWER2:
-	    Serial.println("Got IR: Power2");
+	    Serial.println("CheckIS Got IR: Power2");
 	case IR_RGBZONE_POWER:
 	    return 1;
 
@@ -2356,9 +2359,11 @@ bool check_IR_serial() {
 	    return 0;
 
 	default:
-	    Serial.print("Got unknown IR value: ");
+	    Serial.print("CheckIS Got unknown IR value: ");
+	#ifdef ESP32RMTIR
 	    Serial.print(rcvGroup);
 	    Serial.print(" / ");
+	#endif
 	    Serial.println(result, HEX);
 	    return 0;
 	}
@@ -2369,22 +2374,9 @@ bool check_IR_serial() {
 
 
 
-bool handle_IR(uint32_t delay_time) {
+void IR_Serial_Handler() {
     int8_t new_pattern = 0;
     char readchar;
-
-    // Instead of waiting without doing anything, update the matrix pattern.
-    for (uint16_t i=0; i<delay_time / MX_UPD_TIME; i++) {
-	matrix_update();
-    }
-
-    // Whatever time is left over, we wait with a real delay
-    // 45 msec wait = 4 loops of matrix updates of 10msec each + 5ms delay
-
-    delay(delay_time % MX_UPD_TIME);
-    // Don't run update continuously, or the IR interrupts don't get in.
-    // if (delay_time % MX_UPD_TIME > MX_UPD_TIME/2) matrix_update();
-
 
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
     if (readchar) {
@@ -2409,8 +2401,9 @@ bool handle_IR(uint32_t delay_time) {
     else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
 
+    // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
+    // compiling the IR code that won't build.
 #ifdef RECV_PIN
-    char* rcvGroup = NULL;
     uint32_t result; 
 
     #ifndef ESP32RMTIR
@@ -2419,16 +2412,17 @@ bool handle_IR(uint32_t delay_time) {
 	    irrecv.resume(); // Receive the next value
 	    result = IR_result.value;
     #else
+	char* rcvGroup = NULL;
 	if (irrecv.available()) {
 	    result = irrecv.read(rcvGroup);
     #endif
 	switch (result) {
 	case IR_RGBZONE_BRIGHT:
 	case IR_RGBZONE_BRIGHT2:
-	    if (is_change(true)) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return 1; }
+	    if (is_change(true)) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return; }
 	    change_brightness(+1);
 	    Serial.println("Got IR: Bright");
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_DIM:
 	case IR_RGBZONE_DIM2:
@@ -2436,12 +2430,12 @@ bool handle_IR(uint32_t delay_time) {
 		Serial.println("Got IR: Dim, show all demos again and Hang on this demo");
 		matrix_loop = 9999;
 		show_best_demos = false;
-		return 1;
+		return;
 	    }
 
 	    change_brightness(-1);
 	    Serial.println("Got IR: Dim");
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_NEXT2:
 	    Serial.println("Got IR: Next2");
@@ -2450,318 +2444,317 @@ bool handle_IR(uint32_t delay_time) {
 	    matrix_change(127);
 	    Serial.print("Got IR: Next to matrix state ");
 	    Serial.println(matrix_state);
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_POWER2:
 	    Serial.println("Got IR: Power2");
 	case IR_RGBZONE_POWER:
-	    if (is_change()) { matrix_change(-128); return 1; }
+	    if (is_change()) { matrix_change(-128); return; }
 	    Serial.println("Got IR: Power, show all demos again and Hang on this demo");
 	    matrix_loop = 9999;
 	    show_best_demos = false;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_RED:
 	    Serial.println("Got IR: Red (0)");
-	    if (is_change()) { matrix_change(0); return 1; }
+	    if (is_change()) { matrix_change(0); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFF0000;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_GREEN:
 	    Serial.println("Got IR: Green (3)");
-	    if (is_change()) { matrix_change(3); return 1; }
+	    if (is_change()) { matrix_change(3); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00FF00;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_BLUE:
 	    Serial.println("Got IR: Blue (5)");
-	    if (is_change()) { matrix_change(5); return 1; }
+	    if (is_change()) { matrix_change(5); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x0000FF;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_WHITE:
 	    Serial.println("Got IR: White (7)");
-	    if (is_change()) { matrix_change(7); return 1; }
+	    if (is_change()) { matrix_change(7); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFFFFFF;
-	    return 1;
+	    return;
 
 
 
 	case IR_RGBZONE_RED2:
 	    Serial.println("Got IR: Red2 (9)");
-	    if (is_change()) { matrix_change(9); return 1; }
+	    if (is_change()) { matrix_change(9); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xCE6800;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_GREEN2:
 	    Serial.println("Got IR: Green2 (11)");
-	    if (is_change()) { matrix_change(11); return 1; }
+	    if (is_change()) { matrix_change(11); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00BB00;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_BLUE2:
 	    Serial.println("Got IR: Blue2 (13)");
-	    if (is_change()) { matrix_change(13); return 1; }
+	    if (is_change()) { matrix_change(13); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x0000BB;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_PINK:
 	    Serial.println("Got IR: Pink (15)");
-	    if (is_change()) { matrix_change(15); return 1; }
+	    if (is_change()) { matrix_change(15); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFF50FE;
-	    return 1;
+	    return;
 
 
 
 	case IR_RGBZONE_ORANGE:
 	    Serial.println("Got IR: Orange (17)");
-	    if (is_change()) { matrix_change(17); return 1; }
+	    if (is_change()) { matrix_change(17); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFF8100;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_BLUE3:
 	    Serial.println("Got IR: Green2 (19)");
-	    if (is_change()) { matrix_change(19); return 1; }
+	    if (is_change()) { matrix_change(19); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00BB00;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_PURPLED:
 	    Serial.println("Got IR: DarkPurple (21)");
-	    if (is_change()) { matrix_change(21); return 1; }
+	    if (is_change()) { matrix_change(21); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x270041;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_PINK2:
 	    Serial.println("Got IR: Pink2 (23)");
-	    if (is_change()) { matrix_change(23); return 1; }
+	    if (is_change()) { matrix_change(23); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFFB9FF;
 	    Serial.println("Got IR: Pink2");
-	    return 1;
+	    return;
 
 
 
 	case IR_RGBZONE_ORANGE2:
 	    Serial.println("Got IR: Orange2 (25)");
-	    if (is_change()) { matrix_change(25); return 1; }
+	    if (is_change()) { matrix_change(25); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFFCA49;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_GREEN3:
 	    Serial.println("Got IR: Green2 (27)");
-	    if (is_change()) { matrix_change(27); return 1; }
+	    if (is_change()) { matrix_change(27); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x006A00;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_PURPLE:
 	    Serial.println("Got IR: DarkPurple2 (29)");
-	    if (is_change()) { matrix_change(29); return 1; }
+	    if (is_change()) { matrix_change(29); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x2B0064;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_BLUEL:
 	    Serial.println("Got IR: BlueLight (31)");
-	    if (is_change()) { matrix_change(31); return 1; }
+	    if (is_change()) { matrix_change(31); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x50A7FF;
-	    return 1;
+	    return;
 
 
 
 	case IR_RGBZONE_YELLOW:
 	    Serial.println("Got IR: Yellow (33)");
-	    if (is_change()) { matrix_change(33); return 1; }
+	    if (is_change()) { matrix_change(33); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xF0FF00;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_GREEN4:
 	    Serial.println("Got IR: Green2 (35)");
-	    if (is_change()) { matrix_change(35); return 1; }
+	    if (is_change()) { matrix_change(35); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00BB00;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_PURPLE2:
 	    Serial.println("Got IR: Purple2 (37)");
-	    if (is_change()) { matrix_change(37); return 1; }
+	    if (is_change()) { matrix_change(37); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x660265;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_BLUEL2:
 	    Serial.println("Got IR: BlueLight2 (39)");
-	    if (is_change()) { matrix_change(39); return 1; }
+	    if (is_change()) { matrix_change(39); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x408BD8;
-	    return 1;
+	    return;
 
 
 	case IR_RGBZONE_RU:
 	    matrix_change(41);
 	    Serial.print("Got IR: Red UP switching to matrix state 41");
 	    Serial.println(matrix_state);
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_GU:
 	    matrix_change(42);
 	    Serial.print("Got IR: Green UP switching to matrix state 42");
 	    Serial.println(matrix_state);
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_BU:
 	    matrix_change(43);
 	    Serial.print("Got IR: Blue UP switching to matrix state 43");
 	    Serial.println(matrix_state);
-	    return 1;
+	    return;
 
 
 	case IR_RGBZONE_RD:
 	    Serial.print("Got IR: Red DOWN switching to matrix state 44");
 	    matrix_change(44);
 	    Serial.println(matrix_state);
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_GD:
 	    Serial.print("Got IR: Green DOWN switching to matrix state 45");
 	    matrix_change(45);
 	    Serial.println(matrix_state);
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_BD:
 	    Serial.print("Got IR: Blue DOWN switching to matrix state 47");
 	    matrix_change(47);
 	    Serial.println(matrix_state);
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_QUICK:
 	    Serial.println("Got IR: Quick");
-	    //if (is_change()) { matrix_change(24); return 1; }
+	    //if (is_change()) { matrix_change(24); return; }
 	    change_speed(-10);
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_SLOW:
 	    Serial.println("Got IR: Slow)");
-	    //if (is_change()) { matrix_change(28); return 1; }
+	    //if (is_change()) { matrix_change(28); return; }
 	    change_speed(+10);
-	    return 1;
+	    return;
 
 
 
 
 	case IR_RGBZONE_DIY1:
 	    Serial.println("Got IR: DIY1 (49)");
-	    if (is_change()) { matrix_change(49); return 1; }
+	    if (is_change()) { matrix_change(49); return; }
 	    // this uses the last color set
 	    nextdemo = f_colorWipe;
 	    Serial.println("Got IR: DIY1 colorWipe");
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_DIY2:
 	    Serial.println("Got IR: DIY2 (51)");
-	    if (is_change()) { matrix_change(51); return 1; }
+	    if (is_change()) { matrix_change(51); return; }
 	    // this uses the last color set
 	    nextdemo = f_theaterChase;
 	    Serial.println("Got IR: DIY2/theaterChase");
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_DIY3:
 	    Serial.println("Got IR: DIY3 (53)");
-	    if (is_change()) { matrix_change(53); return 1; }
+	    if (is_change()) { matrix_change(53); return; }
 	    nextdemo = f_juggle;
 	    Serial.println("Got IR: DIY3/Juggle");
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_AUTO:
 	    Serial.println("Got IR: AUTO/bpm (55)");
-	    if (is_change()) { matrix_change(55); return 1; }
+	    if (is_change()) { matrix_change(55); return; }
 	    matrix_change(126);
 	    nextdemo = f_bpm;
-	    return 1;
+	    return;
 
 
 	// From here, we jump numbers more quickly to cover ranges of demos 32-44
 	case IR_RGBZONE_DIY4:
 	    Serial.println("Got IR: DIY4 (57)");
-	    if (is_change()) { matrix_change(57); return 1; }
+	    if (is_change()) { matrix_change(57); return; }
 	    nextdemo = f_rainbowCycle;
 	    Serial.println("Got IR: DIY4/rainbowCycle");
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_DIY5:
 	    Serial.println("Got IR: DIY5 (59)");
-	    if (is_change()) { matrix_change(59); return 1; }
+	    if (is_change()) { matrix_change(59); return; }
 	    nextdemo = f_theaterChaseRainbow;
 	    Serial.println("Got IR: DIY5/theaterChaseRainbow");
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_DIY6:
 	    Serial.println("Got IR: DIY6 (61)");
-	    if (is_change()) { matrix_change(61); return 1; }
+	    if (is_change()) { matrix_change(61); return; }
 	    nextdemo = f_doubleConvergeRev;
 	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_FLASH:
 	    Serial.println("Got IR: FLASH (63)");
-	    if (is_change()) { matrix_change(63); return 1; }
+	    if (is_change()) { matrix_change(63); return; }
 	    nextdemo = f_flash;
-	    return 1;
+	    return;
 
 	// And from here, jump across a few GIF anims (45-53)
 	case IR_RGBZONE_JUMP3:
 	    Serial.println("Got IR: JUMP3/Cylon (65)");
-	    if (is_change()) { matrix_change(65); return 1; }
+	    if (is_change()) { matrix_change(65); return; }
 	    nextdemo = f_cylon;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_JUMP7:
 	    Serial.println("Got IR: JUMP7/CylonWithTrail (67)");
-	    if (is_change()) { matrix_change(67); return 1; }
+	    if (is_change()) { matrix_change(67); return; }
 	    nextdemo = f_cylonTrail;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_FADE3:
 	    Serial.println("Got IR: FADE3/DoubleConverge (69)");
-	    if (is_change()) { matrix_change(69); return 1; }
+	    if (is_change()) { matrix_change(69); return; }
 	    nextdemo = f_doubleConverge;
-	    return 1;
+	    return;
 
 	case IR_RGBZONE_FADE7:
 	    Serial.println("Got IR: FADE7/DoubleConvergeTrail (71)");
-	    if (is_change()) { matrix_change(71); return 1; }
+	    if (is_change()) { matrix_change(71); return; }
 	    nextdemo = f_doubleConvergeTrail;
-	    return 1;
+	    return;
 
 	case IR_JUNK:
-	    return 0;
+	    return;
 
 	default:
 	    Serial.print("Got unknown IR value: ");
+	#ifdef ESP32RMTIR
 	    Serial.print(rcvGroup);
 	    Serial.print(" / ");
+	#endif
 	    Serial.println(result, HEX);
-	    // Allow pausing the current demo to inspect it in slow motion
-	    //delay(1000);
-	    return 0;
+	    return;
 	}
     }
 #endif
-    return 0;
 }
 
 
@@ -2774,62 +2767,47 @@ bool handle_IR(uint32_t delay_time) {
     }
 
     void cylon(bool trail, uint8_t wait) {
-        static uint8_t hue = 0;
-        // First slide the led in one direction
-        for(uint16_t i = 0; i < STRIP_NUM_LEDS; i++) {
-    	// Set the i'th led to red
-    	leds_setcolor(i, Wheel(hue++));
-    	// Show the leds
-    	leds_show();
-    	// now that we've shown the leds, reset the i'th led to black
-    	//if (!trail) leds_setcolor(i, 0);
-    	if (trail) fadeall(224); else fadeall(92);
-    	// Wait a little bit before we loop around and do it again
-    	if (handle_IR(wait/4)) return;
-        }
+	static bool forward = 1;
+	static int16_t i = 0;
+	static uint8_t hue = 0;
 
-        // Now go in the other direction.
-        for(uint16_t i = (STRIP_NUM_LEDS)-1; i > 0; i--) {
-    	// Set the i'th led to red
-    	leds_setcolor(i, Wheel(hue++));
-    	// Show the leds
-    	leds_show();
-    	// now that we've shown the leds, reset the i'th led to black
-    	//if (!trail) leds_setcolor(i, 0);
-    	if (trail) fadeall(224); else fadeall(92);
-    	// Wait a little bit before we loop around and do it again
-    	if (handle_IR(wait/4)) return;
-        }
+	if (! (forward  && i < STRIP_NUM_LEDS)) forward = false;
+	if (!forward) {
+	    i--;
+	    if (i < 0) { i = 0; forward = true; }
+	}
+
+	// Set the i'th led to red
+	leds_setcolor(i, Wheel(hue++));
+	// Show the leds
+	leds_show();
+	// now that we've shown the leds, reset the i'th led to black
+	//if (!trail) leds_setcolor(i, 0);
+	if (trail) fadeall(224); else fadeall(92);
+	if (forward) i++;
+
+	// Wait a little bit before we loop around and do it again
+	waitmillis = millis() + wait/6;
     }
 
     void doubleConverge(bool trail, uint8_t wait, bool rev) {
         static uint8_t hue;
-        for(uint16_t i = 0; i < STRIP_NUM_LEDS/2 + 4; i++) {
+	static int16_t i = 0;
 
-    	if (i < STRIP_NUM_LEDS/2) {
-    	    if (!rev) {
-    		leds_setcolor(i, Wheel(hue++));
-    		leds_setcolor(STRIP_NUM_LEDS - 1 - i, Wheel(hue++));
-    	    } else {
-    		leds_setcolor(STRIP_NUM_LEDS/2 -1 -i, Wheel(hue++));
-    		leds_setcolor(STRIP_NUM_LEDS/2 + i, Wheel(hue++));
-    	    }
-    	}
-    #if 0
-    	if (!trail && i>3) {
-    	    if (!rev) {
-    		leds_setcolor(i - 4, 0);
-    		leds_setcolor(STRIP_NUM_LEDS - 1 - i + 4, 0);
-    	    } else {
-    		leds_setcolor(STRIP_NUM_LEDS/2 -1 -i +4, 0);
-    		leds_setcolor(STRIP_NUM_LEDS/2 + i -4, 0);
-    	    }
-    	}
-    #endif
-    	if (trail) fadeall(224); else fadeall(92);
-    	leds_show();
-    	if (handle_IR(wait/3)) return;
-        }
+	if (i < STRIP_NUM_LEDS/2) {
+	    if (!rev) {
+		leds_setcolor(i, Wheel(hue++));
+		leds_setcolor(STRIP_NUM_LEDS - 1 - i, Wheel(hue++));
+	    } else {
+		leds_setcolor(STRIP_NUM_LEDS/2 -1 -i, Wheel(hue++));
+		leds_setcolor(STRIP_NUM_LEDS/2 + i, Wheel(hue++));
+	    }
+	}
+	i++;
+	if (i >= STRIP_NUM_LEDS/2 + 4) i = 0;
+	if (trail) fadeall(224); else fadeall(92);
+	leds_show();
+	waitmillis = millis() + wait/3;
     }
 
     // From FastLED's DemoReel
@@ -2837,7 +2815,7 @@ bool handle_IR(uint32_t delay_time) {
     void add1DGlitter( fract8 chanceOfGlitter)
     {
         if (random8() < chanceOfGlitter) {
-    	leds[ random16(STRIP_NUM_LEDS) ] += CRGB::White;
+	    leds[ random16(STRIP_NUM_LEDS) ] += CRGB::White;
         }
     }
 
@@ -2846,12 +2824,12 @@ bool handle_IR(uint32_t delay_time) {
         // eight colored dots, weaving in and out of sync with each other
         fadeToBlackBy( leds, STRIP_NUM_LEDS, 20);
         byte dothue = 0;
-        for( int i = 0; i < 8; i++) {
-    	leds[beatsin16( i+7, 0, STRIP_NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
-    	dothue += 32;
+        for(uint8_t i = 0; i < 8; i++) {
+	    leds[beatsin16( i+7, 0, STRIP_NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
+	    dothue += 32;
         }
         leds_show();
-        if (handle_IR(wait/3)) return;
+	waitmillis = millis() + wait/3;
     }
 
     void bpm(uint8_t wait)
@@ -2861,30 +2839,24 @@ bool handle_IR(uint32_t delay_time) {
         CRGBPalette16 palette = PartyColors_p;
         uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
         for( int i = 0; i < STRIP_NUM_LEDS; i++) { 
-    	leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+	    leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
         }
         gHue++;
         leds_show();
-        if (handle_IR(wait/3)) return;
+	waitmillis = millis() + wait/3;
     }
 
     // Slightly different, this makes the rainbow equally distributed throughout
     void rainbowCycle(uint8_t wait) {
-        uint16_t j;
+        static uint16_t j = 0;
 
-        for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
-    #if 0
-        uint16_t i;
-    	for(i=0; i< STRIP_NUM_LEDS; i++) {
-    	    leds_setcolor(i, Wheel(((i * 256 / STRIP_NUM_LEDS) + j) & 255));
-    	}
-    #endif
-    	fill_rainbow( leds, STRIP_NUM_LEDS, gHue, 7);
-    	add1DGlitter(80);
-    	gHue++;
-    	leds_show();
-    	if (handle_IR(wait/5)) return;
-        }
+	j++;
+	if (j >= 256) j = 0;
+	fill_rainbow( leds, STRIP_NUM_LEDS, gHue, 7);
+	add1DGlitter(80);
+	gHue++;
+	leds_show();
+	waitmillis = millis() + wait/5;
     }
 
 
@@ -2893,148 +2865,90 @@ bool handle_IR(uint32_t delay_time) {
     // The animations below are from Adafruit_NeoPixel/examples/strandtest
     // Fill the dots one after the other with a color
     void colorWipe(uint32_t c, uint8_t wait) {
-        for(uint16_t i=0; i<STRIP_NUM_LEDS; i++) {
-    	leds_setcolor(i, c);
-    	leds_show();
-    	if (handle_IR(wait/5)) return;
-        }
-    }
+        static uint16_t j = 0;
 
-    #if 0
-    void rainbow(uint8_t wait) {
-        uint16_t i, j;
-
-        for(j=0; j<256; j++) {
-    	for(i=0; i<STRIP_NUM_LEDS; i++) {
-    	    leds_setcolor(i, Wheel((i+j) & 255));
-    	}
-    	leds_show();
-    	if (handle_IR(wait)) return;
-        }
+	j++;
+	if (j == STRIP_NUM_LEDS) j = 0;
+	leds_setcolor(j, c);
+	leds_show();
+	waitmillis = millis() + wait/5;
     }
-    #endif
 
     //Theatre-style crawling lights.
     void theaterChase(uint32_t c, uint8_t wait) {
-        for (int j=0; j<10; j++) {  //do 10 cycles of chasing
-    	for (int q=0; q < 3; q++) {
-    	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
-    		leds_setcolor(i+q, c);    //turn every third pixel on
-    	    }
-    	    leds_show();
+        static uint16_t q = 0;
+	
+	q++;
+	if (q == 3) q = 0;
+	
+	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	    leds_setcolor(i+q, c);    //turn every third pixel on
+	}
+	leds_show();
 
-    	    if (handle_IR(wait)) return;
-
-    	    fadeall(16);
-    #if 0
-    	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
-    		leds_setcolor(i+q, 0);        //turn every third pixel off
-    	    }
-    #endif
-    	}
-        }
+	#if 0
+	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	    leds_setcolor(i+q, 0);        //turn every third pixel off
+	}
+	#endif
+	fadeall(16);
+	waitmillis = millis() + wait;
     }
 
     //Theatre-style crawling lights with rainbow effect
     void theaterChaseRainbow(uint8_t wait) {
-        for (int j=0; j < 256; j+=7) {     // cycle all 256 colors in the wheel
-    	for (int q=0; q < 3; q++) {
-    	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
-    		leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
-    	    }
-    	    leds_show();
+        static uint16_t j = 0;
+        static uint16_t q = 0;
+	
+	q++;
+	if (q == 3) {
+	    q = 0;
+	    j += 7;
+	    if (j >= 256) j = 0;   // cycle all 256 colors in the wheel
+	}
 
-    	    if (handle_IR(wait)) return;
+	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	    leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
+	}
+	leds_show();
 
-    	    fadeall(16);
-    #if 0
-    	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
-    		leds_setcolor(i+q, 0);        //turn every third pixel off
-    	    }
-    #endif
-    	}
-        }
+	#if 0
+	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	    leds_setcolor(i+q, 0);        //turn every third pixel off
+	}
+	#endif
+	fadeall(16);
+	waitmillis = millis() + wait;
     }
 
 
     // Local stuff I wrote
     // Flash 25 colors in the color wheel
     void flash(uint8_t wait) {
-        uint16_t i, j;
+        static uint16_t j = 0;
+	static boolean on = true;
 
-        for(j=0; j<26; j++) {
-    	for(i=0; i< STRIP_NUM_LEDS; i++) {
-    	    leds_setcolor(i, Wheel(j * 10));
-    	}
-    	leds_show();
-    	if (handle_IR(wait*3)) return;
-    	for(i=0; i< STRIP_NUM_LEDS; i++) {
-    	    leds_setcolor(i, 0);
-    	}
-    	leds_show();
-    	if (handle_IR(wait*3)) return;
+	j++;
+	if (j == 26) j = 0;
+
+	if (on) {
+	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i++) {
+		leds_setcolor(i, Wheel(j * 10));
+	    }
+	    on = false;
+	} else {
+	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i++) {
+		leds_setcolor(i, 0);
+	    }
+	    on = true;
         }
+	leds_show();
+	waitmillis = millis() + wait*3;
     }
 
-    #if 0
-    // Flash different color on every other led
-    // Not currently called, looks too much like TheatreRainbow
-    void flash2(uint8_t wait) {
-        uint16_t i, j;
+    void Neopixel_Anim_Handler() {
+	if (millis() < waitmillis) return;
 
-        for(j=0; j<52; j++) {
-    	for(i=0; i< STRIP_NUM_LEDS-1; i+=2) {
-    	    leds_setcolor(i, Wheel(j * 5));
-    	    leds_setcolor(i+1, 0);
-    	}
-    	leds_show();
-    	if (handle_IR(wait*2)) return;
-
-    	for(i=1; i< STRIP_NUM_LEDS-1; i+=2) {
-    	    leds_setcolor(i, Wheel(j * 5 + 48));
-    	    leds_setcolor(i+1, 0);
-    	}
-    	leds_show();
-    	if (handle_IR(wait*2)) return;
-        }
-    }
-
-    // Flash different colors on every other 2 out of 3 leds
-    // not a great demo, really...
-    void flash3(uint8_t wait) {
-        uint16_t i, j;
-
-        for(j=0; j<52; j++) {
-    	for(i=0; i< STRIP_NUM_LEDS; i+=3) {
-    	    leds_setcolor(i, Wheel(j * 5));
-    	    leds_setcolor(i+1, Wheel(j * 5+128));
-    	    leds_setcolor(i+2, 0);
-    	}
-    	leds_show();
-    	if (handle_IR(wait)) return;
-
-    	for(i=1; i< STRIP_NUM_LEDS-2; i+=3) {
-    	    leds_setcolor(i, Wheel(j * 5 + 48));
-    	    leds_setcolor(i+1, Wheel(j * 5+128));
-    	    leds_setcolor(i+2, 0);
-    	}
-    	leds_show();
-    	if (handle_IR(wait)) return;
-
-    	for(i=2; i< STRIP_NUM_LEDS-2; i+=3) {
-    	    leds_setcolor(i, Wheel(j * 5 + 96));
-    	    leds_setcolor(i+1, Wheel(j * 5+128));
-    	    leds_setcolor(i+2, 0);
-    	}
-    	leds_show();
-    	if (handle_IR(wait)) return;
-        }
-    }
-    #endif
-#endif // NEOPIXEL_PIN
-
-void loop() {
-    #ifdef NEOPIXEL_PIN
 	switch (nextdemo) {
 	// Colors on DIY1-3
 	case f_colorWipe:
@@ -3047,11 +2961,6 @@ void loop() {
 	    break;
 
 	// Rainbow anims on DIY4-6
-    // This is not cool/wavy enough, the cycle version is, though
-    //     case f_rainbow:
-    // 	colorDemo = false;
-    // 	rainbow(strip_speed);
-    // 	break;
 	case f_rainbowCycle:
 	    colorDemo = false;
 	    rainbowCycle(strip_speed);
@@ -3081,7 +2990,6 @@ void loop() {
 	    break;
 	case f_doubleConvergeTrail:
 	    colorDemo = false;
-	    doubleConverge(false, strip_speed, false);
 	    doubleConverge(true, strip_speed, false);
 	    break;
 
@@ -3091,12 +2999,6 @@ void loop() {
 	    flash(strip_speed);
 	    break;
 
-    #if 0
-	case f_flash3:
-	    colorDemo = false;
-	    flash3(strip_speed);
-	    break;
-    #endif
 	case f_juggle:
 	    colorDemo = false;
 	    juggle(strip_speed);
@@ -3110,34 +3012,9 @@ void loop() {
 	default:
 	    break;
 	}
+    }
+#endif // NEOPIXEL_PIN
 
-	#if 0
-	if ((uint8_t) nextdemo > 0) {
-	    Serial.print("Running new demo: ");
-	    Serial.println((uint8_t) nextdemo);
-	    Serial.print(" at speed ");
-	} else {
-	    Serial.print("Loop done, restarting demo at speed ");
-	}
-	Serial.println(strip_speed);
-	#endif
-
-	EVERY_N_MILLISECONDS(40) {
-	    gHue++;  // slowly cycle the "base color" through the rainbow
-	}
-    #else // NEOPIXEL_PIN
-    // Force the matrix update code to run if the matrix is being updated
-    // without 1D neopixel effects that would otherwise call handle_IR to slow
-    // themselves down and as a side effect cause a matrix display update
-    handle_IR(MX_UPD_TIME);
-    #endif // NEOPIXEL_PIN
-
-    sublime_loop();
-
-#ifdef WIFI
-    dnsServer.processNextRequest();
-#endif
-}
 
 #ifdef WIFI
     String DemoOptions = "";
@@ -3207,6 +3084,16 @@ DemoOptions += "<option value='" + String(i) + "'>" + file.name() + "</option>";
 #endif
 
 
+void loop() {
+#ifdef WIFI
+    dnsServer.processNextRequest();
+#endif
+
+    // Run the Aiko event loop, all the magic is in there.
+    Events.loop();
+    delay(1);
+}
+
 
 void setup() {
     Serial.begin(115200);
@@ -3223,6 +3110,7 @@ void setup() {
 
 #ifndef ARDUINOONPC
     #ifdef ESP32
+	Serial.println("If things hang very soon, make sure you don't have PSRAM enabled on a non PSRAM board");
 	#ifndef ESP32RMTIR
 	Serial.println("Init ESP32, set IR receive NOT to blink system LED");
 	irrecv.blink13(false);
@@ -3325,12 +3213,6 @@ void setup() {
     Serial.println("Matrix Libraries Test done");
     //font_test();
 
-    // init first strip demo
-#ifdef NEOPIXEL_PIN
-    colorWipe(0x0000FF00, 10);
-    Serial.println("Neopixel strip init done");
-#endif // NEOPIXEL_PIN
-
 #ifdef WIFI
     Serial.println("Configuring access point...");
     #include "wifi_secrets.h"
@@ -3342,6 +3224,24 @@ void setup() {
     Serial.print("WIFI AP Started. IP Address: ");
     Serial.println(WiFi.softAPIP());
 #endif
+
+#ifdef NEOPIXEL_PIN
+    // init first strip demo
+    colorWipe(0x0000FF00, 10);
+    Serial.println("Neopixel strip init done");
+    Events.addHandler(Neopixel_Anim_Handler, 10);
+#endif // NEOPIXEL_PIN
+
+    // Argument is how many ms between each call to the handler
+    Events.addHandler(IR_Serial_Handler, 10);
+    // This is tricky, with FastLED output, sending all the pixels will take
+    // most of the CPU time, but Aiko should ensure that other handlers get
+    // run too, even if this handler never really hits its time target and 
+    // runs every single time aiko triggers. 
+    // Note however that you can't reasonably have any other handler
+    // running faster than MX_UPD_TIME since it would be waiting on this one
+    // being done.
+    Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
     Serial.println("Starting loop");
 }

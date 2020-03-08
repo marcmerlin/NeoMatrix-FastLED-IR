@@ -1,6 +1,6 @@
 // Aiko is (c) Andy Gelme and Pete Yandell https://github.com/geekscape/aiko_arduino_legacy
 
-#include "Aiko/AikoEvents.h"
+#include "AikoEvents.h"
 
 #include <stdlib.h>
 #include "Arduino.h"

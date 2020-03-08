@@ -4,7 +4,7 @@
 // Aiko is (c) Andy Gelme and Pete Yandell https://github.com/geekscape/aiko_arduino_legacy
 
 #include "Arduino.h"
-#include "Aiko/AikoCallback.h"
+#include "AikoCallback.h"
 
 using namespace std;
 

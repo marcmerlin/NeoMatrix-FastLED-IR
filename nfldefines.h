@@ -21,6 +21,9 @@
 #error "Matrix config undefined, please set height"
 #endif
 
+// How many ms used for each matrix update
+#define MX_UPD_TIME 20
+
 #ifdef ESP32
 // Use https://github.com/lbernstone/IR32.git instead of IRRemote
 //#define ESP32RMTIR
@@ -99,7 +102,10 @@
         #define STRIP_NUM_LEDS 48
         CRGB leds[STRIP_NUM_LEDS];
         #define NEOPIXEL_PIN 13
-	#define WIFI
+	#ifdef BOARD_HAS_PSRAM
+	    // There isn't enough RAM to do Wifi with all the demos I have
+	    #define WIFI
+	#endif
     #else
         #undef HAS_FS
     #endif
