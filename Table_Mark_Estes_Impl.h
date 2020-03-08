@@ -595,8 +595,8 @@ void hypnoduck4()
   uint16_t hd4center = 166; // 166 for 64x64, decrease to 120 for 96x96
   uint8_t  hd4step = 5; // 5 is ok for 64x64, but need to decrease to 3 or 2 for 96x96
 
-  if      (max(MATRIX_HEIGHT, MATRIX_WIDTH) > 128) { hd4size = 2600; hd4center = 160; hd4step = 1; }
-  else if (max(MATRIX_HEIGHT, MATRIX_WIDTH) > 64)  { hd4size = 1200; hd4center = 166; hd4step = 3; };
+  if      (max(MATRIX_HEIGHT, MATRIX_WIDTH) >= 128) { hd4size = 2600; hd4center = 160; hd4step = 1; }
+  else if (max(MATRIX_HEIGHT, MATRIX_WIDTH) >= 64)  { hd4size = 1300; hd4center = 166; hd4step = 3; };
 
   if (flip2) quash = 8; else quash = -8;
 
