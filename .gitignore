@@ -1,5 +1,8 @@
 wifi_secrets.h
 
+.vscode
+.build
+
 ~
 *.swp
 *.swo
