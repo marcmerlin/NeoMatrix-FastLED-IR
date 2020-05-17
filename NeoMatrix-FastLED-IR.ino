@@ -3117,6 +3117,7 @@ void setup() {
 #endif
 
 #ifdef WIFI
+	show_free_mem("Before Wifi");
     Serial.println("Configuring access point...");
     #include "wifi_secrets.h"
     WiFi.softAP(WIFI_SSID, WIFI_PASSWORD);
@@ -3126,6 +3127,12 @@ void setup() {
     server.begin();
     Serial.print("WIFI AP Started. IP Address: ");
     Serial.println(WiFi.softAPIP());
+#endif
+
+show_free_mem("After Wifi/Before SPIFFS/FFat");
+#ifdef HAS_FS
+    Serial.println("Init GIF Viewer SPIFFS/FFat");
+    sav_setup();
 #endif
 
 #ifdef NEOPIXEL_PIN
@@ -3157,10 +3164,6 @@ void setup() {
     // Heap/32-bit Memory Available: 181472 bytes total,  85748 bytes largest free block
     // 8-bit/DMA Memory Available  :  95724 bytes total,  39960 bytes largest free block
     matrix_setup(25000);
-#ifdef HAS_FS
-    Serial.println("Init SPIFFS/FFat");
-    sav_setup();
-#endif
     Serial.println("Init Aurora");
     aurora_setup();
     Serial.println("Init TwinkleFox");
