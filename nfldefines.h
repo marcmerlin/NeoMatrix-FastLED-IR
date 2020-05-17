@@ -104,7 +104,10 @@
         #define NEOPIXEL_PIN 13
 	#ifdef BOARD_HAS_PSRAM
 	    // There isn't enough RAM to do Wifi with all the demos I have
+	    #pragma message "PSRAM and WIFI enabled"
 	    #define WIFI
+	#else
+	    #pragma message "PSRAM disabled, so WIFI disabled too"
 	#endif
     #else
         #undef HAS_FS

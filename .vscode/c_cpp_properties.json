@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/merlin/Arduino/tools/**",
+                "/home/merlin/Arduino/hardware/espressif/esp32/**",
+                "${workspaceFolder}/**",
+                "/home/merlin/Arduino/libraries/**",
+                "/home/merlin/.arduino15/packages/esp8266/tools/**",
+                "/home/merlin/.arduino15/packages/esp8266/hardware/esp8266/**",
+                "/var/local/arduino/hardware/tools/avr/avr/include/",
+                "/var/local/arduino/hardware/arduino/avr/libraries/**"
+            ],
+            "forcedInclude": [],
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "compilerArgs": [ "-DARDUINO", "-DESP32" ]
+        }
+    ],
+    "version": 4
+}

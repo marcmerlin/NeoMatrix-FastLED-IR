@@ -38,13 +38,8 @@ using namespace Aiko;
 #endif
 
 #ifdef WIFI
-    #ifdef ESP32
 	#include <WiFi.h>
 	#include <AsyncTCP.h>
-    #elif defined(ESP8266)
-	#include <ESP8266WiFi.h>
-	#include <ESPAsyncTCP.h>
-    #endif
     #include <DNSServer.h>
     #include "ESPAsyncWebServer.h"
     DNSServer dnsServer;
@@ -3121,6 +3116,18 @@ void setup() {
     #endif
 #endif
 
+#ifdef WIFI
+    Serial.println("Configuring access point...");
+    #include "wifi_secrets.h"
+    WiFi.softAP(WIFI_SSID, WIFI_PASSWORD);
+    
+    dnsServer.start(53, "*", WiFi.softAPIP());
+    server.addHandler(new CaptiveRequestHandler());
+    server.begin();
+    Serial.print("WIFI AP Started. IP Address: ");
+    Serial.println(WiFi.softAPIP());
+#endif
+
 #ifdef NEOPIXEL_PIN
     Serial.print("Using FastLED on pin ");
     Serial.print(NEOPIXEL_PIN);
@@ -3212,18 +3219,6 @@ void setup() {
 
     Serial.println("Matrix Libraries Test done");
     //font_test();
-
-#ifdef WIFI
-    Serial.println("Configuring access point...");
-    #include "wifi_secrets.h"
-    WiFi.softAP(WIFI_SSID, WIFI_PASSWORD);
-    
-    dnsServer.start(53, "*", WiFi.softAPIP());
-    server.addHandler(new CaptiveRequestHandler());
-    server.begin();
-    Serial.print("WIFI AP Started. IP Address: ");
-    Serial.println(WiFi.softAPIP());
-#endif
 
 #ifdef NEOPIXEL_PIN
     // init first strip demo

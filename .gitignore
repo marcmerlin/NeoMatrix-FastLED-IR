@@ -1,7 +1,8 @@
 wifi_secrets.h
+NeoMatrix-FastLED-IR
+Makefile
 
-.vscode
-.build
+.vscode/.build
 
 ~
 *.swp
