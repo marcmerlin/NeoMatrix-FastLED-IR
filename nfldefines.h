@@ -24,6 +24,12 @@
 // How many ms used for each matrix update
 #define MX_UPD_TIME 20
 
+// Separate Neopixel Strip, if used. Not the NeoMatrix
+uint8_t led_brightness = 64;
+// matrix_brightness is defined on neomatrix_config.h
+
+uint8_t dfl_matrix_brightness_level = 5;
+
 #ifdef ESP32
 // Use https://github.com/lbernstone/IR32.git instead of IRRemote
 //#define ESP32RMTIR
@@ -114,6 +120,8 @@
     #endif
 
 #elif mheight == 64
+    // Make the burning man 64x64 brighter by default, we have a big power supply :)
+    dfl_matrix_brightness_level = 6;
     // Which demos are shown, and in which order
     const uint8_t demo_mapping[] = {
 	//                 5                10                 15
@@ -168,9 +176,6 @@
 // Global variables use 32880 bytes (40%) of dynamic memory, leaving 49040 bytes for local variables. Maximum is 81920 bytes.
 // Uploading 287936 bytes from /tmp/arduino_build_498793/NeoMatrix-FastLED-IR.ino.bin to flash at 0x00000000
 //#define NOFONTS 1
-
-// Separate Neopixel Strip, if used. Not the NeoMatrix
-uint8_t led_brightness = 64;
 
 // show all demos by default,
 bool show_best_demos = false;

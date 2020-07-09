@@ -17,7 +17,7 @@
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "compilerArgs": [ "-DARDUINO", "-DESP32" ]
+            "compilerArgs": [ "-DARDUINO", "-DESP32", "-DBOARD_HAS_PSRAM" ]
         }
     ],
     "version": 4

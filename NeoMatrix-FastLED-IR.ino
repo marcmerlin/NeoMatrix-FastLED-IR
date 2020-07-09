@@ -38,12 +38,9 @@ using namespace Aiko;
 #endif
 
 #ifdef WIFI
-	#include <WiFi.h>
-	#include <AsyncTCP.h>
-    #include <DNSServer.h>
-    #include "ESPAsyncWebServer.h"
-    DNSServer dnsServer;
-    AsyncWebServer server(80);
+    #include <OmEspHelpers.h>
+    OmWebServer s;
+    OmWebPages p;    
 #endif
 
 // Compute how many GIFs have been defined (called in setup)
@@ -196,7 +193,7 @@ uint32_t last_change = millis();
 
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
+uint32_t Wheel(uint8_t WheelPos) {
     uint32_t wheel=0;
 
     // Serial.print(WheelPos);
@@ -968,7 +965,6 @@ uint8_t squares(bool reverse) {
     uint8_t repeat = 1;
     static uint16_t delayframe = sqdelay;
 
-
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	matrix->clear();
@@ -1666,7 +1662,7 @@ uint8_t demoreel100(uint8_t demo) {
 #else
 	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
 #endif
-	    byte dothue = 0;
+	    int8_t dothue = 0;
 	    for( int i = 0; i < 8; i++) {
 		int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
 	      matrixleds[pos2matrix(pos)] |= CHSV(dothue, 200, 255);
@@ -2252,38 +2248,38 @@ void leds_setcolor(uint16_t i, uint32_t c) {
 }
 #endif // NEOPIXEL_PIN
 
-void change_brightness(int8_t change) {
-#ifdef M64BY64
-    static uint8_t brightness = 6;
-#else
-    static uint8_t brightness = 5;
-#endif
+void change_brightness(int8_t change, bool absolute=false) {
+    static uint8_t brightness = dfl_matrix_brightness_level;
     static uint32_t last_brightness_change = 0 ;
 
-    if (millis() - last_brightness_change < 300) {
+    if (!absolute && millis() - last_brightness_change < 300) {
 	Serial.print("Too soon... Ignoring brightness change from ");
 	Serial.println(brightness);
 	return;
     }
     last_brightness_change = millis();
-    brightness = constrain(brightness + change, 2, 8);
+    if (absolute) {
+        brightness = change;
+    } else {
+	brightness = constrain(brightness + change, 2, 8);
+    }
     led_brightness = min((1 << (brightness+1)) - 1, 255);
+    uint8_t smartmatrix_brightness = min( (1 << (brightness+2)), 255);
+    matrix_brightness = (1 << (brightness-1)) - 1;
 
     Serial.print("Changing brightness ");
     Serial.print(change);
     Serial.print(" to level ");
     Serial.print(brightness);
-    Serial.print(" led value ");
+    Serial.print(" led value: ");
     Serial.print(led_brightness);
+    Serial.print(" / smartmatrix value: ");
+    Serial.print(smartmatrix_brightness);
+    Serial.print(" / neomatrix value: ");
+    Serial.println(matrix_brightness);
 #ifdef SMARTMATRIX
-    uint8_t smartmatrix_brightness = min( (1 << (brightness+2)), 255);
-    Serial.print(" neomatrix value ");
-    Serial.println(smartmatrix_brightness);
     matrixLayer.setBrightness(smartmatrix_brightness);
 #else
-    matrix_brightness = (1 << (brightness-1)) - 1;
-    Serial.print(" neomatrix value ");
-    Serial.println(matrix_brightness);
     // This is needed if using the ESP32 driver but won't work
     // if using 2 independent fastled strips (1D + 2D matrix)
     matrix->setBrightness(matrix_brightness);
@@ -2819,7 +2815,7 @@ void IR_Serial_Handler() {
     void juggle(uint8_t wait) {
         // eight colored dots, weaving in and out of sync with each other
         fadeToBlackBy( leds, STRIP_NUM_LEDS, 20);
-        byte dothue = 0;
+        int8_t dothue = 0;
         for(uint8_t i = 0; i < 8; i++) {
 	    leds[beatsin16( i+7, 0, STRIP_NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
 	    dothue += 32;
@@ -3011,83 +3007,108 @@ void IR_Serial_Handler() {
     }
 #endif // NEOPIXEL_PIN
 
-
 #ifdef WIFI
-    String DemoOptions = "";
+#define HTML_BRIGHT  101
+#define HTML_SPEED   102
+#define HTML_BUTPREV 110
+#define HTML_BUTNEXT 111
 
-    String processor(const String& var){
-#if 0
-      if(var == "MIN_BRIGHTNESS") return String(minBrightness);
-      if(var == "MAX_BRIGHTNESS") return String(maxBrightness);
-      if(var == "CURRENT_BRIGHTNESS") return String(currentBrightness);
-#endif
+void actionProc(const char *pageName, const char *parameterName, int value, int ref1, void *ref2) {
+    static int actionCount = 0;
+    actionCount++;
+    Serial.printf("%4d %s.%s value=0x%08x/%dslider 2 ref1=%d\n", actionCount, pageName, parameterName, value, value, ref1);
+
+    switch (ref1) {
+    case HTML_BUTPREV:
+	if (!value) break;
+	Serial.println("PREVIOUS pressed");
+	matrix_change(-128);
+	break;
+
+    case HTML_BUTNEXT:
+	if (!value) break;
+	Serial.println("NEXT pressed");
+	matrix_change(127);
+	break;
+
+    case HTML_BRIGHT:
+	if (!value) break;
+	Serial.print("Brightness change to ");
+	Serial.println(value);
+	change_brightness(value, true);
+	break;
+    }   
+
+    #if 0
       if(var == "CURRENT_INDEX") return String(matrix_demo);
       if(var == "LIST_DEMO_OPTIONS") return DemoOptions;
-      return String();
-    }
-
-    class CaptiveRequestHandler : public AsyncWebHandler {
-    public:
-      CaptiveRequestHandler() {}
-      virtual ~CaptiveRequestHandler() {}
-
-      bool canHandle(AsyncWebServerRequest *request){
-	//request->addInterestingHeader("ANY");
-	return true;
-      }
-
-      void handleRequest(AsyncWebServerRequest *request) {
-	// handle other file requests
-	if (request->url() == "/styles.css"){
-	  request->send(FSO, "/www/styles.css", "text/css");
-	}
-	else { // handle parameters
-	  if(request->hasParam("next")){
-	    Serial.println("NEXT pressed");
-	    matrix_change(127);
-	  }
-	  if(request->hasParam("prev")){
-	    Serial.println("PREVIOUS pressed");
-	    matrix_change(-128);
-	  }
-    #if 0
 	  if(request->hasParam("brightness")){
 	    AsyncWebParameter* p = request->getParam("brightness");
-	    currentBrightness = p->value().toInt();
-	    Serial.print("New brightness: ");
-	    Serial.println(currentBrightness);
 	  }
     #endif
-	  if(request->hasParam("newDemoIndex")){
-	    AsyncWebParameter* p = request->getParam("newDemoIndex");
-	    int16_t newIndex = p->value().toInt();
-	    Serial.print("Demo file index: ");
-	    Serial.println(newIndex);
-	    matrix_change(newIndex);
-	  }
+}
 
-	  // catch everything else
-	  //Send index.htm with template processor function
-	  request->send(FSO, "/www/index.htm", "text/html", false, processor);
-	}
-      }
-    };
+void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
+{
+  const char *what = "?";
+  if (trying) what = "trying";
+  else if (failure) what = "failure";
+  else if (success) what = "success";
 
-#if 0
-DemoOptions += "<option value='" + String(i) + "'>" + file.name() + "</option>";
+  Serial.printf("%s: connectionStatus for '%s' is now '%s'\n", __func__, ssid, what);
+}
+
+void wifi_html_tick() { 
+    s.tick();
+}
+
+void setup_wifi() {
+    Serial.println("Configuring access point...");
+
+    #include "wifi_secrets.h"
+    s.addWifi(WIFI_SSID, WIFI_PASSWORD);
+
+    s.setStatusCallback(connectionStatus);
+
+    p.setBuildDateAndTime(__DATE__, __TIME__);
+
+    p.beginPage("Main");
+    p.addSlider(1, 8, "Brightness", actionProc, dfl_matrix_brightness_level, HTML_BRIGHT);
+    p.addSlider("Speed",      actionProc, 50, HTML_SPEED);
+
+    /*
+         A button sends a value "1" when pressed (in the web page),
+         and zero when released.
+    */
+    p.addButton("prev", actionProc, HTML_BUTPREV);
+    p.addButton("next", actionProc, HTML_BUTNEXT);
+
+    /*
+         A select control shown as a dropdown on desktop browsers,
+         and some other multiple-choice control on phones.
+         You can add any number of options, and specify
+         the value of each.
+    */
+    p.addSelect("demo", actionProc, 2, 120);
+    p.addSelectOption("choice 1", 1);
+    p.addSelectOption("choice 2", 2);
+    p.addSelectOption("a third choice", 3);
+    p.addSelectOption("a hundred!", 100);
+
+    // And lastly, introduce the web pages to the wifi connection.
+    s.setHandler(p);
+
+    // Make sure that aiko calls the HTML handler at 10Hz
+    Events.addHandler(wifi_html_tick, 100);
+}
 #endif
-
-#endif
+    // Make sure that aiko calls the HTML handler at 10Hz
 
 
 void loop() {
-#ifdef WIFI
-    dnsServer.processNextRequest();
-#endif
-
     // Run the Aiko event loop, all the magic is in there.
     Events.loop();
-    delay(1);
+    delay((uint32_t) 1);
 }
 
 
@@ -3117,19 +3138,20 @@ void setup() {
 #endif
 
 #ifdef WIFI
-	show_free_mem("Before Wifi");
-    Serial.println("Configuring access point...");
-    #include "wifi_secrets.h"
-    WiFi.softAP(WIFI_SSID, WIFI_PASSWORD);
-    
-    dnsServer.start(53, "*", WiFi.softAPIP());
-    server.addHandler(new CaptiveRequestHandler());
-    server.begin();
-    Serial.print("WIFI AP Started. IP Address: ");
-    Serial.println(WiFi.softAPIP());
+//  Before Wifi
+//  Heap/32-bit Memory Available     : 274076 int8_ts total, 113792 int8_ts largest free block
+//  8-bit/malloc/DMA Memory Available: 231496 int8_ts total, 113792 int8_ts largest free block
+//  Total PSRAM used: 0 int8_ts total, 4194252 PSRAM int8_ts free
+//  Configuring access point...
+//  After Wifi/Before SPIFFS/FFat
+//  Heap/32-bit Memory Available     : 215172 int8_ts total, 113792 int8_ts largest free block
+//  8-bit/malloc/DMA Memory Available: 172592 int8_ts total, 113792 int8_ts largest free block
+//  Total PSRAM used: 3760 int8_ts total, 4190276 PSRAM int8_ts fre
+    show_free_mem("Before Wifi");
+    setup_wifi();
 #endif
 
-show_free_mem("After Wifi/Before SPIFFS/FFat");
+    show_free_mem("After Wifi/Before SPIFFS/FFat");
 #ifdef HAS_FS
     Serial.println("Init GIF Viewer SPIFFS/FFat");
     sav_setup();
@@ -3159,10 +3181,10 @@ show_free_mem("After Wifi/Before SPIFFS/FFat");
     // lsbMsbTransitionBit of 2 gives 100 Hz refresh, 120 requested: 
     // lsbMsbTransitionBit of 3 gives 191 Hz refresh, 120 requested: 
     // Raised lsbMsbTransitionBit to 3/7 to meet minimum refresh rate
-    // Descriptors for lsbMsbTransitionBit 3/7 with 16 rows require 6144 bytes of DMA RAM
+    // Descriptors for lsbMsbTransitionBit 3/7 with 16 rows require 6144 int8_ts of DMA RAM
     // SmartMatrix Mallocs Complete
-    // Heap/32-bit Memory Available: 181472 bytes total,  85748 bytes largest free block
-    // 8-bit/DMA Memory Available  :  95724 bytes total,  39960 bytes largest free block
+    // Heap/32-bit Memory Available: 181472 int8_ts total,  85748 int8_ts largest free block
+    // 8-bit/DMA Memory Available  :  95724 int8_ts total,  39960 int8_ts largest free block
     matrix_setup(25000);
     Serial.println("Init Aurora");
     aurora_setup();
@@ -3209,16 +3231,16 @@ show_free_mem("After Wifi/Before SPIFFS/FFat");
     int i = 100;
     Serial.println("Pause for debug greyish screen");
     while (i--) {
-	if (check_IR_serial()) {
-	    Serial.println("Will pause on debug screen");
-	    i = 60000;
-	}
-	delay(10);
+		if (check_IR_serial()) {
+			Serial.println("Will pause on debug screen");
+			i = 60000;
+		}
+		delay((uint32_t) 10);
     }
     Serial.println("Done with debug grey screen, display stats");
 
     display_stats();
-    delay(2000);
+	delay((uint32_t) 2000);
 
     Serial.println("Matrix Libraries Test done");
     //font_test();
