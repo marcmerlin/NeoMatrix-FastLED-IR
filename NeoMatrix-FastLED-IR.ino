@@ -182,7 +182,7 @@ StripDemo nextdemo = f_theaterChaseRainbow;
 // Is the current demo linked to a color (false for rainbow demos)
 bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
-static int16_t strip_speed = 50;
+int16_t strip_speed = 50;
 
 
 uint32_t last_change = millis();
@@ -2286,10 +2286,10 @@ void change_brightness(int8_t change, bool absolute=false) {
 #endif
 }
 
-void change_speed(int8_t change) {
+void change_speed(int8_t change, bool absolute=false) {
     static uint32_t last_speed_change = 0 ;
 
-    if (millis() - last_speed_change < 200) {
+    if (!absolute && millis() - last_speed_change < 200) {
 	Serial.print("Too soon... Ignoring speed change from ");
 	Serial.println(strip_speed);
 	return;
@@ -2298,8 +2298,12 @@ void change_speed(int8_t change) {
 
     Serial.print("Changing speed ");
     Serial.print(strip_speed);
-    strip_speed = constrain(strip_speed + change, 1, 100);
     Serial.print(" to new speed ");
+    if (absolute) {
+	strip_speed = change;
+    } else {
+	strip_speed = constrain(strip_speed + change, 1, 100);
+    }
     Serial.println(strip_speed);
 }
 
@@ -3036,6 +3040,13 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	Serial.print("Brightness change to ");
 	Serial.println(value);
 	change_brightness(value, true);
+	break;
+
+    case HTML_SPEED:
+	if (!value) break;
+	Serial.print("Speed change to ");
+	Serial.println(value);
+	change_speed(value, true);
 	break;
     }   
 
