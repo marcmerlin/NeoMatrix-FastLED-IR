@@ -361,10 +361,12 @@ void font_test() {
 }
 
 
-uint8_t tfsf() {
+uint8_t tfsf(uint32_t unused) {
     static uint16_t state;
     static float spd;
     uint8_t l = 0;
+
+    unused = unused;
 
     // For a bigger screen, no need to flash the letters one after another
     // this is a quick and dirty display of them all.
@@ -513,7 +515,7 @@ uint8_t tfsf() {
 }
 
 // type 0 = up, type 1 = up and down
-uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
+uint8_t tfsf_zoom(uint32_t zoom_type) {
     static uint16_t direction;
     static uint16_t size;
     static uint8_t l;
@@ -521,6 +523,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     static bool dont_exit;
     static uint16_t delayframe;
     const char letters[] = { 'T', 'F', 'S', 'F' };
+    uint8_t speed = 30;
     bool done = 0;
     uint8_t repeat = 4;
 
@@ -624,7 +627,7 @@ uint8_t tfsf_zoom(uint8_t zoom_type, uint8_t speed) {
     return repeat;
 }
 
-uint8_t esrbr() { // or burn baby burn
+uint8_t esrbr(uint32_t unused) { // or burn baby burn
     static uint16_t state;
     static float spd;
     float spdincr = 0.6;
@@ -634,6 +637,7 @@ uint8_t esrbr() { // or burn baby burn
     uint8_t resetspd = 24;
     uint8_t l = 0;
 
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -707,7 +711,7 @@ uint8_t esrbr() { // or burn baby burn
     return 1;
 }
 
-uint8_t bbb() {
+uint8_t bbb(uint32_t unused) {
     static uint16_t state;
     static float spd;
     float spdincr = 0.6;
@@ -717,6 +721,7 @@ uint8_t bbb() {
     uint8_t resetspd = 24;
     uint8_t l = 0;
 
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -840,13 +845,14 @@ uint8_t esrbr_flashin() {
 }
 #endif
 
-uint8_t esrbr_fade() {
+uint8_t esrbr_fade(uint32_t unused) {
     static uint16_t state;
     static uint8_t wheel;
     static float spd;
     float spdincr = 0.5;
     uint8_t resetspd = 5;
 
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -958,7 +964,7 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y) {
 }
 
 
-uint8_t squares(bool reverse) {
+uint8_t squares(uint32_t reverse) {
 #define sqdelay 2
     static uint16_t state;
     static uint8_t wheel;
@@ -1007,7 +1013,7 @@ uint8_t squares(bool reverse) {
 }
 
 
-uint8_t webwc() {
+uint8_t webwc(uint32_t unused) {
     static uint16_t state;
     static float spd;
     static bool didclear;
@@ -1018,6 +1024,8 @@ uint8_t webwc() {
     uint8_t displayall = 18;
     uint8_t resetspd = 24;
     uint8_t l = 0;
+
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1162,12 +1170,24 @@ uint8_t scrollText(const char str[], uint8_t len) {
 }
 
 
-uint8_t DoublescrollText(const char str1[], uint8_t len1, const char str2[], uint8_t len2) {
+uint8_t DoublescrollText(uint32_t choice) {
     static int16_t x;
-    int16_t len = max(len1, len2);
     int8_t fontsize = 9;
     int8_t fontwidth = 11;
     int8_t stdelay = 2;
+    int16_t len;
+    const char *str1;
+    const char *str2;
+
+    if (choice == 1) {
+	str1 = "Safety";
+	str2 = "Third";
+    } else {
+	str1 = "I Love";
+	str2 = "LEDs!!!";
+    }
+
+    len = max(strlen(str1), strlen(str2));
 
     uint8_t repeat = 4;
     if (mw >= 64) {
@@ -1279,9 +1299,20 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
     }
 }
 
-uint8_t panOrBounceBitmap (const uint16_t *bitmap, uint16_t bitmapSize) {
+uint8_t panOrBounceBitmap (uint32_t choice) {
     static uint16_t state;
     uint16_t x, y;
+    const uint16_t *bitmap;
+    uint16_t bitmapSize;
+
+    if (choice == 1) {
+	bitmap = bitmap24;
+	bitmapSize = 24;
+    } else {
+	// FIXME, put something else here
+	bitmap = bitmap24;
+	bitmapSize = 24;
+    }
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1304,7 +1335,7 @@ uint8_t panOrBounceBitmap (const uint16_t *bitmap, uint16_t bitmapSize) {
 }
 
 // FIXME: reset decoding counter to 0 between different GIFS
-uint8_t GifAnim(uint8_t idx) {
+uint8_t GifAnim(uint32_t idx) {
 #ifdef HAS_FS
     uint16_t x, y;
     uint8_t repeat = 1;
@@ -1381,13 +1412,12 @@ uint8_t GifAnim(uint8_t idx) {
             { "/gifs64/ab3_s.gif",		 10, 0, 0, 10, 10, 64, 64 }, // 105 color lines
             { "/gifs64/ab4_g.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB logo
 	    { "/gifs64/ab4_w.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB logo white - skip
-//
 	    { "/gifs64/BM_Man_Scroll.gif",	 10, 0, 0, 10, 10, 0, 0 },  // 108
-// -- non animated, those scroll up/down
 	    { "/gifs64/BM_green_arms.gif",	 10, -12, 0, 10, 10, 36, 64 },
 	    { "/gifs64/BM_lady_fire.gif",	 10, 0, 0, 10, 10, 64, 64 },	// 110
 	    { "/gifs64/BM_logo.gif",		 10, 0, 0, 10, 10, 64, 64 },
 	    { "/gifs64/BM_TheMan_Blue.gif",	 10, -12, -2, 10, 10, 36, 64 },    // 112
+// -- non animated, those scroll up/down
 
 	#if 0
             { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15, 0, 0 },
@@ -1501,12 +1531,14 @@ uint8_t GifAnim(uint8_t idx) {
 #endif
 }
 
-uint8_t scrollBigtext() {
+uint8_t scrollBigtext(uint32_t unused) {
     // 64x96 pixels, chars are 5(6)x7, 10.6 chars across, 13.7 lines of displays
     static uint16_t state = 0;
     static uint8_t resetcnt = 1;
     uint16_t loopcnt = 700;
     uint16_t x, y;
+
+    unused = unused;
 
     static const char* text[] = {
 	"if (reset) {",
@@ -1606,7 +1638,7 @@ uint16_t pos2matrix(uint16_t pos) {
     return matrix->XY(pos % mw, pos / mw);
 }
 
-uint8_t demoreel100(uint8_t demo) {
+uint8_t demoreel100(uint32_t demo) {
     #define demoreeldelay 1
 
     static uint16_t state;
@@ -1679,9 +1711,11 @@ uint8_t demoreel100(uint8_t demo) {
 }
 
 
-uint8_t call_twinklefox()
+uint8_t call_twinklefox(uint32_t unused)
 {
     static uint16_t state;
+
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1694,9 +1728,11 @@ uint8_t call_twinklefox()
     return 0;
 }
 
-uint8_t call_pride()
+uint8_t call_pride(uint32_t unused)
 {
     static uint16_t state;
+
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1710,8 +1746,10 @@ uint8_t call_pride()
     return 0;
 }
 
-uint8_t call_fireworks() {
+uint8_t call_fireworks(uint32_t unused) {
     static uint16_t state;
+
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1726,8 +1764,10 @@ uint8_t call_fireworks() {
     return 0;
 }
 
-uint8_t call_fire() {
+uint8_t call_fire(uint32_t unused) {
     static uint16_t state;
+
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1744,7 +1784,7 @@ uint8_t call_fire() {
     return 0;
 }
 
-uint8_t call_rain(uint8_t which) {
+uint8_t call_rain(uint32_t which) {
     #define raindelay 2
     static uint16_t state;
     static uint16_t delayframe = raindelay;
@@ -1773,9 +1813,12 @@ uint8_t call_rain(uint8_t which) {
     return 0;
 }
 
-uint8_t call_pacman(uint8_t loopcnt) {
+uint8_t call_pacman(uint32_t unused) {
+    uint8_t loopcnt = 3;
     #define pacmandelay 5
     static uint16_t delayframe = pacmandelay;
+
+    unused = unused;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
@@ -1798,11 +1841,13 @@ uint8_t call_pacman(uint8_t loopcnt) {
 
 // Adapted from	LEDText/examples/TextExample3 by Aaron Liddiment
 // bright and annoying, I took it down to just a very quick show.
-uint8_t plasma() {
+uint8_t plasma(uint32_t unused) {
     #define PLASMA_X_FACTOR  24
     #define PLASMA_Y_FACTOR  24
     static uint16_t PlasmaTime, PlasmaShift;
     uint16_t OldPlasmaTime;
+
+    unused = unused;
 
     static uint16_t state;
 
@@ -1836,7 +1881,7 @@ uint8_t plasma() {
     return 0;
 }
 
-uint8_t tmed(uint8_t demo) {
+uint8_t tmed(uint32_t demo) {
     // 0 to 12
     // add new demos at the end or the number selections will be off
     // make sure 77 runs long enough
@@ -1847,13 +1892,13 @@ uint8_t tmed(uint8_t demo) {
 	{  25, 3, 500 },  //    5 circles turning together, run a bit longer
 	{  52, 5, 300 },  //    rectangles/squares/triangles zooming out
 	{  60, 6, 200 },  // 05 opposite concentric colors and shapes (52 reversed)
-	{  62, 6, 200 },  //    lots of patterns: stars and rectangles, bk triangles, big balls
+	{  62, 6, 200 },  //    double color starfield with shapes in/out
 	{  67, 5, 900 },  //    two colors swirling bigger, creating hypno pattern
 	{  70, 6, 200 },  //    4 fat spinning comets with shapes growing from middle sometimes
 	{  77, 5, 300 },  //    streaming lines of colored pixels with shape zooming in or out
 	{  80, 5, 200 },  // 10 rotating triangles of color
 	{ 104, 6, 200 },  //    circles mixing in the middle
-	{ 105, 2, 400 },  //    spinnig changing colors of hypno patterns
+	{ 105, 2, 400 },  //    hypno
 
     };
 //	{  29, 5, 300 },  // XX swirly RGB colored dots meant to go to music
@@ -2049,168 +2094,148 @@ void matrix_change(int16_t demo) {
     Serial.println(matrix_loop);
 }
 
+typedef struct demo_entry_ {
+    const char *name;
+    uint8_t (*func)(uint32_t);
+    int arg;
+} Demo_Entry;
+
+Demo_Entry demo_list[129] = {
+/* 00 */ { "", NULL, -1  },
+/* 01 */ { "Squares In",  squares, 0 },
+/* 02 */ { "Squares Out", squares, 1 },
+/* 03 */ { "EatSleepRaveBurnRepeat", esrbr, -1  },
+/* 04 */ { "EatSleepRaveBurnRepeat Fade", esrbr_fade, -1  },
+/* 05 */ { "TFSF Zoom InOut", tfsf_zoom, 1  },
+/* 06 */ { "TFSF Display", tfsf, -1  },
+/* 07 */ { "With Every Beat...", webwc, -1  },
+/* 08 */ { "Burn Baby Burn", bbb, -1  },
+/* 09 */ { "Safety Third", DoublescrollText, 1  },    // adjusts // fixme I love LEDs
+/* 10 */ { "ScrollBigtext", scrollBigtext, -1  },
+/* 11 */ { "Bounce Smiley", panOrBounceBitmap, 1  },  // currently only 24x32
+/* 12 */ { "", NULL, -1  },
+/* 13 */ { "", NULL, -1  },
+/* 14 */ { "", NULL, -1  },
+/* 15 */ { "", NULL, -1  },
+/* 16 */ { "", NULL, -1  },
+/* 17 */ { "Fireworks", call_fireworks, -1  },
+/* 18 */ { "TwinkleFox", call_twinklefox, -1  },
+/* 19 */ { "Pride", call_pride, -1  },		    // not nice for higher res (64 and above)
+/* 20 */ { "Demoreel Stars", demoreel100, 1 },	    // Twinlking stars
+/* 21 */ { "Demoreel Sweeper", demoreel100, 2 },    // color changing pixels sweeping up and down
+/* 22 */ { "Demoreel Dbl Sweeper", demoreel100, 3 },// colored pixels being exchanged between top and bottom
+/* 23 */ { "Matrix", call_rain, 1  },		    // matrix
+/* 24 */ { "Storm", call_rain, 3  },		    // clouds, rain, lightening
+/* 25 */ { "Pac Man", call_pacman, -1  },	    // currently only designed for 24x32
+/* 26 */ { "Plasma", plasma, -1  },
+/* 27 */ { "Fire", call_fire, -1  },
+/* 28 */ { "", NULL, -1  },
+/* 29 */ { "", NULL, -1  },
+/* 30 */ { "Aurora Attract", aurora,  0  },
+/* 31 */ { "Aurora Bounce", aurora,  1  },
+/* 32 */ { "Aurora Cube", aurora,  2  },
+/* 33 */ { "Aurora Flock", aurora,  3  },
+/* 34 */ { "Aurora Flowfield", aurora,  4  },
+/* 35 */ { "Aurora Incremental Drift", aurora,  5  },
+/* 36 */ { "Aurora Incremental Drift2", aurora,  6  },
+/* 37 */ { "Aurora Pendulum Wave ", aurora,  7  },
+/* 38 */ { "Aurora Radar", aurora,  8  },	    // 8 not great on non square
+/* 39 */ { "Aurora Spiral", aurora,  9  },
+/* 40 */ { "Aurora Spiro", aurora, 10  },
+/* 41 */ { "Aurora Swirl", aurora, 11  },	    // 11 not great on bigger display
+/* 42 */ { "Aurora Wave", aurora, 12  },
+/* 43 */ { "", NULL, -1  },
+/* 44 */ { "", NULL, -1  },
+/* 45 */ { "TMED  0 Zoom in shapes", tmed,  0  }, // concentric colors and shapes
+/* 46 */ { "TMED  1 Concentric circles", tmed,  1  }, // 5 color windows-like pattern with circles in and out
+/* 47 */ { "TMED  2 Color Starfield", tmed,  2  }, // color worm patterns going out with circles zomming out
+/* 48 */ { "TMED  3 Dancing Circles", tmed,  3  }, // 5 circles turning together, run a bit longer
+/* 49 */ { "TMED  4 Zoom out Shapes", tmed,  4  }, // rectangles/squares/triangles zooming out
+/* 50 */ { "TMED  5 Shapes In/Out", tmed,  5  }, // opposite concentric colors and shapes (52 reversed)
+/* 51 */ { "TMED  6 Double Starfield&Shapes", tmed,  6  }, // double color starfield with shapes in/out
+/* 52 */ { "TMED  7 Hypnoswirl Starfield", tmed,  7  }, // two colors swirling bigger, creating hypno pattern
+/* 53 */ { "TMED  8 4 Dancing Balls&Shapes", tmed,  8  }, // 4 fat spinning comets with shapes growing from middle sometimes
+/* 54 */ { "TMED  9 Starfield BKringer", tmed,  9  }, // streaming lines of colored pixels with shape zooming in or out
+/* 55 */ { "TMED 10 Spinning Triangles", tmed, 10  }, // rotating triangles of color
+/* 56 */ { "TMED 11 Circles Mixing", tmed, 11  }, // circles mixing in the middle
+/* 57 */ { "TMED 12 Hypno", tmed, 12  }, // hypno
+/* 58 */ { "", NULL, -1  },
+/* 59 */ { "", NULL, -1  },
+/* 60 */ { "", NULL, -1  },
+/* 61 */ { "", NULL, -1  },
+/* 62 */ { "", NULL, -1  },
+/* 63 */ { "", NULL, -1  },
+/* 64 */ { "", NULL, -1  },
+/* 65 */ { "", NULL, -1  },
+/* 66 */ { "", NULL, -1  },
+/* 67 */ { "", NULL, -1  },
+/* 68 */ { "", NULL, -1  },
+/* 69 */ { "", NULL, -1  },
+/* 70 */ { "GIF net"		, GifAnim,  0  },
+/* 71 */ { "GIF colorstar"	, GifAnim,  1  },
+/* 72 */ { "GIF circlesmoke"	, GifAnim,  2  },
+/* 73 */ { "GIF waterdrop"	, GifAnim,  3  },
+/* 74 */ { "GIF circletriangle"	, GifAnim,  4  },
+/* 75 */ { "GIF fallingcube"	, GifAnim,  5  },
+/* 76 */ { "GIF photon"		, GifAnim,  6  },
+/* 77 */ { "GIF mesh"		, GifAnim,  7  },
+/* 78 */ { "GIF Michael Jackson", GifAnim,  8  },
+/* 79 */ { "GIF spincircle"	, GifAnim,  9  },
+/* 80 */ { "GIF ghostbusters"	, GifAnim, 10  },
+/* 81 */ { "GIF hand"		, GifAnim, 11  },
+/* 82 */ { "GIF infection"	, GifAnim, 12  },
+/* 83 */ { "GIF redplasma"	, GifAnim, 13  },
+/* 84 */ { "GIF dancers"	, GifAnim, 14  },
+/* 85 */ { "GIF comets"		, GifAnim, 15  },
+/* 86 */ { "GIF batman"		, GifAnim, 16  },
+/* 87 */ { "GIF cubes"		, GifAnim, 17  },
+/* 88 */ { "GIF spintriangle"	, GifAnim, 18  },
+/* 89 */ { "GIF flyingfire"	, GifAnim, 19  },
+/* 90 */ { "GIF expandcircle"	, GifAnim, 20  },
+/* 91 */ { "GIF plasma"		, GifAnim, 21  },
+/* 92 */ { "GIF greenplasma"	, GifAnim, 22  },
+/* 93 */ { "GIF circle2sphere"	, GifAnim, 23  },
+/* 94 */ { "GIF colortoroid"	, GifAnim, 24  },
+/* 95 */ { "GIF scrollcubestron", GifAnim, 25  },
+/* 96 */ { "GIF spinningpattern", GifAnim, 26  },
+/* 97 */ { "GIF spacetime"	, GifAnim, 27  },
+/* 98 */ { "GIF circleslices"	, GifAnim, 28  },
+/* 99 */ { "GIF heartTunnel"	, GifAnim, 29  },
+/*100 */ { "GIF sonic"		, GifAnim, 30  },
+/*101 */ { "GIF AB colors circles", GifAnim, 31  },
+/*102 */ { "GIF A&B lgrey"	, GifAnim, 32  },
+/*103 */ { "GIF A&B greyer"	, GifAnim, 33  },
+/*104 */ { "GIF A&B brightwhite", GifAnim, 34  },
+/*105 */ { "GIF AB colorstrings", GifAnim, 35  },
+/*106 */ { "GIF ABlogo Grey"	, GifAnim, 36  },
+/*107 */ { "GIF ABlogo White"	, GifAnim, 37  },
+/*108 */ { "GIF BM Man Scroll"	, GifAnim, 38  },
+/*109 */ { "GIF BM green arms"	, GifAnim, 39  },
+/*110 */ { "GIF BM lady fire"	, GifAnim, 40  },
+/*111 */ { "GIF BM logo"	, GifAnim, 41  },
+/*112 */ { "GIF BM TheMan Blue"	, GifAnim, 42  },
+/*113 */ { "", NULL, -1  },
+/*114 */ { "", NULL, -1  },
+/*115 */ { "", NULL, -1  },
+/*116 */ { "", NULL, -1  },
+/*117 */ { "", NULL, -1  },
+/*118 */ { "", NULL, -1  },
+/*119 */ { "", NULL, -1  },
+/*120 */ { "", NULL, -1  },
+/*121 */ { "", NULL, -1  },
+/*122 */ { "", NULL, -1  },
+/*123 */ { "", NULL, -1  },
+/*124 */ { "", NULL, -1  },
+/*125 */ { "", NULL, -1  },
+/*126 */ { "", NULL, -1  },
+/*127 */ { "", NULL, -1  },
+};         
+           
 void Matrix_Handler() {
     uint8_t ret;
+    Demo_Entry demo_entry = demo_list[matrix_demo];
 
-    EVERY_N_MILLISECONDS(40) {
-	gHue++;  // slowly cycle the "base color" through the rainbow
-    }
-
-    switch (matrix_demo) {
-	case 0:
-	    ret = squares(0);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 1:
-	    ret = squares(1);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 2:
-	    ret = esrbr(); // or eat sleep rave/burn repeat
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 3:
-	    ret = esrbr_fade(); // or es burn repeat
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 4:
-	    ret = tfsf_zoom(0, 30);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 5:
-	    ret = tfsf_zoom(1, 30);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 6:
-	    ret = tfsf();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 7:
-	    ret = webwc();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 8:
-	    ret = bbb();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 9:
-	    ret = DoublescrollText("Safety", 6, "Third!", 6);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 10:
-	    ret = scrollBigtext();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 12: // not anything but 24x32
-	    ret = panOrBounceBitmap(bitmap24, 24);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 17:
-	    ret = call_fireworks();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 18:
-	    ret = call_twinklefox();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 19: // not 64x96
-	    ret = call_pride();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 20:
-	    ret = demoreel100(1); // Twinlking stars
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 21:
-	    ret = demoreel100(2); // color changing pixels sweeping up and down
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 22:
-	    ret = demoreel100(3); // colored pixels being exchanged between top and bottom
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 23:
-	    ret = call_rain(1); // matrix
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 24:
-	    ret = call_rain(3); // clouds, rain, lightening
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 25:
-	    ret = call_pacman(3);
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 26:
-	    ret = plasma();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 27:
-	    ret = call_fire();
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	default:
-	    // aurora 13 demo
-	    if      (matrix_demo >= 30 && matrix_demo <= 42) ret = aurora(matrix_demo-30);
-	    // table 13 demos
-	    else if (matrix_demo >= 45 && matrix_demo <= 57) ret = tmed(matrix_demo-45);
-	    else if (matrix_demo >= 70 && matrix_demo < 70+gif_cnt)
-	    {
-		ret = GifAnim(matrix_demo-70);
-	    }
-	    else { ret = 0; Serial.print("Cannot play demo "); Serial.println(matrix_demo); };
-
-	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
-	    break;
-
-	case 126:
+    if (matrix_demo == 128) {
 #ifdef M32BY8X3
 	    const char str[] = "Thank You :)";
 	    ret = scrollText(str, sizeof(str));
@@ -2220,8 +2245,19 @@ void Matrix_Handler() {
 #endif
 	    if (matrix_loop == -1) matrix_loop = ret;
 	    if (ret) return;
-	    break;
+    } else {
+	if (! demo_entry.func) {
+	    Serial.print("No demo for ");
+	    Serial.println(matrix_demo++);
+	    if (matrix_demo>128) matrix_demo = 0;
+	    return;
+	}
+
+	ret = demo_entry.func(demo_entry.arg);
+	if (matrix_loop == -1) matrix_loop = ret;
+	if (ret) return;
     }
+
     matrix_reset_demo = 1;
     Serial.print("Done with demo ");
     Serial.print(matrix_demo);
@@ -3119,6 +3155,9 @@ void setup_wifi() {
 void loop() {
     // Run the Aiko event loop, all the magic is in there.
     Events.loop();
+    EVERY_N_MILLISECONDS(40) {
+	gHue++;  // slowly cycle the "base color" through the rainbow
+    }
     delay((uint32_t) 1);
 }
 
