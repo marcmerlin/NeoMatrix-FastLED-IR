@@ -2094,6 +2094,9 @@ void matrix_change(int16_t demo) {
     Serial.println(matrix_loop);
 }
 
+
+// ================================================================================
+
 typedef struct demo_entry_ {
     const char *name;
     uint8_t (*func)(uint32_t);
@@ -2231,6 +2234,7 @@ Demo_Entry demo_list[129] = {
 /*127 */ { "", NULL, -1  },
 };         
            
+
 void Matrix_Handler() {
     uint8_t ret;
     Demo_Entry demo_entry = demo_list[matrix_demo];
@@ -3047,11 +3051,14 @@ void IR_Serial_Handler() {
     }
 #endif // NEOPIXEL_PIN
 
+// ================================================================================
+
 #ifdef WIFI
 #define HTML_BRIGHT  101
 #define HTML_SPEED   102
 #define HTML_BUTPREV 110
 #define HTML_BUTNEXT 111
+#define HTML_DEMOCHOICE 120
 
 void actionProc(const char *pageName, const char *parameterName, int value, int ref1, void *ref2) {
     static int actionCount = 0;
@@ -3084,6 +3091,14 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	Serial.println(value);
 	change_speed(value, true);
 	break;
+
+    case HTML_DEMOCHOICE:
+	if (!value) break;
+	Serial.print("Got HTML Demo Choice ");
+	Serial.println(value);
+	matrix_change(value);
+	break;
+
     }   
 
     #if 0
@@ -3105,6 +3120,7 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   Serial.printf("%s: connectionStatus for '%s' is now '%s'\n", __func__, ssid, what);
 }
 
+// Apparently I can't send a method s.tick to Aiko handler, so I need this glue function
 void wifi_html_tick() { 
     s.tick();
 }
@@ -3136,11 +3152,11 @@ void setup_wifi() {
          You can add any number of options, and specify
          the value of each.
     */
-    p.addSelect("demo", actionProc, 2, 120);
-    p.addSelectOption("choice 1", 1);
-    p.addSelectOption("choice 2", 2);
-    p.addSelectOption("a third choice", 3);
-    p.addSelectOption("a hundred!", 100);
+    p.addSelect("demo", actionProc, 2, HTML_DEMOCHOICE);
+    for (uint16_t i=1; i < (sizeof(demo_list)/sizeof(demo_list[0])); i++) {
+	if (!demo_list[i].func) continue; 
+	p.addSelectOption(demo_list[i].name, i);
+    }
 
     // And lastly, introduce the web pages to the wifi connection.
     s.setHandler(p);
