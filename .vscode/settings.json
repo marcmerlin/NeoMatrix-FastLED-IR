@@ -1,5 +1,6 @@
 {
     "gitlens.blame.dateFormat": "",
     "C_Cpp.dimInactiveRegions": true,
-    "C_Cpp.errorSquiggles": "Enabled"
+    "C_Cpp.errorSquiggles": "Enabled",
+    "editor.tabSize": 4
 }
