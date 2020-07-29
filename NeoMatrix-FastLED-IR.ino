@@ -3204,6 +3204,25 @@ void setup_wifi() {
         demo_cnt++;
     }
 
+    p.addUrlHandler("demo_map.txt",  
+        [] (OmXmlWriter & w, OmWebRequest & r, int ref1, void *ref2) {
+            Serial.println("Serving demo_map");
+            p.renderHttpResponseHeader("text/plain", 200);
+            char pathname[] = "/demo_map.txt";
+            File file;
+
+            if (! (file = FSO.open(pathname)  
+            #ifdef FSOSPIFFS
+                                            , "r"
+            #endif
+                                                    ) ) die ("Error opening demo_map.txt");
+
+            while (file.available()) w.put(file.read());
+
+            file.close();
+        }
+    );
+
     // And lastly, introduce the web pages to the wifi connection.
     s.setHandler(p);
 
@@ -3217,11 +3236,11 @@ void read_config_index() {
     char pathname[] = "/demo_map.txt";
     File file;
 
+    if (! (file = FSO.open(pathname)  
     #ifdef FSOSPIFFS
-        if (! (file = SPIFFS.open(pathname, "r")) ) die ("Error opening GIF file");
-    #else
-        if (! (file = FSO.open(pathname)) ) die ("Error opening GIF file");
+                                    , "r"
     #endif
+                                            ) ) die ("Error opening demo_map.txt");
 
     // Demo enabled for 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
     // 1: enables, 3 enables demo and adds to BestOf selection
