@@ -3145,14 +3145,27 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
         break;
 
     }   
+}
 
-    #if 0
-      if(var == "CURRENT_INDEX") return String(matrix_demo);
-      if(var == "LIST_DEMO_OPTIONS") return DemoOptions;
-          if(request->hasParam("brightness")){
-            AsyncWebParameter* p = request->getParam("brightness");
-          }
+void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
+    p.renderHttpResponseHeader("text/plain", 200);
+
+    Serial.print("Serving ");
+    Serial.println(request.path);
+    File file;
+
+    if (! (file = FSO.open(request.path)  
+    #ifdef FSOSPIFFS
+                                    , "r"
     #endif
+                                            ) ) {
+        Serial.println("Error opening file");
+        return;
+    }
+
+    while (file.available()) w.put(file.read());
+
+    file.close();
 }
 
 void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
@@ -3203,25 +3216,14 @@ void setup_wifi() {
         p.addSelectOption(demo_list[i].name, i);
         demo_cnt++;
     }
-
-    p.addUrlHandler("demo_map.txt",  
-        [] (OmXmlWriter & w, OmWebRequest & r, int ref1, void *ref2) {
-            Serial.println("Serving demo_map");
-            p.renderHttpResponseHeader("text/plain", 200);
-            char pathname[] = "/demo_map.txt";
-            File file;
-
-            if (! (file = FSO.open(pathname)  
-            #ifdef FSOSPIFFS
-                                            , "r"
-            #endif
-                                                    ) ) die ("Error opening demo_map.txt");
-
-            while (file.available()) w.put(file.read());
-
-            file.close();
-        }
-    );
+    
+    p.addUrlHandler(wildcardProc);
+    p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    {
+        w.beginElement("a", "href", "/demo_map.txt");
+        w.addContent("Demo Map");
+        w.endElement(); // a 
+    });
 
     // And lastly, introduce the web pages to the wifi connection.
     s.setHandler(p);
