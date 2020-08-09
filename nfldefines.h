@@ -6,7 +6,7 @@
 #define DISABLE_MATRIX_TEST
 #include "neomatrix_config.h"
 
-#define HAS_FS
+#define HAS_ARDUINO_FS
 #ifdef ESP8266
     #define mheight 32
 #elif defined(ESP32)
@@ -61,7 +61,7 @@ uint8_t dfl_matrix_brightness_level = 5;
 	    #pragma message "PSRAM disabled, so WIFI disabled too"
 	#endif
     #else
-        #undef HAS_FS
+        #undef HAS_ARDUINO_FS
     #endif
 
 #elif mheight == 64

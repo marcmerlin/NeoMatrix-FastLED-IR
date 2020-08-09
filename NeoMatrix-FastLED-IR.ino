@@ -32,7 +32,7 @@
 #include "AikoEvents_Impl.h"
 using namespace Aiko;
 
-#ifdef HAS_FS
+#ifdef HAS_ARDUINO_FS
 // defines FSO
 #include "GifAnimViewer.h"
 #endif
@@ -46,7 +46,12 @@ using namespace Aiko;
 #define DEMO_ARRAY_SIZE 129
 // Different panel configurations: 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
 #define CONFIGURATIONS 5
+
+#ifdef ARDUINOONPC
+#define panelconfnum 4
+#else
 #define panelconfnum 3
+#endif
 
 typedef struct mapping_entry_ {
     uint16_t mapping;
@@ -64,6 +69,7 @@ uint16_t best_cnt = 0;
 uint16_t matrix_state = 0;
 uint16_t matrix_demo = demo_mapping[matrix_state].mapping;
 
+String displaytext="";
 
 // Compute how many GIFs have been defined (called in setup)
 uint8_t gif_cnt = 0;
@@ -1354,7 +1360,7 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
 
 // FIXME: reset decoding counter to 0 between different GIFS
 uint8_t GifAnim(uint32_t idx) {
-#ifdef HAS_FS
+#ifdef HAS_ARDUINO_FS
     uint16_t x, y;
     uint8_t repeat = 1;
     static int8_t scrollx = 0;
@@ -2071,56 +2077,6 @@ uint8_t tmed(uint32_t demo) {
 }
 
 
-void matrix_change(int16_t demo, bool directmap=false) {
-    // Reset passthrough from previous demo
-    matrix->setPassThruColor();
-    // Clear screen when changing demos.
-    matrix->clear();
-    // this ensures the next demo returns the number of times it should loop
-    matrix_loop = -1;
-    matrix_reset_demo = 1;
-    if (directmap) {
-        matrix_demo = demo;
-        matrix_loop = 9999;
-    } else {
-        if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_cnt;
-        if (demo==+127) if (++matrix_state == demo_cnt) matrix_state = 0;
-        // If existing matrix was already >98, any +- change brings it back to 0.
-        if (matrix_state >= 98) matrix_state = 0;
-        if (demo >= 0 && demo < 127) matrix_state = demo;
-        #ifdef NEOPIXEL_PIN
-        // Special one key press where demos are shown forever and next goes back to the normal loop
-        if (demo >= 0 && demo < 126) matrix_loop = 9999;
-        #endif
-        Serial.print("Got matrix_change ");
-        Serial.print(demo);
-        Serial.print(", switching to index ");
-        // Thank you special demo
-        if (matrix_state == 128) {
-                Serial.print(matrix_state);
-                matrix_demo = matrix_state;
-        } else {
-                do {
-                matrix_state = matrix_state % (show_best_demos?best_cnt:demo_cnt);
-                Serial.print(matrix_state);
-                matrix_demo = demo_mapping[matrix_state].mapping;
-                if (show_best_demos) {
-                        Serial.print(" (bestof mode) ");
-                        if (demo_mapping[matrix_state].enabled[panelconfnum] & 2) break;
-                } else {
-                        Serial.print(" (full mode) ");
-                        if (demo_mapping[matrix_state].enabled[panelconfnum] & 1) break;
-                }
-                matrix_state++;
-                } while (1);
-        }
-    }
-    Serial.print(", mapped to matrix demo ");
-    Serial.print(matrix_demo);
-    Serial.print(" loop ");
-    Serial.println(matrix_loop);
-}
-
 
 // ================================================================================
 
@@ -2278,13 +2234,65 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 uint16_t demo_list_cnt = 113;
 
 
+void matrix_change(int16_t demo, bool directmap=false) {
+    // Reset passthrough from previous demo
+    matrix->setPassThruColor();
+    // Clear screen when changing demos.
+    matrix->clear();
+    // this ensures the next demo returns the number of times it should loop
+    matrix_loop = -1;
+    matrix_reset_demo = 1;
+    if (directmap) {
+        matrix_demo = demo;
+        matrix_loop = 100;
+    } else {
+        if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_cnt;
+        if (demo==+127) if (++matrix_state == demo_cnt) matrix_state = 0;
+        // If existing matrix was already >98, any +- change brings it back to 0.
+        if (matrix_state >= 98) matrix_state = 0;
+        if (demo >= 0 && demo < 127) matrix_state = demo;
+        #ifdef NEOPIXEL_PIN
+        // Special one key press where demos are shown forever and next goes back to the normal loop
+        if (demo >= 0 && demo < 125) matrix_loop = 9999;
+        #endif
+        Serial.print("Got matrix_change code ");
+        Serial.print(demo);
+        Serial.print(", switching to index ");
+        // Special text demos
+        if (matrix_state >= 126) {
+            Serial.print(matrix_state);
+            matrix_demo = matrix_state;
+        } else {
+            do {
+                matrix_state = matrix_state % demo_cnt;
+                Serial.print(matrix_state);
+                matrix_demo = demo_mapping[matrix_state].mapping;
+                if (show_best_demos) {
+                    Serial.print(" (bestof mode) ");
+                    if (demo_mapping[matrix_state].enabled[panelconfnum] & 2) break;
+                } else {
+                    Serial.print(" (full mode) ");
+                    if (demo_mapping[matrix_state].enabled[panelconfnum] & 1) break;
+                }
+                matrix_state++;
+            } while (1);
+        }
+    }
+    Serial.print(", mapped to matrix demo ");
+    Serial.print(matrix_demo);
+    Serial.print(" (");
+    Serial.print(demo_list[matrix_demo].name);
+    Serial.print(") loop ");
+    Serial.println(matrix_loop);
+}
+
            
 
 void Matrix_Handler() {
     uint8_t ret;
     Demo_Entry demo_entry = demo_list[matrix_demo];
 
-    if (matrix_demo == 128) {
+    if (matrix_demo == 127) {
 #ifdef M32BY8X3
             const char str[] = "Thank You :)";
             ret = scrollText(str, sizeof(str));
@@ -2294,11 +2302,16 @@ void Matrix_Handler() {
 #endif
             if (matrix_loop == -1) matrix_loop = ret;
             if (ret) return;
+    } else if (matrix_demo == 126) {
+            //ret = scrollText(str, sizeof(str));
+            ret = display_text(displaytext.c_str(), 0, 14);
+            if (matrix_loop == -1) matrix_loop = ret;
+            if (ret) return;
     } else {
         if (! demo_entry.func) {
             Serial.print("No demo for ");
             Serial.println(matrix_demo++);
-            if (matrix_demo>128) matrix_demo = 0;
+            if (matrix_demo>125) matrix_demo = 0;
             return;
         }
 
@@ -3150,6 +3163,19 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
     p.renderHttpResponseHeader("text/plain", 200);
 
+    if (! strcmp(request.path, "/form")) {
+        uint8_t k = (int)request.query.size();
+        uint8_t idx = 0;
+
+        if (! strcmp(request.query[0], "text")) {
+            displaytext = request.query[1];
+            matrix_change(126);
+        }
+        for (int ix = idx; ix < k - 1; ix += 2)
+            w.putf("arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
+        return;
+    }
+
     Serial.print("Serving ");
     Serial.println(request.path);
     File file;
@@ -3210,11 +3236,10 @@ void setup_wifi() {
          You can add any number of options, and specify
          the value of each.
     */
-    p.addSelect("demo", actionProc, 2, HTML_DEMOCHOICE);
+    p.addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
     for (uint16_t i=1; i < demo_list_cnt; i++) {
         if (!demo_list[i].func) continue; 
         p.addSelectOption(demo_list[i].name, i);
-        demo_cnt++;
     }
     
     p.addUrlHandler(wildcardProc);
@@ -3224,6 +3249,14 @@ void setup_wifi() {
         w.addContent("Demo Map");
         w.endElement(); // a 
     });
+
+    p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2) 
+    {
+        const char* inputstr="<FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>";
+        w.puts(inputstr);
+    });
+
+    p.addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
 
     // And lastly, introduce the web pages to the wifi connection.
     s.setHandler(p);
@@ -3235,7 +3268,18 @@ void setup_wifi() {
 
 void read_config_index() {
     uint16_t index = 0;
-    char pathname[] = "/demo_map.txt";
+    // Demo enabled for 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
+    // 1: enables, 3 enables demo and adds to BestOf selection
+    int d32, d64, d96bm, d96, d192;
+    int dmap;
+    char pathname[] = FS_PREFIX "/demo_map.txt";
+
+    #ifdef ARDUINOONPC
+    FILE *file;
+    if (! (file = fopen(pathname, "r"))) die ("Error opening " FS_PREFIX "demo_map.txt");
+
+    while ( fscanf(file, "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap) != EOF) {
+    #else
     File file;
 
     if (! (file = FSO.open(pathname)  
@@ -3243,27 +3287,44 @@ void read_config_index() {
                                     , "r"
     #endif
                                             ) ) die ("Error opening demo_map.txt");
-
-    // Demo enabled for 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
-    // 1: enables, 3 enables demo and adds to BestOf selection
-    int d32, d64, d96bm, d96, d192;
-    int dmap;
-
     while (file.available()) {
         // 1 0 0 0 0 012
         String line = file.readStringUntil('\n');
         sscanf(line.c_str(), "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap);
-        Serial.printf("%d: %d, %d, %d, %d, %d -> %d\n", index, d32,  d64,  d96bm,  d96,  d192,  dmap);
+    #endif
         demo_mapping[index].mapping = dmap;
         demo_mapping[index].enabled[0] = d32;
         demo_mapping[index].enabled[1] = d64;
         demo_mapping[index].enabled[2] = d96bm;
         demo_mapping[index].enabled[3] = d96;
         demo_mapping[index].enabled[4] = d192;
+	#ifdef ESP32
+	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s\n", index, d32,  d64,  d96bm,  d96,  d192,  dmap, 
+			  demo_mapping[index].enabled[panelconfnum], demo_list[dmap].name);
+	#else
+	    Serial.print(index);
+	    Serial.print(" ");
+	    Serial.print(dmap);
+	    Serial.print(" ");
+	    Serial.print(demo_mapping[index].enabled[panelconfnum]);
+	    Serial.print(" ");
+	    Serial.println(demo_list[dmap].name);
+	#endif
+        if (demo_list[dmap].func == NULL && demo_mapping[index].enabled[panelconfnum]) {
+            Serial.print("Error ");
+            Serial.print(index);
+            Serial.print(" is mapped to an undefined demo ");
+            Serial.println(dmap);
+            delay((uint32_t) 1000);
+        }
         index++;
     }
 
+    #ifdef ARDUINOONPC
+    fclose(file);
+    #else
     file.close();
+    #endif
 }
 
 
@@ -3314,15 +3375,17 @@ void setup() {
 //  Total PSRAM used: 3760 bytes total, 4190276 PSRAM bytes free
     show_free_mem("Before Wifi");
     setup_wifi();
+    show_free_mem("After Wifi/Before SPIFFS/FFat");
 #endif
 
-    show_free_mem("After Wifi/Before SPIFFS/FFat");
-#ifdef HAS_FS
+#ifdef HAS_ARDUINO_FS
     Serial.println("Init GIF Viewer SPIFFS/FFat");
     sav_setup();
+#endif
+    // This is now required, if there is no arduino FS support, you need to replace this function
+    // ArduinoOnPC does not have HAS_ARDUINO_FS but there are ifdefs for local FS support
     Serial.println("Read config file from flash");
     read_config_index();
-#endif
 
 #ifdef NEOPIXEL_PIN
     Serial.print("Using FastLED on pin ");
@@ -3352,7 +3415,7 @@ void setup() {
     // SmartMatrix Mallocs Complete
     // Heap/32-bit Memory Available: 181472 bytes total,  85748 bytes largest free block
     // 8-bit/DMA Memory Available  :  95724 bytes total,  39960 bytes largest free block
-    matrix_setup(25000);
+    matrix_setup(false, 25000);
     Serial.println("Init Aurora");
     aurora_setup();
     Serial.println("Init TwinkleFox");
@@ -3378,6 +3441,11 @@ void setup() {
 
     Serial.print("Last Playable Demo Index: ");
     Serial.println(demo_list_cnt);
+
+    for (uint16_t i=1; i < demo_list_cnt; i++) {
+        if (!demo_list[i].func) continue; 
+        demo_cnt++;
+    }
 
     Serial.print("Number of Demos defined: ");
     Serial.println(demo_cnt);
