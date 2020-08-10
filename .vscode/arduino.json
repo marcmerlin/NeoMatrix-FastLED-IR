@@ -3,5 +3,6 @@
     "configuration": "PSRAM=enabled,PartitionScheme=fatflash,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=16M,UploadSpeed=921600,DebugLevel=debug",
     "port": "/dev/ttyUSB0",
     "sketch": "NeoMatrix-FastLED-IR.ino",
-    "output": ".vscode/.build"
+    "output": ".vscode/.build",
+    "programmer": "AVR ISP"
 }

@@ -55,7 +55,7 @@ AuroraDrawable *drawable;
 int8_t item = -1;
 uint8_t numitems = sizeof(items) / sizeof(items[0]);
 
-uint8_t aurora(uint8_t item) {
+uint8_t aurora(uint32_t item) {
     static uint8_t delayframe = 1;
     uint8_t repeat = 1;
     static uint16_t counter = 1;
