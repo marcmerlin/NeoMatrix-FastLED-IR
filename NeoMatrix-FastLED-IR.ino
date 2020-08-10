@@ -2186,10 +2186,6 @@ void matrix_change(int16_t demo, bool directmap=false) {
         matrix_demo = demo;
         matrix_loop = 100;
     } else {
-        if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_cnt;
-        if (demo==+127) if (++matrix_state == demo_cnt) matrix_state = 0;
-        // If existing matrix was already >98, any +- change brings it back to 0.
-        if (matrix_state >= 98) matrix_state = 0;
         if (demo >= 0 && demo < 127) matrix_state = demo;
         #ifdef NEOPIXEL_PIN
         // Special one key press where demos are shown forever and next goes back to the normal loop
@@ -2204,7 +2200,8 @@ void matrix_change(int16_t demo, bool directmap=false) {
             matrix_demo = matrix_state;
         } else {
             do {
-                matrix_state = matrix_state % demo_cnt;
+		if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_cnt;
+		if (demo==+127) if (++matrix_state == demo_cnt) matrix_state = 0;
                 Serial.print(matrix_state);
                 matrix_demo = demo_mapping[matrix_state].mapping;
                 if (show_best_demos) {
@@ -2214,7 +2211,6 @@ void matrix_change(int16_t demo, bool directmap=false) {
                     Serial.print(" (full mode) ");
                     if (demo_mapping[matrix_state].enabled[panelconfnum] & 1) break;
                 }
-                matrix_state++;
             } while (1);
         }
     }
