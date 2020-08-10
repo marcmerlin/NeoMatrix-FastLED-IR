@@ -32,7 +32,7 @@
 #include "AikoEvents_Impl.h"
 using namespace Aiko;
 
-#ifdef HAS_ARDUINO_FS
+#ifdef HAS_FS
 // defines FSO
 #include "GifAnimViewer.h"
 #endif
@@ -1360,7 +1360,6 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
 
 // FIXME: reset decoding counter to 0 between different GIFS
 uint8_t GifAnim(uint32_t idx) {
-#ifdef HAS_ARDUINO_FS
     uint16_t x, y;
     uint8_t repeat = 1;
     static int8_t scrollx = 0;
@@ -1381,8 +1380,7 @@ uint8_t GifAnim(uint32_t idx) {
     extern int FACTX;
 
     #ifdef M32BY8X3
-    const Animgif animgif[] = { // number of frames in the gif
-    // 12 gifs
+    const Animgif animgif[] = {
             {"/gifs/32anim_photon.gif",		10, -4, 0, 10, 10, 0, 0 },	// 70
             {"/gifs/32anim_flower.gif",		10, -4, 0, 10, 10, 0, 0 },
             {"/gifs/32anim_balls.gif",		10, -4, 0, 10, 10, 0, 0 },
@@ -1396,7 +1394,13 @@ uint8_t GifAnim(uint32_t idx) {
             {"/gifs/triangles_in.gif",		10, -4, 0, 10, 10, 0, 0 },	// 80
             {"/gifs/wifi.gif",			10, -4, 0, 10, 10, 0, 0 },
     };
-    #elif defined(M64BY64) // M32BY8X3X3
+    #elif defined(ARDUINOONPC)
+    #define ROOT FS_PREFIX "/gifs128x192/"
+    const Animgif animgif[] = {
+            { ROOT "Aki5PC6_Running.gif",   10, 0, 0, 10, 10, 0, 0 },	// 70
+            { ROOT "abstract_colorful.gif", 10, 0, 0, 10, 10, 0, 0 },
+    };
+    #else
     const Animgif animgif[] = {
             { "/gifs64/087_net.gif",		 05, 0, 0, 10, 10, 0, 0 },  // 70
             { "/gifs64/196_colorstar.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
@@ -1436,73 +1440,12 @@ uint8_t GifAnim(uint32_t idx) {
             { "/gifs64/ab3_s.gif",		 10, 0, 0, 10, 10, 64, 64 }, // 105 color lines
             { "/gifs64/ab4_g.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB logo
             { "/gifs64/ab4_w.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB logo white - skip
+// -- non animated, those scroll up/down
             { "/gifs64/BM_Man_Scroll.gif",	 10, 0, 0, 10, 10, 0, 0 },  // 108
             { "/gifs64/BM_green_arms.gif",	 10, -12, 0, 10, 10, 36, 64 },
             { "/gifs64/BM_lady_fire.gif",	 10, 0, 0, 10, 10, 64, 64 },	// 110
             { "/gifs64/BM_logo.gif",		 10, 0, 0, 10, 10, 64, 64 },
             { "/gifs64/BM_TheMan_Blue.gif",	 10, -12, -2, 10, 10, 36, 64 },    // 112
-// -- non animated, those scroll up/down
-
-        #if 0
-            { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/341_minion2.gif",	 10, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/233_mariokick.gif",	 10, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/457_mariosleep.gif",	 10, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/240_angrybird.gif",	 10, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/323_rockface.gif",	 10, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/149_minion1.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/341_minion2.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/222_fry.gif",		 10, 0, 0, 10, 15, 0, 0 }, 
-        #endif
-        };
-    #else // M64BY64
-    const Animgif animgif[] = {
-            { "/gifs64/087_net.gif",		 05, 0, 0, 10, 15, 0, 0 },  // 70
-            { "/gifs64/196_colorstar.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/200_circlesmoke.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/203_waterdrop.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/210_circletriangle.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/215_fallingcube.gif",	 15, 0, 0, 10, 15, 0, 0 },  // 75
-            { "/gifs64/255_photon.gif",		 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/257_mesh.gif",		 20, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/271_mj.gif",		 15, -16, 0, 15, 15, 0, 0 }, 
-            { "/gifs64/342_spincircle.gif",	 20, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/401_ghostbusters.gif",	 05, 0, 0, 10, 15, 0, 0 },  // 80 
-            { "/gifs64/444_hand.gif",		 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/469_infection.gif",	 05, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/193_redplasma.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/208_dancers.gif",	 25, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/284_comets.gif",		 15, 0, 0, 10, 15, 0, 0 },  // 85 
-            { "/gifs64/377_batman.gif",		 05, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/412_cubes.gif",		 20, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/236_spintriangle.gif",	 20, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/226_flyingfire.gif",	 10, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/264_expandcircle.gif",	 10, 0, 0, 10, 15, 0, 0 },  // 90 
-            { "/gifs64/281_plasma.gif",		 20, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/286_greenplasma.gif",	 15, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/291_circle2sphere.gif",	 15, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/364_colortoroid.gif",	 25, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/470_scrollcubestron.gif", 25, 0, 0, 10, 15, 0, 0 },  // 95
-            { "/gifs64/358_spinningpattern.gif", 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/328_spacetime.gif",	 20, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/218_circleslices.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/heartTunnel.gif",	 10, 0, 0, 10, 15, 0, 0 },
-            { "/gifs64/sonic.gif",		 10, 0, 0, 10, 15, 0, 0 },  // 100
-
-            { "/gifs64/ab1_colors.gif",		 10, 0, 0, 10, 10, 64, 64 },
-            { "/gifs64/ab2_lgrey.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB sign light grey
-            { "/gifs64/ab2_grey.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB sign grey - skip
-            { "/gifs64/ab2_white.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB sign white - skip
-            { "/gifs64/ab3_s.gif",		 10, 0, 0, 10, 10, 64, 64 }, // 105 color lines
-            { "/gifs64/ab4_g.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB logo
-            { "/gifs64/ab4_w.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB logo white - skip
-//
-            { "/gifs64/BM_Man_Scroll.gif",	 10, 0, 0, 10, 15, 0, 0 },  // 108
-// -- non animated, those scroll up/down
-            { "/gifs64/BM_green_arms.gif",	 10, -16, -8, 15, 15, 64, 64 },
-            { "/gifs64/BM_lady_fire.gif",	 10, 0, 0, 10, 10, 64, 64 },	// 110
-            { "/gifs64/BM_logo.gif",		 10, 0, 0, 10, 10, 64, 64 },
-            { "/gifs64/BM_TheMan_Blue.gif",	 10, -16, -16, 15, 15, 64, 64 },    // 112
     };
     #endif
     gif_cnt = ARRAY_SIZE(animgif);
@@ -1550,9 +1493,6 @@ uint8_t GifAnim(uint32_t idx) {
         if (!gifloopsec--) { Serial.println(); return 0; };
     }
     return repeat;
-#else
-    return 0;
-#endif
 }
 
 uint8_t scrollBigtext(uint32_t unused) {
@@ -3378,13 +3318,12 @@ void setup() {
     show_free_mem("After Wifi/Before SPIFFS/FFat");
 #endif
 
-#ifdef HAS_ARDUINO_FS
-    Serial.println("Init GIF Viewer SPIFFS/FFat");
+#ifdef HAS_FS
+    Serial.println("Init GIF Viewer");
     sav_setup();
 #endif
     // This is now required, if there is no arduino FS support, you need to replace this function
-    // ArduinoOnPC does not have HAS_ARDUINO_FS but there are ifdefs for local FS support
-    Serial.println("Read config file from flash");
+    Serial.println("Read config file");
     read_config_index();
 
 #ifdef NEOPIXEL_PIN

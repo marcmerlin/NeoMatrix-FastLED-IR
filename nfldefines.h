@@ -6,7 +6,13 @@
 #define DISABLE_MATRIX_TEST
 #include "neomatrix_config.h"
 
-#define HAS_ARDUINO_FS
+// All my backends (ESP8266, ESP32, and ArduinoOnPC) have some kind of FS
+// Backend. Technically this code could run on some chip that has no FS
+// (like a teensy with sdcard), and all demos outside of GIFS will work,
+// but you will have to make read_config_index work somehow, probably by
+// hardcoding the file back into the code (where it used to be, but I moved
+// it out so that it can be updated by a web server at runtime).
+#define HAS_FS
 #ifdef ESP8266
     #define mheight 32
 #elif defined(ESP32)
@@ -60,8 +66,6 @@ uint8_t dfl_matrix_brightness_level = 5;
 	#else
 	    #pragma message "PSRAM disabled, so WIFI disabled too"
 	#endif
-    #else
-        #undef HAS_ARDUINO_FS
     #endif
 
 #elif mheight == 64
