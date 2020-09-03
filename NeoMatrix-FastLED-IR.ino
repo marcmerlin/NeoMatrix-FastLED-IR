@@ -62,10 +62,13 @@ typedef struct mapping_entry_ {
 Mapping_Entry demo_mapping[DEMO_ARRAY_SIZE];
 
 
-// demo_list_cnt is the number of elements in the demo array, but this includes empty slots
+// demo_last_idx is the number of elements in the demo array, but this includes empty slots
 uint16_t demo_cnt = 0; // actual number of demos available at boot (different from enabled)
 uint16_t best_cnt = 0;
+// last demo index (starting from 1, not 0), gets computed in read_config_index
+uint16_t demo_last_idx = 0;
 
+// index within demo_mapping of what demo is being played
 uint16_t matrix_state = 0;
 uint16_t matrix_demo = demo_mapping[matrix_state].mapping;
 
@@ -140,7 +143,7 @@ void matrix_show() {
 // #include <Fonts/Picopixel.h>
 // Proportional 5x5 font, 4.8 wide, 6 high
 // #include <Fonts/Org_01.h>
-// TomThumb: 3x5 means 6 chars wide, 5 or 6 chars high
+// TomThumb: 3x5 means 4 chars wide, 5 or 6 chars high
 // -> nicer font
 #include <Fonts/TomThumb.h>
 // 3x3 but not readable
@@ -1397,8 +1400,37 @@ uint8_t GifAnim(uint32_t idx) {
     #elif defined(ARDUINOONPC)
     #define ROOT FS_PREFIX "/gifs128x192/"
     const Animgif animgif[] = {
-            { ROOT "Aki5PC6_Running.gif",   10, 0, 0, 10, 10, 0, 0 },	// 70
-            { ROOT "abstract_colorful.gif", 10, 0, 0, 10, 10, 0, 0 },
+            { ROOT "abstract_colorful.gif"                , 10, 0, 0, 10, 10, 0, 0 },	// 70
+            { ROOT "dancing_lady.gif"                     , 10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT "Aki5PC6_Running.gif"                  , 10, 0, 0, 10, 10, 0, 0 },
+            { ROOT "GirlSexyAnimateddance.gif"            , 10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT "small-girl-dancing-3.gif"             , 10, 15, 0, 10, 15, 0, 0 }, 
+            { ROOT "z03db1e65f3ef3ca25c7ce569ceeb210d.gif", 10, 0, 0, 10, 10, 0, 0 },  // 75
+            { ROOT "z0f125a1a2fe2f1f64a7d112e9a9a4306.gif", 10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT "z3a0c3a8b38796373f3a17cd14ec71fda.gif", 10, -20, 0, 10, 10, 0, 0 }, 
+            { ROOT "z79c9bd19c3c5e678ff2b42f93234d7f9.gif", 10, -20, -10, 10, 10, 0, 0 }, 
+            { ROOT "z7d3ddc32d5439ff90d084d5c5e402cbd.gif", 10, -20, 0, 10, 10, 0, 0 },
+            { ROOT "z80908d38aba2e9a2e49315b0cc20b61b.gif", 10, -10, 0, 10, 10, 0, 0 },  // 80 
+            { ROOT "zbd201faed927fcfcf2d7a2045e2765d8.gif", 10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT "zc479ac376f71439d7b984a758fd48b2d.gif", 10, -10, 0, 10, 10, 0, 0 }, 
+            { ROOT "zc8317e96e6a33de10e97e6d836c579aa.gif", 10, -30, -10, 10, 10, 0, 0 }, 
+            { ROOT "zd9bf08d0507da5c0a7d1cdd7273bf6b1.gif", 10, -32, 0, 10, 10, 0, 0 },
+            { ROOT "ze84ffc9a50b6a294c749287c89a20840.gif", 10, 0, 0, 10, 15, 0, 0 },  // 85 
+            { ROOT "zeb560fca8c8dcefbd60b10caa1cd9b61.gif", 10, -10, 0, 10, 10, 0, 0 }, 
+            { ROOT "zf351adfd419b9a87da20d2564d8294a0.gif", 10, 0, 0, 10, 15, 0, 0 }, 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },  // 90 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },  // 95
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },
+//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },  // 100
     };
     #else
     const Animgif animgif[] = {
@@ -2171,7 +2203,6 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*126 */ { "", NULL, -1  },
 /*127 */ { "", NULL, -1  },
 };
-uint16_t demo_list_cnt = 113;
 
 
 void matrix_change(int16_t demo, bool directmap=false) {
@@ -2182,26 +2213,35 @@ void matrix_change(int16_t demo, bool directmap=false) {
     // this ensures the next demo returns the number of times it should loop
     matrix_loop = -1;
     matrix_reset_demo = 1;
+
+    // demo is the requested demo index in the mapping array or prev/next
+    // matrix_state is the index to look up in demo_list array
+    // matrix_demo is the actual demo# in demo_list array
     if (directmap) {
+        // bypass matrix_state (which will now be incorrect) and point directly
+        // to the desired demo without going though demo_mapping array.
         matrix_demo = demo;
         matrix_loop = 100;
     } else {
-        if (demo >= 0 && demo < 127) matrix_state = demo;
-        #ifdef NEOPIXEL_PIN
-        // Special one key press where demos are shown forever and next goes back to the normal loop
+        if (demo != -128 && demo != 127) matrix_state = demo;
+
+        #ifdef neopixel_pin
+        // special one key press where demos are shown forever and next goes back to the normal loop
         if (demo >= 0 && demo < 125) matrix_loop = 9999;
         #endif
-        Serial.print("Got matrix_change code ");
+        Serial.print("got matrix_change code ");
         Serial.print(demo);
         Serial.print(", switching to index ");
-        // Special text demos
-        if (matrix_state >= 126) {
+        // special text demos that bypass the array mapping
+        if (matrix_state >= 126 && matrix_state<127) {
             Serial.print(matrix_state);
             matrix_demo = matrix_state;
         } else {
             do {
-		if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_cnt;
-		if (demo==+127) if (++matrix_state == demo_cnt) matrix_state = 0;
+                if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_last_idx;
+                if (demo==+127) if (++matrix_state == demo_cnt) matrix_state = 0;
+
+                matrix_state = (matrix_state % (demo_last_idx+1));
                 Serial.print(matrix_state);
                 matrix_demo = demo_mapping[matrix_state].mapping;
                 if (show_best_demos) {
@@ -2211,6 +2251,10 @@ void matrix_change(int16_t demo, bool directmap=false) {
                     Serial.print(" (full mode) ");
                     if (demo_mapping[matrix_state].enabled[panelconfnum] & 1) break;
                 }
+                // If we're here for a demo # that doesn't exist, looping will not change
+                // the demo number, so force a change.
+                if (demo != -128 && demo != 127) matrix_state++;
+
             } while (1);
         }
     }
@@ -2405,7 +2449,7 @@ bool check_IR_serial() {
 
 
 void IR_Serial_Handler() {
-    int8_t new_pattern = 0;
+    int16_t new_pattern = 0;
     char readchar;
 
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
@@ -3173,7 +3217,7 @@ void setup_wifi() {
          the value of each.
     */
     p.addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
-    for (uint16_t i=1; i < demo_list_cnt; i++) {
+    for (uint16_t i=1; i < demo_last_idx; i++) {
         if (!demo_list[i].func) continue; 
         p.addSelectOption(demo_list[i].name, i);
     }
@@ -3209,6 +3253,16 @@ void read_config_index() {
     int d32, d64, d96bm, d96, d192;
     int dmap;
     char pathname[] = FS_PREFIX "/demo_map.txt";
+    const char *confname[] = {"Neopixel Shirt 24x32", "Burning Man Neopixel 64x64", "BM RGBPanel 64x96",
+        "RGBPanel Shirt 64x96", "RGBPanel rPi 128x192"};
+
+    Serial.print("*********** Reading ");
+    Serial.print(pathname);
+    Serial.print(" for display ");
+    Serial.print(panelconfnum);
+    Serial.print(" / ");
+    Serial.print(confname[panelconfnum]);
+    Serial.println( "***********");
 
     #ifdef ARDUINOONPC
     FILE *file;
@@ -3252,6 +3306,12 @@ void read_config_index() {
             Serial.print(" is mapped to an undefined demo ");
             Serial.println(dmap);
             delay((uint32_t) 1000);
+        }
+        // keep track of the highest demo index for modulo in matrix_change
+        if (demo_mapping[index].enabled[panelconfnum]) { 
+            demo_cnt++;
+            demo_last_idx = index;
+            //Serial.print(index); Serial.print(" "); Serial.print(demo_cnt); Serial.print(" "); Serial.println(demo_last_idx);
         }
         index++;
     }
@@ -3322,6 +3382,7 @@ void setup() {
     Serial.println("Read config file");
     read_config_index();
 
+    Serial.println("\nEnabling Neopixels strip (if any) and Configured Display.");
 #ifdef NEOPIXEL_PIN
     Serial.print("Using FastLED on pin ");
     Serial.print(NEOPIXEL_PIN);
@@ -3371,19 +3432,16 @@ void setup() {
 #endif
 
     GifAnim(255); // Compute how many GIFs are defined
+    Serial.println("vvvvvvvvvvvvvvvvvvvvvvvv");
     Serial.print("Number of GIFs defined: ");
     Serial.println(gif_cnt);
 
-    Serial.print("Last Playable Demo Index: ");
-    Serial.println(demo_list_cnt);
-
-    for (uint16_t i=1; i < demo_list_cnt; i++) {
-        if (!demo_list[i].func) continue; 
-        demo_cnt++;
-    }
-
     Serial.print("Number of Demos defined: ");
     Serial.println(demo_cnt);
+
+    Serial.print("Last Playable Demo Index: ");
+    Serial.println(demo_last_idx);
+    Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^");
 
     Serial.print("Matrix Size: ");
     Serial.print(mw);
