@@ -43,7 +43,13 @@ using namespace Aiko;
     OmWebPages p;    
 #endif
 
-#define DEMO_ARRAY_SIZE 129
+#define DEMO_PREV -32768
+#define DEMO_NEXT 32767
+#define DEMO_TEXT_THANKYOU 150
+#define DEMO_TEXT_INPUT 151
+#define DEMO_TEXT_LAST DEMO_TEXT_INPUT
+
+#define DEMO_ARRAY_SIZE (DEMO_TEXT_LAST+1)
 // Different panel configurations: 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
 #define CONFIGURATIONS 5
 
@@ -70,7 +76,7 @@ uint16_t demo_last_idx = 0;
 
 // index within demo_mapping of what demo is being played
 uint16_t matrix_state = 0;
-uint16_t matrix_demo = demo_mapping[matrix_state].mapping;
+uint16_t matrix_demo; // this is initialized after matrix_state is updated in read_config_index
 
 String displaytext="";
 
@@ -2201,8 +2207,9 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*124 */ { "", NULL, -1  },
 /*125 */ { "", NULL, -1  },
 /*126 */ { "", NULL, -1  },
-/*127 */ { "", NULL, -1  },
 };
+
+// text demos are manually added to the array in setup()
 
 
 void matrix_change(int16_t demo, bool directmap=false) {
@@ -2223,7 +2230,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
         matrix_demo = demo;
         matrix_loop = 100;
     } else {
-        if (demo != -128 && demo != 127) matrix_state = demo;
+        if (demo != DEMO_PREV && demo != DEMO_NEXT) matrix_state = demo;
 
         #ifdef neopixel_pin
         // special one key press where demos are shown forever and next goes back to the normal loop
@@ -2233,13 +2240,14 @@ void matrix_change(int16_t demo, bool directmap=false) {
         Serial.print(demo);
         Serial.print(", switching to index ");
         // special text demos that bypass the array mapping
-        if (matrix_state >= 126 && matrix_state<127) {
+        if (demo >= DEMO_TEXT_THANKYOU && demo != DEMO_NEXT) {
+            matrix_state = demo;
             Serial.print(matrix_state);
             matrix_demo = matrix_state;
         } else {
             do {
-                if (demo==-128) if (matrix_state-- == 0) matrix_state = demo_last_idx;
-                if (demo==+127) if (++matrix_state == demo_cnt) matrix_state = 0;
+                if (demo==DEMO_PREV) if (matrix_state-- == 0) matrix_state = demo_last_idx;
+                if (demo==DEMO_NEXT) if (++matrix_state == demo_cnt) matrix_state = 0;
 
                 matrix_state = (matrix_state % (demo_last_idx+1));
                 Serial.print(matrix_state);
@@ -2253,8 +2261,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
                 }
                 // If we're here for a demo # that doesn't exist, looping will not change
                 // the demo number, so force a change.
-                if (demo != -128 && demo != 127) matrix_state++;
-
+                if (demo != DEMO_PREV && demo != DEMO_NEXT) matrix_state++;
             } while (1);
         }
     }
@@ -2272,7 +2279,7 @@ void Matrix_Handler() {
     uint8_t ret;
     Demo_Entry demo_entry = demo_list[matrix_demo];
 
-    if (matrix_demo == 127) {
+    if (matrix_demo == DEMO_TEXT_THANKYOU) {
 #ifdef M32BY8X3
             const char str[] = "Thank You :)";
             ret = scrollText(str, sizeof(str));
@@ -2282,16 +2289,16 @@ void Matrix_Handler() {
 #endif
             if (matrix_loop == -1) matrix_loop = ret;
             if (ret) return;
-    } else if (matrix_demo == 126) {
+    } else if (matrix_demo == DEMO_TEXT_INPUT) {
             //ret = scrollText(str, sizeof(str));
             ret = display_text(displaytext.c_str(), 0, 14);
             if (matrix_loop == -1) matrix_loop = ret;
             if (ret) return;
     } else {
         if (! demo_entry.func) {
-            Serial.print("No demo for ");
-            Serial.println(matrix_demo++);
-            if (matrix_demo>125) matrix_demo = 0;
+            Serial.print(">>> ERROR: No demo for ");
+            Serial.println(matrix_demo);
+            matrix_change(DEMO_NEXT);
             return;
         }
 
@@ -2306,7 +2313,7 @@ void Matrix_Handler() {
     Serial.print(" loop ");
     Serial.println(matrix_loop);
     if (--matrix_loop > 0) return;
-    matrix_change(127);
+    matrix_change(DEMO_NEXT);
 }
 
 // ---------------------------------------------------------------------------
@@ -2404,7 +2411,7 @@ bool is_change(bool force=false) {
 }
 
 // Allow checking for a pause command, p over serial or power over IR
-bool check_IR_serial() {
+bool check_startup_IR_serial() {
     char readchar;
 
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
@@ -2470,8 +2477,9 @@ void IR_Serial_Handler() {
         }
     }
 
-    if (readchar == 'n')      { Serial.println("Serial => next"); matrix_change(127);}
-    else if (readchar == 'p') { Serial.println("Serial => previous"); matrix_change(-128);}
+    if (readchar == 'n')      { Serial.println("Serial => next"); matrix_change(DEMO_NEXT);}
+    else if (readchar == 'p') { Serial.println("Serial => previous"); matrix_change(DEMO_PREV);}
+    else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU);}
     else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
 
@@ -2515,7 +2523,7 @@ void IR_Serial_Handler() {
             Serial.println("Got IR: Next2");
         case IR_RGBZONE_NEXT:
             last_change = millis();
-            matrix_change(127);
+            matrix_change(DEMO_NEXT);
             Serial.print("Got IR: Next to matrix state ");
             Serial.println(matrix_state);
             return;
@@ -2523,7 +2531,7 @@ void IR_Serial_Handler() {
         case IR_RGBZONE_POWER2:
             Serial.println("Got IR: Power2");
         case IR_RGBZONE_POWER:
-            if (is_change()) { matrix_change(-128); return; }
+            if (is_change()) { matrix_change(DEMO_PREV); return; }
             Serial.println("Got IR: Power, show all demos again and Hang on this demo");
             matrix_loop = 9999;
             show_best_demos = false;
@@ -2757,7 +2765,7 @@ void IR_Serial_Handler() {
         case IR_RGBZONE_AUTO:
             Serial.println("Got IR: AUTO/bpm (55)");
             if (is_change()) { matrix_change(55); return; }
-            matrix_change(126);
+            matrix_change(DEMO_TEXT_THANKYOU);
             nextdemo = f_bpm;
             return;
 
@@ -3107,13 +3115,13 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
     case HTML_BUTPREV:
         if (!value) break;
         Serial.println("PREVIOUS pressed");
-        matrix_change(-128);
+        matrix_change(DEMO_PREV);
         break;
 
     case HTML_BUTNEXT:
         if (!value) break;
         Serial.println("NEXT pressed");
-        matrix_change(127);
+        matrix_change(DEMO_NEXT);
         break;
 
     case HTML_BRIGHT:
@@ -3149,7 +3157,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 
         if (! strcmp(request.query[0], "text")) {
             displaytext = request.query[1];
-            matrix_change(126);
+            matrix_change(DEMO_TEXT_INPUT);
         }
         for (int ix = idx; ix < k - 1; ix += 2)
             w.putf("arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
@@ -3309,6 +3317,7 @@ void read_config_index() {
         }
         // keep track of the highest demo index for modulo in matrix_change
         if (demo_mapping[index].enabled[panelconfnum]) { 
+            if (! matrix_state) matrix_state = index; // find first playable demo
             demo_cnt++;
             demo_last_idx = index;
             //Serial.print(index); Serial.print(" "); Serial.print(demo_cnt); Serial.print(" "); Serial.println(demo_last_idx);
@@ -3441,6 +3450,14 @@ void setup() {
 
     Serial.print("Last Playable Demo Index: ");
     Serial.println(demo_last_idx);
+
+    // matrix_state is set in read_config_index()
+    matrix_demo = demo_mapping[matrix_state].mapping;
+    Serial.print("First playable demo: ");
+    Serial.print(matrix_state);
+
+    Serial.print(" mapped to: ");
+    Serial.println(matrix_demo);
     Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^");
 
     Serial.print("Matrix Size: ");
@@ -3460,13 +3477,13 @@ void setup() {
     matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
     matrix_show();
     int i = 100;
-    Serial.println("Pause for debug greyish screen");
+    Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
     while (i--) {
-                if (check_IR_serial()) {
-                        Serial.println("Will pause on debug screen");
-                        i = 60000;
-                }
-                delay((uint32_t) 10);
+	if (check_startup_IR_serial()) {
+	    Serial.println("Will pause on debug screen");
+	    i = 60000;
+	}
+	delay((uint32_t) 10);
     }
     Serial.println("Done with debug grey screen, display stats");
 
@@ -3494,6 +3511,8 @@ void setup() {
     // being done.
     Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
+    demo_list[DEMO_TEXT_THANKYOU] = { "Thank you", NULL, -1  }; 
+    demo_list[DEMO_TEXT_INPUT]    = { "Web Text Input", NULL, -1  }; 
     Serial.println("Starting loop");
 }
 
