@@ -10,6 +10,7 @@ int FACTX = 0;
 int FACTY = 0;
 
 #if defined(ESP8266)
+    // RAM is tight, save some here.
     const int lzwMaxBits = 11;
 #else
     const int lzwMaxBits = 12;

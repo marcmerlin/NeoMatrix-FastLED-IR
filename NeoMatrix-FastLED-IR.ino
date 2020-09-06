@@ -47,13 +47,14 @@ using namespace Aiko;
 #define DEMO_NEXT 32767
 #define DEMO_TEXT_THANKYOU 150
 #define DEMO_TEXT_INPUT 151
+#define DEMO_TEXT_FIRST DEMO_TEXT_INPUT
 #define DEMO_TEXT_LAST DEMO_TEXT_INPUT
 
 #define DEMO_ARRAY_SIZE (DEMO_TEXT_LAST+1)
 // Different panel configurations: 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
 #define CONFIGURATIONS 5
 
-#ifdef ARDUINOONPC
+#if MATRIX_TILE_WIDTH == 128
 #define panelconfnum 4
 #else
 #define panelconfnum 3
@@ -1403,7 +1404,7 @@ uint8_t GifAnim(uint32_t idx) {
             {"/gifs/triangles_in.gif",		10, -4, 0, 10, 10, 0, 0 },	// 80
             {"/gifs/wifi.gif",			10, -4, 0, 10, 10, 0, 0 },
     };
-    #elif defined(ARDUINOONPC)
+    #elif MATRIX_TILE_WIDTH == 128
     #define ROOT FS_PREFIX "/gifs128x192/"
     const Animgif animgif[] = {
             { ROOT "abstract_colorful.gif"                , 10, 0, 0, 10, 10, 0, 0 },	// 70
@@ -1439,51 +1440,56 @@ uint8_t GifAnim(uint32_t idx) {
 //             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },  // 100
     };
     #else
+    #ifdef ARDUINOONPC
+    #define ROOT FS_PREFIX
+    #else
+    #define ROOT ""
+    #endif
     const Animgif animgif[] = {
-            { "/gifs64/087_net.gif",		 05, 0, 0, 10, 10, 0, 0 },  // 70
-            { "/gifs64/196_colorstar.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/200_circlesmoke.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/203_waterdrop.gif",	 10, 0, 0, 10, 15, 0, 0 }, 
-            { "/gifs64/210_circletriangle.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/215_fallingcube.gif",	 15, 0, 0, 10, 10, 0, 0 },  // 75
-            { "/gifs64/255_photon.gif",		 10, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/257_mesh.gif",		 20, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/271_mj.gif",		 15, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/342_spincircle.gif",	 20, 0, 0, 10, 10, 0, 0 },
-            { "/gifs64/401_ghostbusters.gif",	 05, 0, 0, 10, 10, 0, 0 },  // 80 
-            { "/gifs64/444_hand.gif",		 10, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/469_infection.gif",	 05, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/193_redplasma.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/208_dancers.gif",	 25, 0, 0, 10, 10, 0, 0 },
-            { "/gifs64/284_comets.gif",		 15, 0, 0, 10, 10, 0, 0 },  // 85 
-            { "/gifs64/377_batman.gif",		 07, 0, -20, 10, 15, 0, 0 }, 
-            { "/gifs64/412_cubes.gif",		 20, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/236_spintriangle.gif",	 20, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/226_flyingfire.gif",	 10, 0, 0, 10, 10, 0, 0 },
-            { "/gifs64/264_expandcircle.gif",	 10, 0, 0, 10, 10, 0, 0 },  // 90 
-            { "/gifs64/281_plasma.gif",		 20, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/286_greenplasma.gif",	 15, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/291_circle2sphere.gif",	 15, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/364_colortoroid.gif",	 25, 0, 0, 10, 10, 0, 0 },
-            { "/gifs64/470_scrollcubestron.gif", 25, 0, 0, 10, 10, 0, 0 },  // 95
-            { "/gifs64/358_spinningpattern.gif", 10, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/328_spacetime.gif",	 20, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/218_circleslices.gif",	 10, 0, 0, 10, 10, 0, 0 }, 
-            { "/gifs64/heartTunnel.gif",	 10, 0, 0, 10, 10, 0, 0 },
-            { "/gifs64/sonic.gif",		 10, 0, 0, 10, 10, 0, 0 },  // 100
-            { "/gifs64/ab1_colors.gif",		 10, 0, 0, 10, 10, 64, 64 },
-            { "/gifs64/ab2_lgrey.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB sign light grey
-            { "/gifs64/ab2_grey.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB sign grey - skip
-            { "/gifs64/ab2_white.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB sign white - skip
-            { "/gifs64/ab3_s.gif",		 10, 0, 0, 10, 10, 64, 64 }, // 105 color lines
-            { "/gifs64/ab4_g.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB logo
-            { "/gifs64/ab4_w.gif",		 10, 0, 0, 10, 10, 64, 64 }, // AnB logo white - skip
-// -- non animated, those scroll up/down
-            { "/gifs64/BM_Man_Scroll.gif",	 10, 0, 0, 10, 10, 0, 0 },  // 108
-            { "/gifs64/BM_green_arms.gif",	 10, -12, 0, 10, 10, 36, 64 },
-            { "/gifs64/BM_lady_fire.gif",	 10, 0, 0, 10, 10, 64, 64 },	// 110
-            { "/gifs64/BM_logo.gif",		 10, 0, 0, 10, 10, 64, 64 },
-            { "/gifs64/BM_TheMan_Blue.gif",	 10, -12, -2, 10, 10, 36, 64 },    // 112
+            { ROOT    "/gifs64/087_net.gif",		05, 0, 0, 10, 15, 0, 0 },  // 70
+            { ROOT    "/gifs64/196_colorstar.gif",	10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/200_circlesmoke.gif",	10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/203_waterdrop.gif",	10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/210_circletriangle.gif",	10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/215_fallingcube.gif",	15, 0, 0, 10, 15, 0, 0 },  // 75
+            { ROOT    "/gifs64/255_photon.gif",		10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/257_mesh.gif",		20, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/271_mj.gif",		15,-20,5,15, 15, 0, 0 }, 
+            { ROOT    "/gifs64/342_spincircle.gif",	20, 0, 0, 10, 15, 0, 0 },
+            { ROOT    "/gifs64/401_ghostbusters.gif",	05, 0, 0, 10, 15, 0, 0 },  // 80 
+            { ROOT    "/gifs64/444_hand.gif",		10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/469_infection.gif",	05, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/193_redplasma.gif",	10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/208_dancers.gif",	25, 0, 0, 10, 15, 0, 0 },
+            { ROOT    "/gifs64/284_comets.gif",		15, 0, 0, 10, 15, 0, 0 },  // 85 
+            { ROOT    "/gifs64/377_batman.gif",		07, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/412_cubes.gif",		20, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/236_spintriangle.gif",	20, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/226_flyingfire.gif",	10, 0, 0, 10, 15, 0, 0 },
+            { ROOT    "/gifs64/264_expandcircle.gif",	10, 0, 0, 10, 15, 0, 0 },  // 90 
+            { ROOT    "/gifs64/281_plasma.gif",		20, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/286_greenplasma.gif",	15, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/291_circle2sphere.gif",	15, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/364_colortoroid.gif",	25, 0, 0, 10, 15, 0, 0 },
+            { ROOT    "/gifs64/470_scrollcubestron.gif",25, 0, 0, 10, 15, 0, 0 },  // 95
+            { ROOT    "/gifs64/358_spinningpattern.gif",10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/328_spacetime.gif",	20, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/218_circleslices.gif",	10, 0, 0, 10, 15, 0, 0 }, 
+            { ROOT    "/gifs64/heartTunnel.gif",	10, 0, 0, 10, 15, 0, 0 },
+            { ROOT    "/gifs64/sonic.gif",		10, 0, 0, 10, 15, 0, 0 },  // 100
+	    // -- non animated, those scroll up/down
+            { ROOT    "/gifs64/ab1_colors.gif",		10, 0, 0, 10, 10, 64, 64 },
+            { ROOT    "/gifs64/ab2_lgrey.gif",		10, 0, 0, 10, 10, 64, 64 }, // AnB sign light grey
+            { ROOT    "/gifs64/ab2_grey.gif",		10, 0, 0, 10, 10, 64, 64 }, // AnB sign grey - skip
+            { ROOT    "/gifs64/ab2_white.gif",		10, 0, 0, 10, 10, 64, 64 }, // AnB sign white - skip
+            { ROOT    "/gifs64/ab3_s.gif",		10, 0, 0, 10, 10, 64, 64 }, // 105 color lines
+            { ROOT    "/gifs64/ab4_g.gif",		10, 0, 0, 10, 10, 64, 64 }, // AnB logo
+            { ROOT    "/gifs64/ab4_w.gif",		10, 0, 0, 10, 10, 64, 64 }, // AnB logo white - skip
+            { ROOT    "/gifs64/BM_Man_Scroll.gif",	10, 0, 0, 10, 10, 0, 0 },  // 108
+            { ROOT    "/gifs64/BM_green_arms.gif",	10, -12, 0, 10, 10, 36, 64 },
+            { ROOT    "/gifs64/BM_lady_fire.gif",	10, 0, 0, 10, 10, 64, 64 },	// 110
+            { ROOT    "/gifs64/BM_logo.gif",		10, 0, 0, 10, 10, 64, 64 },
+            { ROOT    "/gifs64/BM_TheMan_Blue.gif",	10, -12, -2, 10, 10, 36, 64 },    // 112
     };
     #endif
     gif_cnt = ARRAY_SIZE(animgif);
@@ -1495,9 +1501,6 @@ uint8_t GifAnim(uint32_t idx) {
 
     if (matrix_reset_demo == 1) {
         matrix_reset_demo = 0;
-        bool savng = sav_newgif(animgif[idx].path);
-        // exit if the gif animation couldn't get setup.
-        if (savng) return 0;
         gifloopsec =  animgif[idx].looptime;
         OFFSETX = animgif[idx].offx;
         OFFSETY = animgif[idx].offy;
@@ -1507,6 +1510,8 @@ uint8_t GifAnim(uint32_t idx) {
         scrolly = animgif[idx].scrolly;
         matrix->clear();
         panOrBounce(&x, &y, scrollx, scrolly, true);
+        // exit if the gif animation couldn't get setup.
+        if (sav_newgif(animgif[idx].path)) return 0;
     }
 
     if (scrollx || scrolly) {
@@ -2207,6 +2212,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*124 */ { "", NULL, -1  },
 /*125 */ { "", NULL, -1  },
 /*126 */ { "", NULL, -1  },
+/*127 */ { "", NULL, -1  },
 };
 
 // text demos are manually added to the array in setup()
@@ -2234,7 +2240,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
 
         #ifdef neopixel_pin
         // special one key press where demos are shown forever and next goes back to the normal loop
-        if (demo >= 0 && demo < 125) matrix_loop = 9999;
+        if (demo >= 0 && demo < DEMO_TEXT_INPUT) matrix_loop = 9999;
         #endif
         Serial.print("got matrix_change code ");
         Serial.print(demo);
@@ -2247,7 +2253,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
         } else {
             do {
                 if (demo==DEMO_PREV) if (matrix_state-- == 0) matrix_state = demo_last_idx;
-                if (demo==DEMO_NEXT) if (++matrix_state == demo_cnt) matrix_state = 0;
+                if (demo==DEMO_NEXT) if (++matrix_state == demo_last_idx) matrix_state = 0;
 
                 matrix_state = (matrix_state % (demo_last_idx+1));
                 Serial.print(matrix_state);
@@ -3296,8 +3302,16 @@ void read_config_index() {
         demo_mapping[index].enabled[2] = d96bm;
         demo_mapping[index].enabled[3] = d96;
         demo_mapping[index].enabled[4] = d192;
+        if (demo_list[dmap].name == NULL) {
+            Serial.print("Error ");
+            Serial.print(index++);
+            Serial.print(" is mapped to an undefined demo ");
+            Serial.println(dmap);
+            delay((uint32_t) 1000);
+            continue;
+        }
 	#ifdef ESP32
-	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s\n", index, d32,  d64,  d96bm,  d96,  d192,  dmap, 
+	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap, 
 			  demo_mapping[index].enabled[panelconfnum], demo_list[dmap].name);
 	#else
 	    Serial.print(index);
@@ -3306,15 +3320,14 @@ void read_config_index() {
 	    Serial.print(" ");
 	    Serial.print(demo_mapping[index].enabled[panelconfnum]);
 	    Serial.print(" ");
-	    Serial.println(demo_list[dmap].name);
+	    Serial.print(demo_list[dmap].name);
 	#endif
-        if (demo_list[dmap].func == NULL && demo_mapping[index].enabled[panelconfnum]) {
-            Serial.print("Error ");
-            Serial.print(index);
-            Serial.print(" is mapped to an undefined demo ");
-            Serial.println(dmap);
-            delay((uint32_t) 1000);
+        if (demo_mapping[index].enabled[panelconfnum] && demo_list[dmap].func == NULL) {
+            Serial.println(" (undefined)");
+            index++;
+            continue;
         }
+        Serial.println("");
         // keep track of the highest demo index for modulo in matrix_change
         if (demo_mapping[index].enabled[panelconfnum]) { 
             if (! matrix_state) matrix_state = index; // find first playable demo
