@@ -1454,7 +1454,7 @@ uint8_t GifAnim(uint32_t idx) {
             { ROOT    "/gifs64/215_fallingcube.gif",	15, 0, 0, 10, 15, 0, 0 },  // 75
             { ROOT    "/gifs64/255_photon.gif",		10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/257_mesh.gif",		20, 0, 0, 10, 15, 0, 0 }, 
-            { ROOT    "/gifs64/271_mj.gif",		15,-20,5,15, 15, 0, 0 }, 
+            { ROOT    "/gifs64/271_mj.gif",		15,-14,3,15, 15, 0, 0 }, 
             { ROOT    "/gifs64/342_spincircle.gif",	20, 0, 0, 10, 15, 0, 0 },
             { ROOT    "/gifs64/401_ghostbusters.gif",	05, 0, 0, 10, 15, 0, 0 },  // 80 
             { ROOT    "/gifs64/444_hand.gif",		10, 0, 0, 10, 15, 0, 0 }, 
