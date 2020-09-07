@@ -1454,7 +1454,7 @@ uint8_t GifAnim(uint32_t idx) {
             { ROOT    "/gifs64/215_fallingcube.gif",	15, 0, 0, 10, 15, 0, 0 },  // 75
             { ROOT    "/gifs64/255_photon.gif",		10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/257_mesh.gif",		20, 0, 0, 10, 15, 0, 0 }, 
-            { ROOT    "/gifs64/271_mj.gif",		15,-14,3,15, 15, 0, 0 }, 
+            { ROOT    "/gifs64/271_mj.gif",		15,-14,3, 15, 15, 0, 0 }, 
             { ROOT    "/gifs64/342_spincircle.gif",	20, 0, 0, 10, 15, 0, 0 },
             { ROOT    "/gifs64/401_ghostbusters.gif",	05, 0, 0, 10, 15, 0, 0 },  // 80 
             { ROOT    "/gifs64/444_hand.gif",		10, 0, 0, 10, 15, 0, 0 }, 
@@ -2109,7 +2109,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 36 */ { "Aurora Incremental Drift2", aurora,  6  },
 /* 37 */ { "Aurora Pendulum Wave ", aurora,  7  },
 /* 38 */ { "Aurora Radar", aurora,  8  },	    // 8 not great on non square
-/* 39 */ { "Aurora Spiral", aurora,  9  },
+/* 39 */ { "Aurora Spiral/Line Screensaver", aurora,  9  },
 /* 40 */ { "Aurora Spiro", aurora, 10  },
 /* 41 */ { "Aurora Swirl", aurora, 11  },	    // 11 not great on bigger display
 /* 42 */ { "Aurora Wave", aurora, 12  },
@@ -3381,6 +3381,14 @@ void setup() {
     #endif
 #endif
 
+#ifdef HAS_FS
+    Serial.println("Init GIF Viewer");
+    sav_setup();
+#endif
+    // This is now required, if there is no arduino FS support, you need to replace this function
+    Serial.println("Read config file");
+    read_config_index();
+
 #ifdef WIFI
 //  Before Wifi
 //  Heap/32-bit Memory Available     : 274076 bytes total, 113792 bytes largest free block
@@ -3395,14 +3403,6 @@ void setup() {
     setup_wifi();
     show_free_mem("After Wifi/Before SPIFFS/FFat");
 #endif
-
-#ifdef HAS_FS
-    Serial.println("Init GIF Viewer");
-    sav_setup();
-#endif
-    // This is now required, if there is no arduino FS support, you need to replace this function
-    Serial.println("Read config file");
-    read_config_index();
 
     Serial.println("\nEnabling Neopixels strip (if any) and Configured Display.");
 #ifdef NEOPIXEL_PIN
