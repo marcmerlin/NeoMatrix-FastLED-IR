@@ -549,6 +549,8 @@ uint8_t tfsf(uint32_t unused) {
 }
 
 // type 0 = up, type 1 = up and down
+// on small displays, zooms in each letter one by one
+// on bigger displays, zooms in "TF" and "SF"
 uint8_t tfsf_zoom(uint32_t zoom_type) {
     static uint16_t direction;
     static uint16_t size;
@@ -570,7 +572,6 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
         matrix->setTextSize(1);
     }
 
-
     if (--delayframe) {
         // reset how long a frame is shown before we switch to the next one
         // Serial.println("delayed frame");
@@ -580,6 +581,10 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
     delayframe = max((speed / 10) - faster , 1);
     // before exiting, we run the full delay to show the last frame long enough
     if (dont_exit == 0) { dont_exit = 1; return 0; }
+
+    // Either show one letter at a time and change the size and color on smaller
+    // displays (l is incremented at the bottom to switch letters), or on a bigger
+    // display, skip that and show all the letters at once.
     if (direction == 1) {
         int8_t offset = 0; // adjust some letters left or right as needed
         matrix->clear();
@@ -2067,152 +2072,154 @@ typedef struct demo_entry_ {
     const char *name;
     uint8_t (*func)(uint32_t);
     int arg;
+    // what is the index for this demo (they are not played in order)
+    uint16_t position;
 } Demo_Entry;
 
 Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
-/* 00 */ { "", NULL, -1  },
-/* 01 */ { "Squares In",  squares, 0 },
-/* 02 */ { "Squares Out", squares, 1 },
-/* 03 */ { "EatSleepRaveBurnRepeat", esrbr, -1  },
-/* 04 */ { "EatSleepRaveBurnRepeat Fade", esrbr_fade, -1  },
-/* 05 */ { "TFSF Zoom InOut", tfsf_zoom, 1  },
-/* 06 */ { "TFSF Display", tfsf, -1  },
-/* 07 */ { "With Every Beat...", webwc, -1  },
-/* 08 */ { "Burn Baby Burn", bbb, -1  },
-/* 09 */ { "Safety Third", DoublescrollText, 1  },    // adjusts // fixme I love LEDs
-/* 10 */ { "ScrollBigtext", scrollBigtext, -1  },     // code of scrolling code
-/* 11 */ { "", NULL, -1  },
-/* 12 */ { "Bounce Smiley", panOrBounceBitmap, 1  },  // currently only 24x32
-/* 13 */ { "", NULL, -1  },
-/* 14 */ { "", NULL, -1  },
-/* 15 */ { "", NULL, -1  },
-/* 16 */ { "", NULL, -1  },
-/* 17 */ { "Fireworks", call_fireworks, -1  },
-/* 18 */ { "TwinkleFox", call_twinklefox, -1  },
-/* 19 */ { "Pride", call_pride, -1  },		    // not nice for higher res (64 and above)
-/* 20 */ { "Demoreel Stars", demoreel100, 1 },	    // Twinlking stars
-/* 21 */ { "Demoreel Sweeper", demoreel100, 2 },    // color changing pixels sweeping up and down
-/* 22 */ { "Demoreel Dbl Sweeper", demoreel100, 3 },// colored pixels being exchanged between top and bottom
-/* 23 */ { "Matrix", call_rain, 1  },		    // matrix
-/* 24 */ { "Storm", call_rain, 3  },		    // clouds, rain, lightening
-/* 25 */ { "Pac Man", call_pacman, -1  },	    // currently only designed for 24x32
-/* 26 */ { "Plasma", plasma, -1  },
-/* 27 */ { "Fire", call_fire, -1  },
-/* 28 */ { "", NULL, -1  },
-/* 29 */ { "", NULL, -1  },
-/* 30 */ { "Aurora Attract", aurora,  0  },
-/* 31 */ { "Aurora Bounce", aurora,  1  },
-/* 32 */ { "Aurora Cube", aurora,  2  },
-/* 33 */ { "Aurora Flock", aurora,  3  },
-/* 34 */ { "Aurora Flowfield", aurora,  4  },
-/* 35 */ { "Aurora Incremental Drift", aurora,  5  },
-/* 36 */ { "Aurora Incremental Drift2", aurora,  6  },
-/* 37 */ { "Aurora Pendulum Wave ", aurora,  7  },
-/* 38 */ { "Aurora Radar", aurora,  8  },	    // 8 not great on non square
-/* 39 */ { "Aurora Spiral/Line Screensave", aurora,  9  },
-/* 40 */ { "Aurora Spiro", aurora, 10  },
-/* 41 */ { "Aurora Swirl", aurora, 11  },	    // 11 not great on bigger display
-/* 42 */ { "Aurora Wave", aurora, 12  },
-/* 43 */ { "", NULL, -1  },
-/* 44 */ { "", NULL, -1  },
-/* 45 */ { "TMED  0 Zoom in shapes", tmed,  0  }, // concentric colors and shapes
-/* 46 */ { "TMED  1 Concentric circles", tmed,  1  }, // 5 color windows-like pattern with circles in and out
-/* 47 */ { "TMED  2 Color Starfield", tmed,  2  }, // color worm patterns going out with circles zomming out
-/* 48 */ { "TMED  3 Dancing Circles", tmed,  3  }, // 5 circles turning together, run a bit longer
-/* 49 */ { "TMED  4 Zoom out Shapes", tmed,  4  }, // rectangles/squares/triangles zooming out
-/* 50 */ { "TMED  5 Shapes In/Out", tmed,  5  }, // opposite concentric colors and shapes (52 reversed)
-/* 51 */ { "TMED  6 Double Starfield&Shapes", tmed,  6  }, // double color starfield with shapes in/out
-/* 52 */ { "TMED  7 Hypnoswirl Starfield", tmed,  7  }, // two colors swirling bigger, creating hypno pattern
-/* 53 */ { "TMED  8 4 Dancing Balls&Shapes", tmed,  8  }, // 4 fat spinning comets with shapes growing from middle sometimes
-/* 54 */ { "TMED  9 Starfield BKringer", tmed,  9  }, // streaming lines of colored pixels with shape zooming in or out
-/* 55 */ { "TMED 10 Spinning Triangles", tmed, 10  }, // rotating triangles of color
-/* 56 */ { "TMED 11 Circles Mixing", tmed, 11  }, // circles mixing in the middle
-/* 57 */ { "TMED 12 Hypno", tmed, 12  }, // hypno
-/* 58 */ { "", NULL, -1  },
-/* 59 */ { "", NULL, -1  },
-/* 60 */ { "", NULL, -1  },
-/* 61 */ { "", NULL, -1  },
-/* 62 */ { "", NULL, -1  },
-/* 63 */ { "", NULL, -1  },
-/* 64 */ { "", NULL, -1  },
-/* 65 */ { "", NULL, -1  },
-/* 66 */ { "", NULL, -1  },
-/* 67 */ { "", NULL, -1  },
-/* 68 */ { "", NULL, -1  },
-/* 69 */ { "", NULL, -1  },
+/* 00 */ { "", NULL, -1, 0 },
+/* 01 */ { "Squares In",  squares, 0, 0 },
+/* 02 */ { "Squares Out", squares, 1, 0 },
+/* 03 */ { "EatSleepRaveBurnRepeat", esrbr, -1, 0 },
+/* 04 */ { "EatSleepRaveBurnRepeat Fade", esrbr_fade, -1, 0 },
+/* 05 */ { "TFSF Zoom InOut", tfsf_zoom, 1, 0 },
+/* 06 */ { "TFSF Display", tfsf, -1, 0 },
+/* 07 */ { "With Every Beat...", webwc, -1, 0 },
+/* 08 */ { "Burn Baby Burn", bbb, -1, 0 },
+/* 09 */ { "Safety Third", DoublescrollText, 1, 0 },    // adjusts // fixme I love LEDs
+/* 10 */ { "ScrollBigtext", scrollBigtext, -1, 0 },     // code of scrolling code
+/* 11 */ { "", NULL, -1, 0 },
+/* 12 */ { "Bounce Smiley", panOrBounceBitmap, 1, 0 },  // currently only 24x32
+/* 13 */ { "", NULL, -1, 0 },
+/* 14 */ { "", NULL, -1, 0 },
+/* 15 */ { "", NULL, -1, 0 },
+/* 16 */ { "", NULL, -1, 0 },
+/* 17 */ { "Fireworks", call_fireworks, -1, 0 },
+/* 18 */ { "TwinkleFox", call_twinklefox, -1, 0 },
+/* 19 */ { "Pride", call_pride, -1, 0 },		    // not nice for higher res (64 and above)
+/* 20 */ { "Demoreel Stars", demoreel100, 1, 0 },	    // Twinlking stars
+/* 21 */ { "Demoreel Sweeper", demoreel100, 2, 0 },    // color changing pixels sweeping up and down
+/* 22 */ { "Demoreel Dbl Sweeper", demoreel100, 3, 0 },// colored pixels being exchanged between top and bottom
+/* 23 */ { "Matrix", call_rain, 1, 0 },		    // matrix
+/* 24 */ { "Storm", call_rain, 3, 0 },		    // clouds, rain, lightening
+/* 25 */ { "Pac Man", call_pacman, -1, 0 },	    // currently only designed for 24x32
+/* 26 */ { "Plasma", plasma, -1, 0 },
+/* 27 */ { "Fire", call_fire, -1, 0 },
+/* 28 */ { "", NULL, -1, 0 },
+/* 29 */ { "", NULL, -1, 0 },
+/* 30 */ { "Aurora Attract", aurora,  0, 0 },
+/* 31 */ { "Aurora Bounce", aurora,  1, 0 },
+/* 32 */ { "Aurora Cube", aurora,  2, 0 },
+/* 33 */ { "Aurora Flock", aurora,  3, 0 },
+/* 34 */ { "Aurora Flowfield", aurora,  4, 0 },
+/* 35 */ { "Aurora Incremental Drift", aurora,  5, 0 },
+/* 36 */ { "Aurora Incremental Drift2", aurora,  6, 0 },
+/* 37 */ { "Aurora Pendulum Wave ", aurora,  7, 0 },
+/* 38 */ { "Aurora Radar", aurora,  8, 0 },	    // 8 not great on non square
+/* 39 */ { "Aurora Spiral/Line Screensave", aurora,  9, 0 },
+/* 40 */ { "Aurora Spiro", aurora, 10, 0 },
+/* 41 */ { "Aurora Swirl", aurora, 11, 0 },	    // 11 not great on bigger display
+/* 42 */ { "Aurora Wave", aurora, 12, 0 },
+/* 43 */ { "", NULL, -1, 0 },
+/* 44 */ { "", NULL, -1, 0 },
+/* 45 */ { "TMED  0 Zoom in shapes", tmed,  0, 0 }, // concentric colors and shapes
+/* 46 */ { "TMED  1 Concentric circles", tmed,  1, 0 }, // 5 color windows-like pattern with circles in and out
+/* 47 */ { "TMED  2 Color Starfield", tmed,  2, 0 }, // color worm patterns going out with circles zomming out
+/* 48 */ { "TMED  3 Dancing Circles", tmed,  3, 0 }, // 5 circles turning together, run a bit longer
+/* 49 */ { "TMED  4 Zoom out Shapes", tmed,  4, 0 }, // rectangles/squares/triangles zooming out
+/* 50 */ { "TMED  5 Shapes In/Out", tmed,  5, 0 }, // opposite concentric colors and shapes (52 reversed)
+/* 51 */ { "TMED  6 Double Starfield&Shapes", tmed,  6, 0 }, // double color starfield with shapes in/out
+/* 52 */ { "TMED  7 Hypnoswirl Starfield", tmed,  7, 0 }, // two colors swirling bigger, creating hypno pattern
+/* 53 */ { "TMED  8 4 Dancing Balls&Shapes", tmed,  8, 0 }, // 4 fat spinning comets with shapes growing from middle sometimes
+/* 54 */ { "TMED  9 Starfield BKringer", tmed,  9, 0 }, // streaming lines of colored pixels with shape zooming in or out
+/* 55 */ { "TMED 10 Spinning Triangles", tmed, 10, 0 }, // rotating triangles of color
+/* 56 */ { "TMED 11 Circles Mixing", tmed, 11, 0 }, // circles mixing in the middle
+/* 57 */ { "TMED 12 Hypno", tmed, 12, 0 }, // hypno
+/* 58 */ { "", NULL, -1, 0 },
+/* 59 */ { "", NULL, -1, 0 },
+/* 60 */ { "", NULL, -1, 0 },
+/* 61 */ { "", NULL, -1, 0 },
+/* 62 */ { "", NULL, -1, 0 },
+/* 63 */ { "", NULL, -1, 0 },
+/* 64 */ { "", NULL, -1, 0 },
+/* 65 */ { "", NULL, -1, 0 },
+/* 66 */ { "", NULL, -1, 0 },
+/* 67 */ { "", NULL, -1, 0 },
+/* 68 */ { "", NULL, -1, 0 },
+/* 69 */ { "", NULL, -1, 0 },
 #if mheight == 32
-/* 70 */ { "GIF photon"		, GifAnim,  0  },
-/* 71 */ { "GIF flower"		, GifAnim,  1  },
-/* 72 */ { "GIF balls"	    	, GifAnim,  2  },
-/* 73 */ { "GIF dance"		, GifAnim,  3  },
-/* 74 */ { "GIF circles_swap"	, GifAnim,  4  },
-/* 75 */ { "GIF concentric_circles", GifAnim,  5  },
-/* 76 */ { "GIF corkscrew"	, GifAnim,  6  },
-/* 77 */ { "GIF cubeconstruct"	, GifAnim,  7  },
-/* 78 */ { "GIF cubeslide"	, GifAnim,  8  },
-/* 79 */ { "GIF runningedgehog"	, GifAnim,  9  },
-/* 80 */ { "GIF triangles_in"	, GifAnim, 10  },
-/* 81 */ { "GIF wifi"		, GifAnim, 11  },
+/* 70 */ { "GIF photon"		, GifAnim,  0, 0 },
+/* 71 */ { "GIF flower"		, GifAnim,  1, 0 },
+/* 72 */ { "GIF balls"	    	, GifAnim,  2, 0 },
+/* 73 */ { "GIF dance"		, GifAnim,  3, 0 },
+/* 74 */ { "GIF circles_swap"	, GifAnim,  4, 0 },
+/* 75 */ { "GIF concentric_circles", GifAnim,  5, 0 },
+/* 76 */ { "GIF corkscrew"	, GifAnim,  6, 0 },
+/* 77 */ { "GIF cubeconstruct"	, GifAnim,  7, 0 },
+/* 78 */ { "GIF cubeslide"	, GifAnim,  8, 0 },
+/* 79 */ { "GIF runningedgehog"	, GifAnim,  9, 0 },
+/* 80 */ { "GIF triangles_in"	, GifAnim, 10, 0 },
+/* 81 */ { "GIF wifi"		, GifAnim, 11, 0 },
 #else
-/* 70 */ { "GIF net"		, GifAnim,  0  },
-/* 71 */ { "GIF colorstar"	, GifAnim,  1  },
-/* 72 */ { "GIF circlesmoke"	, GifAnim,  2  },
-/* 73 */ { "GIF waterdrop"	, GifAnim,  3  },
-/* 74 */ { "GIF circletriangle"	, GifAnim,  4  },
-/* 75 */ { "GIF fallingcube"	, GifAnim,  5  },
-/* 76 */ { "GIF photon"		, GifAnim,  6  },
-/* 77 */ { "GIF mesh"		, GifAnim,  7  },
-/* 78 */ { "GIF Michael Jackson", GifAnim,  8  },
-/* 79 */ { "GIF spincircle"	, GifAnim,  9  },
-/* 80 */ { "GIF ghostbusters"	, GifAnim, 10  },
-/* 81 */ { "GIF hand"		, GifAnim, 11  },
+/* 70 */ { "GIF net"		, GifAnim,  0, 0 },
+/* 71 */ { "GIF colorstar"	, GifAnim,  1, 0 },
+/* 72 */ { "GIF circlesmoke"	, GifAnim,  2, 0 },
+/* 73 */ { "GIF waterdrop"	, GifAnim,  3, 0 },
+/* 74 */ { "GIF circletriangle"	, GifAnim,  4, 0 },
+/* 75 */ { "GIF fallingcube"	, GifAnim,  5, 0 },
+/* 76 */ { "GIF photon"		, GifAnim,  6, 0 },
+/* 77 */ { "GIF mesh"		, GifAnim,  7, 0 },
+/* 78 */ { "GIF Michael Jackson", GifAnim,  8, 0 },
+/* 79 */ { "GIF spincircle"	, GifAnim,  9, 0 },
+/* 80 */ { "GIF ghostbusters"	, GifAnim, 10, 0 },
+/* 81 */ { "GIF hand"		, GifAnim, 11, 0 },
 #endif
-/* 82 */ { "GIF infection"	, GifAnim, 12  },
-/* 83 */ { "GIF redplasma"	, GifAnim, 13  },
-/* 84 */ { "GIF dancers"	, GifAnim, 14  },
-/* 85 */ { "GIF comets"		, GifAnim, 15  },
-/* 86 */ { "GIF batman"		, GifAnim, 16  },
-/* 87 */ { "GIF cubes"		, GifAnim, 17  },
-/* 88 */ { "GIF spintriangle"	, GifAnim, 18  },
-/* 89 */ { "GIF flyingfire"	, GifAnim, 19  },
-/* 90 */ { "GIF expandcircle"	, GifAnim, 20  },
-/* 91 */ { "GIF plasma"		, GifAnim, 21  },
-/* 92 */ { "GIF greenplasma"	, GifAnim, 22  },
-/* 93 */ { "GIF circle2sphere"	, GifAnim, 23  },
-/* 94 */ { "GIF colortoroid"	, GifAnim, 24  },
-/* 95 */ { "GIF scrollcubestron", GifAnim, 25  },
-/* 96 */ { "GIF spinningpattern", GifAnim, 26  },
-/* 97 */ { "GIF spacetime"	, GifAnim, 27  },
-/* 98 */ { "GIF circleslices"	, GifAnim, 28  },
-/* 99 */ { "GIF heartTunnel"	, GifAnim, 29  },
-/*100 */ { "GIF sonic"		, GifAnim, 30  },
-/*101 */ { "GIF AB colors circles", GifAnim, 31  },
-/*102 */ { "GIF A&B lgrey"	, GifAnim, 32  },
-/*103 */ { "GIF A&B greyer"	, GifAnim, 33  },
-/*104 */ { "GIF A&B brightwhite", GifAnim, 34  },
-/*105 */ { "GIF AB colorstrings", GifAnim, 35  },
-/*106 */ { "GIF ABlogo Grey"	, GifAnim, 36  },
-/*107 */ { "GIF ABlogo White"	, GifAnim, 37  },
-/*108 */ { "GIF BM Man Scroll"	, GifAnim, 38  },
-/*109 */ { "GIF BM green arms"	, GifAnim, 39  },
-/*110 */ { "GIF BM lady fire"	, GifAnim, 40  },
-/*111 */ { "GIF BM logo"	, GifAnim, 41  },
-/*112 */ { "GIF BM TheMan Blue"	, GifAnim, 42  },
-/*113 */ { "", NULL, -1  },
-/*114 */ { "", NULL, -1  },
-/*115 */ { "", NULL, -1  },
-/*116 */ { "", NULL, -1  },
-/*117 */ { "", NULL, -1  },
-/*118 */ { "", NULL, -1  },
-/*119 */ { "", NULL, -1  },
-/*120 */ { "", NULL, -1  },
-/*121 */ { "", NULL, -1  },
-/*122 */ { "", NULL, -1  },
-/*123 */ { "", NULL, -1  },
-/*124 */ { "", NULL, -1  },
-/*125 */ { "", NULL, -1  },
-/*126 */ { "", NULL, -1  },
-/*127 */ { "", NULL, -1  },
+/* 82 */ { "GIF infection"	, GifAnim, 12, 0 },
+/* 83 */ { "GIF redplasma"	, GifAnim, 13, 0 },
+/* 84 */ { "GIF dancers"	, GifAnim, 14, 0 },
+/* 85 */ { "GIF comets"		, GifAnim, 15, 0 },
+/* 86 */ { "GIF batman"		, GifAnim, 16, 0 },
+/* 87 */ { "GIF cubes"		, GifAnim, 17, 0 },
+/* 88 */ { "GIF spintriangle"	, GifAnim, 18, 0 },
+/* 89 */ { "GIF flyingfire"	, GifAnim, 19, 0 },
+/* 90 */ { "GIF expandcircle"	, GifAnim, 20, 0 },
+/* 91 */ { "GIF plasma"		, GifAnim, 21, 0 },
+/* 92 */ { "GIF greenplasma"	, GifAnim, 22, 0 },
+/* 93 */ { "GIF circle2sphere"	, GifAnim, 23, 0 },
+/* 94 */ { "GIF colortoroid"	, GifAnim, 24, 0 },
+/* 95 */ { "GIF scrollcubestron", GifAnim, 25, 0 },
+/* 96 */ { "GIF spinningpattern", GifAnim, 26, 0 },
+/* 97 */ { "GIF spacetime"	, GifAnim, 27, 0 },
+/* 98 */ { "GIF circleslices"	, GifAnim, 28, 0 },
+/* 99 */ { "GIF heartTunnel"	, GifAnim, 29, 0 },
+/*100 */ { "GIF sonic"		, GifAnim, 30, 0 },
+/*101 */ { "GIF AB colors circles", GifAnim, 31, 0 },
+/*102 */ { "GIF A&B lgrey"	, GifAnim, 32, 0 },
+/*103 */ { "GIF A&B greyer"	, GifAnim, 33, 0 },
+/*104 */ { "GIF A&B brightwhite", GifAnim, 34, 0 },
+/*105 */ { "GIF AB colorstrings", GifAnim, 35, 0 },
+/*106 */ { "GIF ABlogo Grey"	, GifAnim, 36, 0 },
+/*107 */ { "GIF ABlogo White"	, GifAnim, 37, 0 },
+/*108 */ { "GIF BM Man Scroll"	, GifAnim, 38, 0 },
+/*109 */ { "GIF BM green arms"	, GifAnim, 39, 0 },
+/*110 */ { "GIF BM lady fire"	, GifAnim, 40, 0 },
+/*111 */ { "GIF BM logo"	, GifAnim, 41, 0 },
+/*112 */ { "GIF BM TheMan Blue"	, GifAnim, 42, 0 },
+/*113 */ { "", NULL, -1, 0 },
+/*114 */ { "", NULL, -1, 0 },
+/*115 */ { "", NULL, -1, 0 },
+/*116 */ { "", NULL, -1, 0 },
+/*117 */ { "", NULL, -1, 0 },
+/*118 */ { "", NULL, -1, 0 },
+/*119 */ { "", NULL, -1, 0 },
+/*120 */ { "", NULL, -1, 0 },
+/*121 */ { "", NULL, -1, 0 },
+/*122 */ { "", NULL, -1, 0 },
+/*123 */ { "", NULL, -1, 0 },
+/*124 */ { "", NULL, -1, 0 },
+/*125 */ { "", NULL, -1, 0 },
+/*126 */ { "", NULL, -1, 0 },
+/*127 */ { "", NULL, -1, 0 },
 };
 
 // text demos are manually added to the array in setup()
@@ -3232,10 +3239,15 @@ void setup_wifi() {
     */
     p.addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
     for (uint16_t i=1; i < demo_last_idx; i++) {
+	uint16_t pos = demo_list[i].position;
+	//Serial.print(i);
+	//Serial.print(" -> ");
+	//Serial.println(pos);
+
         if (!demo_list[i].func) continue; 
-        char *option = (char *) malloc (strlen (demo_list[i].name) + 8);
-	sprintf(option, "%03d/%1d: ", demo_mapping[i].mapping, demo_mapping[i].enabled[panelconfnum]);
-	strcpy(option+7, demo_list[i].name);
+        char *option = (char *) malloc (strlen (demo_list[i].name) + 13);
+	sprintf(option, "%03d->%03d/%1d: ", i, pos, demo_mapping[pos].enabled[panelconfnum]);
+	strcpy(option+12, demo_list[i].name);
         p.addSelectOption(option, i);
     }
     
@@ -3325,6 +3337,8 @@ void read_config_index() {
 	    Serial.print(" ");
 	    Serial.print(demo_list[dmap].name);
 	#endif
+	// reverse position mapping used in setup_wifi dropdown creation
+	demo_list[dmap].position = index;
         if (demo_mapping[index].enabled[panelconfnum] && demo_list[dmap].func == NULL) {
             Serial.println(" (undefined)");
             index++;
@@ -3527,8 +3541,8 @@ void setup() {
     // being done.
     Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
-    demo_list[DEMO_TEXT_THANKYOU] = { "Thank you", NULL, -1  }; 
-    demo_list[DEMO_TEXT_INPUT]    = { "Web Text Input", NULL, -1  }; 
+    demo_list[DEMO_TEXT_THANKYOU] = { "Thank you", NULL, -1, 0  }; 
+    demo_list[DEMO_TEXT_INPUT]    = { "Web Text Input", NULL, -1, 0  }; 
     Serial.println("Starting loop");
 }
 
