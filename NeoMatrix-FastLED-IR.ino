@@ -2109,7 +2109,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 36 */ { "Aurora Incremental Drift2", aurora,  6  },
 /* 37 */ { "Aurora Pendulum Wave ", aurora,  7  },
 /* 38 */ { "Aurora Radar", aurora,  8  },	    // 8 not great on non square
-/* 39 */ { "Aurora Spiral/Line Screensaver", aurora,  9  },
+/* 39 */ { "Aurora Spiral/Line Screensave", aurora,  9  },
 /* 40 */ { "Aurora Spiro", aurora, 10  },
 /* 41 */ { "Aurora Swirl", aurora, 11  },	    // 11 not great on bigger display
 /* 42 */ { "Aurora Wave", aurora, 12  },
@@ -3233,7 +3233,10 @@ void setup_wifi() {
     p.addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
     for (uint16_t i=1; i < demo_last_idx; i++) {
         if (!demo_list[i].func) continue; 
-        p.addSelectOption(demo_list[i].name, i);
+        char *option = (char *) malloc (strlen (demo_list[i].name) + 8);
+	sprintf(option, "%03d/%1d: ", demo_mapping[i].mapping, demo_mapping[i].enabled[panelconfnum]);
+	strcpy(option+7, demo_list[i].name);
+        p.addSelectOption(option, i);
     }
     
     p.addUrlHandler(wildcardProc);
