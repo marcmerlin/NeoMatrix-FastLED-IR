@@ -45,8 +45,8 @@ using namespace Aiko;
 
 #define DEMO_PREV -32768
 #define DEMO_NEXT 32767
-#define DEMO_TEXT_THANKYOU 150
-#define DEMO_TEXT_INPUT 151
+#define DEMO_TEXT_THANKYOU 250
+#define DEMO_TEXT_INPUT 251
 #define DEMO_TEXT_FIRST DEMO_TEXT_INPUT
 #define DEMO_TEXT_LAST DEMO_TEXT_INPUT
 
@@ -54,10 +54,12 @@ using namespace Aiko;
 // Different panel configurations: 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
 #define CONFIGURATIONS 5
 
-#if MATRIX_TILE_WIDTH == 128
+#if mheight == 192
 #define panelconfnum 4
-#else
+#elif mheight == 96
 #define panelconfnum 3
+#else 
+#define panelconfnum 0
 #endif
 
 typedef struct mapping_entry_ {
@@ -1394,7 +1396,7 @@ uint8_t GifAnim(uint32_t idx) {
     extern int FACTY;
     extern int FACTX;
 
-    #ifdef M32BY8X3
+    #if mheight == 32
     const Animgif animgif[] = {
             {"/gifs/32anim_photon.gif",		10, -4, 0, 10, 10, 0, 0 },	// 70
             {"/gifs/32anim_flower.gif",		10, -4, 0, 10, 10, 0, 0 },
@@ -1409,41 +1411,141 @@ uint8_t GifAnim(uint32_t idx) {
             {"/gifs/triangles_in.gif",		10, -4, 0, 10, 10, 0, 0 },	// 80
             {"/gifs/wifi.gif",			10, -4, 0, 10, 10, 0, 0 },
     };
-    #elif MATRIX_TILE_WIDTH == 128
+    #elif mheight == 192
     #define ROOT FS_PREFIX "/gifs128x192/"
     const Animgif animgif[] = {
-            { ROOT "abstract_colorful.gif"                , 10, 0, 0, 10, 10, 0, 0 },	// 70
-            { ROOT "dancing_lady.gif"                     , 10, 0, 0, 10, 15, 0, 0 }, 
-            { ROOT "Aki5PC6_Running.gif"                  , 10, 0, 0, 10, 10, 0, 0 },
-            { ROOT "GirlSexyAnimateddance.gif"            , 10, 0, 0, 10, 15, 0, 0 }, 
-            { ROOT "small-girl-dancing-3.gif"             , 10, 15, 0, 10, 15, 0, 0 }, 
-            { ROOT "z03db1e65f3ef3ca25c7ce569ceeb210d.gif", 10, 0, 0, 10, 10, 0, 0 },  // 75
-            { ROOT "z0f125a1a2fe2f1f64a7d112e9a9a4306.gif", 10, 0, 0, 10, 10, 0, 0 }, 
-            { ROOT "z3a0c3a8b38796373f3a17cd14ec71fda.gif", 10, -20, 0, 10, 10, 0, 0 }, 
-            { ROOT "z79c9bd19c3c5e678ff2b42f93234d7f9.gif", 10, -20, -10, 10, 10, 0, 0 }, 
-            { ROOT "z7d3ddc32d5439ff90d084d5c5e402cbd.gif", 10, -20, 0, 10, 10, 0, 0 },
-            { ROOT "z80908d38aba2e9a2e49315b0cc20b61b.gif", 10, -10, 0, 10, 10, 0, 0 },  // 80 
-            { ROOT "zbd201faed927fcfcf2d7a2045e2765d8.gif", 10, 0, 0, 10, 10, 0, 0 }, 
-            { ROOT "zc479ac376f71439d7b984a758fd48b2d.gif", 10, -10, 0, 10, 10, 0, 0 }, 
-            { ROOT "zc8317e96e6a33de10e97e6d836c579aa.gif", 10, -30, -10, 10, 10, 0, 0 }, 
-            { ROOT "zd9bf08d0507da5c0a7d1cdd7273bf6b1.gif", 10, -32, 0, 10, 10, 0, 0 },
-            { ROOT "ze84ffc9a50b6a294c749287c89a20840.gif", 10, 0, 0, 10, 15, 0, 0 },  // 85 
-            { ROOT "zeb560fca8c8dcefbd60b10caa1cd9b61.gif", 10, -10, 0, 10, 10, 0, 0 }, 
-            { ROOT "zf351adfd419b9a87da20d2564d8294a0.gif", 10, 0, 0, 10, 15, 0, 0 }, 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },  // 90 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },  // 95
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 }, 
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },
-//             { ROOT "",	 10, 0, 0, 10, 10, 0, 0 },  // 100
-    };
+            { ROOT  "abstract_colorful.gif",		10, 0, 0, 10, 10, 0, 0 }, // 70
+            { ROOT  "Aki5PC6_Running.gif",		10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "dancing_lady.gif",			10,-32,0, 15, 15, 0, 0 }, 
+            { ROOT  "GirlSexyAnimateddance.gif",	10,-32,0, 15, 15, 0, 0 }, 
+            { ROOT  "z_13xS_green_aurora.gif",		10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_19Ri_multi_aurora.gif",		10, 0, 0, 10, 10, 0, 0 }, // 75
+            { ROOT  "z_19Ro_city_aurora.gif",		10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_1AYl_DJ.gif",			10, 0, 0,  8, 10, 0, 0 }, 
+            { ROOT  "z_1Fvr_color_string_spirals.gif",	10,-20,0,  9, 10, 0, 0 }, 
+            { ROOT  "z_1KO9_orange_shapes_spinout.gif",	10,-8, 0, 10, 10, 0, 0 },        
+            { ROOT  "z_1zfD_3rdeye_spin.gif",		10,-32,0, 10, 10, 0, 0 }, // 80 
+            { ROOT  "z_24RD_8_fish_spirals.gif",	10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_2Htr_caniche.gif",		10, 0, 0,  7, 10, 0, 0 }, 
+            { ROOT  "z_2mue_yingyang.gif",		10, 0,-52,10, 15, 0, 0 }, 
+            { ROOT  "z_2QeW_color_stars_flash.gif",	10, 0, 0,  7, 10, 0, 0 },        
+            { ROOT  "z_2unv_dancing_pink_back.gif",	10,10, 0, 10, 10, 0, 0 }, // 85 
+            { ROOT  "z_2vCo_triangle_merge.gif",	10, 0, 0,  7, 10, 0, 0 }, 
+            { ROOT  "z_2zFo_green_hal9000.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_37Ec_bird_dance.gif",		10, 0, 0,  8, 10, 0, 0 }, 
+            { ROOT  "z_3bUj_concentric_lights.gif",	10,-32,0, 10, 10, 0, 0 },        
+            { ROOT  "z_3F3F_sonic.gif",			10, 0, 0,  7, 10, 0, 0 }, // 90 
+            { ROOT  "z_3Mel_spiral_pentagon_dance.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_3Ppu_spin_triangles.gif",	10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_3Qqj_double_stargate.gif",	10,-20,-16,9, 12, 0, 0 }, 
+            { ROOT  "z_3Wfu_RGB_smirout.gif",		10,-32,0, 10, 10, 0, 0 },        
+            { ROOT  "z_3wQM_fractal_zoom.gif",		10,-24,0,  8, 10, 0, 0 }, // 95
+            { ROOT  "z_3zO_pacman.gif",			10,-12,0,  8, 10, 0, 0 }, 
+            { ROOT  "z_47Vg_purple_hair_spiralout.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_4P4a_flip_triangles.gif",	10,-20,0,  8, 10, 0, 0 }, 
+            { ROOT  "z_4RNd_rgb_color_plates.gif",	10,-24,0, 10, 10, 0, 0 },        
+            { ROOT  "z_4RNj_red_round_unfold.gif",	10,-12,0,  8, 10, 0, 0 }, // 100
+            { ROOT  "z_4RNm_triangrect_shapes_out.gif",	10,-32,0, 10, 10, 0, 0 },
+            { ROOT  "z_5PmD_MJ_moonwalk.gif",		10,12, 0, 10, 10, 0, 0 },
+            { ROOT  "z_5x_light_tunnel.gif",		10, 0, 0,  7, 10, 0, 0 },
+            { ROOT  "z_6nr_heart_rotate.gif",		10, 0, 0,  6, 10, 0, 0 },
+            { ROOT  "z_6PLP_colorflowers_spiralout.gif",10,-32,0, 10, 10, 0, 0 }, // 105
+            { ROOT  "z_72f8_green_mobius_rotate.gif",	10, 0, 0,  8, 10, 0, 0 },
+            { ROOT  "z_72fP_cauliflower.gif",		10,-32,0, 10, 10, 0, 0 },
+            { ROOT  "z_72gi_triple_3D_smiley.gif",	10,-8, 0,  7, 10, 0, 0 },
+            { ROOT  "z_73O8_lightman_running.gif",	10, 0, 0,  7, 10, 0, 0 },
+            { ROOT  "z_75ks_green_zoomout_lasers.gif",	10, 0, 0,  7, 10, 0, 0 }, // 110
+            { ROOT  "z_75yI_BW_spiral_out.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_76dA_starship_shooting.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_78jz_blue_smoke_out.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_ZIb4_red_jacket_dancer.gif",	10,-16,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_7gRx_white_grey_smoke.gif",	10,-32,0, 10, 10, 0, 0 }, // 115
+            { ROOT  "z_7Gtw_flowers_spinout.gif",	10,-24,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_7IgI_colors_pulsing_in_out.gif", 10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_7IGR_red_smoke_spiral_in.gif",	10, 0, 0,  7, 10, 0, 0 }, 
+            { ROOT  "z_7MS3_grey_cubes_tunnel.gif",	10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_7OEb_blue_amber_juggler.gif",	10,-32,0, 10, 10, 0, 0 }, // 120 
+            { ROOT  "z_7rq5_flying_through_pipes.gif",	10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_7SHB_blue_robot_heart.gif",	10,-12,0,  8, 10, 0, 0 }, 
+            { ROOT  "z_7sXr_3D_Mobius_loop.gif",	10, 0, 0,  7, 10, 0, 0 }, 
+            { ROOT  "z_7U4_endless_corridor.gif",	10, 0, 0,  7, 10, 0, 0 },       
+            { ROOT  "z_7VA_pulp_fiction.gif",		10, 0, 0, 10, 12, 0, 0 }, // 125 
+            { ROOT  "z_7xyP_BW_zoomout_gears.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_7ZNJ_RGB_toroid.gif",		10,-12,0,  8, 10, 0, 0 }, 
+            { ROOT  "z_8vFu_mushroom_spots.gif",	10,-8, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_ZJtC_you_rock.gif",		10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_9Cre_morphing_3D_shape.gif",	10,-24,0,  8, 10, 0, 0 }, // 130 
+            { ROOT  "z_9vQE_flower_petals.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_9xyv_eatme.gif",			10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_A8u8_sparkling_spiralin.gif",	10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_Ab6r_spingout_RGB.gif",		10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_Abml_green_cube_mobius.gif",	10,-32,0, 10, 10, 0, 0 }, // 135
+            { ROOT  "z_Ajyj_3D_green_wheel_ridge.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_AOkf_colorspiral_zoomout.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_B0Te_spinning_dancer.gif",	10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_B87j_color_projectors.gif",	10, 0, 0, 10, 10, 0, 0 },       
+            { ROOT  "z_ZLnU_sailormoon_highdance.gif",	10, 0,-12,10, 10, 0, 0 }, // 140     
+            { ROOT  "z_bh8_smiling_dancing_girl.gif",	10, 0, 0, 10, 10, 0, 0 },
+            { ROOT  "z_CDno_coiling_fern.gif",		10,-32,0, 10, 10, 0, 0 },
+            { ROOT  "z_Cf03_yellow_lighthouse.gif",	10,-20,0, 10, 10, 0, 0 },
+            { ROOT  "z_CuQ9_color_pyramids.gif",	10, 0, 0, 10, 10, 0, 0 },
+            { ROOT  "z_DemL_tunnel_spark_dancer.gif",	10,-12,0,  8, 10, 0, 0 }, // 145
+            { ROOT  "z_feM_MJ_moonwalk_spin.gif",	10,-12,0, 10, 12, 0, 0 }, 
+            { ROOT  "z_fxac_hyperspace.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_fxcA_conifer_zoom_in.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_fxcE_3D_hypercube_RGB.gif",	10,-24,0,  9, 10, 0, 0 },       
+            { ROOT  "z_fxmf_grapefuit_zoomin.gif",	10,-32,0, 10, 10, 0, 0 }, // 150
+            { ROOT  "z_fxVE_pink_flaming_circle.gif",	10,-4, 0,  7, 10, 0, 0 }, 
+            { ROOT  "z_fxYU_center_moving_spiral.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_fyE2_hypnotoad.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_fyNK_pizza_zoomin.gif",		10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_fypc_RGB_spiralin.gif",		10,-32,0, 10, 10, 0, 0 }, // 155
+            { ROOT  "z_fype_bluebee_zoomin.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_FZl2_green_neutron_star.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_g09P_clock_in.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_g0Af_piano_zoomin.gif",		10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_g0bg_puzzle_spiralout.gif",	10,-32,0, 10, 10, 0, 0 }, // 160
+            { ROOT  "z_g0HL_shiny_snail_shell.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_g0RQ_hypercube.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_g1Jh_color_dots_spiralin.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_g1mN_3D_fractal_roll.gif",	10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_g3HP_Kaleidoscope_spiral.gif",	10,-32,0, 10, 10, 0, 0 }, // 165
+            { ROOT  "z_IAkQ_acid_cat.gif",		10,-4, 0,  9, 10, 0, 0 }, 
+            { ROOT  "z_IrES_purple_geometrical.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_K5bj_fly_buildings.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_K5bn_pulsing_color_rects.gif",	10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_KTLf_white_geometric_out.gif",	10,-32,0, 10, 10, 0, 0 }, // 170
+            { ROOT  "z_MDdU_color_marble.gif",		10, 0,32, 10, 10, 0, 0 }, // FIXME colors
+            { ROOT  "z_MDkc_passionfruit_zoomout.gif",	10,-32,0, 10, 10, 0, 0 },
+            { ROOT  "z_Mdml_I_am_drugs.gif",		10, 0, 0, 10, 10, 0, 0 },
+            { ROOT  "z_Nfhn_smileys_spinout.gif",	10, 0, 0, 10, 10, 0, 0 }, // FIXME colors
+            { ROOT  "z_NTHQ_flyin_cavern.gif",		10,-32,0, 10, 10, 0, 0 }, // 175
+            { ROOT  "z_Z6W2_mario_mushroom_dance.gif",	10,-4, 0,  9, 10, 0, 0 }, 
+            { ROOT  "z_NUYV_baby_pig_fall.gif",		10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_O7TJ_color_shapes_out.gif",	10, 0, 0,  7, 10, 0, 0 }, 
+            { ROOT  "z_OBYz_blue_cubes_flyin.gif",	10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_OwRt_triangles_RGB_out.gif",	10,-32,0, 10, 10, 0, 0 }, // 180
+            { ROOT  "z_Oz2e_rubiks_cube.gif",		10,-16,0,  9, 10, 0, 0 },
+            { ROOT  "z_P8P_fractal2_zoom.gif",		10, 0,15, 10, 10, 0, 0 },
+            { ROOT  "z_PAM_color_sticks.gif",		10,-32,0, 10, 10, 0, 0 },
+            { ROOT  "z_PVyt_mushroom_walk.gif",		10,-4, 0,  7, 10, 0, 0 },
+            { ROOT  "z_PYZK_BW_bubbles.gif",		10,-32,0, 10, 10, 0, 0 }, // 185
+            { ROOT  "z_SBMP_red_smoke.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_T2wm_flying_grass.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_tIH_blue_gecko_dance.gif",	10,-12,0,  9, 10, 0, 0 }, 
+            { ROOT  "z_TlCL_dancing_flames.gif",	10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_VCq8_skeleton.gif",		10, 0, 0, 10, 10, 0, 0 }, // 190
+            { ROOT  "z_VRfm_fly_purple_gates.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_WGkW_bluelady_smoke.gif",	10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_WMDv_sailor_moon.gif",		10,-20,0,  9, 10, 0, 0 }, 
+            { ROOT  "z_WSK_inca_spiralin.gif",		10,-32,0, 10, 10, 0, 0 },       
+            { ROOT  "z_WUUT_eye.gif",			10,-32,0, 10, 10, 0, 0 }, // 195
+            { ROOT  "z_XiPu_blue_shark_dance.gif",	10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_XqyP_blue_dancer.gif",		10,-32,0, 10, 10, 0, 0 }, 
+            { ROOT  "z_XwIB_snoopdog_dance.gif",	10, 0, 0, 10, 10, 0, 0 }, 
+            { ROOT  "z_Ysrm_walking_dead.gif",		10, 0, 0,  7, 10, 0, 0 },       
+            { ROOT  "z_Yv30_street_fighter.gif",	10, 0, 0, 10, 10, 0, 0 }, // 200
+    };                                                                            
     #else
     #ifdef ARDUINOONPC
     #define ROOT FS_PREFIX
@@ -1451,37 +1553,37 @@ uint8_t GifAnim(uint32_t idx) {
     #define ROOT ""
     #endif
     const Animgif animgif[] = {
-            { ROOT    "/gifs64/087_net.gif",		05, 0, 0, 10, 15, 0, 0 },  // 70
+            { ROOT    "/gifs64/087_net.gif",		05, 0, 0, 10, 15, 0, 0 }, // 70
             { ROOT    "/gifs64/196_colorstar.gif",	10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/200_circlesmoke.gif",	10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/203_waterdrop.gif",	10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/210_circletriangle.gif",	10, 0, 0, 10, 15, 0, 0 }, 
-            { ROOT    "/gifs64/215_fallingcube.gif",	15, 0, 0, 10, 15, 0, 0 },  // 75
+            { ROOT    "/gifs64/215_fallingcube.gif",	15, 0, 0, 10, 15, 0, 0 }, // 75
             { ROOT    "/gifs64/255_photon.gif",		10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/257_mesh.gif",		20, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/271_mj.gif",		15,-14,3, 15, 15, 0, 0 }, 
             { ROOT    "/gifs64/342_spincircle.gif",	20, 0, 0, 10, 15, 0, 0 },
-            { ROOT    "/gifs64/401_ghostbusters.gif",	05, 0, 0, 10, 15, 0, 0 },  // 80 
+            { ROOT    "/gifs64/401_ghostbusters.gif",	05, 0, 0, 10, 15, 0, 0 }, // 80 
             { ROOT    "/gifs64/444_hand.gif",		10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/469_infection.gif",	05, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/193_redplasma.gif",	10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/208_dancers.gif",	25, 0, 0, 10, 15, 0, 0 },
-            { ROOT    "/gifs64/284_comets.gif",		15, 0, 0, 10, 15, 0, 0 },  // 85 
+            { ROOT    "/gifs64/284_comets.gif",		15, 0, 0, 10, 15, 0, 0 }, // 85 
             { ROOT    "/gifs64/377_batman.gif",		07, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/412_cubes.gif",		20, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/236_spintriangle.gif",	20, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/226_flyingfire.gif",	10, 0, 0, 10, 15, 0, 0 },
-            { ROOT    "/gifs64/264_expandcircle.gif",	10, 0, 0, 10, 15, 0, 0 },  // 90 
+            { ROOT    "/gifs64/264_expandcircle.gif",	10, 0, 0, 10, 15, 0, 0 }, // 90 
             { ROOT    "/gifs64/281_plasma.gif",		20, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/286_greenplasma.gif",	15, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/291_circle2sphere.gif",	15, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/364_colortoroid.gif",	25, 0, 0, 10, 15, 0, 0 },
-            { ROOT    "/gifs64/470_scrollcubestron.gif",25, 0, 0, 10, 15, 0, 0 },  // 95
+            { ROOT    "/gifs64/470_scrollcubestron.gif",25, 0, 0, 10, 15, 0, 0 }, // 95
             { ROOT    "/gifs64/358_spinningpattern.gif",10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/328_spacetime.gif",	20, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/218_circleslices.gif",	10, 0, 0, 10, 15, 0, 0 }, 
             { ROOT    "/gifs64/heartTunnel.gif",	10, 0, 0, 10, 15, 0, 0 },
-            { ROOT    "/gifs64/sonic.gif",		10, 0, 0, 10, 15, 0, 0 },  // 100
+            { ROOT    "/gifs64/sonic.gif",		10, 0, 0, 10, 15, 0, 0 }, // 100
 	    // -- non animated, those scroll up/down
             { ROOT    "/gifs64/ab1_colors.gif",		10, 0, 0, 10, 10, 64, 64 },
             { ROOT    "/gifs64/ab2_lgrey.gif",		10, 0, 0, 10, 10, 64, 64 }, // AnB sign light grey
@@ -2160,7 +2262,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 79 */ { "GIF runningedgehog"	, GifAnim,  9, 0 },
 /* 80 */ { "GIF triangles_in"	, GifAnim, 10, 0 },
 /* 81 */ { "GIF wifi"		, GifAnim, 11, 0 },
-#else
+#elif mheight == 96
 /* 70 */ { "GIF net"		, GifAnim,  0, 0 },
 /* 71 */ { "GIF colorstar"	, GifAnim,  1, 0 },
 /* 72 */ { "GIF circlesmoke"	, GifAnim,  2, 0 },
@@ -2173,7 +2275,6 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 79 */ { "GIF spincircle"	, GifAnim,  9, 0 },
 /* 80 */ { "GIF ghostbusters"	, GifAnim, 10, 0 },
 /* 81 */ { "GIF hand"		, GifAnim, 11, 0 },
-#endif
 /* 82 */ { "GIF infection"	, GifAnim, 12, 0 },
 /* 83 */ { "GIF redplasma"	, GifAnim, 13, 0 },
 /* 84 */ { "GIF dancers"	, GifAnim, 14, 0 },
@@ -2220,11 +2321,153 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*125 */ { "", NULL, -1, 0 },
 /*126 */ { "", NULL, -1, 0 },
 /*127 */ { "", NULL, -1, 0 },
+#else
+ /*070 */ { "GIF abstract colorful",	 GifAnim,   0, 0 },
+ /*071 */ { "GIF Aki5PC6 Running",	 GifAnim,   1, 0 },
+ /*072 */ { "GIF dancing lady",		 GifAnim,   2, 0 },
+ /*073 */ { "GIF GirlSexyAnimateddance", GifAnim,   3, 0 },
+ /*074 */ { "GIF green aurora",		 GifAnim,   4, 0 },
+ /*075 */ { "GIF multi aurora",		 GifAnim,   5, 0 },
+ /*076 */ { "GIF city aurora",		 GifAnim,   6, 0 },
+ /*077 */ { "GIF DJ",			 GifAnim,   7, 0 },
+ /*078 */ { "GIF color string spirals",	 GifAnim,   8, 0 },
+ /*079 */ { "GIF orange shapes spinout", GifAnim,   9, 0 },
+ /*080 */ { "GIF 3rdeye spin",		 GifAnim,  10, 0 },
+ /*081 */ { "GIF 8 fish spirals",	 GifAnim,  11, 0 },
+ /*082 */ { "GIF caniche",		 GifAnim,  12, 0 },
+ /*083 */ { "GIF yingyang",		 GifAnim,  13, 0 },
+ /*084 */ { "GIF color stars flash",	 GifAnim,  14, 0 },
+ /*085 */ { "GIF dancing pink back",	 GifAnim,  15, 0 },
+ /*086 */ { "GIF triangle merge",	 GifAnim,  16, 0 },
+ /*087 */ { "GIF green hal9000",	 GifAnim,  17, 0 },
+ /*088 */ { "GIF bird dance",		 GifAnim,  18, 0 },
+ /*089 */ { "GIF concentric lights",	 GifAnim,  19, 0 },
+ /*090 */ { "GIF sonic",		 GifAnim,  20, 0 },
+ /*091 */ { "GIF spiral pentagon dance", GifAnim,  21, 0 },
+ /*092 */ { "GIF spin triangles",	 GifAnim,  22, 0 },
+ /*093 */ { "GIF double stargate",	 GifAnim,  23, 0 },
+ /*094 */ { "GIF RGB smirout",		 GifAnim,  24, 0 },
+ /*095 */ { "GIF fractal zoom",		 GifAnim,  25, 0 },
+ /*096 */ { "GIF pacmac",		 GifAnim,  26, 0 },
+ /*097 */ { "GIF purple hair spiralout", GifAnim,  27, 0 },
+ /*098 */ { "GIF flip triangles",	 GifAnim,  28, 0 },
+ /*099 */ { "GIF rgb color plates",	 GifAnim,  29, 0 },
+ /*100 */ { "GIF red round unfold",	 GifAnim,  30, 0 },
+ /*101 */ { "GIF triangrect shapes out", GifAnim,  31, 0 },
+ /*102 */ { "GIF MJ moonwalk",		 GifAnim,  32, 0 },
+ /*103 */ { "GIF ight tunnel",		 GifAnim,  33, 0 },
+ /*104 */ { "GIF heart rotate",		 GifAnim,  34, 0 },
+ /*105 */ { "GIF colorflowers spiralout",GifAnim,  35, 0 },
+ /*106 */ { "GIF green mobius rotate",	 GifAnim,  36, 0 },
+ /*107 */ { "GIF cauliflower",		 GifAnim,  37, 0 },
+ /*108 */ { "GIF triple 3D smiley",	 GifAnim,  38, 0 },
+ /*109 */ { "GIF lightman running",	 GifAnim,  39, 0 },
+ /*110 */ { "GIF green zoomout lasers",	 GifAnim,  40, 0 },
+ /*111 */ { "GIF BW spiral out",	 GifAnim,  41, 0 },
+ /*112 */ { "GIF starship shooting",	 GifAnim,  42, 0 },
+ /*113 */ { "GIF blue smoke out",	 GifAnim,  43, 0 },
+ /*114 */ { "GIF red jacket dancer",	 GifAnim,  44, 0 },
+ /*115 */ { "GIF white grey smoke",	 GifAnim,  45, 0 },
+ /*116 */ { "GIF flowers spinout",	 GifAnim,  46, 0 },
+ /*117 */ { "GIF colors pulsing in out", GifAnim,  47, 0 },
+ /*118 */ { "GIF red smoke spiral in",	 GifAnim,  48, 0 },
+ /*119 */ { "GIF grey cubes tunnel",	 GifAnim,  49, 0 },
+ /*120 */ { "GIF blue amber juggler",	 GifAnim,  50, 0 },
+ /*121 */ { "GIF flying through pipes",	 GifAnim,  51, 0 },
+ /*122 */ { "GIF blue robot heart",	 GifAnim,  52, 0 },
+ /*123 */ { "GIF 3D Mobius loop",	 GifAnim,  53, 0 },
+ /*124 */ { "GIF endless corridor",	 GifAnim,  54, 0 },
+ /*125 */ { "GIF pulp fiction",		 GifAnim,  55, 0 },
+ /*126 */ { "GIF BW zoomout gears",	 GifAnim,  56, 0 },
+ /*127 */ { "GIF RGB toroid",		 GifAnim,  57, 0 },
+ /*128 */ { "GIF mushroom spots",	 GifAnim,  58, 0 },
+ /*129 */ { "GIF you rock",		 GifAnim,  59, 0 },
+ /*130 */ { "GIF morphing 3D shape",	 GifAnim,  60, 0 },
+ /*131 */ { "GIF flower petals",	 GifAnim,  61, 0 },
+ /*132 */ { "GIF eatme",		 GifAnim,  62, 0 },
+ /*133 */ { "GIF sparkling spiralin",	 GifAnim,  63, 0 },
+ /*134 */ { "GIF spingout RGB",		 GifAnim,  64, 0 },
+ /*135 */ { "GIF green cube mobius",	 GifAnim,  65, 0 },
+ /*136 */ { "GIF 3D green wheel ridge",	 GifAnim,  66, 0 },
+ /*137 */ { "GIF colorspiral zoomout",	 GifAnim,  67, 0 },
+ /*138 */ { "GIF spinning dancer",	 GifAnim,  68, 0 },
+ /*139 */ { "GIF color projectors",	 GifAnim,  69, 0 },
+ /*140 */ { "GIF sailormoon highdance",	 GifAnim,  70, 0 },
+ /*141 */ { "GIF smiling dancing girl",	 GifAnim,  71, 0 },
+ /*142 */ { "GIF coiling fern",		 GifAnim,  72, 0 },
+ /*143 */ { "GIF yellow lighthouse",	 GifAnim,  73, 0 },
+ /*144 */ { "GIF color pyramids",	 GifAnim,  74, 0 },
+ /*145 */ { "GIF tunnel spark dancer",	 GifAnim,  75, 0 },
+ /*146 */ { "GIF MJ moonwalk spin",	 GifAnim,  76, 0 },
+ /*147 */ { "GIF hyperspace",		 GifAnim,  77, 0 },
+ /*148 */ { "GIF conifer zoom in",	 GifAnim,  78, 0 },
+ /*149 */ { "GIF 3D hypercube RGB",	 GifAnim,  79, 0 },
+ /*150 */ { "GIF grapefuit zoomin",	 GifAnim,  80, 0 },
+ /*151 */ { "GIF pink flaming circle",	 GifAnim,  81, 0 },
+ /*152 */ { "GIF center moving spiral",	 GifAnim,  82, 0 },
+ /*153 */ { "GIF hypnotoad",		 GifAnim,  83, 0 },
+ /*154 */ { "GIF pizza zoomin",		 GifAnim,  84, 0 },
+ /*155 */ { "GIF RGB spiralin",		 GifAnim,  85, 0 },
+ /*156 */ { "GIF bluebee zoomin",	 GifAnim,  86, 0 },
+ /*157 */ { "GIF green neutron star",	 GifAnim,  87, 0 },
+ /*158 */ { "GIF clock in",		 GifAnim,  88, 0 },
+ /*159 */ { "GIF piano zoomin",		 GifAnim,  89, 0 },
+ /*160 */ { "GIF puzzle spiralout",	 GifAnim,  90, 0 },
+ /*161 */ { "GIF shiny snail shell",	 GifAnim,  91, 0 },
+ /*162 */ { "GIF hypercube",		 GifAnim,  92, 0 },
+ /*163 */ { "GIF color dots spiralin",	 GifAnim,  93, 0 },
+ /*164 */ { "GIF 3D fractal roll",	 GifAnim,  94, 0 },
+ /*165 */ { "GIF Kaleidoscope spiral",	 GifAnim,  95, 0 },
+ /*166 */ { "GIF acid cat",		 GifAnim,  96, 0 },
+ /*167 */ { "GIF purple geometrical",	 GifAnim,  97, 0 },
+ /*168 */ { "GIF fly buildings",	 GifAnim,  98, 0 },
+ /*169 */ { "GIF pulsing color rects",	 GifAnim,  99, 0 },
+ /*170 */ { "GIF white geometric out",	 GifAnim, 100, 0 },
+ /*171 */ { "GIF color marble",		 GifAnim, 101, 0 },
+ /*172 */ { "GIF passionfruit zoomout",	 GifAnim, 102, 0 },
+ /*173 */ { "GIF I am drugs",		 GifAnim, 103, 0 },
+ /*174 */ { "GIF smileys spinout",	 GifAnim, 104, 0 },
+ /*175 */ { "GIF flyin cavern",		 GifAnim, 105, 0 },
+ /*176 */ { "GIF mario mushroom dance",	 GifAnim, 106, 0 },
+ /*177 */ { "GIF baby pig fall",	 GifAnim, 107, 0 },
+ /*178 */ { "GIF color shapes out",	 GifAnim, 108, 0 },
+ /*179 */ { "GIF blue cubes flyin",	 GifAnim, 109, 0 },
+ /*180 */ { "GIF triangles RGB out",	 GifAnim, 110, 0 },
+ /*181 */ { "GIF rubiks cube",		 GifAnim, 111, 0 },
+ /*182 */ { "GIF fractal2 zoom",	 GifAnim, 112, 0 },
+ /*183 */ { "GIF color sticks",		 GifAnim, 113, 0 },
+ /*184 */ { "GIF mushroom walk",	 GifAnim, 114, 0 },
+ /*185 */ { "GIF BW bubbles",		 GifAnim, 115, 0 },
+ /*186 */ { "GIF red smoke",		 GifAnim, 116, 0 },
+ /*187 */ { "GIF flying grass",		 GifAnim, 117, 0 },
+ /*188 */ { "GIF blue gecko dance",	 GifAnim, 118, 0 },
+ /*189 */ { "GIF dancing flames",	 GifAnim, 119, 0 },
+ /*190 */ { "GIF skeleton",		 GifAnim, 120, 0 },
+ /*191 */ { "GIF fly purple gates",	 GifAnim, 121, 0 },
+ /*192 */ { "GIF bluelady smoke",	 GifAnim, 122, 0 },
+ /*193 */ { "GIF sailor moon",		 GifAnim, 123, 0 },
+ /*194 */ { "GIF inca spiralin",	 GifAnim, 124, 0 },
+ /*195 */ { "GIF eye",			 GifAnim, 125, 0 },
+ /*196 */ { "GIF blue shark dance",	 GifAnim, 126, 0 },
+ /*197 */ { "GIF blue dancer",		 GifAnim, 127, 0 },
+ /*198 */ { "GIF snoopdog dance",	 GifAnim, 128, 0 },
+ /*199 */ { "GIF walking dead",		 GifAnim, 129, 0 },
+ /*200 */ { "GIF street fighter",	 GifAnim, 130, 0 },
+ /*201 */ { "", NULL, -1, 0 },
+ /*202 */ { "", NULL, -1, 0 },
+ /*203 */ { "", NULL, -1, 0 },
+ /*204 */ { "", NULL, -1, 0 },
+ /*205 */ { "", NULL, -1, 0 },
+ /*206 */ { "", NULL, -1, 0 },
+ /*207 */ { "", NULL, -1, 0 },
+ /*208 */ { "", NULL, -1, 0 },
+ /*209 */ { "", NULL, -1, 0 },
+ /*210 */ { "", NULL, -1, 0 },
+#endif
 };
 
 // text demos are manually added to the array in setup()
-
-
+          
 void matrix_change(int16_t demo, bool directmap=false) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
