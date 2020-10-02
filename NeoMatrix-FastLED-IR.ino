@@ -426,6 +426,7 @@ uint8_t tfsf(uint32_t unused) {
             matrix->setFont( &Century_Schoolbook_L_Bold[size] );
             matrix->setRotation(0);
             matrix->setTextSize(1);
+	    if (mheight >= 192) matrix->setTextSize(2);
         }
 
         if (! didclear) {
@@ -572,6 +573,7 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
         l = 0;
         if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; faster = 0; };
         matrix->setTextSize(1);
+	if (mheight >= 192) matrix->setTextSize(2);
     }
 
     if (--delayframe) {
@@ -593,10 +595,10 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
         matrix->setFont( &Century_Schoolbook_L_Bold[size] );
         if (mw >= 48 && mh >=64) {
             matrix->setPassThruColor(0xD7E1EB);
-            matrix->setCursor(10-size*0.55+offset, 36+size*0.75);
+	    matrix->setCursor(20-size+offset, (mh>=128?64:36)+size*1.5);
             matrix->print("TF");
             matrix->setPassThruColor(0x05C1FF);
-            matrix->setCursor(24-size*0.55+offset, 68+size*0.75);
+            matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:68)+size*1.5);
             matrix->print("SF");
         } else {
             if (letters[l] == 'T') offset = -2 * size/15;
@@ -625,10 +627,10 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
         matrix->setFont( &Century_Schoolbook_L_Bold[size] );
         if (mw >= 48 && mh >=64) {
             matrix->setPassThruColor(0xD7E1EB);
-            matrix->setCursor(10-size*0.55+offset, 36+size*0.75);
+            matrix->setCursor(20-size+offset, (mh>=128?64:36)+size*1.5);
             matrix->print("TF");
             matrix->setPassThruColor(0x05C1FF);
-            matrix->setCursor(24-size*0.55+offset, 68+size*0.75);
+            matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:68)+size*1.5);
             matrix->print("SF");
         } else {
             if (letters[l] == 'T') offset = -2 * size/15;
@@ -668,7 +670,7 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
     return repeat;
 }
 
-uint8_t esrbr(uint32_t unused) { // or burn baby burn
+uint8_t esrbr(uint32_t unused) { // or eat sleep burn repeat
     static uint16_t state;
     static float spd;
     float spdincr = 0.6;
@@ -689,7 +691,9 @@ uint8_t esrbr(uint32_t unused) { // or burn baby burn
 
     matrix->setRotation(0);
     matrix->setTextSize(1);
-    if (mheight >= 64)  {
+    if (mheight >= 192)  {
+        matrix->setFont(&Century_Schoolbook_L_Bold_26);
+    } else if (mheight >= 64)  {
         //matrix->setFont(FreeMonoBold9pt7b);
         matrix->setFont(&Century_Schoolbook_L_Bold_12);
     } else {
@@ -698,7 +702,8 @@ uint8_t esrbr(uint32_t unused) { // or burn baby burn
     matrix->clear();
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 96) matrix->setCursor(18, 20);
+        if (mheight >= 192) matrix->setCursor(30, 48);
+        else if (mheight >= 96) matrix->setCursor(18, 20);
         else if (mheight >= 64) matrix->setCursor(18, 15);
         else matrix->setCursor(7, 6);
 
@@ -708,7 +713,8 @@ uint8_t esrbr(uint32_t unused) { // or burn baby burn
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 96) matrix->setCursor(10, 41);
+        if (mheight >= 192) matrix->setCursor(18, 84);
+        else if (mheight >= 96) matrix->setCursor(10, 41);
         else if (mheight >= 64) matrix->setCursor(10, 33);
         else matrix->setCursor(3, 14);
 
@@ -718,7 +724,8 @@ uint8_t esrbr(uint32_t unused) { // or burn baby burn
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 96) matrix->setCursor(14, 63);
+        if (mheight >= 192) matrix->setCursor(22, 120);
+        else if (mheight >= 96) matrix->setCursor(14, 63);
         else if (mheight >= 64) matrix->setCursor(14, 47);
         else matrix->setCursor(5, 22);
 
@@ -729,7 +736,8 @@ uint8_t esrbr(uint32_t unused) { // or burn baby burn
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-        if (mheight >= 96) matrix->setCursor(2, 82);
+        if (mheight >= 192) matrix->setCursor(2, 160);
+        else if (mheight >= 96) matrix->setCursor(2, 82);
         else if (mheight >= 64) matrix->setCursor(2, 63);
         else matrix->setCursor(0, 30);
 
@@ -907,8 +915,10 @@ uint8_t esrbr_fade(uint32_t unused) {
 
     if (state == 1) {
         //wheel+=20;
-        if (mheight >= 64) {
-                //matrix->setFont(FreeMonoBold9pt7b);
+	if (mheight >= 192)  {
+	    matrix->setFont(&Century_Schoolbook_L_Bold_26);
+	} else if (mheight >= 64)  {
+	    //matrix->setFont(FreeMonoBold9pt7b);
             matrix->setFont(&Century_Schoolbook_L_Bold_12);
         } else {
             matrix->setFont(&TomThumb);
@@ -917,19 +927,22 @@ uint8_t esrbr_fade(uint32_t unused) {
         matrix->setTextSize(1);
         matrix->clear();
 
-        if (mheight >= 96) matrix->setCursor(18, 20);
+        if (mheight >= 192) matrix->setCursor(30, 48);
+        else if (mheight >= 96) matrix->setCursor(18, 20);
         else if (mheight >= 64) matrix->setCursor(18, 15);
         else matrix->setCursor(7, 6);
         matrix->setPassThruColor(Wheel(((wheel+=24))));
         matrix->print("EAT");
 
-        if (mheight >= 96) matrix->setCursor(10, 41);
+        if (mheight >= 192) matrix->setCursor(18, 84);
+        else if (mheight >= 96) matrix->setCursor(10, 41);
         else if (mheight >= 64) matrix->setCursor(10, 33);
         else matrix->setCursor(3, 14);
         matrix->setPassThruColor(Wheel(((wheel+=24))));
         matrix->print("SLEEP");
 
-        if (mheight >= 96) matrix->setCursor(14, 63);
+        if (mheight >= 192) matrix->setCursor(22, 120);
+        else if (mheight >= 96) matrix->setCursor(14, 63);
         else if (mheight >= 64) matrix->setCursor(14, 47);
         else matrix->setCursor(5, 22);
         matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -939,7 +952,8 @@ uint8_t esrbr_fade(uint32_t unused) {
             matrix->print("RAVE");
         }
 
-        if (mheight >= 96) matrix->setCursor(2, 82);
+        if (mheight >= 192) matrix->setCursor(2, 160);
+        else if (mheight >= 96) matrix->setCursor(2, 82);
         else if (mheight == 64) matrix->setCursor(2, 63);
         else matrix->setCursor(0, 30);
         matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -1433,20 +1447,20 @@ uint8_t GifAnim(uint32_t idx) {
             { ROOT  "z_2vCo_triangle_merge.gif",	10, 0, 0,  7, 10, 0, 0 }, 
             { ROOT  "z_2zFo_green_hal9000.gif",		10,-32,0, 10, 10, 0, 0 }, 
             { ROOT  "z_37Ec_bird_dance.gif",		10, 0, 0,  8, 10, 0, 0 }, 
-            { ROOT  "z_3bUj_concentric_lights.gif",	10,-32,0, 10, 10, 0, 0 },        
+            { ROOT  "z_3bUjj_concentric_lights.gif",	10,-32,0, 10, 10, 0, 0 },        
             { ROOT  "z_3F3F_sonic.gif",			10, 0, 0,  7, 10, 0, 0 }, // 90 
             { ROOT  "z_3Mel_spiral_pentagon_dance.gif",	10,-32,0, 10, 10, 0, 0 }, 
             { ROOT  "z_3Ppu_spin_triangles.gif",	10, 0, 0, 10, 10, 0, 0 }, 
             { ROOT  "z_3Qqj_double_stargate.gif",	10,-20,-16,9, 12, 0, 0 }, 
             { ROOT  "z_3Wfu_RGB_smirout.gif",		10,-32,0, 10, 10, 0, 0 },        
             { ROOT  "z_3wQM_fractal_zoom.gif",		10,-24,0,  8, 10, 0, 0 }, // 95
-            { ROOT  "z_3zO_pacman.gif",			10,-12,0,  8, 10, 0, 0 }, 
+            { ROOT  "z_3zO_pacman.gif",			40,-12,0,  8, 10, 0, 0 }, 
             { ROOT  "z_47Vg_purple_hair_spiralout.gif",	10,-32,0, 10, 10, 0, 0 }, 
             { ROOT  "z_4P4a_flip_triangles.gif",	10,-20,0,  8, 10, 0, 0 }, 
             { ROOT  "z_4RNd_rgb_color_plates.gif",	10,-24,0, 10, 10, 0, 0 },        
             { ROOT  "z_4RNj_red_round_unfold.gif",	10,-12,0,  8, 10, 0, 0 }, // 100
             { ROOT  "z_4RNm_triangrect_shapes_out.gif",	10,-32,0, 10, 10, 0, 0 },
-            { ROOT  "z_5PmD_MJ_moonwalk.gif",		10,12, 0, 10, 10, 0, 0 },
+            { ROOT  "z_5PmD_MJ_moonwalk.gif",		40, 2, 0, 12, 10, 0, 0 },
             { ROOT  "z_5x_light_tunnel.gif",		10, 0, 0,  7, 10, 0, 0 },
             { ROOT  "z_6nr_heart_rotate.gif",		10, 0, 0,  6, 10, 0, 0 },
             { ROOT  "z_6PLP_colorflowers_spiralout.gif",10,-32,0, 10, 10, 0, 0 }, // 105
