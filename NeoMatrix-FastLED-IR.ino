@@ -658,7 +658,7 @@ uint8_t esrbr(uint32_t unused) { // or eat sleep burn repeat
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
         if (mheight >= 192) matrix->setCursor(30, 48);
-        else if (mheight >= 96) matrix->setCursor(18, 20);
+        else if (mheight >= 96) matrix->setCursor(24, 20);
         else if (mheight >= 64) matrix->setCursor(18, 15);
         else matrix->setCursor(7, 6);
 
@@ -883,7 +883,7 @@ uint8_t esrbr_fade(uint32_t unused) {
         matrix->clear();
 
         if (mheight >= 192) matrix->setCursor(30, 48);
-        else if (mheight >= 96) matrix->setCursor(18, 20);
+        else if (mheight >= 96) matrix->setCursor(24, 20);
         else if (mheight >= 64) matrix->setCursor(18, 15);
         else matrix->setCursor(7, 6);
         matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -1044,14 +1044,16 @@ uint8_t webwc(uint32_t unused) {
         spd = 1.0;
         didclear = 0;
         firstpass = 0;
-        if (mw >= 64) {
-            //matrix->setFont(FreeMonoBold9pt7b);
-            matrix->setFont(&Century_Schoolbook_L_Bold_12);
-        } else {
-            matrix->setFont(&TomThumb);
-        }
         matrix->setRotation(0);
         matrix->setTextSize(1);
+	if (mheight >= 192)  {
+	    matrix->setFont(&Century_Schoolbook_L_Bold_26);
+	} else if (mheight >= 64)  {
+	    //matrix->setFont(FreeMonoBold9pt7b);
+	    matrix->setFont(&Century_Schoolbook_L_Bold_12);
+	} else {
+	    matrix->setFont(&TomThumb);
+	}
     }
 
     if (! didclear) {
@@ -1060,7 +1062,8 @@ uint8_t webwc(uint32_t unused) {
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 96) matrix->setCursor(12, 16);
+        if (mheight >= 192) matrix->setCursor(22, 25);
+        else if (mheight >= 96) matrix->setCursor(12, 16);
         else if (mheight >= 64) matrix->setCursor(12, 12);
         else matrix->setCursor(5, 6);
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
@@ -1070,7 +1073,8 @@ uint8_t webwc(uint32_t unused) {
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
         firstpass = 1;
-        if (mheight >= 96) matrix->setCursor(7, 32);
+        if (mheight >= 192) matrix->setCursor(14, 65);
+        else if (mheight >= 96) matrix->setCursor(7, 32);
         else if (mheight >= 64) matrix->setCursor(7, 24);
         else matrix->setCursor(3, 12);
         // going from 24 to 16 with gamma correction and back to 24 damages the wheel colors enough to make them not usable
@@ -1083,7 +1087,8 @@ uint8_t webwc(uint32_t unused) {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 96) matrix->setCursor(12, 48);
+        if (mheight >= 192) matrix->setCursor(22, 105);
+        else if (mheight >= 96) matrix->setCursor(12, 48);
         else if (mheight >= 64) matrix->setCursor(12, 36);
         else matrix->setCursor(5, 18);
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
@@ -1092,7 +1097,8 @@ uint8_t webwc(uint32_t unused) {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 96) matrix->setCursor(4, 64);
+        if (mheight >= 192) matrix->setCursor(2, 145);
+        else if (mheight >= 96) matrix->setCursor(4, 64);
         else if (mheight >= 64) matrix->setCursor(4, 48);
         else matrix->setCursor(2, 24);
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
@@ -1101,7 +1107,8 @@ uint8_t webwc(uint32_t unused) {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-        if (mheight >= 96) matrix->setCursor(0, 82);
+        if (mheight >= 192) matrix->setCursor(2, 185);
+        else if (mheight >= 96) matrix->setCursor(0, 82);
         else if (mheight >= 64) matrix->setCursor(0, 60);
         else matrix->setCursor(0, 30);
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
@@ -2496,6 +2503,14 @@ void matrix_change(int16_t demo, bool directmap=false) {
     Serial.print(demo_list[matrix_demo].name);
     Serial.print(") loop ");
     Serial.println(matrix_loop);
+    #ifndef ARDUINOONPC
+        Serial.flush();
+        Serial.print("|D:");
+        char buf[4];
+        sprintf(buf, "%3d", matrix_state);
+        Serial.println(buf);
+        Serial.flush();
+    #endif
 }
 
            
@@ -3534,7 +3549,7 @@ void read_config_index() {
             Serial.print(index++);
             Serial.print(" is mapped to an undefined demo ");
             Serial.println(dmap);
-            delay((uint32_t) 1000);
+            delay((uint32_t) 100);
             continue;
         }
 	#ifdef ESP32
