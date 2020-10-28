@@ -86,6 +86,88 @@ String displaytext="";
 // Compute how many GIFs have been defined (called in setup)
 uint8_t gif_cnt = 0;
 
+// look for 'magic happens here' below
+#ifdef ARDUINOONPC
+    #include <errno.h>
+    #include <fcntl.h> 
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <termios.h>
+    #include <unistd.h>
+    #include <sys/stat.h>
+
+
+    int set_interface_attribs(int ttyfd, int speed)
+    {
+	struct termios tty;
+
+	if (tcgetattr(ttyfd, &tty) < 0) {
+	    printf("Error from tcgetattr: %s\n", strerror(errno));
+	    return -1;
+	}
+
+	cfsetospeed(&tty, (speed_t)speed);
+	cfsetispeed(&tty, (speed_t)speed);
+
+	tty.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls */
+	tty.c_cflag &= ~CSIZE;
+	tty.c_cflag |= CS8;         /* 8-bit characters */
+	tty.c_cflag &= ~PARENB;     /* no parity bit */
+	tty.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
+	tty.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
+
+	/* setup for non-canonical mode */
+	tty.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+	tty.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+	tty.c_oflag &= ~OPOST;
+
+	/* fetch bytes as they become available */
+	// https://blog.mbedded.ninja/programming/operating-systems/linux/linux-serial-ports-using-c-cpp/
+	// Non blocking
+	tty.c_cc[VMIN] = 0;
+	tty.c_cc[VTIME] = 0;
+
+	if (tcsetattr(ttyfd, TCSANOW, &tty) != 0) {
+	    printf("Error from tcsetattr: %s\n", strerror(errno));
+	    return -1;
+	}
+	return 0;
+    }
+
+    int openttyUSB(const char ** devname) {
+	// static because the name is sent back to the caller
+	static const char *dev[] = { "/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2" };
+	int devidx = 0;
+	int ttyfd;
+
+	while (devidx<3 && (ttyfd = open((*devname = dev[devidx]), O_RDWR | O_NOCTTY | O_SYNC)) < 0 && ++devidx) {
+	    //printf("Error opening %s: %s\n", *devname, strerror(errno));
+	}
+	/*baudrate 115200, 8 bits, no parity, 1 stop bit */
+	if (ttyfd >= 0) {
+	    set_interface_attribs(ttyfd, B115200);
+	    printf("Opened %s\n", *devname);
+	}
+	return ttyfd;
+    }
+
+    int send_serial(int ttyfd, const char *xstr) {
+	int wlen;
+	int xlen = strlen(xstr);
+
+	wlen = write(ttyfd, xstr, xlen);
+	// tcdrain(ttyfd);
+	if (wlen != xlen) {
+	    printf("Error from write: %d, %d\n", wlen, errno);
+	    return -1;
+	}
+	printf(">>>>>>>>>>>>>>>>>>> n\n");
+	return 0;
+    }
+#endif // ARDUINOONPC
+
+
 const uint16_t PROGMEM RGB_bmp[64] = {
       // 10: multicolor smiley face
         0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, 
@@ -2602,6 +2684,9 @@ void change_brightness(int8_t change, bool absolute=false) {
     Serial.print(smartmatrix_brightness);
     Serial.print(" / neomatrix value: ");
     Serial.println(matrix_brightness);
+    Serial.print("|B:");
+    Serial.println(brightness);
+    Serial.flush();
 #ifdef SMARTMATRIX
     matrixLayer.setBrightness(smartmatrix_brightness);
 #else
@@ -2630,6 +2715,11 @@ void change_speed(int8_t change, bool absolute=false) {
         strip_speed = constrain(strip_speed + change, 1, 100);
     }
     Serial.println(strip_speed);
+    Serial.print("|S:");
+    char buf[4];
+    sprintf(buf, "%3d", strip_speed);
+    Serial.println(buf);
+    Serial.flush();
 }
 
 bool is_change(bool force=false) {
@@ -3597,6 +3687,74 @@ void loop() {
         gHue++;  // slowly cycle the "base color" through the rainbow
     }
     delay((uint32_t) 1);
+
+    // Do not put loop code after the code block below as it can return in the middle.
+
+    // Ok, magic happens here. This code supports running on 2 devices at the same time
+    // Device #1 is ESP32 or teensy or similar, and handles the IR and the neopixels
+    // Dev1 receives commands via IR and its web server.
+    // Dev1 in turn outputs some special codes on serial like '|D: 76' to say 'demo 76'
+    // Dev2 is a rPi which has every single output pin used to drive 3 panels in parallel.
+    // It however can receive serial via its USB ports (FTDI). It reads those '|D: 76' 
+    // commands and uses them to generate the output in sync with what dev#1 did.
+    // Why all this madness? Because an rPi can run 3 to 12 times more RGBPanel pixels than
+    // an ESP32 or teensy with SmartMatrix.
+    #ifdef ARDUINOONPC
+	static int ttyfd = -1;
+	static const char *serialdev = NULL;
+	static char buf[1024];
+	static char *ptr = buf;
+        char s;
+        int rdlen;
+	struct stat stbuf;
+
+	if (ttyfd > -1 && stat(serialdev, &stbuf)) { 
+	    printf("ttyfd closed %d, (%s)\n", ttyfd, serialdev);
+	    close(ttyfd); 
+	    ttyfd = -1; 
+	    serialdev = NULL;
+	}
+	EVERY_N_SECONDS(5) { 
+	    EVERY_N_SECONDS(30) { 
+		if (serialdev && (ttyfd < 0)) printf("Serial closed, (re-)opening\n");
+	    }
+	    if (ttyfd < 0) ttyfd = openttyUSB(&serialdev);
+	}
+	if (ttyfd < 0) return;
+		
+	// Read up to 40 characters in the buffer and then continue the loop
+	// this should cause a loop hang of up to 7ms at 115200bps.
+	uint8_t readcnt = 80;
+	while (readcnt-- && (rdlen = read(ttyfd, &s, 1)) > 0) {
+	    ptr[0] = s;
+	    ptr[1] = 0;
+	    ptr++;
+	    if (s == '\n' ) {
+		printf("ESP> %s", buf);
+		ptr = buf;
+		char numbuf[4];
+		if (! strncmp(buf, "|D:", 3)) {
+		    int num;
+		    strncpy(numbuf, buf+3, 3);
+		    numbuf[3] = 0;
+		    num = atoi(numbuf);
+		    printf("Got demo %d\n", num);
+		    matrix_change(num);
+		}
+		if (! strncmp(buf, "|B:", 3)) {
+		    int num;
+		    strncpy(numbuf, buf+3, 1);
+		    numbuf[1] = 0;
+		    num = atoi(numbuf);
+		    printf("Got brightness %d\n", num);
+		    change_brightness(num, true);
+		}
+	    }
+        }
+	if (rdlen < 0) {
+	    printf("Error from read: %d: %s\n", rdlen, strerror(errno));
+	}
+    #endif
 }
 
 
