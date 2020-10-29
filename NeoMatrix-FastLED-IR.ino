@@ -142,7 +142,9 @@ uint8_t gif_cnt = 0;
 	int ttyfd;
 
 	while (devidx<3 && (ttyfd = open((*devname = dev[devidx]), O_RDWR | O_NOCTTY | O_SYNC)) < 0 && ++devidx) {
-	    //printf("Error opening %s: %s\n", *devname, strerror(errno));
+	    struct stat stbuf;
+	    // warn for permission denied but not for no such file or directory
+	    if (!stat(*devname, &stbuf)) printf("Error opening %s: %s\n", *devname, strerror(errno));
 	}
 	/*baudrate 115200, 8 bits, no parity, 1 stop bit */
 	if (ttyfd >= 0) {
