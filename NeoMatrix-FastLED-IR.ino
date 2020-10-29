@@ -154,7 +154,9 @@ uint8_t gif_cnt = 0;
 	return ttyfd;
     }
 
-    int send_serial(int ttyfd, const char *xstr) {
+
+    int ttyfd = -1;
+    int send_serial(const char *xstr) {
 	int wlen;
 	int xlen = strlen(xstr);
 
@@ -2814,6 +2816,10 @@ void IR_Serial_Handler() {
     else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU);}
     else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
+#ifdef ARDUINOONPC
+    else if (readchar == '<') { Serial.println("ESP => dim"   ); send_serial("-");}
+    else if (readchar == '>') { Serial.println("ESP => bright"); send_serial("+");}
+#endif
 
     // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
     // compiling the IR code that won't build.
@@ -3702,7 +3708,6 @@ void loop() {
     // Why all this madness? Because an rPi can run 3 to 12 times more RGBPanel pixels than
     // an ESP32 or teensy with SmartMatrix.
     #ifdef ARDUINOONPC
-	static int ttyfd = -1;
 	static const char *serialdev = NULL;
 	static char buf[1024];
 	static char *ptr = buf;
