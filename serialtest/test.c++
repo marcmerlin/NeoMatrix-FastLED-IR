@@ -45,9 +45,9 @@ int set_interface_attribs(int ttyfd, int speed)
     return 0;
 }
 
-int openttyUSB(char **serialdev) {
+int openttyUSB(const char **serialdev) {
     // static because the name is sent back to the caller
-    static char *dev[] = { "/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2" };
+    static const char *dev[] = { "/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2" };
     int devidx = 0;
     int ttyfd;
 
@@ -62,7 +62,7 @@ int openttyUSB(char **serialdev) {
     return ttyfd;
 }
 
-int send_serial(int ttyfd, char *xstr) {
+int send_serial(int ttyfd, const char *xstr) {
     int wlen;
     int xlen = strlen(xstr);
 
@@ -79,7 +79,7 @@ int send_serial(int ttyfd, char *xstr) {
 int main()
 {
     static int ttyfd = -1;
-    static char *serialdev = NULL;
+    static const char *serialdev = NULL;
     static int counter = 0;
 
     do {
