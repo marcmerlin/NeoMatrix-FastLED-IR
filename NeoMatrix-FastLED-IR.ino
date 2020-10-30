@@ -154,7 +154,6 @@ uint8_t gif_cnt = 0;
 	return ttyfd;
     }
 
-
     int ttyfd = -1;
     int send_serial(const char *xstr) {
 	int wlen;
@@ -166,7 +165,7 @@ uint8_t gif_cnt = 0;
 	    printf("Error from write: %d, %d\n", wlen, errno);
 	    return -1;
 	}
-	printf(">>>>>>>>>>>>>>>>>>> n\n");
+	printf(">>>ESP: %s\n", xstr);
 	return 0;
     }
 #endif // ARDUINOONPC
@@ -2690,7 +2689,9 @@ void change_brightness(int8_t change, bool absolute=false) {
     Serial.println(matrix_brightness);
     Serial.print("|B:");
     Serial.println(brightness);
+#ifndef ARDUINOONPC
     Serial.flush();
+#endif
 #ifdef SMARTMATRIX
     matrixLayer.setBrightness(smartmatrix_brightness);
 #else
@@ -2723,7 +2724,9 @@ void change_speed(int8_t change, bool absolute=false) {
     char buf[4];
     sprintf(buf, "%3d", strip_speed);
     Serial.println(buf);
+#ifndef ARDUINOONPC
     Serial.flush();
+#endif
 }
 
 bool is_change(bool force=false) {
@@ -2792,6 +2795,7 @@ bool check_startup_IR_serial() {
 void IR_Serial_Handler() {
     int16_t new_pattern = 0;
     char readchar;
+    static bool remotesend = false;
 
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
     if (readchar) {
@@ -2804,21 +2808,32 @@ void IR_Serial_Handler() {
         if (new_pattern) {
             Serial.print("Got new pattern via serial ");
             Serial.println(new_pattern);
-            matrix_change(new_pattern);
+	    if (remotesend) {
+		char numstr[4];
+		snprintf( numstr, 3, "%d", new_pattern );
+		send_serial(numstr);
+		remotesend = false;
+	    } else {
+		matrix_change(new_pattern);
+	    }
         } else {
             Serial.print("Got serial char ");
             Serial.println(readchar);
+	    remotesend = false;
         }
     }
 
     if (readchar == 'n')      { Serial.println("Serial => next"); matrix_change(DEMO_NEXT);}
     else if (readchar == 'p') { Serial.println("Serial => previous"); matrix_change(DEMO_PREV);}
+    else if (readchar == 'N') { Serial.println("Serial => next");     send_serial("n");}
+    else if (readchar == 'P') { Serial.println("Serial => previous"); send_serial("p");}
     else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU);}
     else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
 #ifdef ARDUINOONPC
     else if (readchar == '<') { Serial.println("ESP => dim"   ); send_serial("-");}
     else if (readchar == '>') { Serial.println("ESP => bright"); send_serial("+");}
+    else if (readchar == 'R') { Serial.println("ESP => send next number"); remotesend = true;}
 #endif
 
     // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
