@@ -2671,7 +2671,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
         } else {
             do {
                 if (demo==DEMO_PREV) if (matrix_state-- == 0) matrix_state = demo_last_idx;
-                if (demo==DEMO_NEXT) if (++matrix_state == demo_last_idx) matrix_state = 0;
+                if (demo==DEMO_NEXT) if (++matrix_state > demo_last_idx) matrix_state = 0;
 
                 matrix_state = (matrix_state % (demo_last_idx+1));
                 Serial.print(matrix_state);
@@ -2934,6 +2934,8 @@ void IR_Serial_Handler() {
     else if (readchar == 'p') { Serial.println("Serial => previous"); matrix_change(DEMO_PREV);}
     else if (readchar == 'N') { Serial.println("Serial => next");     send_serial("n");}
     else if (readchar == 'P') { Serial.println("Serial => previous"); send_serial("p");}
+    else if (readchar == 'B') { Serial.println("Serial => Bestof"); show_best_demos = true;}
+    else if (readchar == 'b') { Serial.println("Serial => All Demos"); show_best_demos = false;}
     else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU);}
     else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
@@ -3862,6 +3864,10 @@ void loop() {
 		printf("ESP> %s", buf);
 		ptr = buf;
 		char numbuf[4];
+		// If we are getting serial pings, run the current demo for 
+		// a long time, because we expect the ESP to send us 'next'
+		if (! strncmp(buf, "FrameBuffer::GFX", 16)) matrix_loop = 20;
+		if (! strncmp(buf, "Done with demo", 14)) matrix_loop = 20;
 		if (! strncmp(buf, "|D:", 3)) {
 		    int num;
 		    strncpy(numbuf, buf+3, 3);
