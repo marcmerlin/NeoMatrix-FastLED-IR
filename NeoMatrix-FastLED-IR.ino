@@ -112,7 +112,7 @@ uint8_t gif_cnt = 0;
 
 	tty.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls */
 	tty.c_cflag &= ~CSIZE;
-	tty.c_cflag |= CS8;         /* 8-bit characters */
+	tty.c_cflag |= CS8;	 /* 8-bit characters */
 	tty.c_cflag &= ~PARENB;     /* no parity bit */
 	tty.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
 	tty.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
@@ -173,31 +173,31 @@ uint8_t gif_cnt = 0;
 
 const uint16_t PROGMEM RGB_bmp[64] = {
       // 10: multicolor smiley face
-        0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000,
-        0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000,
-        0x00F, 0x000, 0xF00, 0x000, 0x000, 0xF00, 0x000, 0x00F,
-        0x00F, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x00F,
-        0x00F, 0x000, 0x0F0, 0x000, 0x000, 0x0F0, 0x000, 0x00F,
-        0x00F, 0x000, 0x000, 0x0F4, 0x0F3, 0x000, 0x000, 0x00F,
-        0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000,
-        0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, };
+	0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000,
+	0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000,
+	0x00F, 0x000, 0xF00, 0x000, 0x000, 0xF00, 0x000, 0x00F,
+	0x00F, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x00F,
+	0x00F, 0x000, 0x0F0, 0x000, 0x000, 0x0F0, 0x000, 0x00F,
+	0x00F, 0x000, 0x000, 0x0F4, 0x0F3, 0x000, 0x000, 0x00F,
+	0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000,
+	0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, };
 
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
     // work around "a15 cannot be used in asm here" compiler bug when using an array on ESP8266
     static uint16_t *RGB_bmp_fixed = (uint16_t *) mallocordie("RGB_bmp_fixed", w*h*2, false);
     for (uint16_t pixel=0; pixel<w*h; pixel++) {
-        uint8_t r,g,b;
-        uint16_t color = pgm_read_word(bitmap + pixel);
+	uint8_t r,g,b;
+	uint16_t color = pgm_read_word(bitmap + pixel);
 
-        b = (color & 0xF00) >> 8;
-        g = (color & 0x0F0) >> 4;
-        r = color & 0x00F;
-        // expand from 4/4/4 bits per color to 5/6/5
-        b = map(b, 0, 15, 0, 31);
-        g = map(g, 0, 15, 0, 63);
-        r = map(r, 0, 15, 0, 31);
-        RGB_bmp_fixed[pixel] = (r << 11) + (g << 5) + b;
+	b = (color & 0xF00) >> 8;
+	g = (color & 0x0F0) >> 4;
+	r = color & 0x00F;
+	// expand from 4/4/4 bits per color to 5/6/5
+	b = map(b, 0, 15, 0, 31);
+	g = map(g, 0, 15, 0, 63);
+	r = map(r, 0, 15, 0, 31);
+	RGB_bmp_fixed[pixel] = (r << 11) + (g << 5) + b;
     }
     matrix->drawRGBBitmap(x, y, RGB_bmp_fixed, w, h);
 }
@@ -214,15 +214,15 @@ void matrix_show() {
     // is still good.
     // Well, that sure didn't work, it actually made things worse in a demo during
     // fade, so I'm turning it off again.
-        //ESP.wdtDisable();
+	//ESP.wdtDisable();
     #endif
     #ifdef NEOPIXEL_PIN
-        FastLED[1].showLeds(matrix_brightness);
+	FastLED[1].showLeds(matrix_brightness);
     #else
-        matrix->show();
+	matrix->show();
     #endif
     #ifdef ESP8266
-        //ESP.wdtEnable(1000);
+	//ESP.wdtEnable(1000);
     #endif
 #else
     matrix->show();
@@ -267,11 +267,11 @@ uint32_t waitmillis = 0;
     #ifdef ESP8266
     #include <IRremoteESP8266.h>
     #else
-        #ifdef ESP32RMTIR
-        #include <IRRecv.h> // https://github.com/lbernstone/IR32.git
-        #else
-        #include <IRremote.h>
-        #endif
+	#ifdef ESP32RMTIR
+	#include <IRRecv.h> // https://github.com/lbernstone/IR32.git
+	#else
+	#include <IRremote.h>
+	#endif
     #endif
 
     #ifndef ESP32RMTIR
@@ -320,15 +320,15 @@ uint32_t Wheel(uint8_t WheelPos) {
     // Serial.print(WheelPos);
     WheelPos = 255 - WheelPos;
     if (WheelPos < 85) {
-        wheel = (((uint32_t)(255 - WheelPos * 3)) << 16) + (WheelPos * 3);
+	wheel = (((uint32_t)(255 - WheelPos * 3)) << 16) + (WheelPos * 3);
     }
     if (!wheel && WheelPos < 170) {
-        WheelPos -= 85;
-        wheel = (((uint32_t)(WheelPos * 3)) << 8) + (255 - WheelPos * 3);
+	WheelPos -= 85;
+	wheel = (((uint32_t)(WheelPos * 3)) << 8) + (255 - WheelPos * 3);
     }
     if (!wheel) {
-        WheelPos -= 170;
-        wheel = (((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8);
+	WheelPos -= 170;
+	wheel = (((uint32_t)(WheelPos * 3)) << 16) + (((uint32_t)(255 - WheelPos * 3)) << 8);
     }
     // Serial.print(" -> ");
     // Serial.println(wheel, HEX);
@@ -361,16 +361,16 @@ void display_stats() {
     matrix->print('x');
     // not wide enough to print 5 chars, go to next line
     if (mw<25) {
-        if (mh==13) matrix->setCursor(6, 7);
-        else if (mh>=13) {
-            matrix->setCursor(mw-12, 8);
-        } else {
-            // we're not tall enough either, so we wait and display
-            // the 2nd value on top.
-            matrix_show();
-            matrix->clear();
-            matrix->setCursor(mw-11, 0);
-        }
+	if (mh==13) matrix->setCursor(6, 7);
+	else if (mh>=13) {
+	    matrix->setCursor(mw-12, 8);
+	} else {
+	    // we're not tall enough either, so we wait and display
+	    // the 2nd value on top.
+	    matrix_show();
+	    matrix->clear();
+	    matrix->setCursor(mw-11, 0);
+	}
     }
     matrix->setTextColor(matrix->Color(0,255,128));
     matrix->print(mh/10);
@@ -378,31 +378,31 @@ void display_stats() {
     matrix->print(mh % 10);
     // enough room for a 2nd line
     if ((mw>25 && mh >14) || mh>16) {
-        matrix->setCursor(0, mh-7);
-        matrix->setTextColor(matrix->Color(0,255,255));
-        if (mw>16) matrix->print('*');
-        matrix->setTextColor(matrix->Color(255,0,0));
-        matrix->print('R');
-        matrix->setTextColor(matrix->Color(0,255,0));
-        matrix->print('G');
-        matrix->setTextColor(matrix->Color(0,0,255));
-        matrix->print("B");
-        matrix->setTextColor(matrix->Color(255,255,0));
-        // this one could be displayed off screen, but we don't care :)
-        matrix->print("*");
+	matrix->setCursor(0, mh-7);
+	matrix->setTextColor(matrix->Color(0,255,255));
+	if (mw>16) matrix->print('*');
+	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix->print('R');
+	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix->print('G');
+	matrix->setTextColor(matrix->Color(0,0,255));
+	matrix->print("B");
+	matrix->setTextColor(matrix->Color(255,255,0));
+	// this one could be displayed off screen, but we don't care :)
+	matrix->print("*");
     }
 
     if (mh >=31) {
-        matrix->setTextColor(matrix->Color(128,255,128));
-        matrix->setCursor(0, mh-21);
-        matrix->print(demo_cnt);
-        matrix->print(" demos");
+	matrix->setTextColor(matrix->Color(128,255,128));
+	matrix->setCursor(0, mh-21);
+	matrix->print(demo_cnt);
+	matrix->print(" demos");
     }
     if (mh >= 35) {
-        matrix->setTextColor(matrix->Color(255,128,128));
-        matrix->setCursor(0, mh-28);
-        matrix->print(best_cnt);
-        matrix->print(" best");
+	matrix->setTextColor(matrix->Color(255,128,128));
+	matrix->setCursor(0, mh-28);
+	matrix->print(best_cnt);
+	matrix->print(" best");
     }
 
     matrix->setTextColor(matrix->Color(255,0,255));
@@ -596,22 +596,22 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
     static uint8_t repeat = 4;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        direction = 1;
-        size = 3;
-        l = 0;
-        if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; faster = 0; };
-        matrix->setTextSize(1);
+	matrix_reset_demo = 0;
+	direction = 1;
+	size = 3;
+	l = 0;
+	if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; faster = 0; };
+	matrix->setTextSize(1);
 	if (mheight >= 192) matrix->setTextSize(2);
 	repeat = 4;
 	if (zoom_type == 99) { size = 18; repeat = 10; };
     }
 
     if (--delayframe) {
-        // reset how long a frame is shown before we switch to the next one
-        // Serial.println("delayed frame");
-        //delay(MX_UPD_TIME); Aiko emulates this delay for us
-        return repeat;
+	// reset how long a frame is shown before we switch to the next one
+	// Serial.println("delayed frame");
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
+	return repeat;
     }
     delayframe = max((speed / 10) - faster , 1);
     // before exiting, we run the full delay to show the last frame long enough
@@ -621,32 +621,32 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
     // displays (l is incremented at the bottom to switch letters), or on a bigger
     // display, skip that and show all the letters at once.
     if (direction == 1) {
-        int8_t offset = 0; // adjust some letters left or right as needed
-        matrix->clear();
-        matrix->setFont( &Century_Schoolbook_L_Bold[size] );
-        if (mw >= 48 && mh >=64) {
-            matrix->setPassThruColor(0xD7E1EB);
+	int8_t offset = 0; // adjust some letters left or right as needed
+	matrix->clear();
+	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
+	if (mw >= 48 && mh >=64) {
+	    matrix->setPassThruColor(0xD7E1EB);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x77818B);
 	    matrix->setCursor(20-size+offset, (mh>=128?64:20)+size*1.5);
-            matrix->print("TF");
-            matrix->setPassThruColor(0x05C1FF);
+	    matrix->print("TF");
+	    matrix->setPassThruColor(0x05C1FF);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x00618F);
-            matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:52)+size*1.5);
-            matrix->print("SF");
-        } else {
-            if (letters[l] == 'T') offset = -2 * size/15;
-            if (letters[l] == '8') offset = 2 * size/15;
-            matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
+	    matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:52)+size*1.5);
+	    matrix->print("SF");
+	} else {
+	    if (letters[l] == 'T') offset = -2 * size/15;
+	    if (letters[l] == '8') offset = 2 * size/15;
+	    matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 255, 0)));
     #ifdef M32BY8X3
-            matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
+	    matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
     #else
-            matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
+	    matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
     #endif
-            matrix->print(letters[l]);
-        }
-        matrix->setPassThruColor();
+	    matrix->print(letters[l]);
+	}
+	matrix->setPassThruColor();
 	if (zoom_type != 99) {
 	    if (size<18) size++;
 	    else if (zoom_type == 0) { done = 1; delayframe = max((speed - faster*10) * 1, 3); }
@@ -656,35 +656,35 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
 	}
 
     } else if (zoom_type == 1) {
-        int8_t offset = 0; // adjust some letters left or right as needed
+	int8_t offset = 0; // adjust some letters left or right as needed
 
-        matrix->clear();
-        matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 64, 192)));
-        matrix->setFont( &Century_Schoolbook_L_Bold[size] );
-        if (mw >= 48 && mh >=64) {
-            matrix->setPassThruColor(0xD7E1EB);
+	matrix->clear();
+	matrix->setPassThruColor(Wheel(map(letters[l], '0', 'Z', 64, 192)));
+	matrix->setFont( &Century_Schoolbook_L_Bold[size] );
+	if (mw >= 48 && mh >=64) {
+	    matrix->setPassThruColor(0xD7E1EB);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x77818B);
-            matrix->setCursor(20-size+offset, (mh>=128?64:20)+size*1.5);
-            matrix->print("TF");
-            matrix->setPassThruColor(0x05C1FF);
+	    matrix->setCursor(20-size+offset, (mh>=128?64:20)+size*1.5);
+	    matrix->print("TF");
+	    matrix->setPassThruColor(0x05C1FF);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x00618F);
-            matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:50)+size*1.5);
-            matrix->print("SF");
-        } else {
-            if (letters[l] == 'T') offset = -2 * size/15;
-            if (letters[l] == '8') offset = 2 * size/15;
+	    matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:50)+size*1.5);
+	    matrix->print("SF");
+	} else {
+	    if (letters[l] == 'T') offset = -2 * size/15;
+	    if (letters[l] == '8') offset = 2 * size/15;
 
     #ifdef M32BY8X3
-            matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
+	    matrix->setCursor(10-size*0.55+offset, 17+size*0.75);
     #else
-            matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
+	    matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
     #endif
-            matrix->print(letters[l]);
-        }
-        matrix->setPassThruColor();
-        if (size>3) size--; else { done = 1; direction = 1; delayframe = max((speed-faster*10)/2, 3); };
+	    matrix->print(letters[l]);
+	}
+	matrix->setPassThruColor();
+	if (size>3) size--; else { done = 1; direction = 1; delayframe = max((speed-faster*10)/2, 3); };
     }
 
     matrix_show();
@@ -725,11 +725,11 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 1;
-        spd = 1.0;
-        firstpass = 0;
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 1;
+	spd = 1.0;
+	firstpass = 0;
 	matrix->setRotation(0);
 	matrix->setTextSize(1);
 	if (mheight >= 192)  {
@@ -746,63 +746,63 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
     // so let's only show 2 at a time
     //if (! didclear) {
 	matrix->clear();
-        //didclear = 1;
+	//didclear = 1;
     //}
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(30, 48);
-        else if (mheight >= 96) matrix->setCursor(18, 20);
-        else if (mheight >= 64) matrix->setCursor(18, 15);
-        else matrix->setCursor(7, 6);
+	if (mheight >= 192) matrix->setCursor(30, 48);
+	else if (mheight >= 96) matrix->setCursor(18, 20);
+	else if (mheight >= 64) matrix->setCursor(18, 15);
+	else matrix->setCursor(7, 6);
 
-        matrix->setTextColor(matrix->Color(255,0,0));
-        matrix->print("EAT");
+	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix->print("EAT");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        firstpass = 1;
-        if (mheight >= 192) matrix->setCursor(18, 84);
-        else if (mheight >= 96) matrix->setCursor(10, 41);
-        else if (mheight >= 64) matrix->setCursor(10, 33);
-        else matrix->setCursor(3, 14);
+	firstpass = 1;
+	if (mheight >= 192) matrix->setCursor(18, 84);
+	else if (mheight >= 96) matrix->setCursor(10, 41);
+	else if (mheight >= 64) matrix->setCursor(10, 33);
+	else matrix->setCursor(3, 14);
 
-        matrix->setTextColor(matrix->Color(192,192,0));
-        matrix->print("SLEEP");
+	matrix->setTextColor(matrix->Color(192,192,0));
+	matrix->print("SLEEP");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(22, 120);
-        else if (mheight >= 96) matrix->setCursor(14, 60);
-        else if (mheight >= 64) matrix->setCursor(14, 47);
-        else matrix->setCursor(5, 22);
+	if (mheight >= 192) matrix->setCursor(22, 120);
+	else if (mheight >= 96) matrix->setCursor(14, 60);
+	else if (mheight >= 64) matrix->setCursor(14, 47);
+	else matrix->setCursor(5, 22);
 
-        matrix->setTextColor(matrix->Color(0,255,0));
-        if (mheight == 64) matrix->print("BURN");
-        else matrix->print("RAVE");
+	matrix->setTextColor(matrix->Color(0,255,0));
+	if (mheight == 64) matrix->print("BURN");
+	else matrix->print("RAVE");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(2, 160);
-        else if (mheight >= 96) matrix->setCursor(2, 82);
-        else if (mheight >= 64) matrix->setCursor(2, 63);
-        else matrix->setCursor(0, 30);
+	if (mheight >= 192) matrix->setCursor(2, 160);
+	else if (mheight >= 96) matrix->setCursor(2, 82);
+	else if (mheight >= 64) matrix->setCursor(2, 63);
+	else matrix->setCursor(0, 30);
 
-        matrix->setTextColor(matrix->Color(0,192,192));
-        matrix->print("REPEAT");
+	matrix->setTextColor(matrix->Color(0,192,192));
+	matrix->print("REPEAT");
     }
     l++;
 
     // 400 - 4x50 = 200
     if (state++ > (l*duration-l*overlap)/spd) {
-        state = 1;
-        spd += spdincr;
-        if (spd > resetspd) {
-            matrix_reset_demo = 1;
-            return 0;
-        }
+	state = 1;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    matrix_reset_demo = 1;
+	    return 0;
+	}
     }
 
     //if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
@@ -826,14 +826,14 @@ uint8_t trancejesus(uint32_t unused) {
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 1;
-        spd = 1.0;
-        didclear = 0;
-        firstpass = 0;
-        matrix->setRotation(0);
-        matrix->setTextSize(1);
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 1;
+	spd = 1.0;
+	didclear = 0;
+	firstpass = 0;
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
 	if (mheight >= 192)  {
 	    matrix->setFont(&Century_Schoolbook_L_Bold_22);
 	} else if (mheight >= 64)  {
@@ -846,55 +846,55 @@ uint8_t trancejesus(uint32_t unused) {
 
     if (! didclear) {
 	matrix->clear();
-        didclear = 1;
+	didclear = 1;
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        if (mheight >= 192) matrix->setCursor(8, 25);
-        else matrix->setCursor(10, 16);
-        matrix->print("TRANCE");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        firstpass = 1;
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        if (mheight >= 192) { matrix->setCursor(14, 65); matrix->print("Because"); }
-        else { matrix->setCursor(8, 32); matrix->print("BECAUSE"); }
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	if (mheight >= 192) matrix->setCursor(8, 25);
+	else matrix->setCursor(10, 16);
+	matrix->print("TRANCE");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        if (mheight >= 192) { matrix->setCursor(12, 105); matrix->print("it's what"); }
-        else { matrix->setCursor(5, 48); matrix->print("IT'S WHAT"); }
+	firstpass = 1;
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	if (mheight >= 192) { matrix->setCursor(14, 65); matrix->print("Because"); }
+	else { matrix->setCursor(8, 32); matrix->print("BECAUSE"); }
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        if (mheight >= 192) matrix->setCursor(20, 145);
-        else matrix->setCursor(16, 64);
-        matrix->print("JESUS");
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	if (mheight >= 192) { matrix->setCursor(12, 105); matrix->print("it's what"); }
+	else { matrix->setCursor(5, 48); matrix->print("IT'S WHAT"); }
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	if (mheight >= 192) matrix->setCursor(20, 145);
+	else matrix->setCursor(16, 64);
+	matrix->print("JESUS");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        if (mheight >= 192) { matrix->setCursor(2, 185); matrix->print("would do!"); }
-        else { matrix->setCursor(0, 82); matrix->print("WOULD DO!"); }
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	if (mheight >= 192) { matrix->setCursor(2, 185); matrix->print("would do!"); }
+	else { matrix->setCursor(0, 82); matrix->print("WOULD DO!"); }
     }
     l++;
 
     matrix->setPassThruColor();
     if (state++ > (l*duration-l*overlap)/spd) {
-        state = 1;
-        spd += spdincr;
-        if (spd > resetspd) {
-            matrix_reset_demo = 1;
-            return 0;
-        }
+	state = 1;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    matrix_reset_demo = 1;
+	    return 0;
+	}
     }
 
     if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
@@ -917,63 +917,63 @@ uint8_t bbb(uint32_t unused) {
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 1;
-        spd = 1.0;
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 1;
+	spd = 1.0;
     }
 
     matrix->setRotation(0);
     matrix->setTextSize(1);
     if (mw >= 64) {
-        //matrix->setFont(FreeMonoBold9pt7b);
-        matrix->setFont(&Century_Schoolbook_L_Bold_16);
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_16);
     } else {
-        matrix->setFont(&TomThumb);
+	matrix->setFont(&TomThumb);
     }
     matrix->clear();
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mw >= 64) {
-            matrix->setCursor(4, 20);
-        } else {
-            matrix->setCursor(5, 10);
-        }
-        matrix->setTextColor(matrix->Color(255,0,0));
-        matrix->print("BURN");
+	if (mw >= 64) {
+	    matrix->setCursor(4, 20);
+	} else {
+	    matrix->setCursor(5, 10);
+	}
+	matrix->setTextColor(matrix->Color(255,0,0));
+	matrix->print("BURN");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mw >= 64) {
-            matrix->setCursor(6, 41);
-        } else {
-            matrix->setCursor(5, 20);
-        }
-        matrix->setTextColor(matrix->Color(0,255,0));
-        matrix->print("BABY");
+	if (mw >= 64) {
+	    matrix->setCursor(6, 41);
+	} else {
+	    matrix->setCursor(5, 20);
+	}
+	matrix->setTextColor(matrix->Color(0,255,0));
+	matrix->print("BABY");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-        if (mw >= 64) {
-            matrix->setCursor(4, 62);
-        } else {
-            matrix->setCursor(5, 30);
-        }
-        matrix->setTextColor(matrix->Color(0,0,255));
-        matrix->print("BURN");
+	if (mw >= 64) {
+	    matrix->setCursor(4, 62);
+	} else {
+	    matrix->setCursor(5, 30);
+	}
+	matrix->setTextColor(matrix->Color(0,0,255));
+	matrix->print("BURN");
     }
     l++;
 
     // 400 - 4x50 = 200
     if (state++ > (l*duration-l*overlap)/spd) {
-        state = 1;
-        spd += spdincr;
-        if (spd > resetspd) {
-            matrix_reset_demo = 1;
-            return 0;
-        }
+	state = 1;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    matrix_reset_demo = 1;
+	    return 0;
+	}
     }
 
     matrix_show();
@@ -997,42 +997,42 @@ uint8_t esrbr_flashin() {
 
     state++;
     if (!(state % period) || exit) {
-        state = 1;
-        show = 1;
-        matrix->setCursor(7, 6);
-        matrix->setTextColor(matrix->Color(255,0,255));
-        matrix->print("EAT");
-        matrix->setCursor(3, 14);
-        matrix->setTextColor(matrix->Color(255,255,0));
-        matrix->print("SLEEP");
-        matrix->setCursor(5, 22);
-        matrix->setTextColor(matrix->Color(0,255,255));
-        matrix->print("RAVE");
-        matrix->setCursor(0, 30);
-        matrix->setTextColor(matrix->Color(64,255,64));
-        matrix->print("REPEAT");
+	state = 1;
+	show = 1;
+	matrix->setCursor(7, 6);
+	matrix->setTextColor(matrix->Color(255,0,255));
+	matrix->print("EAT");
+	matrix->setCursor(3, 14);
+	matrix->setTextColor(matrix->Color(255,255,0));
+	matrix->print("SLEEP");
+	matrix->setCursor(5, 22);
+	matrix->setTextColor(matrix->Color(0,255,255));
+	matrix->print("RAVE");
+	matrix->setCursor(0, 30);
+	matrix->setTextColor(matrix->Color(64,255,64));
+	matrix->print("REPEAT");
     }
 
     if (exit)
     {
-        exit++;
+	exit++;
     }
     else if (show != oldshow) {
-        period = max(period - 1, 1);
-        oldshow = show;
-        if (period == 1) exit=1;
-        //Serial.println(period);
+	period = max(period - 1, 1);
+	oldshow = show;
+	if (period == 1) exit=1;
+	//Serial.println(period);
     }
     //Serial.println(exit);
     matrix_show();
 
     // 100 = 1s
     if (exit == 300) {
-        state = 0;
-        period = esrflashperiod;
-        exit = 0;
-        oldshow = 0;
-        return 1;
+	state = 0;
+	period = esrflashperiod;
+	exit = 0;
+	oldshow = 0;
+	return 1;
     }
     return 0;
 }
@@ -1048,80 +1048,80 @@ uint8_t esrbr_fade(uint32_t unused) {
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 0;
-        wheel = 0;
-        spd = 1.0;
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 0;
+	wheel = 0;
+	spd = 1.0;
     }
 
     state++;
 
     if (state == 1) {
-        //wheel+=20;
+	//wheel+=20;
 	if (mheight >= 192)  {
 	    matrix->setFont(&Century_Schoolbook_L_Bold_26);
 	} else if (mheight >= 64)  {
 	    //matrix->setFont(FreeMonoBold9pt7b);
-            matrix->setFont(&Century_Schoolbook_L_Bold_12);
-        } else {
-            matrix->setFont(&TomThumb);
-        }
-        matrix->setRotation(0);
-        matrix->setTextSize(1);
-        matrix->clear();
+	    matrix->setFont(&Century_Schoolbook_L_Bold_12);
+	} else {
+	    matrix->setFont(&TomThumb);
+	}
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
+	matrix->clear();
 
-        if (mheight >= 192) matrix->setCursor(30, 48);
-        else if (mheight >= 96) matrix->setCursor(18, 20);
-        else if (mheight >= 64) matrix->setCursor(18, 15);
-        else matrix->setCursor(7, 6);
-        matrix->setPassThruColor(Wheel(((wheel+=24))));
-        matrix->print("EAT");
+	if (mheight >= 192) matrix->setCursor(30, 48);
+	else if (mheight >= 96) matrix->setCursor(18, 20);
+	else if (mheight >= 64) matrix->setCursor(18, 15);
+	else matrix->setCursor(7, 6);
+	matrix->setPassThruColor(Wheel(((wheel+=24))));
+	matrix->print("EAT");
 
-        if (mheight >= 192) matrix->setCursor(18, 84);
-        else if (mheight >= 96) matrix->setCursor(10, 41);
-        else if (mheight >= 64) matrix->setCursor(10, 33);
-        else matrix->setCursor(3, 14);
-        matrix->setPassThruColor(Wheel(((wheel+=24))));
-        matrix->print("SLEEP");
+	if (mheight >= 192) matrix->setCursor(18, 84);
+	else if (mheight >= 96) matrix->setCursor(10, 41);
+	else if (mheight >= 64) matrix->setCursor(10, 33);
+	else matrix->setCursor(3, 14);
+	matrix->setPassThruColor(Wheel(((wheel+=24))));
+	matrix->print("SLEEP");
 
-        if (mheight >= 192) matrix->setCursor(22, 120);
-        else if (mheight >= 96) matrix->setCursor(14, 60);
-        else if (mheight >= 64) matrix->setCursor(14, 47);
-        else matrix->setCursor(5, 22);
-        matrix->setPassThruColor(Wheel(((wheel+=24))));
-        if (mheight == 64) {
-            matrix->print("BURN");
-        } else {
-            matrix->print("RAVE");
-        }
+	if (mheight >= 192) matrix->setCursor(22, 120);
+	else if (mheight >= 96) matrix->setCursor(14, 60);
+	else if (mheight >= 64) matrix->setCursor(14, 47);
+	else matrix->setCursor(5, 22);
+	matrix->setPassThruColor(Wheel(((wheel+=24))));
+	if (mheight == 64) {
+	    matrix->print("BURN");
+	} else {
+	    matrix->print("RAVE");
+	}
 
-        if (mheight >= 192) matrix->setCursor(2, 160);
-        else if (mheight >= 96) matrix->setCursor(2, 82);
-        else if (mheight == 64) matrix->setCursor(2, 63);
-        else matrix->setCursor(0, 30);
-        matrix->setPassThruColor(Wheel(((wheel+=24))));
-        matrix->print("REPEAT");
-        matrix->setPassThruColor();
+	if (mheight >= 192) matrix->setCursor(2, 160);
+	else if (mheight >= 96) matrix->setCursor(2, 82);
+	else if (mheight == 64) matrix->setCursor(2, 63);
+	else matrix->setCursor(0, 30);
+	matrix->setPassThruColor(Wheel(((wheel+=24))));
+	matrix->print("REPEAT");
+	matrix->setPassThruColor();
     }
 
 
     if (state > 40/spd && state < 100/spd)  {
-        //fadeToBlackBy( matrixleds, NUMMATRIX, 20*spd);
-        // For reasons I don't understand, fadetoblack causes display corruption in this case
-        // while looping nscale (ideally mostly the same thing), works.
-        for (uint16_t i = 0; i < NUMMATRIX; i++) matrixleds[i].nscale8(242-spd*4);
+	//fadeToBlackBy( matrixleds, NUMMATRIX, 20*spd);
+	// For reasons I don't understand, fadetoblack causes display corruption in this case
+	// while looping nscale (ideally mostly the same thing), works.
+	for (uint16_t i = 0; i < NUMMATRIX; i++) matrixleds[i].nscale8(242-spd*4);
     }
 
     if (state > 100/spd) {
-        state = 0;
-        spd += spdincr;
-        //Serial.println(spd);
-        //Serial.println(state);
-        if (spd > resetspd) {
-            matrix_reset_demo = 1;
-            return 0;
-        }
+	state = 0;
+	spd += spdincr;
+	//Serial.println(spd);
+	//Serial.println(state);
+	if (spd > resetspd) {
+	    matrix_reset_demo = 1;
+	    return 0;
+	}
     }
     matrix_show();
     return 2;
@@ -1134,17 +1134,17 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y) {
 
 
     if (matrix_reset_demo == 1) {
-        state = 0;
-        matrix_reset_demo = 0;
-        matrix->setRotation(0);
-        matrix->setTextSize(1);
-        if (mheight >= 64) {
-                //matrix->setFont(FreeMonoBold9pt7b);
-            matrix->setFont(&Century_Schoolbook_L_Bold_16);
-        } else {
-            matrix->setFont(&TomThumb);
-        }
-        matrix->clear();
+	state = 0;
+	matrix_reset_demo = 0;
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
+	if (mheight >= 64) {
+		//matrix->setFont(FreeMonoBold9pt7b);
+	    matrix->setFont(&Century_Schoolbook_L_Bold_16);
+	} else {
+	    matrix->setFont(&TomThumb);
+	}
+	matrix->clear();
     }
 
     state++;
@@ -1156,8 +1156,8 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y) {
     matrix_show();
 
     if (state > loopcnt) {
-        matrix_reset_demo = 1;
-        return 0;
+	matrix_reset_demo = 1;
+	return 0;
     }
     return 2;
 }
@@ -1171,20 +1171,20 @@ uint8_t squares(uint32_t reverse) {
     static uint16_t delayframe = sqdelay;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 0;
-        wheel = 0;
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 0;
+	wheel = 0;
     }
 
     uint8_t maxsize = max(mh/2,mw/2);
 
     if (--delayframe) {
-        // reset how long a frame is shown before we switch to the next one
-        //Serial.print("delayed frame ");
-        //Serial.println(delayframe);
-        //delay(MX_UPD_TIME); Aiko emulates this delay for us
-        return repeat;
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
+	return repeat;
     }
     delayframe = sqdelay;
     state++;
@@ -1192,20 +1192,20 @@ uint8_t squares(uint32_t reverse) {
 
     matrix->clear();
     if (reverse) {
-        for (uint8_t s = maxsize; s >= 1 ; s--) {
-            matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, matrix->Color24to16(Wheel(wheel+(maxsize-s)*10)));
-        }
+	for (uint8_t s = maxsize; s >= 1 ; s--) {
+	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, matrix->Color24to16(Wheel(wheel+(maxsize-s)*10)));
+	}
     } else {
-        for (uint8_t s = 1; s <= maxsize; s++) {
-            matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, matrix->Color24to16(Wheel(wheel+s*10)));
-        }
+	for (uint8_t s = 1; s <= maxsize; s++) {
+	    matrix->drawRect( mw/2-s, mh/2-s, s*2, s*2, matrix->Color24to16(Wheel(wheel+s*10)));
+	}
     }
 
     // Serial.print("state ");
     // Serial.println(state);
     if (state > 250) {
-        matrix_reset_demo = 1;
-        return 0;
+	matrix_reset_demo = 1;
+	return 0;
     }
     matrix_show();
     return repeat;
@@ -1227,14 +1227,14 @@ uint8_t webwc(uint32_t unused) {
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 1;
-        spd = 1.0;
-        didclear = 0;
-        firstpass = 0;
-        matrix->setRotation(0);
-        matrix->setTextSize(1);
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 1;
+	spd = 1.0;
+	didclear = 0;
+	firstpass = 0;
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
 	if (mheight >= 192)  {
 	    matrix->setFont(&Century_Schoolbook_L_Bold_26);
 	} else if (mheight >= 64)  {
@@ -1246,73 +1246,73 @@ uint8_t webwc(uint32_t unused) {
     }
 
     if (! didclear) {
-        matrix->clear();
-        didclear = 1;
+	matrix->clear();
+	didclear = 1;
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(22, 25);
-        else if (mheight >= 96) matrix->setCursor(12, 16);
-        else if (mheight >= 64) matrix->setCursor(12, 12);
-        else matrix->setCursor(5, 6);
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        matrix->print("WITH");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        firstpass = 1;
-        if (mheight >= 192) matrix->setCursor(14, 65);
-        else if (mheight >= 96) matrix->setCursor(7, 32);
-        else if (mheight >= 64) matrix->setCursor(7, 24);
-        else matrix->setCursor(3, 12);
-        // going from 24 to 16 with gamma correction and back to 24 damages the wheel colors enough to make them not usable
-        // 669900  01100110 10011001 00000000
-        // 64C0       01100   100110 00000
-        // 1D5B00  00011101 01011011 00000000
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        matrix->print("EVERY");
+	if (mheight >= 192) matrix->setCursor(22, 25);
+	else if (mheight >= 96) matrix->setCursor(12, 16);
+	else if (mheight >= 64) matrix->setCursor(12, 12);
+	else matrix->setCursor(5, 6);
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->print("WITH");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(22, 105);
-        else if (mheight >= 96) matrix->setCursor(12, 48);
-        else if (mheight >= 64) matrix->setCursor(12, 36);
-        else matrix->setCursor(5, 18);
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        matrix->print("BEAT");
+	firstpass = 1;
+	if (mheight >= 192) matrix->setCursor(14, 65);
+	else if (mheight >= 96) matrix->setCursor(7, 32);
+	else if (mheight >= 64) matrix->setCursor(7, 24);
+	else matrix->setCursor(3, 12);
+	// going from 24 to 16 with gamma correction and back to 24 damages the wheel colors enough to make them not usable
+	// 669900  01100110 10011001 00000000
+	// 64C0       01100   100110 00000
+	// 1D5B00  00011101 01011011 00000000
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->print("EVERY");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(2, 145);
-        else if (mheight >= 96) matrix->setCursor(4, 64);
-        else if (mheight >= 64) matrix->setCursor(4, 48);
-        else matrix->setCursor(2, 24);
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        matrix->print("WE ARE");
+	if (mheight >= 192) matrix->setCursor(22, 105);
+	else if (mheight >= 96) matrix->setCursor(12, 48);
+	else if (mheight >= 64) matrix->setCursor(12, 36);
+	else matrix->setCursor(5, 18);
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->print("BEAT");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	if (mheight >= 192) matrix->setCursor(2, 145);
+	else if (mheight >= 96) matrix->setCursor(4, 64);
+	else if (mheight >= 64) matrix->setCursor(4, 48);
+	else matrix->setCursor(2, 24);
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->print("WE ARE");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(2, 185);
-        else if (mheight >= 96) matrix->setCursor(0, 82);
-        else if (mheight >= 64) matrix->setCursor(0, 60);
-        else matrix->setCursor(0, 30);
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        matrix->print("CLOSER");
+	if (mheight >= 192) matrix->setCursor(2, 185);
+	else if (mheight >= 96) matrix->setCursor(0, 82);
+	else if (mheight >= 64) matrix->setCursor(0, 60);
+	else matrix->setCursor(0, 30);
+	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->print("CLOSER");
     }
     l++;
 
     matrix->setPassThruColor();
     if (state++ > (l*duration-l*overlap)/spd) {
-        state = 1;
-        spd += spdincr;
-        if (spd > resetspd) {
-            matrix_reset_demo = 1;
-            return 0;
-        }
+	state = 1;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    matrix_reset_demo = 1;
+	    return 0;
+	}
     }
 
     if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
@@ -1333,34 +1333,34 @@ uint8_t scrollText(const char str[], uint8_t len) {
     static uint16_t delayframe = stdelay;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        x = 7;
-        matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
-        matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-        matrix->setTextSize(1);
-        matrix->setRotation(0);
+	matrix_reset_demo = 0;
+	x = 7;
+	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
+	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+	matrix->setTextSize(1);
+	matrix->setRotation(0);
     }
 
     if (--delayframe) {
-        // reset how long a frame is shown before we switch to the next one
-        //delay(MX_UPD_TIME); Aiko emulates this delay for us
-        return repeat;
+	// reset how long a frame is shown before we switch to the next one
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
+	return repeat;
     }
     delayframe = stdelay;
 
     matrix->clear();
     matrix->setCursor(x, 24);
     for (uint8_t c=0; c<len; c++) {
-        //uint16_t txtcolor = matrix->Color24to16(Wheel(map(c, 0, len, 0, 512)));
-        //matrix->setTextColor(txtcolor);
-        //Serial.print(txtcolor, HEX);
-        //Serial.print(" >");
-        matrix->setPassThruColor(Wheel(map(c, 0, len, 0, 512)));
+	//uint16_t txtcolor = matrix->Color24to16(Wheel(map(c, 0, len, 0, 512)));
+	//matrix->setTextColor(txtcolor);
+	//Serial.print(txtcolor, HEX);
+	//Serial.print(" >");
+	matrix->setPassThruColor(Wheel(map(c, 0, len, 0, 512)));
 
-        chr[0]=str[c];
+	chr[0]=str[c];
 
-        //Serial.println(chr);
-        matrix->print(chr);
+	//Serial.println(chr);
+	matrix->print(chr);
     }
     matrix_show();
     matrix->setPassThruColor();
@@ -1368,8 +1368,8 @@ uint8_t scrollText(const char str[], uint8_t len) {
     x--;
 
     if (x < (-1 * (int16_t)len * fontwidth)) {
-        matrix_reset_demo = 1;
-        return 0;
+	matrix_reset_demo = 1;
+	return 0;
     }
     matrix_show();
     return repeat;
@@ -1386,36 +1386,36 @@ uint8_t DoublescrollText(uint32_t choice) {
     const char *str2;
 
     if (choice == 1) {
-        str1 = "Safety";
-        str2 = "Third";
+	str1 = "Safety";
+	str2 = "Third";
     } else {
-        str1 = "I Love";
-        str2 = "LEDs!!!";
+	str1 = "I Love";
+	str2 = "LEDs!!!";
     }
 
     len = max(strlen(str1), strlen(str2));
 
     uint8_t repeat = 4;
     if (mw >= 64) {
-        fontsize = 14;
-        fontwidth = 16;
-        stdelay = 1;
+	fontsize = 14;
+	fontwidth = 16;
+	stdelay = 1;
     }
     static uint16_t delayframe = stdelay;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        x = 1;
-        matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
-        matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-        matrix->setTextSize(1);
-        matrix->setRotation(0);
+	matrix_reset_demo = 0;
+	x = 1;
+	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
+	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+	matrix->setTextSize(1);
+	matrix->setRotation(0);
     }
 
     if (--delayframe) {
-        // reset how long a frame is shown before we switch to the next one
-        //delay(MX_UPD_TIME); Aiko emulates this delay for us
-        return repeat;
+	// reset how long a frame is shown before we switch to the next one
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
+	return repeat;
     }
     delayframe = stdelay;
 
@@ -1432,8 +1432,8 @@ uint8_t DoublescrollText(uint32_t choice) {
     x++;
 
     if (x > 1.8 * len * fontwidth) {
-        matrix_reset_demo = 1;
-        return 0;
+	matrix_reset_demo = 1;
+	return 0;
     }
     matrix_show();
     return repeat;
@@ -1465,12 +1465,12 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
 	diffY = abs(mh - sizeY);
 	maxXf = (mw-sizeX) << 4;
 	maxYf = (mh-sizeY) << 4;
-        xf = max(0, (mw-sizeX)/2) << 4;
-        yf = max(0, (mh-sizeY)/2) << 4;
-        xfc = mmax(diffX/8, 3);
-        yfc = mmax(diffY/8, 3);
-        xfdir = -1;
-        yfdir = -1;
+	xf = max(0, (mw-sizeX)/2) << 4;
+	yf = max(0, (mh-sizeY)/2) << 4;
+	xfc = mmax(diffX/8, 3);
+	yfc = mmax(diffY/8, 3);
+	xfdir = -1;
+	yfdir = -1;
     }
 
     bool changeDir = false;
@@ -1482,28 +1482,28 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
     // Only pan if the display size is smaller than the pixmap
     // but not if the difference is too small or it'll look bad.
     if (sizeX-mw>2) {
-        xf += xfc*xfdir;
-        if (xf >= 0)     { xfdir = -1; changeDir = true ; };
-        // we don't go negative past right corner, go back positive
-        if (xf <= maxXf) { xfdir = 1;  changeDir = true ; };
+	xf += xfc*xfdir;
+	if (xf >= 0)     { xfdir = -1; changeDir = true ; };
+	// we don't go negative past right corner, go back positive
+	if (xf <= maxXf) { xfdir = 1;  changeDir = true ; };
     }
     if (sizeY-mh>2) {
-        yf += yfc*yfdir;
-        // we shouldn't display past left corner, reverse direction.
-        if (yf >= 0)     { yfdir = -1; changeDir = true ; };
-        if (yf <= maxYf) { yfdir = 1;  changeDir = true ; };
+	yf += yfc*yfdir;
+	// we shouldn't display past left corner, reverse direction.
+	if (yf >= 0)     { yfdir = -1; changeDir = true ; };
+	if (yf <= maxYf) { yfdir = 1;  changeDir = true ; };
     }
     // only bounce a pixmap if it's smaller than the display size
     if (mw>sizeX) {
-        xf += xfc*xfdir;
-        // Deal with bouncing off the 'walls'
-        if (xf >= maxXf) { xfdir = -1; changeDir = true ; };
-        if (xf <= 0)	 { xfdir =  1; changeDir = true ; };
+	xf += xfc*xfdir;
+	// Deal with bouncing off the 'walls'
+	if (xf >= maxXf) { xfdir = -1; changeDir = true ; };
+	if (xf <= 0)	 { xfdir =  1; changeDir = true ; };
     }
     if (mh>sizeY) {
-        yf += yfc*yfdir;
-        if (yf >= maxYf) { yfdir = -1; changeDir = true ; };
-        if (yf <= 0)	 { yfdir =  1; changeDir = true ; };
+	yf += yfc*yfdir;
+	if (yf >= maxYf) { yfdir = -1; changeDir = true ; };
+	if (yf <= 0)	 { yfdir =  1; changeDir = true ; };
     }
 
     if (changeDir) {
@@ -1512,8 +1512,8 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
 	//xfc = constrain(xfc + random(-1, 2), 3, 16);
 	//yfc = constrain(yfc + random(-1, 2), 3, 16);
 	// Better adjust speed to the difference between the object size and screen size
-        xfc = constrain(xfc + random(-1, 2), mmin(diffX/8, 10), mmin(diffX/6, mw/6));
-        yfc = constrain(yfc + random(-1, 2), mmin(diffY/8, 10), mmin(diffY/6, mh/6));
+	xfc = constrain(xfc + random(-1, 2), mmin(diffX/8, 10), mmin(diffX/6, mw/6));
+	yfc = constrain(yfc + random(-1, 2), mmin(diffY/8, 10), mmin(diffY/6, mh/6));
     }
 
     //printf("x: %d (xf:%d) mw: %d (sX: %d, diffX: %d, maxXf: %d), y: %d (yf:%d) mh: %d (sY: %d, diffY: %d, maxYf %d)\n", *x, xf, mw, sizeX, diffX, maxXf, *y, yf, mh, sizeY, diffY, maxYf);
@@ -1526,19 +1526,19 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
     uint16_t bitmapSize;
 
     if (choice == 1) {
-        bitmap = bitmap24;
-        bitmapSize = 24;
+	bitmap = bitmap24;
+	bitmapSize = 24;
     } else {
-        // FIXME, put something else here
-        bitmap = bitmap24;
-        bitmapSize = 24;
+	// FIXME, put something else here
+	bitmap = bitmap24;
+	bitmapSize = 24;
     }
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 0;
-        panOrBounce(&x, &y, bitmapSize, bitmapSize, true);
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 0;
+	panOrBounce(&x, &y, bitmapSize, bitmapSize, true);
     }
     panOrBounce(&x, &y, bitmapSize, bitmapSize);
 
@@ -1548,8 +1548,8 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
     matrix_show();
 
     if (state++ == 600) {
-        matrix_reset_demo = 1;
-        return 0;
+	matrix_reset_demo = 1;
+	return 0;
     }
     return 3;
 }
@@ -1561,14 +1561,14 @@ uint8_t GifAnim(uint32_t idx) {
     static uint16_t scrollx = 0;
     static uint16_t scrolly = 0;
     struct Animgif {
-        const char *path;
-        uint16_t looptime;
-        int8_t offx;
-        int8_t offy;
-        int8_t factx;
-        int8_t facty;
-        uint16_t scrollx;
-        uint16_t scrolly;
+	const char *path;
+	uint16_t looptime;
+	int8_t offx;
+	int8_t offy;
+	int8_t factx;
+	int8_t facty;
+	uint16_t scrollx;
+	uint16_t scrolly;
     };
     extern int OFFSETX;
     extern int OFFSETY;
@@ -1576,13 +1576,13 @@ uint8_t GifAnim(uint32_t idx) {
     extern int FACTX;
 
     #ifdef ARDUINOONPC
-        #if mheight == 192
-        #define ROOT FS_PREFIX "/gifs128x192/"
-        #else
-        #define ROOT FS_PREFIX "/gifs64/"
-        #endif
+	#if mheight == 192
+	#define ROOT FS_PREFIX "/gifs128x192/"
+	#else
+	#define ROOT FS_PREFIX "/gifs64/"
+	#endif
     #else
-        #define ROOT ""
+	#define ROOT ""
     #endif
     #if mheight == 64
 	#define YMUL 10
@@ -1592,48 +1592,46 @@ uint8_t GifAnim(uint32_t idx) {
 
     #if mheight == 32
     const Animgif animgif[] = {
-            {"/gifs/32anim_photon.gif",		10, -4, 0, 10, 10, 0, 0 },	// 100
-            {"/gifs/32anim_flower.gif",		10, -4, 0, 10, 10, 0, 0 },
-            {"/gifs/32anim_balls.gif",		10, -4, 0, 10, 10, 0, 0 },
-            {"/gifs/32anim_dance.gif",		10, -4, 0, 10, 10, 0, 0 },
-            {"/gifs/circles_swap.gif",		10, -4, 0, 10, 10, 0, 0 },
-            {"/gifs/concentric_circles.gif",	10, -4, 0, 10, 10, 0, 0 },	// 105
-            {"/gifs/corkscrew.gif",		10, -4, 0, 10, 10, 0, 0 },
-            {"/gifs/cubeconstruct.gif",		10, -4, 0, 10, 10, 0, 0 },
-            {"/gifs/cubeslide.gif",		10, -4, 0, 10, 10, 0, 0 },
-            {"/gifs/runningedgehog.gif",	10, -4, 0, 10, 10, 0, 0 },
-            {"/gifs/triangles_in.gif",		10, -4, 0, 10, 10, 0, 0 },	// 110
-            {"/gifs/wifi.gif",			10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/32anim_photon.gif",		10, -4, 0, 10, 10, 0, 0 },	// 100
+	    {"/gifs/32anim_flower.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/32anim_balls.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/32anim_dance.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/circles_swap.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/concentric_circles.gif",	10, -4, 0, 10, 10, 0, 0 },	// 105
+	    {"/gifs/corkscrew.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/cubeconstruct.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/cubeslide.gif",		10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/runningedgehog.gif",	10, -4, 0, 10, 10, 0, 0 },
+	    {"/gifs/triangles_in.gif",		10, -4, 0, 10, 10, 0, 0 },	// 110
+	    {"/gifs/wifi.gif",			10, -4, 0, 10, 10, 0, 0 },
     };
     #else
-    const Animgif animgif[] = {
-	    // -- non animated, those scroll up/down
-        #if mheight <= 96
-/*100 */    { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "AnB_color_bands_heart.gif",10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "AnB_logo_lgrey.gif",	10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10, 64, 32 },
-            { ROOT  "BM_Lady_Fire.gif",		10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "BM_Logo_lgrey.gif",	10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "BM_Man_Scroll.gif",	10, 0, 16, 10, 10, 0,  0  },
-            { ROOT  "BM_TheMan_Blue.gif",	10,-12,-2, 10, 10, 36, 64 },
-            { ROOT  "BM_TheMan_Red.gif",	10,-12, 0, 10, 10, 36, 64 },
-/*110 */    { ROOT  "BM_TheMan_Green.gif",	10, 0,  4, 10, 10, 64,104 },
-        #else
-/*100 */    { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10,128,128 },
-            { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10,128,128 },
-            { ROOT  "AnB_color_bands_heart.gif",10, 0,  0, 10, 10,128,128 },
-            { ROOT  "AnB_logo_lgrey.gif",	10, 0,  0, 10, 10,128,128 },
-            { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10,128, 64 },
-            { ROOT  "BM_Lady_Fire.gif",		10, 0, 10, 10, 10,128,212 },
-            { ROOT  "BM_Logo_lgrey.gif",	10, 0,  0, 10, 10,128,128 },
-            { ROOT  "BM_Man_Scroll.gif",	10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "BM_TheMan_Blue.gif",	10, 0,  6, 10, 10,128,212 },
-            { ROOT  "BM_TheMan_Red.gif",	10, 0,  0, 10, 10,128,128 },
-/*110 */    { ROOT  "BM_TheMan_Green.gif",	10, 0, 10, 10, 10,128,212 },
-        #endif
 
+    const Animgif animgif[] = {
+	#if mheight <= 96
+/*100 */    { ROOT  "215_fallingcube.gif",		15, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "257_colormesh_wave.gif",		20, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "271_mj.gif",			15,-14,3, 15, YMUL, 0, 0 },
+	    { ROOT  "193_redplasma.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "208_pulpfictiondance.gif",		25, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "412_bluecube_slide.gif",		20, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "236_spintriangle.gif",		20, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "281_plasma.gif",			20, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "sonic.gif",			10, 0, 0, 10, YMUL, 0, 0 },
+	#else
+/*100 */    { ROOT  "failingcube.gif",			10, 0,10, 10,   10, 0, 0 },
+	    { ROOT  "colormesh_wave.gif",		20,-20,0,  9,   10, 0, 0 },
+	    { ROOT  "z_5PmD_MJ_moonwalk.gif",		40, 2, 0, 12,   10, 0, 0 },
+	    { ROOT  "z_SBMP_redplasma.gif",		10,-32,0, 10,   10, 0, 0 },
+	    { ROOT  "z_7VA_pulp_fiction_dance.gif",	25, 0, 0, 10,   12, 0, 0 },
+	    { ROOT  "bluecube_slidepup.gif",		10, 0 ,0, 10,   10, 0, 0 },
+	    { ROOT  "z_3Ppu_spin_triangles.gif",	10, 0, 0, 10,   10, 0, 0 },
+	    { ROOT  "z_Egph_plasma_.gif",		10,-12,0,  8,   10, 0, 0 },
+	    { ROOT  "z_3F3F_sonic.gif",			10, 0, 0,  7,   10, 0, 0 },
+	#endif
+
+/*109 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
+/*110 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
 /*111 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
 /*112 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
 /*113 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
@@ -1654,29 +1652,32 @@ uint8_t GifAnim(uint32_t idx) {
 /*128 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
 /*129 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
 
-        #if mheight <= 96
-            { ROOT  "215_fallingcube.gif",		15, 0, 0, 10, YMUL, 0, 0 }, // 130
-            { ROOT  "257_colormesh_wave.gif",		20, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "271_mj.gif",			15,-14,3, 15, YMUL, 0, 0 },
-            { ROOT  "193_redplasma.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "208_pulpfictiondance.gif",		25, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "412_bluecube_slide.gif",		20, 0, 0, 10, YMUL, 0, 0 }, // 135
-            { ROOT  "236_spintriangle.gif",		20, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "281_plasma.gif",			20, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "sonic.gif",			10, 0, 0, 10, YMUL, 0, 0 },
-        #else
-            { ROOT  "failingcube.gif",			10, 0,10, 10, 10, 0, 0 }, // 130
-            { ROOT  "colormesh_wave.gif",		20,-20,0,  9, 10, 0, 0 },
-            { ROOT  "z_5PmD_MJ_moonwalk.gif",		40, 2, 0, 12, 10, 0, 0 },
-            { ROOT  "z_SBMP_redplasma.gif",		10,-32,0, 10, 10, 0, 0 },
-            { ROOT  "z_7VA_pulp_fiction_dance.gif",	25, 0, 0, 10, 12, 0, 0 },
-            { ROOT  "bluecube_slidepup.gif",		10, 0 ,0, 10, 10, 0, 0 }, // 135
-            { ROOT  "z_3Ppu_spin_triangles.gif",	10, 0, 0, 10, 10, 0, 0 },
-            { ROOT  "z_Egph_plasma_.gif",		10,-12,0,  8, 10, 0, 0 },
-            { ROOT  "z_3F3F_sonic.gif",			10, 0, 0,  7, 10, 0, 0 },
-        #endif
-/*139 */    { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/*140 */    { "", 0, 0 , 0, 0 , 0, 0 , 0  },
+	    // -- non animated, those scroll up/down
+	#if mheight <= 96
+/*130 */    { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10, 64, 64 },
+	    { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10, 64, 64 },
+	    { ROOT  "AnB_color_bands_heart.gif",10, 0,  0, 10, 10, 64, 64 },
+	    { ROOT  "AnB_logo_lgrey.gif",	10, 0,  0, 10, 10, 64, 64 },
+	    { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10, 64, 32 },
+/*135 */    { ROOT  "BM_Lady_Fire.gif",		10, 0,  0, 10, 10, 64, 64 },
+	    { ROOT  "BM_Logo_lgrey.gif",	10, 0,  0, 10, 10, 64, 64 },
+	    { ROOT  "BM_Man_Scroll.gif",	10, 0, 16, 10, 10, 0,  0  },
+	    { ROOT  "BM_TheMan_Blue.gif",	10,-12,-2, 10, 10, 36, 64 },
+	    { ROOT  "BM_TheMan_Red.gif",	10,-12, 0, 10, 10, 36, 64 },
+/*140 */    { ROOT  "BM_TheMan_Green.gif",	10, 0,  4, 10, 10, 64,104 },
+	#else
+/*130 */    { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10,128,128 },
+	    { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10,128,128 },
+	    { ROOT  "AnB_color_bands_heart.gif",10, 0,  0, 10, 10,128,128 },
+	    { ROOT  "AnB_logo_lgrey.gif",	10, 0,  0, 10, 10,128,128 },
+	    { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10,128, 64 },
+/*135 */    { ROOT  "BM_Lady_Fire.gif",		10, 0, 10, 10, 10,128,212 },
+	    { ROOT  "BM_Logo_lgrey.gif",	10, 0,  0, 10, 10,128,128 },
+	    { ROOT  "",				10, 0,  0, 10, 10, 64, 64 },
+	    { ROOT  "BM_TheMan_Blue.gif",	10, 0,  6, 10, 10,128,212 },
+	    { ROOT  "BM_TheMan_Red.gif",	10, 0,  0, 10, 10,128,128 },
+/*140 */    { ROOT  "BM_TheMan_Green.gif",	10, 0, 10, 10, 10,128,212 },
+	#endif
 /*141 */    { "", 0, 0 , 0, 0 , 0, 0 , 0  },
 /*142 */    { "", 0, 0 , 0, 0 , 0, 0 , 0  },
 /*143 */    { "", 0, 0 , 0, 0 , 0, 0 , 0  },
@@ -1697,158 +1698,158 @@ uint8_t GifAnim(uint32_t idx) {
 /*158 */    { "", 0, 0 , 0, 0 , 0, 0 , 0  },
 /*159 */    { "", 0, 0 , 0, 0 , 0, 0 , 0  },
 
-        #if mheight <= 96
-            { ROOT  "087_net.gif",			05, 0, 0, 10, YMUL, 0, 0 }, // 160
-            { ROOT  "196_colorstar.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "200_circlesmoke.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "203_waterdrop.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "210_circletriangle.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "255_photon.gif",			10, 0, 0, 10, YMUL, 0, 0 }, // 165
-            { ROOT  "342_spincircle.gif",		20, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "401_ghostbusters.gif",		05, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "444_hand.gif",			10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "469_infection.gif",		05, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "284_comets.gif",			15, 0, 0, 10, YMUL, 0, 0 }, // 170
-            { ROOT  "377_batman.gif",			07, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "226_flyingfire.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "264_expandcircle.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "286_greenplasma.gif",		15, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "291_circle2sphere.gif",		15, 0, 0, 10, YMUL, 0, 0 }, // 175
-            { ROOT  "364_colortoroid.gif",		25, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "470_scrollcubestron.gif",		25, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "358_spinningpattern.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "328_spacetime.gif",		20, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "218_circleslices.gif",		10, 0, 0, 10, YMUL, 0, 0 }, // 180
-            { ROOT  "heartTunnel.gif",			10, 0, 0, 10, YMUL, 0, 0 },
-        #else
-            { ROOT  "abstract_colorful.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 160 */
-            { ROOT  "Aki5PC6_Running.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 161 */
-            { ROOT  "dancing_lady.gif",			10,-32,0, 15, 15, 0, 0 },  /* 162 */
-            { ROOT  "GirlSexyAnimateddance.gif",	10,-32,0, 15, 15, 0, 0 },  /* 163 */
-            { ROOT  "z_13xS_green_aurora.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 164 */
-            { ROOT  "z_19Ri_multi_aurora.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 165 */
-            { ROOT  "z_19Ro_city_aurora.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 166 */
-            { ROOT  "z_1AYl_DJ.gif",			10, 0, 0,  8, 10, 0, 0 },  /* 167 */
-            { ROOT  "z_1Fvr_color_string_spirals.gif",	10,-20,0,  9, 10, 0, 0 },  /* 168 */
-            { ROOT  "z_1KO9_orange_shapes_spinout.gif",	10,-8, 0, 10, 10, 0, 0 },  /* 169 */
-            { ROOT  "z_1zfD_3rdeye_spin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 170 */
-            { ROOT  "z_24RD_8_fish_spirals.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 171 */
-            { ROOT  "z_2Htr_caniche.gif",		10, 0, 0,  7, 10, 0, 0 },  /* 172 */
-            { ROOT  "z_2mue_yingyang.gif",		10, 0,-52,10, 15, 0, 0 },  /* 173 */
-            { ROOT  "z_2QeW_color_stars_flash.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 174 */
-            { ROOT  "z_2unv_dancing_pink_back.gif",	10,10, 0, 10, 10, 0, 0 },  /* 175 */
-            { ROOT  "z_2vCo_triangle_merge.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 176 */
-            { ROOT  "z_2zFo_green_hal9000.gif",		10,-32,0, 10, 10, 0, 0 },  /* 177 */
-            { ROOT  "z_37Ec_bird_dance.gif",		10, 0, 0,  8, 10, 0, 0 },  /* 178 */
-            { ROOT  "z_3bUjj_concentric_lights.gif",	10,-32,0, 10, 10, 0, 0 },  /* 179 */
-            { ROOT  "z_3Mel_spiral_pentagon_dance.gif",	10,-32,0, 10, 10, 0, 0 },  /* 180 */
-            { ROOT  "z_3Qqj_double_stargate.gif",	10,-20,-16,9, 12, 0, 0 },  /* 181 */
-            { ROOT  "z_3Wfu_RGB_smirout.gif",		10,-32,0, 10, 10, 0, 0 },  /* 182 */
-            { ROOT  "z_3wQM_fractal_zoom.gif",		10,-24,0,  8, 10, 0, 0 },  /* 183 */
-            { ROOT  "z_3zO_pacman.gif",			40,-12,0,  8, 10, 0, 0 },  /* 184 */
-            { ROOT  "z_47Vg_purple_hair_spiralout.gif",	10,-32,0, 10, 10, 0, 0 },  /* 185 */
-            { ROOT  "z_4P4a_flip_triangles.gif",	10,-20,0,  8, 10, 0, 0 },  /* 186 */
-            { ROOT  "z_4RNd_rgb_color_plates.gif",	10,-24,0, 10, 10, 0, 0 },  /* 187 */
-            { ROOT  "z_4RNj_red_round_unfold.gif",	10,-12,0,  8, 10, 0, 0 },  /* 188 */
-            { ROOT  "z_4RNm_triangrect_shapes_out.gif",	10,-32,0, 10, 10, 0, 0 },  /* 189 */
-            { ROOT  "z_5x_light_tunnel.gif",		10, 0, 0,  7, 10, 0, 0 },  /* 190 */
-            { ROOT  "z_6nr_heart_rotate.gif",		10, 0, 0,  6, 10, 0, 0 },  /* 191 */
-            { ROOT  "z_6PLP_colorflowers_spiralout.gif",10,-32,0, 10, 10, 0, 0 },  /* 192 */
-            { ROOT  "z_72f8_green_mobius_rotate.gif",	10, 0, 0,  8, 10, 0, 0 },  /* 193 */
-            { ROOT  "z_72fP_cauliflower.gif",		10,-32,0, 10, 10, 0, 0 },  /* 194 */
-            { ROOT  "z_72gi_triple_3D_smiley.gif",	10,-8, 0,  7, 10, 0, 0 },  /* 195 */
-            { ROOT  "z_73O8_lightman_running.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 196 */
-            { ROOT  "z_75ks_green_zoomout_lasers.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 197 */
-            { ROOT  "z_75yI_BW_spiral_out.gif",		10,-32,0, 10, 10, 0, 0 },  /* 198 */
-            { ROOT  "z_76dA_starship_shooting.gif",	10,-32,0, 10, 10, 0, 0 },  /* 199 */
-            { ROOT  "z_78jz_blue_smoke_out.gif",	10,-32,0, 10, 10, 0, 0 },  /* 200 */
-            { ROOT  "z_ZIb4_red_jacket_dancer.gif",	10,-16,0, 10, 10, 0, 0 },  /* 201 */
-            { ROOT  "z_7gRx_white_grey_smoke.gif",	10,-32,0, 10, 10, 0, 0 },  /* 202 */
-            { ROOT  "z_7Gtw_flowers_spinout.gif",	10,-24,0, 10, 10, 0, 0 },  /* 203 */
-            { ROOT  "z_7IgI_colors_pulsing_in_out.gif", 10,-32,0, 10, 10, 0, 0 },  /* 204 */
-            { ROOT  "z_7IGR_red_smoke_spiral_in.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 205 */
-            { ROOT  "z_7MS3_grey_cubes_tunnel.gif",	10,-32,0, 10, 10, 0, 0 },  /* 206 */
-            { ROOT  "z_7OEb_blue_amber_juggler.gif",	10,-32,0, 10, 10, 0, 0 },  /* 207 */
-            { ROOT  "z_7rq5_flying_through_pipes.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 208 */
-            { ROOT  "z_7SHB_blue_robot_heart.gif",	10,-12,0,  8, 10, 0, 0 },  /* 209 */
-            { ROOT  "z_7sXr_3D_Mobius_loop.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 210 */
-            { ROOT  "z_7U4_endless_corridor.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 211 */
-            { ROOT  "z_7xyP_BW_zoomout_gears.gif",	10,-32,0, 10, 10, 0, 0 },  /* 212 */
-            { ROOT  "z_7ZNJ_RGB_toroid.gif",		10,-12,0,  8, 10, 0, 0 },  /* 213 */
-            { ROOT  "z_8vFu_mushroom_spots.gif",	10,-8, 0, 10, 10, 0, 0 },  /* 214 */
-            { ROOT  "z_ZJtC_you_rock.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 215 */
-            { ROOT  "z_9Cre_morphing_3D_shape.gif",	10,-24,0,  8, 10, 0, 0 },  /* 216 */
-            { ROOT  "z_9vQE_flower_petals.gif",		10,-32,0, 10, 10, 0, 0 },  /* 217 */
-            { ROOT  "z_9xyv_eatme.gif",			10, 0, 0, 10, 10, 0, 0 },  /* 218 */
-            { ROOT  "z_A8u8_sparkling_spiralin.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 219 */
-            { ROOT  "z_Ab6r_spingout_RGB.gif",		10,-32,0, 10, 10, 0, 0 },  /* 220 */
-            { ROOT  "z_Abml_green_cube_mobius.gif",	10,-32,0, 10, 10, 0, 0 },  /* 221 */
-            { ROOT  "z_Ajyj_3D_green_wheel_ridge.gif",	10,-32,0, 10, 10, 0, 0 },  /* 222 */
-            { ROOT  "z_AOkf_colorspiral_zoomout.gif",	10,-32,0, 10, 10, 0, 0 },  /* 223 */
-            { ROOT  "z_B0Te_spinning_dancer.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 224 */
-            { ROOT  "z_B87j_color_projectors.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 225 */
-            { ROOT  "z_ZLnU_sailormoon_highdance.gif",	10, 0,-12,10, 10, 0, 0 },  /* 226 */
-            { ROOT  "z_bh8_smiling_dancing_girl.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 227 */
-            { ROOT  "z_CDno_coiling_fern.gif",		10,-32,0, 10, 10, 0, 0 },  /* 228 */
-            { ROOT  "z_Cf03_yellow_lighthouse.gif",	10,-20,0, 10, 10, 0, 0 },  /* 229 */
-            { ROOT  "z_CuQ9_color_pyramids.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 230 */
-            { ROOT  "z_DemL_tunnel_spark_dancer.gif",	10,-12,0,  8, 10, 0, 0 },  /* 231 */
-            { ROOT  "cube_sphere_pill.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 232 */
-            { ROOT  "z_fxac_hyperspace.gif",		10,-32,0, 10, 10, 0, 0 },  /* 233 */
-            { ROOT  "z_fxcA_conifer_zoom_in.gif",	10,-32,0, 10, 10, 0, 0 },  /* 234 */
-            { ROOT  "z_fxcE_3D_hypercube_RGB.gif",	10,-24,0,  9, 10, 0, 0 },  /* 235 */
-            { ROOT  "z_fxmf_grapefuit_zoomin.gif",	10,-32,0, 10, 10, 0, 0 },  /* 236 */
-            { ROOT  "z_fxVE_pink_flaming_circle.gif",	10,-4, 0,  7, 10, 0, 0 },  /* 237 */
-            { ROOT  "z_fxYU_center_moving_spiral.gif",	10,-32,0, 10, 10, 0, 0 },  /* 238 */
-            { ROOT  "z_fyE2_hypnotoad.gif",		10,-32,0, 10, 10, 0, 0 },  /* 239 */
-            { ROOT  "z_fyNK_pizza_zoomin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 240 */
-            { ROOT  "z_fypc_RGB_spiralin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 241 */
-            { ROOT  "z_fype_bluebee_zoomin.gif",	10,-32,0, 10, 10, 0, 0 },  /* 242 */
-            { ROOT  "z_FZl2_green_neutron_star.gif",	10,-32,0, 10, 10, 0, 0 },  /* 243 */
-            { ROOT  "z_g09P_clock_in.gif",		10,-32,0, 10, 10, 0, 0 },  /* 244 */
-            { ROOT  "z_g0Af_piano_zoomin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 245 */
-            { ROOT  "z_g0bg_puzzle_spiralout.gif",	10,-32,0, 10, 10, 0, 0 },  /* 246 */
-            { ROOT  "z_g0HL_shiny_snail_shell.gif",	10,-32,0, 10, 10, 0, 0 },  /* 247 */
-            { ROOT  "z_g0RQ_hypercube.gif",		10,-32,0, 10, 10, 0, 0 },  /* 248 */
-            { ROOT  "z_g1Jh_color_dots_spiralin.gif",	10,-32,0, 10, 10, 0, 0 },  /* 249 */
-            { ROOT  "z_g1mN_3D_fractal_roll.gif",	10,-32,0, 10, 10, 0, 0 },  /* 250 */
-            { ROOT  "z_g3HP_Kaleidoscope_spiral.gif",	10,-32,0, 10, 10, 0, 0 },  /* 251 */
-            { ROOT  "z_IAkQ_acid_cat.gif",		10,-4, 0,  9, 10, 0, 0 },  /* 252 */
-            { ROOT  "z_IrES_purple_geometrical.gif",	10,-32,0, 10, 10, 0, 0 },  /* 253 */
-            { ROOT  "z_K5bj_fly_buildings.gif",		10,-32,0, 10, 10, 0, 0 },  /* 254 */
-            { ROOT  "z_K5bn_pulsing_color_rects.gif",	10,-32,0, 10, 10, 0, 0 },  /* 255 */
-            { ROOT  "z_KTLf_white_geometric_out.gif",	10,-32,0, 10, 10, 0, 0 },  /* 256 */
-            { ROOT  "z_MDdU_color_marble.gif",		10, 0,32, 10, 10, 0, 0 },  /* 257 */
-            { ROOT  "z_MDkc_passionfruit_zoomout.gif",	10,-32,0, 10, 10, 0, 0 },  /* 258 */
-            { ROOT  "z_Mdml_I_am_drugs.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 259 */
-            { ROOT  "z_Nfhn_smileys_spinout.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 260 */
-            { ROOT  "z_NTHQ_flyin_cavern.gif",		10,-32,0, 10, 10, 0, 0 },  /* 261 */
-            { ROOT  "z_Z6W2_mario_mushroom_dance.gif",	10,-4, 0,  9, 10, 0, 0 },  /* 262 */
-            { ROOT  "z_NUYV_baby_pig_fall.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 263 */
-            { ROOT  "z_O7TJ_color_shapes_out.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 264 */
-            { ROOT  "z_OBYz_blue_cubes_flyin.gif",	10,-32,0, 10, 10, 0, 0 },  /* 265 */
-            { ROOT  "z_OwRt_triangles_RGB_out.gif",	10,-32,0, 10, 10, 0, 0 },  /* 266 */
-            { ROOT  "z_Oz2e_rubiks_cube.gif",		10,-16,0,  9, 10, 0, 0 },  /* 267 */
-            { ROOT  "z_P8P_fractal2_zoom.gif",		10, 0,15, 10, 10, 0, 0 },  /* 268 */
-            { ROOT  "z_PAM_color_sticks.gif",		10,-32,0, 10, 10, 0, 0 },  /* 269 */
-            { ROOT  "z_PVyt_mushroom_walk.gif",		10,-4, 0,  7, 10, 0, 0 },  /* 270 */
-            { ROOT  "z_PYZK_BW_bubbles.gif",		10,-32,0, 10, 10, 0, 0 },  /* 271 */
-            { ROOT  "z_T2wm_flying_grass.gif",		10,-32,0, 10, 10, 0, 0 },  /* 272 */
-            { ROOT  "z_tIH_blue_gecko_dance.gif",	10,-12,0,  9, 10, 0, 0 },  /* 273 */
-            { ROOT  "z_TlCL_dancing_flames.gif",	10,-32,0, 10, 10, 0, 0 },  /* 274 */
-            { ROOT  "z_VCq8_skeleton.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 275 */
-            { ROOT  "z_VRfm_fly_purple_gates.gif",	10,-32,0, 10, 10, 0, 0 },  /* 276 */
-            { ROOT  "z_WGkW_bluelady_smoke.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 277 */
-            { ROOT  "z_WMDv_sailor_moon.gif",		10,-20,0,  9, 10, 0, 0 },  /* 278 */
-            { ROOT  "z_WSK_inca_spiralin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 279 */
-            { ROOT  "z_WUUT_eye.gif",			10,-32,0, 10, 10, 0, 0 },  /* 280 */
-            { ROOT  "z_XiPu_blue_shark_dance.gif",	10,-32,0, 10, 10, 0, 0 },  /* 281 */
-            { ROOT  "z_XqyP_blue_dancer.gif",		10,-32,0, 10, 10, 0, 0 },  /* 282 */
-            { ROOT  "z_XwIB_snoopdog_dance.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 283 */
-            { ROOT  "z_Ysrm_walking_dead.gif",		10, 0, 0,  7, 10, 0, 0 },  /* 284 */
-            { ROOT  "z_Yv30_street_fighter.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 285 */
-            { ROOT  "z_feM_MJ_moonwalk_spin.gif",	10,-12,0, 10, 12, 0, 0 },  /* 286 */
-        #endif
+	#if mheight <= 96
+	    { ROOT  "087_net.gif",			05, 0, 0, 10, YMUL, 0, 0 }, // 160
+	    { ROOT  "196_colorstar.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "200_circlesmoke.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "203_waterdrop.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "210_circletriangle.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "255_photon.gif",			10, 0, 0, 10, YMUL, 0, 0 }, // 165
+	    { ROOT  "342_spincircle.gif",		20, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "401_ghostbusters.gif",		05, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "444_hand.gif",			10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "469_infection.gif",		05, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "284_comets.gif",			15, 0, 0, 10, YMUL, 0, 0 }, // 170
+	    { ROOT  "377_batman.gif",			07, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "226_flyingfire.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "264_expandcircle.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "286_greenplasma.gif",		15, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "291_circle2sphere.gif",		15, 0, 0, 10, YMUL, 0, 0 }, // 175
+	    { ROOT  "364_colortoroid.gif",		25, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "470_scrollcubestron.gif",		25, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "358_spinningpattern.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "328_spacetime.gif",		20, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "218_circleslices.gif",		10, 0, 0, 10, YMUL, 0, 0 }, // 180
+	    { ROOT  "heartTunnel.gif",			10, 0, 0, 10, YMUL, 0, 0 },
+	#else
+	    { ROOT  "abstract_colorful.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 160 */
+	    { ROOT  "Aki5PC6_Running.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 161 */
+	    { ROOT  "dancing_lady.gif",			10,-32,0, 15, 15, 0, 0 },  /* 162 */
+	    { ROOT  "GirlSexyAnimateddance.gif",	10,-32,0, 15, 15, 0, 0 },  /* 163 */
+	    { ROOT  "z_13xS_green_aurora.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 164 */
+	    { ROOT  "z_19Ri_multi_aurora.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 165 */
+	    { ROOT  "z_19Ro_city_aurora.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 166 */
+	    { ROOT  "z_1AYl_DJ.gif",			10, 0, 0,  8, 10, 0, 0 },  /* 167 */
+	    { ROOT  "z_1Fvr_color_string_spirals.gif",	10,-20,0,  9, 10, 0, 0 },  /* 168 */
+	    { ROOT  "z_1KO9_orange_shapes_spinout.gif",	10,-8, 0, 10, 10, 0, 0 },  /* 169 */
+	    { ROOT  "z_1zfD_3rdeye_spin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 170 */
+	    { ROOT  "z_24RD_8_fish_spirals.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 171 */
+	    { ROOT  "z_2Htr_caniche.gif",		10, 0, 0,  7, 10, 0, 0 },  /* 172 */
+	    { ROOT  "z_2mue_yingyang.gif",		10, 0,-52,10, 15, 0, 0 },  /* 173 */
+	    { ROOT  "z_2QeW_color_stars_flash.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 174 */
+	    { ROOT  "z_2unv_dancing_pink_back.gif",	10,10, 0, 10, 10, 0, 0 },  /* 175 */
+	    { ROOT  "z_2vCo_triangle_merge.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 176 */
+	    { ROOT  "z_2zFo_green_hal9000.gif",		10,-32,0, 10, 10, 0, 0 },  /* 177 */
+	    { ROOT  "z_37Ec_bird_dance.gif",		10, 0, 0,  8, 10, 0, 0 },  /* 178 */
+	    { ROOT  "z_3bUjj_concentric_lights.gif",	10,-32,0, 10, 10, 0, 0 },  /* 179 */
+	    { ROOT  "z_3Mel_spiral_pentagon_dance.gif",	10,-32,0, 10, 10, 0, 0 },  /* 180 */
+	    { ROOT  "z_3Qqj_double_stargate.gif",	10,-20,-16,9, 12, 0, 0 },  /* 181 */
+	    { ROOT  "z_3Wfu_RGB_smirout.gif",		10,-32,0, 10, 10, 0, 0 },  /* 182 */
+	    { ROOT  "z_3wQM_fractal_zoom.gif",		10,-24,0,  8, 10, 0, 0 },  /* 183 */
+	    { ROOT  "z_3zO_pacman.gif",			40,-12,0,  8, 10, 0, 0 },  /* 184 */
+	    { ROOT  "z_47Vg_purple_hair_spiralout.gif",	10,-32,0, 10, 10, 0, 0 },  /* 185 */
+	    { ROOT  "z_4P4a_flip_triangles.gif",	10,-20,0,  8, 10, 0, 0 },  /* 186 */
+	    { ROOT  "z_4RNd_rgb_color_plates.gif",	10,-24,0, 10, 10, 0, 0 },  /* 187 */
+	    { ROOT  "z_4RNj_red_round_unfold.gif",	10,-12,0,  8, 10, 0, 0 },  /* 188 */
+	    { ROOT  "z_4RNm_triangrect_shapes_out.gif",	10,-32,0, 10, 10, 0, 0 },  /* 189 */
+	    { ROOT  "z_5x_light_tunnel.gif",		10, 0, 0,  7, 10, 0, 0 },  /* 190 */
+	    { ROOT  "z_6nr_heart_rotate.gif",		10, 0, 0,  6, 10, 0, 0 },  /* 191 */
+	    { ROOT  "z_6PLP_colorflowers_spiralout.gif",10,-32,0, 10, 10, 0, 0 },  /* 192 */
+	    { ROOT  "z_72f8_green_mobius_rotate.gif",	10, 0, 0,  8, 10, 0, 0 },  /* 193 */
+	    { ROOT  "z_72fP_cauliflower.gif",		10,-32,0, 10, 10, 0, 0 },  /* 194 */
+	    { ROOT  "z_72gi_triple_3D_smiley.gif",	10,-8, 0,  7, 10, 0, 0 },  /* 195 */
+	    { ROOT  "z_73O8_lightman_running.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 196 */
+	    { ROOT  "z_75ks_green_zoomout_lasers.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 197 */
+	    { ROOT  "z_75yI_BW_spiral_out.gif",		10,-32,0, 10, 10, 0, 0 },  /* 198 */
+	    { ROOT  "z_76dA_starship_shooting.gif",	10,-32,0, 10, 10, 0, 0 },  /* 199 */
+	    { ROOT  "z_78jz_blue_smoke_out.gif",	10,-32,0, 10, 10, 0, 0 },  /* 200 */
+	    { ROOT  "z_ZIb4_red_jacket_dancer.gif",	10,-16,0, 10, 10, 0, 0 },  /* 201 */
+	    { ROOT  "z_7gRx_white_grey_smoke.gif",	10,-32,0, 10, 10, 0, 0 },  /* 202 */
+	    { ROOT  "z_7Gtw_flowers_spinout.gif",	10,-24,0, 10, 10, 0, 0 },  /* 203 */
+	    { ROOT  "z_7IgI_colors_pulsing_in_out.gif", 10,-32,0, 10, 10, 0, 0 },  /* 204 */
+	    { ROOT  "z_7IGR_red_smoke_spiral_in.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 205 */
+	    { ROOT  "z_7MS3_grey_cubes_tunnel.gif",	10,-32,0, 10, 10, 0, 0 },  /* 206 */
+	    { ROOT  "z_7OEb_blue_amber_juggler.gif",	10,-32,0, 10, 10, 0, 0 },  /* 207 */
+	    { ROOT  "z_7rq5_flying_through_pipes.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 208 */
+	    { ROOT  "z_7SHB_blue_robot_heart.gif",	10,-12,0,  8, 10, 0, 0 },  /* 209 */
+	    { ROOT  "z_7sXr_3D_Mobius_loop.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 210 */
+	    { ROOT  "z_7U4_endless_corridor.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 211 */
+	    { ROOT  "z_7xyP_BW_zoomout_gears.gif",	10,-32,0, 10, 10, 0, 0 },  /* 212 */
+	    { ROOT  "z_7ZNJ_RGB_toroid.gif",		10,-12,0,  8, 10, 0, 0 },  /* 213 */
+	    { ROOT  "z_8vFu_mushroom_spots.gif",	10,-8, 0, 10, 10, 0, 0 },  /* 214 */
+	    { ROOT  "z_ZJtC_you_rock.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 215 */
+	    { ROOT  "z_9Cre_morphing_3D_shape.gif",	10,-24,0,  8, 10, 0, 0 },  /* 216 */
+	    { ROOT  "z_9vQE_flower_petals.gif",		10,-32,0, 10, 10, 0, 0 },  /* 217 */
+	    { ROOT  "z_9xyv_eatme.gif",			10, 0, 0, 10, 10, 0, 0 },  /* 218 */
+	    { ROOT  "z_A8u8_sparkling_spiralin.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 219 */
+	    { ROOT  "z_Ab6r_spingout_RGB.gif",		10,-32,0, 10, 10, 0, 0 },  /* 220 */
+	    { ROOT  "z_Abml_green_cube_mobius.gif",	10,-32,0, 10, 10, 0, 0 },  /* 221 */
+	    { ROOT  "z_Ajyj_3D_green_wheel_ridge.gif",	10,-32,0, 10, 10, 0, 0 },  /* 222 */
+	    { ROOT  "z_AOkf_colorspiral_zoomout.gif",	10,-32,0, 10, 10, 0, 0 },  /* 223 */
+	    { ROOT  "z_B0Te_spinning_dancer.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 224 */
+	    { ROOT  "z_B87j_color_projectors.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 225 */
+	    { ROOT  "z_ZLnU_sailormoon_highdance.gif",	10, 0,-12,10, 10, 0, 0 },  /* 226 */
+	    { ROOT  "z_bh8_smiling_dancing_girl.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 227 */
+	    { ROOT  "z_CDno_coiling_fern.gif",		10,-32,0, 10, 10, 0, 0 },  /* 228 */
+	    { ROOT  "z_Cf03_yellow_lighthouse.gif",	10,-20,0, 10, 10, 0, 0 },  /* 229 */
+	    { ROOT  "z_CuQ9_color_pyramids.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 230 */
+	    { ROOT  "z_DemL_tunnel_spark_dancer.gif",	10,-12,0,  8, 10, 0, 0 },  /* 231 */
+	    { ROOT  "cube_sphere_pill.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 232 */
+	    { ROOT  "z_fxac_hyperspace.gif",		10,-32,0, 10, 10, 0, 0 },  /* 233 */
+	    { ROOT  "z_fxcA_conifer_zoom_in.gif",	10,-32,0, 10, 10, 0, 0 },  /* 234 */
+	    { ROOT  "z_fxcE_3D_hypercube_RGB.gif",	10,-24,0,  9, 10, 0, 0 },  /* 235 */
+	    { ROOT  "z_fxmf_grapefuit_zoomin.gif",	10,-32,0, 10, 10, 0, 0 },  /* 236 */
+	    { ROOT  "z_fxVE_pink_flaming_circle.gif",	10,-4, 0,  7, 10, 0, 0 },  /* 237 */
+	    { ROOT  "z_fxYU_center_moving_spiral.gif",	10,-32,0, 10, 10, 0, 0 },  /* 238 */
+	    { ROOT  "z_fyE2_hypnotoad.gif",		10,-32,0, 10, 10, 0, 0 },  /* 239 */
+	    { ROOT  "z_fyNK_pizza_zoomin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 240 */
+	    { ROOT  "z_fypc_RGB_spiralin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 241 */
+	    { ROOT  "z_fype_bluebee_zoomin.gif",	10,-32,0, 10, 10, 0, 0 },  /* 242 */
+	    { ROOT  "z_FZl2_green_neutron_star.gif",	10,-32,0, 10, 10, 0, 0 },  /* 243 */
+	    { ROOT  "z_g09P_clock_in.gif",		10,-32,0, 10, 10, 0, 0 },  /* 244 */
+	    { ROOT  "z_g0Af_piano_zoomin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 245 */
+	    { ROOT  "z_g0bg_puzzle_spiralout.gif",	10,-32,0, 10, 10, 0, 0 },  /* 246 */
+	    { ROOT  "z_g0HL_shiny_snail_shell.gif",	10,-32,0, 10, 10, 0, 0 },  /* 247 */
+	    { ROOT  "z_g0RQ_hypercube.gif",		10,-32,0, 10, 10, 0, 0 },  /* 248 */
+	    { ROOT  "z_g1Jh_color_dots_spiralin.gif",	10,-32,0, 10, 10, 0, 0 },  /* 249 */
+	    { ROOT  "z_g1mN_3D_fractal_roll.gif",	10,-32,0, 10, 10, 0, 0 },  /* 250 */
+	    { ROOT  "z_g3HP_Kaleidoscope_spiral.gif",	10,-32,0, 10, 10, 0, 0 },  /* 251 */
+	    { ROOT  "z_IAkQ_acid_cat.gif",		10,-4, 0,  9, 10, 0, 0 },  /* 252 */
+	    { ROOT  "z_IrES_purple_geometrical.gif",	10,-32,0, 10, 10, 0, 0 },  /* 253 */
+	    { ROOT  "z_K5bj_fly_buildings.gif",		10,-32,0, 10, 10, 0, 0 },  /* 254 */
+	    { ROOT  "z_K5bn_pulsing_color_rects.gif",	10,-32,0, 10, 10, 0, 0 },  /* 255 */
+	    { ROOT  "z_KTLf_white_geometric_out.gif",	10,-32,0, 10, 10, 0, 0 },  /* 256 */
+	    { ROOT  "z_MDdU_color_marble.gif",		10, 0,32, 10, 10, 0, 0 },  /* 257 */
+	    { ROOT  "z_MDkc_passionfruit_zoomout.gif",	10,-32,0, 10, 10, 0, 0 },  /* 258 */
+	    { ROOT  "z_Mdml_I_am_drugs.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 259 */
+	    { ROOT  "z_Nfhn_smileys_spinout.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 260 */
+	    { ROOT  "z_NTHQ_flyin_cavern.gif",		10,-32,0, 10, 10, 0, 0 },  /* 261 */
+	    { ROOT  "z_Z6W2_mario_mushroom_dance.gif",	10,-4, 0,  9, 10, 0, 0 },  /* 262 */
+	    { ROOT  "z_NUYV_baby_pig_fall.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 263 */
+	    { ROOT  "z_O7TJ_color_shapes_out.gif",	10, 0, 0,  7, 10, 0, 0 },  /* 264 */
+	    { ROOT  "z_OBYz_blue_cubes_flyin.gif",	10,-32,0, 10, 10, 0, 0 },  /* 265 */
+	    { ROOT  "z_OwRt_triangles_RGB_out.gif",	10,-32,0, 10, 10, 0, 0 },  /* 266 */
+	    { ROOT  "z_Oz2e_rubiks_cube.gif",		10,-16,0,  9, 10, 0, 0 },  /* 267 */
+	    { ROOT  "z_P8P_fractal2_zoom.gif",		10, 0,15, 10, 10, 0, 0 },  /* 268 */
+	    { ROOT  "z_PAM_color_sticks.gif",		10,-32,0, 10, 10, 0, 0 },  /* 269 */
+	    { ROOT  "z_PVyt_mushroom_walk.gif",		10,-4, 0,  7, 10, 0, 0 },  /* 270 */
+	    { ROOT  "z_PYZK_BW_bubbles.gif",		10,-32,0, 10, 10, 0, 0 },  /* 271 */
+	    { ROOT  "z_T2wm_flying_grass.gif",		10,-32,0, 10, 10, 0, 0 },  /* 272 */
+	    { ROOT  "z_tIH_blue_gecko_dance.gif",	10,-12,0,  9, 10, 0, 0 },  /* 273 */
+	    { ROOT  "z_TlCL_dancing_flames.gif",	10,-32,0, 10, 10, 0, 0 },  /* 274 */
+	    { ROOT  "z_VCq8_skeleton.gif",		10, 0, 0, 10, 10, 0, 0 },  /* 275 */
+	    { ROOT  "z_VRfm_fly_purple_gates.gif",	10,-32,0, 10, 10, 0, 0 },  /* 276 */
+	    { ROOT  "z_WGkW_bluelady_smoke.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 277 */
+	    { ROOT  "z_WMDv_sailor_moon.gif",		10,-20,0,  9, 10, 0, 0 },  /* 278 */
+	    { ROOT  "z_WSK_inca_spiralin.gif",		10,-32,0, 10, 10, 0, 0 },  /* 279 */
+	    { ROOT  "z_WUUT_eye.gif",			10,-32,0, 10, 10, 0, 0 },  /* 280 */
+	    { ROOT  "z_XiPu_blue_shark_dance.gif",	10,-32,0, 10, 10, 0, 0 },  /* 281 */
+	    { ROOT  "z_XqyP_blue_dancer.gif",		10,-32,0, 10, 10, 0, 0 },  /* 282 */
+	    { ROOT  "z_XwIB_snoopdog_dance.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 283 */
+	    { ROOT  "z_Ysrm_walking_dead.gif",		10, 0, 0,  7, 10, 0, 0 },  /* 284 */
+	    { ROOT  "z_Yv30_street_fighter.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 285 */
+	    { ROOT  "z_feM_MJ_moonwalk_spin.gif",	10,-12,0, 10, 12, 0, 0 },  /* 286 */
+	#endif
 	};
     #endif
     gif_cnt = ARRAY_SIZE(animgif);
@@ -1859,30 +1860,30 @@ uint8_t GifAnim(uint32_t idx) {
     static uint8_t gifloopsec;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        gifloopsec =  animgif[idx].looptime;
-        OFFSETX = animgif[idx].offx;
-        OFFSETY = animgif[idx].offy;
-        FACTX =   animgif[idx].factx;
-        FACTY =   animgif[idx].facty;
-        scrollx = animgif[idx].scrollx;
-        scrolly = animgif[idx].scrolly;
-        matrix->clear();
+	matrix_reset_demo = 0;
+	gifloopsec =  animgif[idx].looptime;
+	OFFSETX = animgif[idx].offx;
+	OFFSETY = animgif[idx].offy;
+	FACTX =   animgif[idx].factx;
+	FACTY =   animgif[idx].facty;
+	scrollx = animgif[idx].scrollx;
+	scrolly = animgif[idx].scrolly;
+	matrix->clear();
 	// initialize x/y by sending the reset flag
-        panOrBounce(&x, &y, scrollx, scrolly, true);
-        // exit if the gif animation couldn't get setup.
-        if (sav_newgif(animgif[idx].path)) return 0;
+	panOrBounce(&x, &y, scrollx, scrolly, true);
+	// exit if the gif animation couldn't get setup.
+	if (sav_newgif(animgif[idx].path)) return 0;
     }
 
     if (scrollx || scrolly) {
 	// Get back an x and y to use for offset display
-        panOrBounce(&x, &y, scrollx, scrolly);
-        OFFSETX = animgif[idx].offx + x;
-        OFFSETY = animgif[idx].offy + y;
-        matrix->clear();
-        //Serial.print(x);
-        //Serial.print(" ");
-        //Serial.println(y);
+	panOrBounce(&x, &y, scrollx, scrolly);
+	OFFSETX = animgif[idx].offx + x;
+	OFFSETY = animgif[idx].offy + y;
+	matrix->clear();
+	//Serial.print(x);
+	//Serial.print(" ");
+	//Serial.println(y);
     }
     // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
@@ -1894,8 +1895,8 @@ uint8_t GifAnim(uint32_t idx) {
     sav_loop();
 
     EVERY_N_SECONDS(1) {
-        Serial.print(gifloopsec); Serial.print(" ");
-        if (!gifloopsec--) { Serial.println(); return 0; };
+	Serial.print(gifloopsec); Serial.print(" ");
+	if (!gifloopsec--) { Serial.println(); return 0; };
     }
     return repeat;
 }
@@ -1910,53 +1911,53 @@ uint8_t scrollBigtext(uint32_t unused) {
     unused = unused;
 
     static const char* text[] = {
-        "if (reset) {",
-        "  xf = max(0, (mw-sizeX)/2) << 4;",
-        "  yf = max(0, (mh-sizeY)/2) << 4;",
-        "  xfc = 6; yfc = 3; xfdir = -1; yfdir = -1; }",
-        "bool changeDir = false;",
-        "// Get actual x/y by dividing by 16.",
-        "*x = xf >> 4; *y = yf >> 4;",
-        "// Only pan if the display size is smaller than the pixmap",
-        "// but not if the difference is too small or it'll look bad.",
-        "if (sizeX-mw>2) { xf += xfc*xfdir;",
-        "  if (xf >= 0)                 { xfdir = -1; changeDir = true ; };",
-        "  // we don't go negative past right corner, go back positive",
-        "  if (xf <= ((mw-sizeX) << 4)) { xfdir = 1;  changeDir = true ; }; }",
-        "if (sizeY-mh>2) { yf += yfc*yfdir;",
-        "  // we shouldn't display past left corner, reverse direction.",
-        "  if (yf >= 0)                 { yfdir = -1; changeDir = true ; };",
-        "  if (yf <= ((mh-sizeY) << 4)) { yfdir = 1;  changeDir = true ; }; }",
-        "  // only bounce a pixmap if it's smaller than the display size",
-        "if (mw>sizeX) { xf += xfc*xfdir;",
-        "  // Deal with bouncing off the 'walls'",
-        "  if (xf >= (mw-sizeX) << 4) { xfdir = -1; changeDir = true ; };",
-        "  if (xf <= 0)           { xfdir =  1; changeDir = true ; }; }",
-        "if (mh>sizeY) { yf += yfc*yfdir;",
-        "  if (yf >= (mh-sizeY) << 4) { yfdir = -1; changeDir = true ; };",
-        "  if (yf <= 0)           { yfdir =  1; changeDir = true ; }; }",
-        "if (changeDir) {",
-        "  // Add -1, 0 or 1 but bind result to 1 to 1.",
-        "  // Let's take 3 is a minimum speed, otherwise it's too slow.",
-        "  xfc = constrain(xfc + random(-1, 2), 3, 16);",
-        "  yfc = constrain(yfc + random(-1, 2), 3, 16); }",
+	"if (reset) {",
+	"  xf = max(0, (mw-sizeX)/2) << 4;",
+	"  yf = max(0, (mh-sizeY)/2) << 4;",
+	"  xfc = 6; yfc = 3; xfdir = -1; yfdir = -1; }",
+	"bool changeDir = false;",
+	"// Get actual x/y by dividing by 16.",
+	"*x = xf >> 4; *y = yf >> 4;",
+	"// Only pan if the display size is smaller than the pixmap",
+	"// but not if the difference is too small or it'll look bad.",
+	"if (sizeX-mw>2) { xf += xfc*xfdir;",
+	"  if (xf >= 0)                 { xfdir = -1; changeDir = true ; };",
+	"  // we don't go negative past right corner, go back positive",
+	"  if (xf <= ((mw-sizeX) << 4)) { xfdir = 1;  changeDir = true ; }; }",
+	"if (sizeY-mh>2) { yf += yfc*yfdir;",
+	"  // we shouldn't display past left corner, reverse direction.",
+	"  if (yf >= 0)                 { yfdir = -1; changeDir = true ; };",
+	"  if (yf <= ((mh-sizeY) << 4)) { yfdir = 1;  changeDir = true ; }; }",
+	"  // only bounce a pixmap if it's smaller than the display size",
+	"if (mw>sizeX) { xf += xfc*xfdir;",
+	"  // Deal with bouncing off the 'walls'",
+	"  if (xf >= (mw-sizeX) << 4) { xfdir = -1; changeDir = true ; };",
+	"  if (xf <= 0)           { xfdir =  1; changeDir = true ; }; }",
+	"if (mh>sizeY) { yf += yfc*yfdir;",
+	"  if (yf >= (mh-sizeY) << 4) { yfdir = -1; changeDir = true ; };",
+	"  if (yf <= 0)           { yfdir =  1; changeDir = true ; }; }",
+	"if (changeDir) {",
+	"  // Add -1, 0 or 1 but bind result to 1 to 1.",
+	"  // Let's take 3 is a minimum speed, otherwise it's too slow.",
+	"  xfc = constrain(xfc + random(-1, 2), 3, 16);",
+	"  yfc = constrain(yfc + random(-1, 2), 3, 16); }",
     };
     const uint8_t textlines = ARRAY_SIZE(text);
     static uint32_t textcolor[textlines];
 
     if (matrix_reset_demo == 1) {
-        state = 0;
-        matrix_reset_demo = 0;
-        panOrBounce(&x, &y, 54*6, ARRAY_SIZE(text)*7, true);
-        matrix->setRotation(0);
-        matrix->setTextSize(1);
-        // default font is 5x7, but you really need 6x8 for spacing
-        matrix->setFont(NULL);
-        for (uint8_t i=0; i<=textlines-1; i++) {
-            textcolor[i] = random8(96) * 65536 + (127 + random8(128))* 256, random8(96);
-            //Serial.print("Setup color mapping: ");
-            //Serial.println(textcolor[i], HEX);
-        }
+	state = 0;
+	matrix_reset_demo = 0;
+	panOrBounce(&x, &y, 54*6, ARRAY_SIZE(text)*7, true);
+	matrix->setRotation(0);
+	matrix->setTextSize(1);
+	// default font is 5x7, but you really need 6x8 for spacing
+	matrix->setFont(NULL);
+	for (uint8_t i=0; i<=textlines-1; i++) {
+	    textcolor[i] = random8(96) * 65536 + (127 + random8(128))* 256, random8(96);
+	    //Serial.print("Setup color mapping: ");
+	    //Serial.println(textcolor[i], HEX);
+	}
     }
 
     state++;
@@ -1964,16 +1965,16 @@ uint8_t scrollBigtext(uint32_t unused) {
 
     matrix->clear();
     for (uint8_t i=0; i<=textlines-1; i++) {
-        matrix->setPassThruColor(textcolor[i]);
-        matrix->setCursor(x, y+8*i);
-        matrix->print(text[i]);
+	matrix->setPassThruColor(textcolor[i]);
+	matrix->setCursor(x, y+8*i);
+	matrix->print(text[i]);
     }
     matrix->setPassThruColor();
     matrix_show();
 
     if (state > loopcnt) {
-        matrix_reset_demo = 1;
-        return 0;
+	matrix_reset_demo = 1;
+	return 0;
     }
     return resetcnt;
 }
@@ -2015,19 +2016,19 @@ uint8_t demoreel100(uint32_t demo) {
     uint8_t repeat = 2;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 0;
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 0;
     }
 
 #if mheight <= 64
     static uint16_t delayframe = demoreeldelay;
     if (--delayframe) {
-        // reset how long a frame is shown before we switch to the next one
-        //Serial.print("delayed frame ");
-        //Serial.println(delayframe);
-        //delay(MX_UPD_TIME); Aiko emulates this delay for us
-        return repeat;
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
+	return repeat;
     }
     delayframe = demoreeldelay;
 #endif
@@ -2036,43 +2037,43 @@ uint8_t demoreel100(uint32_t demo) {
 
     if (state < 2000)
     {
-        if (demo == 1) {
-            // random colored speckles that blink in and fade smoothly
+	if (demo == 1) {
+	    // random colored speckles that blink in and fade smoothly
 #if mheight > 64
-            fadeToBlackBy( matrixleds, NUMMATRIX, 3);
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 3);
 #else
-            fadeToBlackBy( matrixleds, NUMMATRIX, 10);
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 10);
 #endif
-            int pos = random16(NUMMATRIX);
-            matrixleds[pos] += CHSV( gHue + random8(64), 200, 255);
-        }
-        if (demo == 2) {
-            // a colored dot sweeping back and forth, with fading trails
+	    int pos = random16(NUMMATRIX);
+	    matrixleds[pos] += CHSV( gHue + random8(64), 200, 255);
+	}
+	if (demo == 2) {
+	    // a colored dot sweeping back and forth, with fading trails
 #if mheight > 64
-            fadeToBlackBy( matrixleds, NUMMATRIX, 5);
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 5);
 #else
-            fadeToBlackBy( matrixleds, NUMMATRIX, 20);
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
 #endif
-            int pos = beatsin16( 13, 0, NUMMATRIX-1 );
-            matrixleds[pos2matrix(pos)] += CHSV( gHue, 255, 192);
-        }
-        if (demo == 3) {
-            // eight colored dots, weaving in and out of sync with each other
+	    int pos = beatsin16( 13, 0, NUMMATRIX-1 );
+	    matrixleds[pos2matrix(pos)] += CHSV( gHue, 255, 192);
+	}
+	if (demo == 3) {
+	    // eight colored dots, weaving in and out of sync with each other
 #if mheight > 64
-            fadeToBlackBy( matrixleds, NUMMATRIX, 5);
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 5);
 #else
-            fadeToBlackBy( matrixleds, NUMMATRIX, 20);
+	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
 #endif
-            int8_t dothue = 0;
-            for( int i = 0; i < 8; i++) {
-                int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
-              matrixleds[pos2matrix(pos)] |= CHSV(dothue, 200, 255);
-              dothue += 32;
-            }
-        }
+	    int8_t dothue = 0;
+	    for( int i = 0; i < 8; i++) {
+		int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
+	      matrixleds[pos2matrix(pos)] |= CHSV(dothue, 200, 255);
+	      dothue += 32;
+	    }
+	}
     } else {
-        matrix_reset_demo = 1;
-        return 0;
+	matrix_reset_demo = 1;
+	return 0;
     }
 
     matrix_show();
@@ -2087,8 +2088,8 @@ uint8_t call_twinklefox(uint32_t unused)
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        state = 0;
+	matrix_reset_demo = 0;
+	state = 0;
     }
 
     twinkle_loop();
@@ -2104,8 +2105,8 @@ uint8_t call_pride(uint32_t unused)
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        state = 0;
+	matrix_reset_demo = 0;
+	state = 0;
     }
 
     pride();
@@ -2121,9 +2122,9 @@ uint8_t call_fireworks(uint32_t unused) {
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 0;
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 0;
     }
 
     fireworks();
@@ -2139,9 +2140,9 @@ uint8_t call_fire(uint32_t unused) {
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        matrix->clear();
-        state = 0;
+	matrix_reset_demo = 0;
+	matrix->clear();
+	state = 0;
     }
 
     // rotate palette
@@ -2159,17 +2160,17 @@ uint8_t call_rain(uint32_t which) {
     static uint16_t delayframe = raindelay;
 
     if (matrix_reset_demo == 1) {
-        sublime_reset();
-        matrix_reset_demo = 0;
-        state = 0;
+	sublime_reset();
+	matrix_reset_demo = 0;
+	state = 0;
     }
 
     if (--delayframe) {
-        // reset how long a frame is shown before we switch to the next one
-        //Serial.print("delayed frame ");
-        //Serial.println(delayframe);
-        //delay(MX_UPD_TIME); Aiko emulates this delay for us
-        return 1;
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
+	return 1;
     }
     delayframe = raindelay;
 
@@ -2190,16 +2191,16 @@ uint8_t call_pacman(uint32_t unused) {
     unused = unused;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        pacman_setup(loopcnt);
+	matrix_reset_demo = 0;
+	pacman_setup(loopcnt);
     }
 
     if (--delayframe) {
-        // reset how long a frame is shown before we switch to the next one
-        //Serial.print("delayed frame ");
-        //Serial.println(delayframe);
-        //delay(MX_UPD_TIME); Aiko emulates this delay for us
-        return 1;
+	// reset how long a frame is shown before we switch to the next one
+	//Serial.print("delayed frame ");
+	//Serial.println(delayframe);
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
+	return 1;
     }
     delayframe = pacmandelay;
 
@@ -2221,8 +2222,8 @@ uint8_t plasma(uint32_t unused) {
     static uint16_t state;
 
     if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
-        state = 0;
+	matrix_reset_demo = 0;
+	state = 0;
     }
 
     PlasmaShift = (random8(0, 5) * 32) + 64;
@@ -2231,13 +2232,13 @@ uint8_t plasma(uint32_t unused) {
 
     for (x=0; x<MATRIX_WIDTH; x++)
     {
-        for (y=0; y<MATRIX_HEIGHT; y++)
-        {
-            r = sin16(PlasmaTime) / 256;
-            h = sin16(x * r * PLASMA_X_FACTOR + PlasmaTime) + cos16(y * (-r) * PLASMA_Y_FACTOR + PlasmaTime) + sin16(y * x * (cos16(-PlasmaTime) / 256) / 2);
-            // drawPixel does not accept CHSV, so we get a fastLED offset and write to it directly
-            matrixleds[matrix->XY(x, y)] = CHSV((h / 256) + 128, 255, 255);
-        }
+	for (y=0; y<MATRIX_HEIGHT; y++)
+	{
+	    r = sin16(PlasmaTime) / 256;
+	    h = sin16(x * r * PLASMA_X_FACTOR + PlasmaTime) + cos16(y * (-r) * PLASMA_Y_FACTOR + PlasmaTime) + sin16(y * x * (cos16(-PlasmaTime) / 256) / 2);
+	    // drawPixel does not accept CHSV, so we get a fastLED offset and write to it directly
+	    matrixleds[matrix->XY(x, y)] = CHSV((h / 256) + 128, 255, 255);
+	}
     }
 
     OldPlasmaTime = PlasmaTime;
@@ -2255,19 +2256,19 @@ uint8_t tmed(uint32_t demo) {
     // add new demos at the end or the number selections will be off
     // make sure 77 runs long enough
     const uint16_t tmed_mapping[][3] = {
-        {   4, 2, 200 },  // 00 concentric colors and shapes
-        {  10, 5, 300 },  //    5 color windows-like pattern with circles in and out
-        {  11, 5, 300 },  //    color worm patterns going out with circles zomming out
-        {  25, 3, 500 },  //    5 circles turning together, run a bit longer
-        {  52, 5, 300 },  //    rectangles/squares/triangles zooming out
-        {  60, 6, 200 },  // 05 opposite concentric colors and shapes (52 reversed)
-        {  62, 6, 200 },  //    double color starfield with shapes in/out
-        {  67, 5, 900 },  //    two colors swirling bigger, creating hypno pattern
-        {  70, 6, 200 },  //    4 fat spinning comets with shapes growing from middle sometimes
-        {  77, 5, 300 },  //    streaming lines of colored pixels with shape zooming in or out
-        {  80, 5, 200 },  // 10 rotating triangles of color
-        { 104, 6, 200 },  //    circles mixing in the middle
-        { 105, 2, 400 },  //    hypno
+	{   4, 2, 200 },  // 00 concentric colors and shapes
+	{  10, 5, 300 },  //    5 color windows-like pattern with circles in and out
+	{  11, 5, 300 },  //    color worm patterns going out with circles zomming out
+	{  25, 3, 500 },  //    5 circles turning together, run a bit longer
+	{  52, 5, 300 },  //    rectangles/squares/triangles zooming out
+	{  60, 6, 200 },  // 05 opposite concentric colors and shapes (52 reversed)
+	{  62, 6, 200 },  //    double color starfield with shapes in/out
+	{  67, 5, 900 },  //    two colors swirling bigger, creating hypno pattern
+	{  70, 6, 200 },  //    4 fat spinning comets with shapes growing from middle sometimes
+	{  77, 5, 300 },  //    streaming lines of colored pixels with shape zooming in or out
+	{  80, 5, 200 },  // 10 rotating triangles of color
+	{ 104, 6, 200 },  //    circles mixing in the middle
+	{ 105, 2, 400 },  //    hypno
 
     };
 //	{  29, 5, 300 },  // XX swirly RGB colored dots meant to go to music
@@ -2281,40 +2282,40 @@ uint8_t tmed(uint32_t demo) {
     demo = tmed_mapping[demo][0];
 
     if (matrix_reset_demo == 1) {
-        Serial.print("Starting ME Table Demo #");
-        Serial.println(demo);
-        matrix_reset_demo = 0;
-        td_init();
+	Serial.print("Starting ME Table Demo #");
+	Serial.println(demo);
+	matrix_reset_demo = 0;
+	td_init();
 
-        switch (demo) {
-        case 10:
-            driftx = MIDLX;//pin the animation to the center
-            drifty = MIDLY;
-            break;
-        case 11:
-        case 25:
-            adjunct = 0;
-            break;
-        case 52:
-            bfade = 3;
-            break;
-        // Remove delay on pattern only based on ringer/bkringer
-        case 60:
-          ringdelay = 0;
-          bringdelay = 0;
-          break;
-        case 110:
-            // this kills the trail but also makes the colors too dark
-            // not true in the original demo.
-            // bfade = 10;
-            break;
-        }
-        matrix->clear();
+	switch (demo) {
+	case 10:
+	    driftx = MIDLX;//pin the animation to the center
+	    drifty = MIDLY;
+	    break;
+	case 11:
+	case 25:
+	    adjunct = 0;
+	    break;
+	case 52:
+	    bfade = 3;
+	    break;
+	// Remove delay on pattern only based on ringer/bkringer
+	case 60:
+	  ringdelay = 0;
+	  bringdelay = 0;
+	  break;
+	case 110:
+	    // this kills the trail but also makes the colors too dark
+	    // not true in the original demo.
+	    // bfade = 10;
+	    break;
+	}
+	matrix->clear();
     }
 
     if (--delayframe) {
-        //delay(MX_UPD_TIME); Aiko emulates this delay for us
-        return 2;
+	//delay(MX_UPD_TIME); Aiko emulates this delay for us
+	return 2;
     }
     delayframe = dfinit;
 
@@ -2322,96 +2323,96 @@ uint8_t tmed(uint32_t demo) {
     case 4:
       Roundhole();
       if (flip3)
-        bkstarer();
+	bkstarer();
       else
-        bkringer();
+	bkringer();
       // boxer();
       adjuster();
       break;
     case 10:
-        corner();
-        bkringer();
-        ringer();
-        break;
+	corner();
+	bkringer();
+	ringer();
+	break;
     case 11:
-        whitewarp();
-        ringer();
-        break;
+	whitewarp();
+	ringer();
+	break;
     case 25:
-        spire();
-        if (flip3) adjuster();
-        break;
+	spire();
+	if (flip3) adjuster();
+	break;
     case 52:
-        rmagictime();
-        bkboxer();
-        starer();
-        if (flip && !flip2) adjuster();
-        break;
+	rmagictime();
+	bkboxer();
+	starer();
+	if (flip && !flip2) adjuster();
+	break;
     case 60:
       if (flip3)
-        bkringer();
+	bkringer();
       else
-        bkboxer();
+	bkboxer();
       if (flip2)
-        ringer();
+	ringer();
       else
-        starer();
+	starer();
       break;
     case 62:
       // MM FLAGS
       flip3 = 1; // I don't like confetti2
       if (flip)
-        boxer();
+	boxer();
       else
-        ringer();
+	ringer();
       if (flip2)
-        bkstarer();
+	bkstarer();
       else
-        bkboxer();
+	bkboxer();
       if (flip3)
-        warp();
+	warp();
       else {
-        confetti2();
-        adjuster();
+	confetti2();
+	adjuster();
       }
       break;
     case 67:
-        // MM FLAGS
-        flip = 0; // force whitewarp
-        //flip2 controls white or color
-        flip3 = 0; // force whitewarp
+	// MM FLAGS
+	flip = 0; // force whitewarp
+	//flip2 controls white or color
+	flip3 = 0; // force whitewarp
 
-        hypnoduck2();
-        break;
+	hypnoduck2();
+	break;
     case 70:
-        // MM FLAGS
-        if (!flip2) flip3 = 1;
+	// MM FLAGS
+	if (!flip2) flip3 = 1;
 
-        if (flip2) boxer(); // outward going box
-        else if (flip3) bkringer(); // back collapsing circles
-        spin2();
-        if (!flip && flip2 && !flip3) adjuster();
-        break;
+	if (flip2) boxer(); // outward going box
+	else if (flip3) bkringer(); // back collapsing circles
+	spin2();
+	if (!flip && flip2 && !flip3) adjuster();
+	break;
     case 73: // unused, circle that gets fed by outside streams
-        homer2();
-        break;
+	homer2();
+	break;
     case 77:
-        if (flip2) bkstarer(); else bkringer();
-        whitewarp();
-        break;
+	if (flip2) bkstarer(); else bkringer();
+	whitewarp();
+	break;
     case 80:
-        starz();
-        break;
+	starz();
+	break;
     case 104:
-        circlearc();
-        break;
+	circlearc();
+	break;
     case 105:
-        hypnoduck4();
-        break;
+	hypnoduck4();
+	break;
     case 110:
-        //if (flip3) solid2();
-        bubbles();
-        break;
+	//if (flip3) solid2();
+	bubbles();
+	break;
     }
 
     td_loop();
@@ -2448,18 +2449,18 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 11 */ { "", NULL, -1, 0 },
 /* 12 */ { "", NULL, -1, 0 },
 /* 13 */ { "", NULL, -1, 0 },
-/* 14 */ { "Safety Third", DoublescrollText, 1, 0 },    // adjusts // fixme I love LEDs
+/* 14 */ { "Safety Third", DoublescrollText, 1, 0 },    // adjusts
 /* 15 */ { "ScrollBigtext", scrollBigtext, -1, 0 },     // code of scrolling code
 /* 16 */ { "Bounce Smiley", panOrBounceBitmap, 1, 0 },  // currently only 24x32
 /* 17 */ { "Fireworks", call_fireworks, -1, 0 },
 /* 18 */ { "TwinkleFox", call_twinklefox, -1, 0 },
-/* 19 */ { "Pride", call_pride, -1, 0 },		    // not nice for higher res (64 and above)
-/* 20 */ { "Demoreel Stars", demoreel100, 1, 0 },	    // Twinlking stars
-/* 21 */ { "Demoreel Sweeper", demoreel100, 2, 0 },    // color changing pixels sweeping up and down
-/* 22 */ { "Demoreel Dbl Sweeper", demoreel100, 3, 0 },// colored pixels being exchanged between top and bottom
-/* 23 */ { "Matrix", call_rain, 1, 0 },		    // matrix
-/* 24 */ { "Storm", call_rain, 3, 0 },		    // clouds, rain, lightening
-/* 25 */ { "Pac Man", call_pacman, -1, 0 },	    // currently only designed for 24x32
+/* 19 */ { "Pride", call_pride, -1, 0 },		// not nice for higher res (64 and above)
+/* 20 */ { "Demoreel Stars", demoreel100, 1, 0 },	// Twinlking stars
+/* 21 */ { "Demoreel Sweeper", demoreel100, 2, 0 },	// color changing pixels sweeping up and down
+/* 22 */ { "Demoreel Dbl Sweeper", demoreel100, 3, 0 },	// colored pixels being exchanged between top and bottom
+/* 23 */ { "Matrix", call_rain, 1, 0 },			// matrix
+/* 24 */ { "Storm", call_rain, 3, 0 },			// clouds, rain, lightening
+/* 25 */ { "Pac Man", call_pacman, -1, 0 },		// currently only designed for 24x32
 /* 26 */ { "Plasma", plasma, -1, 0 },
 /* 27 */ { "Fire", call_fire, -1, 0 },
 /* 28 */ { "", NULL, -1, 0 },
@@ -2472,26 +2473,26 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 35 */ { "Aurora Incremental Drift", aurora,  5, 0 },
 /* 36 */ { "Aurora Incremental Drift2", aurora,  6, 0 },
 /* 37 */ { "Aurora Pendulum Wave ", aurora,  7, 0 },
-/* 38 */ { "Aurora Radar", aurora,  8, 0 },	    // 8 not great on non square
+/* 38 */ { "Aurora Radar", aurora,  8, 0 },		// 8 not great on non square
 /* 39 */ { "Aurora Spiral/Line Screensave", aurora,  9, 0 },
 /* 40 */ { "Aurora Spiro", aurora, 10, 0 },
-/* 41 */ { "Aurora Swirl", aurora, 11, 0 },	    // 11 not great on bigger display
+/* 41 */ { "Aurora Swirl", aurora, 11, 0 },		// 11 not great on bigger display
 /* 42 */ { "Aurora Wave", aurora, 12, 0 },
 /* 43 */ { "", NULL, -1, 0 },
 /* 44 */ { "", NULL, -1, 0 },
-/* 45 */ { "TMED  0 Zoom in shapes", tmed,  0, 0 }, // concentric colors and shapes
+/* 45 */ { "TMED  0 Zoom in shapes", tmed,  0, 0 },	// concentric colors and shapes
 /* 46 */ { "TMED  1 Concentric circles", tmed,  1, 0 }, // 5 color windows-like pattern with circles in and out
-/* 47 */ { "TMED  2 Color Starfield", tmed,  2, 0 }, // color worm patterns going out with circles zomming out
-/* 48 */ { "TMED  3 Dancing Circles", tmed,  3, 0 }, // 5 circles turning together, run a bit longer
-/* 49 */ { "TMED  4 Zoom out Shapes", tmed,  4, 0 }, // rectangles/squares/triangles zooming out
-/* 50 */ { "TMED  5 Shapes In/Out", tmed,  5, 0 }, // opposite concentric colors and shapes (52 reversed)
+/* 47 */ { "TMED  2 Color Starfield", tmed,  2, 0 },	// color worm patterns going out with circles zomming out
+/* 48 */ { "TMED  3 Dancing Circles", tmed,  3, 0 },	// 5 circles turning together, run a bit longer
+/* 49 */ { "TMED  4 Zoom out Shapes", tmed,  4, 0 },	// rectangles/squares/triangles zooming out
+/* 50 */ { "TMED  5 Shapes In/Out", tmed,  5, 0 },	// opposite concentric colors and shapes (52 reversed)
 /* 51 */ { "TMED  6 Double Starfield&Shapes", tmed,  6, 0 }, // double color starfield with shapes in/out
 /* 52 */ { "TMED  7 Hypnoswirl Starfield", tmed,  7, 0 }, // two colors swirling bigger, creating hypno pattern
 /* 53 */ { "TMED  8 4 Dancing Balls&Shapes", tmed,  8, 0 }, // 4 fat spinning comets with shapes growing from middle sometimes
 /* 54 */ { "TMED  9 Starfield BKringer", tmed,  9, 0 }, // streaming lines of colored pixels with shape zooming in or out
 /* 55 */ { "TMED 10 Spinning Triangles", tmed, 10, 0 }, // rotating triangles of color
-/* 56 */ { "TMED 11 Circles Mixing", tmed, 11, 0 }, // circles mixing in the middle
-/* 57 */ { "TMED 12 Hypno", tmed, 12, 0 }, // hypno
+/* 56 */ { "TMED 11 Circles Mixing", tmed, 11, 0 },	// circles mixing in the middle
+/* 57 */ { "TMED 12 Hypno", tmed, 12, 0 },		// hypno
 /* 58 */ { "", NULL, -1, 0 },
 /* 59 */ { "", NULL, -1, 0 },
 /* 60 */ { "", NULL, -1, 0 },
@@ -2548,17 +2549,17 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*110 */ { "GIF triangles_in"	, GifAnim, 10, 0 },
 /*111 */ { "GIF wifi"		, GifAnim, 11, 0 },
 #else
-/*100 */ { "GIF A&B colors balls",GifAnim,  0, 0 },
-/*101 */ { "GIF A&B Color Bands", GifAnim,  1, 0 },
-/*102 */ { "GIF A&B CBands Heart",GifAnim,  2, 0 },
-/*103 */ { "GIF A&B Logo lgrey",  GifAnim,  3, 0 },
-/*104 */ { "GIF A&B Sign lgrey",  GifAnim,  4, 0 },
-/*105 */ { "GIF BM Lady Fire",	  GifAnim,  5, 0 },
-/*106 */ { "GIF BM Logo lgrey",   GifAnim,  6, 0 },
-/*107 */ { "GIF BM Man Scroll",   GifAnim,  7, 0 },
-/*108 */ { "GIF BM TheMan Blue",  GifAnim,  8, 0 },
-/*109 */ { "GIF BM TheMan_Green", GifAnim,  9, 0 },
-/*110 */ { "GIF BM TheMan Red",   GifAnim, 10, 0 },
+/*100 */ { "GIF fallingcube"	,GifAnim,  0, 0 },
+/*101 */ { "GIF colormesh wave"	,GifAnim,  1, 0 },
+/*102 */ { "GIF Michael Jackson",GifAnim,  2, 0 },
+/*103 */ { "GIF redplasma"	,GifAnim,  3, 0 },
+/*104 */ { "GIF pulpfictiondance",GifAnim, 4, 0 },
+/*105 */ { "GIF bluecube_slide"	,GifAnim,  5, 0 },
+/*106 */ { "GIF spintriangle"	,GifAnim,  6, 0 },
+/*107 */ { "GIF plasma"		,GifAnim,  7, 0 },
+/*108 */ { "GIF sonic"		,GifAnim,  8, 0 },
+/*109 */ { "", NULL, -1, 0 },
+/*110 */ { "", NULL, -1, 0 },
 /*111 */ { "", NULL, -1, 0 },
 /*112 */ { "", NULL, -1, 0 },
 /*113 */ { "", NULL, -1, 0 },
@@ -2578,17 +2579,17 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*127 */ { "", NULL, -1, 0 },
 /*128 */ { "", NULL, -1, 0 },
 /*129 */ { "", NULL, -1, 0 },
-/*130 */ { "GIF fallingcube"	, GifAnim,  30, 0 },
-/*131 */ { "GIF colormesh wave"	, GifAnim,  31, 0 },
-/*132 */ { "GIF Michael Jackson", GifAnim,  32, 0 },
-/*133 */ { "GIF redplasma"	, GifAnim,  33, 0 },
-/*134 */ { "GIF pulpfictiondance",GifAnim,  34, 0 },
-/*135 */ { "GIF bluecube_slide"	, GifAnim,  35, 0 },
-/*136 */ { "GIF spintriangle"	, GifAnim,  36, 0 },
-/*137 */ { "GIF plasma"		, GifAnim,  37, 0 },
-/*138 */ { "GIF sonic"		, GifAnim,  38, 0 },
-/*139 */ { "", NULL, -1, 0 },
-/*140 */ { "", NULL, -1, 0 },
+/*130 */ { "GIF A&B colors balls",  GifAnim,  30, 0 },
+/*131 */ { "GIF A&B Color Bands",   GifAnim,  31, 0 },
+/*132 */ { "GIF A&B CBands Heart",  GifAnim,  32, 0 },
+/*133 */ { "GIF A&B Logo lgrey",    GifAnim,  33, 0 },
+/*134 */ { "GIF A&B Sign lgrey",    GifAnim,  34, 0 },
+/*135 */ { "GIF BM Lady Fire",	    GifAnim,  35, 0 },
+/*136 */ { "GIF BM Logo lgrey",	    GifAnim,  36, 0 },
+/*137 */ { "GIF BM Man Scroll",	    GifAnim,  37, 0 },
+/*138 */ { "GIF BM TheMan Blue",    GifAnim,  38, 0 },
+/*139 */ { "GIF BM TheMan_Green",   GifAnim,  38, 0 },
+/*140 */ { "GIF BM TheMan Red",	    GifAnim,  38, 0 },
 /*141 */ { "", NULL, -1, 0 },
 /*142 */ { "", NULL, -1, 0 },
 /*143 */ { "", NULL, -1, 0 },
@@ -2911,43 +2912,43 @@ void matrix_change(int16_t demo, bool directmap=false) {
     // matrix_state is the index to look up in demo_list array
     // matrix_demo is the actual demo# in demo_list array
     if (directmap) {
-        // bypass matrix_state (which will now be incorrect) and point directly
-        // to the desired demo without going though demo_mapping array.
-        matrix_demo = demo;
-        matrix_loop = 100;
+	// bypass matrix_state (which will now be incorrect) and point directly
+	// to the desired demo without going though demo_mapping array.
+	matrix_demo = demo;
+	matrix_loop = 100;
     } else {
-        if (demo != DEMO_PREV && demo != DEMO_NEXT) matrix_state = demo;
+	if (demo != DEMO_PREV && demo != DEMO_NEXT) matrix_state = demo;
 
-        #ifdef neopixel_pin
-        // special one key press where demos are shown forever and next goes back to the normal loop
-        if (demo >= 0 && demo < DEMO_TEXT_INPUT) matrix_loop = 9999;
-        #endif
-        Serial.print(", switching to index ");
-        // special text demos that bypass the array mapping
-        if (demo >= DEMO_TEXT_THANKYOU && demo != DEMO_NEXT) {
-            matrix_state = demo;
-            Serial.print(matrix_state);
-            matrix_demo = matrix_state;
-        } else {
-            do {
-                if (demo==DEMO_PREV) if (matrix_state-- == 0) matrix_state = demo_last_idx;
-                if (demo==DEMO_NEXT) if (++matrix_state > demo_last_idx) matrix_state = 0;
+	#ifdef neopixel_pin
+	// special one key press where demos are shown forever and next goes back to the normal loop
+	if (demo >= 0 && demo < DEMO_TEXT_INPUT) matrix_loop = 9999;
+	#endif
+	Serial.print(", switching to index ");
+	// special text demos that bypass the array mapping
+	if (demo >= DEMO_TEXT_THANKYOU && demo != DEMO_NEXT) {
+	    matrix_state = demo;
+	    Serial.print(matrix_state);
+	    matrix_demo = matrix_state;
+	} else {
+	    do {
+		if (demo==DEMO_PREV) if (matrix_state-- == 0) matrix_state = demo_last_idx;
+		if (demo==DEMO_NEXT) if (++matrix_state > demo_last_idx) matrix_state = 0;
 
-                matrix_state = (matrix_state % (demo_last_idx+1));
-                Serial.print(matrix_state);
-                matrix_demo = demo_mapping[matrix_state].mapping;
-                if (show_best_demos) {
-                    Serial.print(" (bestof mode) ");
-                    if (demo_mapping[matrix_state].enabled[panelconfnum] & 2) break;
-                } else {
-                    Serial.print(" (full mode) ");
-                    if (demo_mapping[matrix_state].enabled[panelconfnum] & 1) break;
-                }
-                // If we're here for a demo # that doesn't exist, looping will not change
-                // the demo number, so force a change.
-                if (demo != DEMO_PREV && demo != DEMO_NEXT) matrix_state++;
-            } while (1);
-        }
+		matrix_state = (matrix_state % (demo_last_idx+1));
+		Serial.print(matrix_state);
+		matrix_demo = demo_mapping[matrix_state].mapping;
+		if (show_best_demos) {
+		    Serial.print(" (bestof mode) ");
+		    if (demo_mapping[matrix_state].enabled[panelconfnum] & 2) break;
+		} else {
+		    Serial.print(" (full mode) ");
+		    if (demo_mapping[matrix_state].enabled[panelconfnum] & 1) break;
+		}
+		// If we're here for a demo # that doesn't exist, looping will not change
+		// the demo number, so force a change.
+		if (demo != DEMO_PREV && demo != DEMO_NEXT) matrix_state++;
+	    } while (1);
+	}
 	Serial.print(", mapped to matrix demo ");
 	Serial.print(matrix_demo);
     }
@@ -2956,12 +2957,12 @@ void matrix_change(int16_t demo, bool directmap=false) {
     Serial.print(") loop ");
     Serial.println(matrix_loop);
     #ifndef ARDUINOONPC
-        Serial.flush();
-        Serial.print("|D:");
-        char buf[4];
-        sprintf(buf, "%3d", matrix_state);
-        Serial.println(buf);
-        Serial.flush();
+	Serial.flush();
+	Serial.print("|D:");
+	char buf[4];
+	sprintf(buf, "%3d", matrix_state);
+	Serial.println(buf);
+	Serial.flush();
     #endif
 }
 
@@ -2973,30 +2974,30 @@ void Matrix_Handler() {
 
     if (matrix_demo == DEMO_TEXT_THANKYOU) {
 #ifdef M32BY8X3
-            const char str[] = "Thank You :)";
-            ret = scrollText(str, sizeof(str));
+	    const char str[] = "Thank You :)";
+	    ret = scrollText(str, sizeof(str));
 #else
-            fixdrawRGBBitmap(28, 87, RGB_bmp, 8, 8);
-            ret = display_text("Thank\n  You\n  Very\n Much", 0, 14);
+	    fixdrawRGBBitmap(28, 87, RGB_bmp, 8, 8);
+	    ret = display_text("Thank\n  You\n  Very\n Much", 0, 14);
 #endif
-            if (matrix_loop == -1) matrix_loop = ret;
-            if (ret) return;
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
     } else if (matrix_demo == DEMO_TEXT_INPUT) {
-            //ret = scrollText(str, sizeof(str));
-            ret = display_text(displaytext.c_str(), 0, 14);
-            if (matrix_loop == -1) matrix_loop = ret;
-            if (ret) return;
+	    //ret = scrollText(str, sizeof(str));
+	    ret = display_text(displaytext.c_str(), 0, 14);
+	    if (matrix_loop == -1) matrix_loop = ret;
+	    if (ret) return;
     } else {
-        if (! demo_entry.func) {
-            Serial.print(">>> ERROR: No demo for ");
-            Serial.println(matrix_demo);
-            matrix_change(DEMO_NEXT);
-            return;
-        }
+	if (! demo_entry.func) {
+	    Serial.print(">>> ERROR: No demo for ");
+	    Serial.println(matrix_demo);
+	    matrix_change(DEMO_NEXT);
+	    return;
+	}
 
-        ret = demo_entry.func(demo_entry.arg);
-        if (matrix_loop == -1) matrix_loop = ret;
-        if (ret) return;
+	ret = demo_entry.func(demo_entry.arg);
+	if (matrix_loop == -1) matrix_loop = ret;
+	if (ret) return;
     }
 
     matrix_reset_demo = 1;
@@ -3030,15 +3031,15 @@ void change_brightness(int8_t change, bool absolute=false) {
     static uint32_t last_brightness_change = 0 ;
 
     if (!absolute && millis() - last_brightness_change < 300) {
-        Serial.print("Too soon... Ignoring brightness change from ");
-        Serial.println(brightness);
-        return;
+	Serial.print("Too soon... Ignoring brightness change from ");
+	Serial.println(brightness);
+	return;
     }
     last_brightness_change = millis();
     if (absolute) {
-        brightness = change;
+	brightness = change;
     } else {
-        brightness = constrain(brightness + change, 2, 8);
+	brightness = constrain(brightness + change, 2, 8);
     }
     led_brightness = min((1 << (brightness+1)) - 1, 255);
     uint8_t smartmatrix_brightness = min( (1 << (brightness+2)), 255);
@@ -3072,9 +3073,9 @@ void change_speed(int8_t change, bool absolute=false) {
     static uint32_t last_speed_change = 0 ;
 
     if (!absolute && millis() - last_speed_change < 200) {
-        Serial.print("Too soon... Ignoring speed change from ");
-        Serial.println(strip_speed);
-        return;
+	Serial.print("Too soon... Ignoring speed change from ");
+	Serial.println(strip_speed);
+	return;
     }
     last_speed_change = millis();
 
@@ -3082,9 +3083,9 @@ void change_speed(int8_t change, bool absolute=false) {
     Serial.print(strip_speed);
     Serial.print(" to new speed ");
     if (absolute) {
-        strip_speed = change;
+	strip_speed = change;
     } else {
-        strip_speed = constrain(strip_speed + change, 1, 100);
+	strip_speed = constrain(strip_speed + change, 1, 100);
     }
     Serial.println(strip_speed);
     Serial.print("|S:");
@@ -3101,8 +3102,8 @@ bool is_change(bool force=false) {
     // Any change after next button acts as a pattern change for 5 seconds
     // (actually more than 5 secs because millis stops during panel refresh)
     if (newmil - last_change < 5000) {
-        last_change = newmil;
-        return 1;
+	last_change = newmil;
+	return 1;
     }
     if (force) return 0;
 #ifdef NEOPIXEL_PIN
@@ -3125,33 +3126,33 @@ bool check_startup_IR_serial() {
     uint32_t result = 0;
 
     #ifndef ESP32RMTIR
-        decode_results IR_result;
-        if (irrecv.decode(&IR_result)) {
-            irrecv.resume(); // Receive the next value
-            result = IR_result.value;
+	decode_results IR_result;
+	if (irrecv.decode(&IR_result)) {
+	    irrecv.resume(); // Receive the next value
+	    result = IR_result.value;
     #else
-        char* rcvGroup = NULL;
-        if (irrecv.available()) {
-            result = irrecv.read(rcvGroup);
+	char* rcvGroup = NULL;
+	if (irrecv.available()) {
+	    result = irrecv.read(rcvGroup);
     #endif
-        switch (result) {
-        case IR_RGBZONE_POWER2:
-            Serial.println("CheckIS Got IR: Power2");
-        case IR_RGBZONE_POWER:
-            return 1;
+	switch (result) {
+	case IR_RGBZONE_POWER2:
+	    Serial.println("CheckIS Got IR: Power2");
+	case IR_RGBZONE_POWER:
+	    return 1;
 
-        case IR_JUNK:
-            return 0;
+	case IR_JUNK:
+	    return 0;
 
-        default:
-            Serial.print("CheckIS Got unknown IR value: ");
-        #ifdef ESP32RMTIR
-            Serial.print(rcvGroup);
-            Serial.print(" / ");
-        #endif
-            Serial.println(result, HEX);
-            return 0;
-        }
+	default:
+	    Serial.print("CheckIS Got unknown IR value: ");
+	#ifdef ESP32RMTIR
+	    Serial.print(rcvGroup);
+	    Serial.print(" / ");
+	#endif
+	    Serial.println(result, HEX);
+	    return 0;
+	}
     }
 #endif
     return 0;
@@ -3166,15 +3167,15 @@ void IR_Serial_Handler() {
 
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
     if (readchar) {
-        while ((readchar >= '0') && (readchar <= '9')) {
-            new_pattern = 10 * new_pattern + (readchar - '0');
-            readchar = 0;
-            if (Serial.available()) readchar = Serial.read();
-        }
+	while ((readchar >= '0') && (readchar <= '9')) {
+	    new_pattern = 10 * new_pattern + (readchar - '0');
+	    readchar = 0;
+	    if (Serial.available()) readchar = Serial.read();
+	}
 
-        if (new_pattern) {
-            Serial.print("Got new pattern via serial ");
-            Serial.println(new_pattern);
+	if (new_pattern) {
+	    Serial.print("Got new pattern via serial ");
+	    Serial.println(new_pattern);
 	    if (remotesend) {
 		char numstr[4];
 		snprintf( numstr, 3, "%d", new_pattern );
@@ -3183,11 +3184,11 @@ void IR_Serial_Handler() {
 	    } else {
 		matrix_change(new_pattern);
 	    }
-        } else {
-            Serial.print("Got serial char ");
-            Serial.println(readchar);
+	} else {
+	    Serial.print("Got serial char ");
+	    Serial.println(readchar);
 	    remotesend = false;
-        }
+	}
     }
 
     if (readchar == 'n')      { Serial.println("Serial => next");	    matrix_change(DEMO_NEXT);}
@@ -3211,352 +3212,352 @@ void IR_Serial_Handler() {
     uint32_t result;
 
     #ifndef ESP32RMTIR
-        decode_results IR_result;
-        if (irrecv.decode(&IR_result)) {
-            irrecv.resume(); // Receive the next value
-            result = IR_result.value;
+	decode_results IR_result;
+	if (irrecv.decode(&IR_result)) {
+	    irrecv.resume(); // Receive the next value
+	    result = IR_result.value;
     #else
-        char* rcvGroup = NULL;
-        if (irrecv.available()) {
-            result = irrecv.read(rcvGroup);
+	char* rcvGroup = NULL;
+	if (irrecv.available()) {
+	    result = irrecv.read(rcvGroup);
     #endif
-        switch (result) {
-        case IR_RGBZONE_BRIGHT:
-        case IR_RGBZONE_BRIGHT2:
-            if (is_change(true)) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return; }
-            change_brightness(+1);
-            Serial.println("Got IR: Bright");
-            return;
+	switch (result) {
+	case IR_RGBZONE_BRIGHT:
+	case IR_RGBZONE_BRIGHT2:
+	    if (is_change(true)) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return; }
+	    change_brightness(+1);
+	    Serial.println("Got IR: Bright");
+	    return;
 
-        case IR_RGBZONE_DIM:
-        case IR_RGBZONE_DIM2:
-            if (is_change(true)) {
-                Serial.println("Got IR: Dim, show all demos again and Hang on this demo");
-                matrix_loop = 9999;
-                show_best_demos = false;
-                return;
-            }
+	case IR_RGBZONE_DIM:
+	case IR_RGBZONE_DIM2:
+	    if (is_change(true)) {
+		Serial.println("Got IR: Dim, show all demos again and Hang on this demo");
+		matrix_loop = 9999;
+		show_best_demos = false;
+		return;
+	    }
 
-            change_brightness(-1);
-            Serial.println("Got IR: Dim");
-            return;
+	    change_brightness(-1);
+	    Serial.println("Got IR: Dim");
+	    return;
 
-        case IR_RGBZONE_NEXT2:
-            Serial.println("Got IR: Next2");
-        case IR_RGBZONE_NEXT:
-            last_change = millis();
-            matrix_change(DEMO_NEXT);
-            Serial.print("Got IR: Next to matrix state ");
-            Serial.println(matrix_state);
-            return;
+	case IR_RGBZONE_NEXT2:
+	    Serial.println("Got IR: Next2");
+	case IR_RGBZONE_NEXT:
+	    last_change = millis();
+	    matrix_change(DEMO_NEXT);
+	    Serial.print("Got IR: Next to matrix state ");
+	    Serial.println(matrix_state);
+	    return;
 
-        case IR_RGBZONE_POWER2:
-            Serial.println("Got IR: Power2");
-        case IR_RGBZONE_POWER:
-            if (is_change()) { matrix_change(DEMO_PREV); return; }
-            Serial.println("Got IR: Power, show all demos again and Hang on this demo");
-            matrix_loop = 9999;
-            show_best_demos = false;
-            return;
+	case IR_RGBZONE_POWER2:
+	    Serial.println("Got IR: Power2");
+	case IR_RGBZONE_POWER:
+	    if (is_change()) { matrix_change(DEMO_PREV); return; }
+	    Serial.println("Got IR: Power, show all demos again and Hang on this demo");
+	    matrix_loop = 9999;
+	    show_best_demos = false;
+	    return;
 
-        case IR_RGBZONE_RED:
-            Serial.println("Got IR: Red (0)");
-            if (is_change()) { matrix_change(0); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0xFF0000;
-            return;
+	case IR_RGBZONE_RED:
+	    Serial.println("Got IR: Red (0)");
+	    if (is_change()) { matrix_change(0); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFF0000;
+	    return;
 
-        case IR_RGBZONE_GREEN:
-            Serial.println("Got IR: Green (3)");
-            if (is_change()) { matrix_change(3); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x00FF00;
-            return;
+	case IR_RGBZONE_GREEN:
+	    Serial.println("Got IR: Green (3)");
+	    if (is_change()) { matrix_change(3); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x00FF00;
+	    return;
 
-        case IR_RGBZONE_BLUE:
-            Serial.println("Got IR: Blue (5)");
-            if (is_change()) { matrix_change(5); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x0000FF;
-            return;
+	case IR_RGBZONE_BLUE:
+	    Serial.println("Got IR: Blue (5)");
+	    if (is_change()) { matrix_change(5); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x0000FF;
+	    return;
 
-        case IR_RGBZONE_WHITE:
-            Serial.println("Got IR: White (7)");
-            if (is_change()) { matrix_change(7); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0xFFFFFF;
-            return;
-
-
-
-        case IR_RGBZONE_RED2:
-            Serial.println("Got IR: Red2 (9)");
-            if (is_change()) { matrix_change(9); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0xCE6800;
-            return;
-
-        case IR_RGBZONE_GREEN2:
-            Serial.println("Got IR: Green2 (11)");
-            if (is_change()) { matrix_change(11); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x00BB00;
-            return;
-
-        case IR_RGBZONE_BLUE2:
-            Serial.println("Got IR: Blue2 (13)");
-            if (is_change()) { matrix_change(13); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x0000BB;
-            return;
-
-        case IR_RGBZONE_PINK:
-            Serial.println("Got IR: Pink (15)");
-            if (is_change()) { matrix_change(15); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0xFF50FE;
-            return;
+	case IR_RGBZONE_WHITE:
+	    Serial.println("Got IR: White (7)");
+	    if (is_change()) { matrix_change(7); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFFFFFF;
+	    return;
 
 
 
-        case IR_RGBZONE_ORANGE:
-            Serial.println("Got IR: Orange (17)");
-            if (is_change()) { matrix_change(17); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0xFF8100;
-            return;
+	case IR_RGBZONE_RED2:
+	    Serial.println("Got IR: Red2 (9)");
+	    if (is_change()) { matrix_change(9); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xCE6800;
+	    return;
 
-        case IR_RGBZONE_BLUE3:
-            Serial.println("Got IR: Green2 (19)");
-            if (is_change()) { matrix_change(19); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x00BB00;
-            return;
+	case IR_RGBZONE_GREEN2:
+	    Serial.println("Got IR: Green2 (11)");
+	    if (is_change()) { matrix_change(11); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x00BB00;
+	    return;
 
-        case IR_RGBZONE_PURPLED:
-            Serial.println("Got IR: DarkPurple (21)");
-            if (is_change()) { matrix_change(21); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x270041;
-            return;
+	case IR_RGBZONE_BLUE2:
+	    Serial.println("Got IR: Blue2 (13)");
+	    if (is_change()) { matrix_change(13); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x0000BB;
+	    return;
 
-        case IR_RGBZONE_PINK2:
-            Serial.println("Got IR: Pink2 (23)");
-            if (is_change()) { matrix_change(23); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0xFFB9FF;
-            Serial.println("Got IR: Pink2");
-            return;
-
-
-
-        case IR_RGBZONE_ORANGE2:
-            Serial.println("Got IR: Orange2 (25)");
-            if (is_change()) { matrix_change(25); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0xFFCA49;
-            return;
-
-        case IR_RGBZONE_GREEN3:
-            Serial.println("Got IR: Green2 (27)");
-            if (is_change()) { matrix_change(27); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x006A00;
-            return;
-
-        case IR_RGBZONE_PURPLE:
-            Serial.println("Got IR: DarkPurple2 (29)");
-            if (is_change()) { matrix_change(29); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x2B0064;
-            return;
-
-        case IR_RGBZONE_BLUEL:
-            Serial.println("Got IR: BlueLight (31)");
-            if (is_change()) { matrix_change(31); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x50A7FF;
-            return;
+	case IR_RGBZONE_PINK:
+	    Serial.println("Got IR: Pink (15)");
+	    if (is_change()) { matrix_change(15); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFF50FE;
+	    return;
 
 
 
-        case IR_RGBZONE_YELLOW:
-            Serial.println("Got IR: Yellow (33)");
-            if (is_change()) { matrix_change(33); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0xF0FF00;
-            return;
+	case IR_RGBZONE_ORANGE:
+	    Serial.println("Got IR: Orange (17)");
+	    if (is_change()) { matrix_change(17); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFF8100;
+	    return;
 
-        case IR_RGBZONE_GREEN4:
-            Serial.println("Got IR: Green2 (35)");
-            if (is_change()) { matrix_change(35); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x00BB00;
-            return;
+	case IR_RGBZONE_BLUE3:
+	    Serial.println("Got IR: Green2 (19)");
+	    if (is_change()) { matrix_change(19); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x00BB00;
+	    return;
 
-        case IR_RGBZONE_PURPLE2:
-            Serial.println("Got IR: Purple2 (37)");
-            if (is_change()) { matrix_change(37); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x660265;
-            return;
+	case IR_RGBZONE_PURPLED:
+	    Serial.println("Got IR: DarkPurple (21)");
+	    if (is_change()) { matrix_change(21); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x270041;
+	    return;
 
-        case IR_RGBZONE_BLUEL2:
-            Serial.println("Got IR: BlueLight2 (39)");
-            if (is_change()) { matrix_change(39); return; }
-            if (!colorDemo) nextdemo = f_colorWipe;
-            demo_color = 0x408BD8;
-            return;
-
-
-        case IR_RGBZONE_RU:
-            matrix_change(41);
-            Serial.print("Got IR: Red UP switching to matrix state 41");
-            Serial.println(matrix_state);
-            return;
-
-        case IR_RGBZONE_GU:
-            matrix_change(42);
-            Serial.print("Got IR: Green UP switching to matrix state 42");
-            Serial.println(matrix_state);
-            return;
-
-        case IR_RGBZONE_BU:
-            matrix_change(43);
-            Serial.print("Got IR: Blue UP switching to matrix state 43");
-            Serial.println(matrix_state);
-            return;
-
-
-        case IR_RGBZONE_RD:
-            Serial.print("Got IR: Red DOWN switching to matrix state 44");
-            matrix_change(44);
-            Serial.println(matrix_state);
-            return;
-
-        case IR_RGBZONE_GD:
-            Serial.print("Got IR: Green DOWN switching to matrix state 45");
-            matrix_change(45);
-            Serial.println(matrix_state);
-            return;
-
-        case IR_RGBZONE_BD:
-            Serial.print("Got IR: Blue DOWN switching to matrix state 47");
-            matrix_change(47);
-            Serial.println(matrix_state);
-            return;
-
-        case IR_RGBZONE_QUICK:
-            Serial.println("Got IR: Quick");
-            //if (is_change()) { matrix_change(24); return; }
-            change_speed(-10);
-            return;
-
-        case IR_RGBZONE_SLOW:
-            Serial.println("Got IR: Slow)");
-            //if (is_change()) { matrix_change(28); return; }
-            change_speed(+10);
-            return;
+	case IR_RGBZONE_PINK2:
+	    Serial.println("Got IR: Pink2 (23)");
+	    if (is_change()) { matrix_change(23); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFFB9FF;
+	    Serial.println("Got IR: Pink2");
+	    return;
 
 
 
+	case IR_RGBZONE_ORANGE2:
+	    Serial.println("Got IR: Orange2 (25)");
+	    if (is_change()) { matrix_change(25); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xFFCA49;
+	    return;
 
-        case IR_RGBZONE_DIY1:
-            Serial.println("Got IR: DIY1 (49)");
-            if (is_change()) { matrix_change(49); return; }
-            // this uses the last color set
-            nextdemo = f_colorWipe;
-            Serial.println("Got IR: DIY1 colorWipe");
-            return;
+	case IR_RGBZONE_GREEN3:
+	    Serial.println("Got IR: Green2 (27)");
+	    if (is_change()) { matrix_change(27); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x006A00;
+	    return;
 
-        case IR_RGBZONE_DIY2:
-            Serial.println("Got IR: DIY2 (51)");
-            if (is_change()) { matrix_change(51); return; }
-            // this uses the last color set
-            nextdemo = f_theaterChase;
-            Serial.println("Got IR: DIY2/theaterChase");
-            return;
+	case IR_RGBZONE_PURPLE:
+	    Serial.println("Got IR: DarkPurple2 (29)");
+	    if (is_change()) { matrix_change(29); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x2B0064;
+	    return;
 
-        case IR_RGBZONE_DIY3:
-            Serial.println("Got IR: DIY3 (53)");
-            if (is_change()) { matrix_change(53); return; }
-            nextdemo = f_juggle;
-            Serial.println("Got IR: DIY3/Juggle");
-            return;
-
-        case IR_RGBZONE_AUTO:
-            Serial.println("Got IR: AUTO/bpm (55)");
-            if (is_change()) { matrix_change(55); return; }
-            matrix_change(DEMO_TEXT_THANKYOU);
-            nextdemo = f_bpm;
-            return;
+	case IR_RGBZONE_BLUEL:
+	    Serial.println("Got IR: BlueLight (31)");
+	    if (is_change()) { matrix_change(31); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x50A7FF;
+	    return;
 
 
-        // From here, we jump numbers more quickly to cover ranges of demos 32-44
-        case IR_RGBZONE_DIY4:
-            Serial.println("Got IR: DIY4 (57)");
-            if (is_change()) { matrix_change(57); return; }
-            nextdemo = f_rainbowCycle;
-            Serial.println("Got IR: DIY4/rainbowCycle");
-            return;
 
-        case IR_RGBZONE_DIY5:
-            Serial.println("Got IR: DIY5 (59)");
-            if (is_change()) { matrix_change(59); return; }
-            nextdemo = f_theaterChaseRainbow;
-            Serial.println("Got IR: DIY5/theaterChaseRainbow");
-            return;
+	case IR_RGBZONE_YELLOW:
+	    Serial.println("Got IR: Yellow (33)");
+	    if (is_change()) { matrix_change(33); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0xF0FF00;
+	    return;
 
-        case IR_RGBZONE_DIY6:
-            Serial.println("Got IR: DIY6 (61)");
-            if (is_change()) { matrix_change(61); return; }
-            nextdemo = f_doubleConvergeRev;
-            Serial.println("Got IR: DIY6/DoubleConvergeRev");
-            return;
+	case IR_RGBZONE_GREEN4:
+	    Serial.println("Got IR: Green2 (35)");
+	    if (is_change()) { matrix_change(35); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x00BB00;
+	    return;
 
-        case IR_RGBZONE_FLASH:
-            Serial.println("Got IR: FLASH (63)");
-            if (is_change()) { matrix_change(63); return; }
-            nextdemo = f_flash;
-            return;
+	case IR_RGBZONE_PURPLE2:
+	    Serial.println("Got IR: Purple2 (37)");
+	    if (is_change()) { matrix_change(37); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x660265;
+	    return;
 
-        // And from here, jump across a few GIF anims (45-53)
-        case IR_RGBZONE_JUMP3:
-            Serial.println("Got IR: JUMP3/Cylon (65)");
-            if (is_change()) { matrix_change(65); return; }
-            nextdemo = f_cylon;
-            return;
+	case IR_RGBZONE_BLUEL2:
+	    Serial.println("Got IR: BlueLight2 (39)");
+	    if (is_change()) { matrix_change(39); return; }
+	    if (!colorDemo) nextdemo = f_colorWipe;
+	    demo_color = 0x408BD8;
+	    return;
 
-        case IR_RGBZONE_JUMP7:
-            Serial.println("Got IR: JUMP7/CylonWithTrail (67)");
-            if (is_change()) { matrix_change(67); return; }
-            nextdemo = f_cylonTrail;
-            return;
 
-        case IR_RGBZONE_FADE3:
-            Serial.println("Got IR: FADE3/DoubleConverge (69)");
-            if (is_change()) { matrix_change(69); return; }
-            nextdemo = f_doubleConverge;
-            return;
+	case IR_RGBZONE_RU:
+	    matrix_change(41);
+	    Serial.print("Got IR: Red UP switching to matrix state 41");
+	    Serial.println(matrix_state);
+	    return;
 
-        case IR_RGBZONE_FADE7:
-            Serial.println("Got IR: FADE7/DoubleConvergeTrail (71)");
-            if (is_change()) { matrix_change(71); return; }
-            nextdemo = f_doubleConvergeTrail;
-            return;
+	case IR_RGBZONE_GU:
+	    matrix_change(42);
+	    Serial.print("Got IR: Green UP switching to matrix state 42");
+	    Serial.println(matrix_state);
+	    return;
 
-        case IR_JUNK:
-            return;
+	case IR_RGBZONE_BU:
+	    matrix_change(43);
+	    Serial.print("Got IR: Blue UP switching to matrix state 43");
+	    Serial.println(matrix_state);
+	    return;
 
-        default:
-            Serial.print("Got unknown IR value: ");
-        #ifdef ESP32RMTIR
-            Serial.print(rcvGroup);
-            Serial.print(" / ");
-        #endif
-            Serial.println(result, HEX);
-            return;
-        }
+
+	case IR_RGBZONE_RD:
+	    Serial.print("Got IR: Red DOWN switching to matrix state 44");
+	    matrix_change(44);
+	    Serial.println(matrix_state);
+	    return;
+
+	case IR_RGBZONE_GD:
+	    Serial.print("Got IR: Green DOWN switching to matrix state 45");
+	    matrix_change(45);
+	    Serial.println(matrix_state);
+	    return;
+
+	case IR_RGBZONE_BD:
+	    Serial.print("Got IR: Blue DOWN switching to matrix state 47");
+	    matrix_change(47);
+	    Serial.println(matrix_state);
+	    return;
+
+	case IR_RGBZONE_QUICK:
+	    Serial.println("Got IR: Quick");
+	    //if (is_change()) { matrix_change(24); return; }
+	    change_speed(-10);
+	    return;
+
+	case IR_RGBZONE_SLOW:
+	    Serial.println("Got IR: Slow)");
+	    //if (is_change()) { matrix_change(28); return; }
+	    change_speed(+10);
+	    return;
+
+
+
+
+	case IR_RGBZONE_DIY1:
+	    Serial.println("Got IR: DIY1 (49)");
+	    if (is_change()) { matrix_change(49); return; }
+	    // this uses the last color set
+	    nextdemo = f_colorWipe;
+	    Serial.println("Got IR: DIY1 colorWipe");
+	    return;
+
+	case IR_RGBZONE_DIY2:
+	    Serial.println("Got IR: DIY2 (51)");
+	    if (is_change()) { matrix_change(51); return; }
+	    // this uses the last color set
+	    nextdemo = f_theaterChase;
+	    Serial.println("Got IR: DIY2/theaterChase");
+	    return;
+
+	case IR_RGBZONE_DIY3:
+	    Serial.println("Got IR: DIY3 (53)");
+	    if (is_change()) { matrix_change(53); return; }
+	    nextdemo = f_juggle;
+	    Serial.println("Got IR: DIY3/Juggle");
+	    return;
+
+	case IR_RGBZONE_AUTO:
+	    Serial.println("Got IR: AUTO/bpm (55)");
+	    if (is_change()) { matrix_change(55); return; }
+	    matrix_change(DEMO_TEXT_THANKYOU);
+	    nextdemo = f_bpm;
+	    return;
+
+
+	// From here, we jump numbers more quickly to cover ranges of demos 32-44
+	case IR_RGBZONE_DIY4:
+	    Serial.println("Got IR: DIY4 (57)");
+	    if (is_change()) { matrix_change(57); return; }
+	    nextdemo = f_rainbowCycle;
+	    Serial.println("Got IR: DIY4/rainbowCycle");
+	    return;
+
+	case IR_RGBZONE_DIY5:
+	    Serial.println("Got IR: DIY5 (59)");
+	    if (is_change()) { matrix_change(59); return; }
+	    nextdemo = f_theaterChaseRainbow;
+	    Serial.println("Got IR: DIY5/theaterChaseRainbow");
+	    return;
+
+	case IR_RGBZONE_DIY6:
+	    Serial.println("Got IR: DIY6 (61)");
+	    if (is_change()) { matrix_change(61); return; }
+	    nextdemo = f_doubleConvergeRev;
+	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
+	    return;
+
+	case IR_RGBZONE_FLASH:
+	    Serial.println("Got IR: FLASH (63)");
+	    if (is_change()) { matrix_change(63); return; }
+	    nextdemo = f_flash;
+	    return;
+
+	// And from here, jump across a few GIF anims (45-53)
+	case IR_RGBZONE_JUMP3:
+	    Serial.println("Got IR: JUMP3/Cylon (65)");
+	    if (is_change()) { matrix_change(65); return; }
+	    nextdemo = f_cylon;
+	    return;
+
+	case IR_RGBZONE_JUMP7:
+	    Serial.println("Got IR: JUMP7/CylonWithTrail (67)");
+	    if (is_change()) { matrix_change(67); return; }
+	    nextdemo = f_cylonTrail;
+	    return;
+
+	case IR_RGBZONE_FADE3:
+	    Serial.println("Got IR: FADE3/DoubleConverge (69)");
+	    if (is_change()) { matrix_change(69); return; }
+	    nextdemo = f_doubleConverge;
+	    return;
+
+	case IR_RGBZONE_FADE7:
+	    Serial.println("Got IR: FADE7/DoubleConvergeTrail (71)");
+	    if (is_change()) { matrix_change(71); return; }
+	    nextdemo = f_doubleConvergeTrail;
+	    return;
+
+	case IR_JUNK:
+	    return;
+
+	default:
+	    Serial.print("Got unknown IR value: ");
+	#ifdef ESP32RMTIR
+	    Serial.print(rcvGroup);
+	    Serial.print(" / ");
+	#endif
+	    Serial.println(result, HEX);
+	    return;
+	}
     }
 #endif
 }
@@ -3567,100 +3568,100 @@ void IR_Serial_Handler() {
     // Demos from FastLED
     // fade in 0 to x/256th of the previous value
     void fadeall(uint8_t fade) {
-        for(uint16_t i = 0; i < STRIP_NUM_LEDS; i++) {  leds[i].nscale8(fade); }
+	for(uint16_t i = 0; i < STRIP_NUM_LEDS; i++) {  leds[i].nscale8(fade); }
     }
 
     void cylon(bool trail, uint8_t wait) {
-        static bool forward = 1;
-        static int16_t i = 0;
-        static uint8_t hue = 0;
+	static bool forward = 1;
+	static int16_t i = 0;
+	static uint8_t hue = 0;
 
-        if (! (forward  && i < STRIP_NUM_LEDS)) forward = false;
-        if (!forward) {
-            i--;
-            if (i < 0) { i = 0; forward = true; }
-        }
+	if (! (forward  && i < STRIP_NUM_LEDS)) forward = false;
+	if (!forward) {
+	    i--;
+	    if (i < 0) { i = 0; forward = true; }
+	}
 
-        // Set the i'th led to red
-        leds_setcolor(i, Wheel(hue++));
-        // Show the leds
-        leds_show();
-        // now that we've shown the leds, reset the i'th led to black
-        //if (!trail) leds_setcolor(i, 0);
-        if (trail) fadeall(224); else fadeall(92);
-        if (forward) i++;
+	// Set the i'th led to red
+	leds_setcolor(i, Wheel(hue++));
+	// Show the leds
+	leds_show();
+	// now that we've shown the leds, reset the i'th led to black
+	//if (!trail) leds_setcolor(i, 0);
+	if (trail) fadeall(224); else fadeall(92);
+	if (forward) i++;
 
-        // Wait a little bit before we loop around and do it again
-        waitmillis = millis() + wait/6;
+	// Wait a little bit before we loop around and do it again
+	waitmillis = millis() + wait/6;
     }
 
     void doubleConverge(bool trail, uint8_t wait, bool rev) {
-        static uint8_t hue;
-        static int16_t i = 0;
+	static uint8_t hue;
+	static int16_t i = 0;
 
-        if (i < STRIP_NUM_LEDS/2) {
-            if (!rev) {
-                leds_setcolor(i, Wheel(hue++));
-                leds_setcolor(STRIP_NUM_LEDS - 1 - i, Wheel(hue++));
-            } else {
-                leds_setcolor(STRIP_NUM_LEDS/2 -1 -i, Wheel(hue++));
-                leds_setcolor(STRIP_NUM_LEDS/2 + i, Wheel(hue++));
-            }
-        }
-        i++;
-        if (i >= STRIP_NUM_LEDS/2 + 4) i = 0;
-        if (trail) fadeall(224); else fadeall(92);
-        leds_show();
-        waitmillis = millis() + wait/3;
+	if (i < STRIP_NUM_LEDS/2) {
+	    if (!rev) {
+		leds_setcolor(i, Wheel(hue++));
+		leds_setcolor(STRIP_NUM_LEDS - 1 - i, Wheel(hue++));
+	    } else {
+		leds_setcolor(STRIP_NUM_LEDS/2 -1 -i, Wheel(hue++));
+		leds_setcolor(STRIP_NUM_LEDS/2 + i, Wheel(hue++));
+	    }
+	}
+	i++;
+	if (i >= STRIP_NUM_LEDS/2 + 4) i = 0;
+	if (trail) fadeall(224); else fadeall(92);
+	leds_show();
+	waitmillis = millis() + wait/3;
     }
 
     // From FastLED's DemoReel
     // ---------------------------------------------
     void add1DGlitter( fract8 chanceOfGlitter)
     {
-        if (random8() < chanceOfGlitter) {
-            leds[ random16(STRIP_NUM_LEDS) ] += CRGB::White;
-        }
+	if (random8() < chanceOfGlitter) {
+	    leds[ random16(STRIP_NUM_LEDS) ] += CRGB::White;
+	}
     }
 
 
     void juggle(uint8_t wait) {
-        // eight colored dots, weaving in and out of sync with each other
-        fadeToBlackBy( leds, STRIP_NUM_LEDS, 20);
-        int8_t dothue = 0;
-        for(uint8_t i = 0; i < 8; i++) {
-            leds[beatsin16( i+7, 0, STRIP_NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
-            dothue += 32;
-        }
-        leds_show();
-        waitmillis = millis() + wait/3;
+	// eight colored dots, weaving in and out of sync with each other
+	fadeToBlackBy( leds, STRIP_NUM_LEDS, 20);
+	int8_t dothue = 0;
+	for(uint8_t i = 0; i < 8; i++) {
+	    leds[beatsin16( i+7, 0, STRIP_NUM_LEDS-1 )] |= CHSV(dothue, 200, 255);
+	    dothue += 32;
+	}
+	leds_show();
+	waitmillis = millis() + wait/3;
     }
 
     void bpm(uint8_t wait)
     {
-        // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
-        uint8_t BeatsPerMinute = 62;
-        CRGBPalette16 palette = PartyColors_p;
-        uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-        for( int i = 0; i < STRIP_NUM_LEDS; i++) {
-            leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
-        }
-        gHue++;
-        leds_show();
-        waitmillis = millis() + wait/3;
+	// colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+	uint8_t BeatsPerMinute = 62;
+	CRGBPalette16 palette = PartyColors_p;
+	uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
+	for( int i = 0; i < STRIP_NUM_LEDS; i++) {
+	    leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+	}
+	gHue++;
+	leds_show();
+	waitmillis = millis() + wait/3;
     }
 
     // Slightly different, this makes the rainbow equally distributed throughout
     void rainbowCycle(uint8_t wait) {
-        static uint16_t j = 0;
+	static uint16_t j = 0;
 
-        j++;
-        if (j >= 256) j = 0;
-        fill_rainbow( leds, STRIP_NUM_LEDS, gHue, 7);
-        add1DGlitter(80);
-        gHue++;
-        leds_show();
-        waitmillis = millis() + wait/5;
+	j++;
+	if (j >= 256) j = 0;
+	fill_rainbow( leds, STRIP_NUM_LEDS, gHue, 7);
+	add1DGlitter(80);
+	gHue++;
+	leds_show();
+	waitmillis = millis() + wait/5;
     }
 
 
@@ -3669,153 +3670,153 @@ void IR_Serial_Handler() {
     // The animations below are from Adafruit_NeoPixel/examples/strandtest
     // Fill the dots one after the other with a color
     void colorWipe(uint32_t c, uint8_t wait) {
-        static uint16_t j = 0;
+	static uint16_t j = 0;
 
-        j++;
-        if (j == STRIP_NUM_LEDS) j = 0;
-        leds_setcolor(j, c);
-        leds_show();
-        waitmillis = millis() + wait/5;
+	j++;
+	if (j == STRIP_NUM_LEDS) j = 0;
+	leds_setcolor(j, c);
+	leds_show();
+	waitmillis = millis() + wait/5;
     }
 
     //Theatre-style crawling lights.
     void theaterChase(uint32_t c, uint8_t wait) {
-        static uint16_t q = 0;
+	static uint16_t q = 0;
 
-        q++;
-        if (q == 3) q = 0;
+	q++;
+	if (q == 3) q = 0;
 
-        for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
-            leds_setcolor(i+q, c);    //turn every third pixel on
-        }
-        leds_show();
+	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	    leds_setcolor(i+q, c);    //turn every third pixel on
+	}
+	leds_show();
 
-        #if 0
-        for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
-            leds_setcolor(i+q, 0);        //turn every third pixel off
-        }
-        #endif
-        fadeall(16);
-        waitmillis = millis() + wait;
+	#if 0
+	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	    leds_setcolor(i+q, 0);	//turn every third pixel off
+	}
+	#endif
+	fadeall(16);
+	waitmillis = millis() + wait;
     }
 
     //Theatre-style crawling lights with rainbow effect
     void theaterChaseRainbow(uint8_t wait) {
-        static uint16_t j = 0;
-        static uint16_t q = 0;
+	static uint16_t j = 0;
+	static uint16_t q = 0;
 
-        q++;
-        if (q == 3) {
-            q = 0;
-            j += 7;
-            if (j >= 256) j = 0;   // cycle all 256 colors in the wheel
-        }
+	q++;
+	if (q == 3) {
+	    q = 0;
+	    j += 7;
+	    if (j >= 256) j = 0;   // cycle all 256 colors in the wheel
+	}
 
-        for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
-            leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
-        }
-        leds_show();
+	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	    leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
+	}
+	leds_show();
 
-        #if 0
-        for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
-            leds_setcolor(i+q, 0);        //turn every third pixel off
-        }
-        #endif
-        fadeall(16);
-        waitmillis = millis() + wait;
+	#if 0
+	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	    leds_setcolor(i+q, 0);	//turn every third pixel off
+	}
+	#endif
+	fadeall(16);
+	waitmillis = millis() + wait;
     }
 
 
     // Local stuff I wrote
     // Flash 25 colors in the color wheel
     void flash(uint8_t wait) {
-        static uint16_t j = 0;
-        static boolean on = true;
+	static uint16_t j = 0;
+	static boolean on = true;
 
-        j++;
-        if (j == 26) j = 0;
+	j++;
+	if (j == 26) j = 0;
 
-        if (on) {
-            for (uint16_t i=0; i < STRIP_NUM_LEDS; i++) {
-                leds_setcolor(i, Wheel(j * 10));
-            }
-            on = false;
-        } else {
-            for (uint16_t i=0; i < STRIP_NUM_LEDS; i++) {
-                leds_setcolor(i, 0);
-            }
-            on = true;
-        }
-        leds_show();
-        waitmillis = millis() + wait*3;
+	if (on) {
+	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i++) {
+		leds_setcolor(i, Wheel(j * 10));
+	    }
+	    on = false;
+	} else {
+	    for (uint16_t i=0; i < STRIP_NUM_LEDS; i++) {
+		leds_setcolor(i, 0);
+	    }
+	    on = true;
+	}
+	leds_show();
+	waitmillis = millis() + wait*3;
     }
 
     void Neopixel_Anim_Handler() {
-        if (millis() < waitmillis) return;
+	if (millis() < waitmillis) return;
 
-        switch (nextdemo) {
-        // Colors on DIY1-3
-        case f_colorWipe:
-            colorDemo = true;
-            colorWipe(demo_color, strip_speed);
-            break;
-        case f_theaterChase:
-            colorDemo = true;
-            theaterChase(demo_color, strip_speed);
-            break;
+	switch (nextdemo) {
+	// Colors on DIY1-3
+	case f_colorWipe:
+	    colorDemo = true;
+	    colorWipe(demo_color, strip_speed);
+	    break;
+	case f_theaterChase:
+	    colorDemo = true;
+	    theaterChase(demo_color, strip_speed);
+	    break;
 
-        // Rainbow anims on DIY4-6
-        case f_rainbowCycle:
-            colorDemo = false;
-            rainbowCycle(strip_speed);
-            break;
-        case f_theaterChaseRainbow:
-            colorDemo = false;
-            theaterChaseRainbow(strip_speed);
-            break;
+	// Rainbow anims on DIY4-6
+	case f_rainbowCycle:
+	    colorDemo = false;
+	    rainbowCycle(strip_speed);
+	    break;
+	case f_theaterChaseRainbow:
+	    colorDemo = false;
+	    theaterChaseRainbow(strip_speed);
+	    break;
 
-        case f_doubleConvergeRev:
-            colorDemo = false;
-            doubleConverge(false, strip_speed, true);
-            break;
+	case f_doubleConvergeRev:
+	    colorDemo = false;
+	    doubleConverge(false, strip_speed, true);
+	    break;
 
-        // Jump3 to Jump7
-        case f_cylon:
-            colorDemo = false;
-            cylon(false, strip_speed);
-            break;
-        case f_cylonTrail:
-            colorDemo = false;
-            cylon(true, strip_speed);
-            break;
-        case f_doubleConverge:
-            colorDemo = false;
-            doubleConverge(false, strip_speed, false);
-            break;
-        case f_doubleConvergeTrail:
-            colorDemo = false;
-            doubleConverge(true, strip_speed, false);
-            break;
+	// Jump3 to Jump7
+	case f_cylon:
+	    colorDemo = false;
+	    cylon(false, strip_speed);
+	    break;
+	case f_cylonTrail:
+	    colorDemo = false;
+	    cylon(true, strip_speed);
+	    break;
+	case f_doubleConverge:
+	    colorDemo = false;
+	    doubleConverge(false, strip_speed, false);
+	    break;
+	case f_doubleConvergeTrail:
+	    colorDemo = false;
+	    doubleConverge(true, strip_speed, false);
+	    break;
 
-        // Flash color wheel
-        case f_flash:
-            colorDemo = false;
-            flash(strip_speed);
-            break;
+	// Flash color wheel
+	case f_flash:
+	    colorDemo = false;
+	    flash(strip_speed);
+	    break;
 
-        case f_juggle:
-            colorDemo = false;
-            juggle(strip_speed);
-            break;
+	case f_juggle:
+	    colorDemo = false;
+	    juggle(strip_speed);
+	    break;
 
-        case f_bpm:
-            colorDemo = false;
-            bpm(strip_speed);
-            break;
+	case f_bpm:
+	    colorDemo = false;
+	    bpm(strip_speed);
+	    break;
 
-        default:
-            break;
-        }
+	default:
+	    break;
+	}
     }
 #endif // NEOPIXEL_PIN
 
@@ -3835,37 +3836,37 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 
     switch (ref1) {
     case HTML_BUTPREV:
-        if (!value) break;
-        Serial.println("PREVIOUS pressed");
-        matrix_change(DEMO_PREV);
-        break;
+	if (!value) break;
+	Serial.println("PREVIOUS pressed");
+	matrix_change(DEMO_PREV);
+	break;
 
     case HTML_BUTNEXT:
-        if (!value) break;
-        Serial.println("NEXT pressed");
-        matrix_change(DEMO_NEXT);
-        break;
+	if (!value) break;
+	Serial.println("NEXT pressed");
+	matrix_change(DEMO_NEXT);
+	break;
 
     case HTML_BRIGHT:
-        if (!value) break;
-        Serial.print("Brightness change to ");
-        Serial.println(value);
-        change_brightness(value, true);
-        break;
+	if (!value) break;
+	Serial.print("Brightness change to ");
+	Serial.println(value);
+	change_brightness(value, true);
+	break;
 
     case HTML_SPEED:
-        if (!value) break;
-        Serial.print("Speed change to ");
-        Serial.println(value);
-        change_speed(value, true);
-        break;
+	if (!value) break;
+	Serial.print("Speed change to ");
+	Serial.println(value);
+	change_speed(value, true);
+	break;
 
     case HTML_DEMOCHOICE:
-        if (!value) break;
-        Serial.print("Got HTML Demo Choice ");
-        Serial.println(value);
-        matrix_change(value, true);
-        break;
+	if (!value) break;
+	Serial.print("Got HTML Demo Choice ");
+	Serial.println(value);
+	matrix_change(value, true);
+	break;
 
     }
 }
@@ -3874,16 +3875,16 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
     p.renderHttpResponseHeader("text/plain", 200);
 
     if (! strcmp(request.path, "/form")) {
-        uint8_t k = (int)request.query.size();
-        uint8_t idx = 0;
+	uint8_t k = (int)request.query.size();
+	uint8_t idx = 0;
 
-        if (! strcmp(request.query[0], "text")) {
-            displaytext = request.query[1];
-            matrix_change(DEMO_TEXT_INPUT);
-        }
-        for (int ix = idx; ix < k - 1; ix += 2)
-            w.putf("arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
-        return;
+	if (! strcmp(request.query[0], "text")) {
+	    displaytext = request.query[1];
+	    matrix_change(DEMO_TEXT_INPUT);
+	}
+	for (int ix = idx; ix < k - 1; ix += 2)
+	    w.putf("arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
+	return;
     }
 
     Serial.print("Serving ");
@@ -3892,11 +3893,11 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 
     if (! (file = FSO.open(request.path)
     #ifdef FSOSPIFFS
-                                    , "r"
+				    , "r"
     #endif
-                                            ) ) {
-        Serial.println("Error opening file");
-        return;
+					    ) ) {
+	Serial.println("Error opening file");
+	return;
     }
 
     while (file.available()) w.put(file.read());
@@ -3934,17 +3935,17 @@ void setup_wifi() {
     p.addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
     /*
-         A button sends a value "1" when pressed (in the web page),
-         and zero when released.
+	 A button sends a value "1" when pressed (in the web page),
+	 and zero when released.
     */
     p.addButton("prev", actionProc, HTML_BUTPREV);
     p.addButton("next", actionProc, HTML_BUTNEXT);
 
     /*
-         A select control shown as a dropdown on desktop browsers,
-         and some other multiple-choice control on phones.
-         You can add any number of options, and specify
-         the value of each.
+	 A select control shown as a dropdown on desktop browsers,
+	 and some other multiple-choice control on phones.
+	 You can add any number of options, and specify
+	 the value of each.
     */
     p.addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
     for (uint16_t i=1; i < demo_last_idx; i++) {
@@ -3953,25 +3954,25 @@ void setup_wifi() {
 	//Serial.print(" -> ");
 	//Serial.println(pos);
 
-        if (!demo_list[i].func) continue;
-        char *option = (char *) malloc (strlen (demo_list[i].name) + 13);
+	if (!demo_list[i].func) continue;
+	char *option = (char *) malloc (strlen (demo_list[i].name) + 13);
 	sprintf(option, "%03d->%03d/%1d: ", i, pos, demo_mapping[pos].enabled[panelconfnum]);
 	strcpy(option+12, demo_list[i].name);
-        p.addSelectOption(option, i);
+	p.addSelectOption(option, i);
     }
 
     p.addUrlHandler(wildcardProc);
     p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
-        w.beginElement("a", "href", "/demo_map.txt");
-        w.addContent("Demo Map");
-        w.endElement(); // a
+	w.beginElement("a", "href", "/demo_map.txt");
+	w.addContent("Demo Map");
+	w.endElement(); // a
     });
 
     p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
-        const char* inputstr="<FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>";
-        w.puts(inputstr);
+	const char* inputstr="<FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>";
+	w.puts(inputstr);
     });
 
     p.addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
@@ -3992,7 +3993,7 @@ void read_config_index() {
     int dmap;
     char pathname[] = FS_PREFIX "/demo_map.txt";
     const char *confname[] = {"Neopixel Shirt 24x32", "Burning Man Neopixel 64x64", "BM RGBPanel 64x96",
-        "RGBPanel Shirt 64x96", "RGBPanel rPi 128x192"};
+	"RGBPanel Shirt 64x96", "RGBPanel rPi 128x192"};
 
     Serial.print("*********** Reading ");
     Serial.print(pathname);
@@ -4012,28 +4013,28 @@ void read_config_index() {
 
     if (! (file = FSO.open(pathname)
     #ifdef FSOSPIFFS
-                                    , "r"
+				    , "r"
     #endif
-                                            ) ) die ("Error opening demo_map.txt");
+					    ) ) die ("Error opening demo_map.txt");
     while (file.available()) {
-        // 1 0 0 0 0 012
-        String line = file.readStringUntil('\n');
-        sscanf(line.c_str(), "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap);
+	// 1 0 0 0 0 012
+	String line = file.readStringUntil('\n');
+	sscanf(line.c_str(), "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap);
     #endif // ARDUINOONPC
-        demo_mapping[index].mapping = dmap;
-        demo_mapping[index].enabled[0] = d32;
-        demo_mapping[index].enabled[1] = d64;
-        demo_mapping[index].enabled[2] = d96bm;
-        demo_mapping[index].enabled[3] = d96;
-        demo_mapping[index].enabled[4] = d192;
-        if (demo_list[dmap].name == NULL) {
-            Serial.print("Error ");
-            Serial.print(index++);
-            Serial.print(" is mapped to an undefined demo ");
-            Serial.println(dmap);
-            delay((uint32_t) 100);
-            continue;
-        }
+	demo_mapping[index].mapping = dmap;
+	demo_mapping[index].enabled[0] = d32;
+	demo_mapping[index].enabled[1] = d64;
+	demo_mapping[index].enabled[2] = d96bm;
+	demo_mapping[index].enabled[3] = d96;
+	demo_mapping[index].enabled[4] = d192;
+	if (demo_list[dmap].name == NULL) {
+	    Serial.print("Error ");
+	    Serial.print(index++);
+	    Serial.print(" is mapped to an undefined demo ");
+	    Serial.println(dmap);
+	    delay((uint32_t) 100);
+	    continue;
+	}
     #if 0
 	#ifdef ESP32
 	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap,
@@ -4053,20 +4054,20 @@ void read_config_index() {
     #endif
 	// reverse position mapping used in setup_wifi dropdown creation
 	demo_list[dmap].position = index;
-        if (demo_mapping[index].enabled[panelconfnum] && demo_list[dmap].func == NULL) {
-            Serial.println(" (undefined)");
-            index++;
-            continue;
-        }
-        Serial.println("");
-        // keep track of the highest demo index for modulo in matrix_change
-        if (demo_mapping[index].enabled[panelconfnum]) {
-            if (! matrix_state) matrix_state = index; // find first playable demo
-            demo_cnt++;
-            demo_last_idx = index;
-            //Serial.print(index); Serial.print(" "); Serial.print(demo_cnt); Serial.print(" "); Serial.println(demo_last_idx);
-        }
-        index++;
+	if (demo_mapping[index].enabled[panelconfnum] && demo_list[dmap].func == NULL) {
+	    Serial.println(" (undefined)");
+	    index++;
+	    continue;
+	}
+	Serial.println("");
+	// keep track of the highest demo index for modulo in matrix_change
+	if (demo_mapping[index].enabled[panelconfnum]) {
+	    if (! matrix_state) matrix_state = index; // find first playable demo
+	    demo_cnt++;
+	    demo_last_idx = index;
+	    //Serial.print(index); Serial.print(" "); Serial.print(demo_cnt); Serial.print(" "); Serial.println(demo_last_idx);
+	}
+	index++;
     }
 
     #ifdef ARDUINOONPC
@@ -4081,7 +4082,7 @@ void loop() {
     // Run the Aiko event loop, all the magic is in there.
     Events.loop();
     EVERY_N_MILLISECONDS(40) {
-        gHue++;  // slowly cycle the "base color" through the rainbow
+	gHue++;  // slowly cycle the "base color" through the rainbow
     }
     delay((uint32_t) 1);
 
@@ -4100,8 +4101,8 @@ void loop() {
 	static const char *serialdev = NULL;
 	static char buf[1024];
 	static char *ptr = buf;
-        char s;
-        int rdlen;
+	char s;
+	int rdlen;
 	struct stat stbuf;
 
 	if (ttyfd > -1 && stat(serialdev, &stbuf)) {
@@ -4150,7 +4151,7 @@ void loop() {
 		    change_brightness(num, true);
 		}
 	    }
-        }
+	}
 	if (rdlen < 0) {
 	    printf("Error from read: %d: %s\n", rdlen, strerror(errno));
 	}
@@ -4165,21 +4166,21 @@ void setup() {
     Serial.println("Init ESP8266");
     // Turn off Wifi
     // https://www.hackster.io/rayburne/esp8266-turn-off-wifi-reduce-current-big-time-1df8ae
-    WiFi.forceSleepBegin();                  // turn off ESP8266 RF
+    WiFi.forceSleepBegin();		  // turn off ESP8266 RF
     // No blink13 in ESP8266 lib
     // this doesn't exist in the ESP8266 IR library, but by using pin D4
     // IR receive happens to make the system LED blink, so it's all good
     //irrecv.blink13(true);
 #elif !defined(ARDUINOONPC)
     #ifdef ESP32
-        Serial.println("If things hang very soon, make sure you don't have PSRAM enabled on a non PSRAM board");
-        #ifndef ESP32RMTIR
-        Serial.println("Init ESP32, set IR receive NOT to blink system LED");
-        irrecv.blink13(false);
-        #endif
+	Serial.println("If things hang very soon, make sure you don't have PSRAM enabled on a non PSRAM board");
+	#ifndef ESP32RMTIR
+	Serial.println("Init ESP32, set IR receive NOT to blink system LED");
+	irrecv.blink13(false);
+	#endif
     #else
-        Serial.println("Init NON ESP8266/ESP32, set IR receive to blink system LED");
-        irrecv.blink13(true);
+	Serial.println("Init NON ESP8266/ESP32, set IR receive to blink system LED");
+	irrecv.blink13(true);
     #endif
 #endif
 
@@ -4247,9 +4248,9 @@ void setup() {
     Serial.println("Enabling IRin");
 #ifdef RECV_PIN
     #ifndef ESP32RMTIR
-        irrecv.enableIRIn(); // Start the receiver
+	irrecv.enableIRIn(); // Start the receiver
     #else
-        irrecv.start(RECV_PIN);
+	irrecv.start(RECV_PIN);
     #endif
     Serial.print("Enabled IRin on pin ");
     Serial.println(RECV_PIN);
@@ -4303,7 +4304,7 @@ void setup() {
     Serial.println("Done with debug grey screen, display stats");
 
     display_stats();
-        delay((uint32_t) 2000);
+    delay((uint32_t) 2000);
 
     Serial.println("Matrix Libraries Test done");
     //font_test();
