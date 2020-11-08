@@ -1442,21 +1442,27 @@ uint8_t DoublescrollText(uint32_t choice) {
 // Scroll within big bitmap so that all if it becomes visible or bounce a small one.
 // If the bitmap is bigger in one dimension and smaller in the other one, it will
 // be both panned and bounced in the appropriate dimensions.
-void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool reset = false ) {
-    // keep integer math, deal with values 16 times too big
-    // start by showing upper left of big bitmap or centering if the display is big
+// x and y can return negative coordinates if sizeX/Y is bigger than the display size
+// must be called with reset=true once before changing pixmap
+void panOrBounce (int16_t *x, int16_t *y, uint16_t sizeX, uint16_t sizeY, bool reset = false ) {
+
+    // use integer math, deal with values 16 times too big
     static int16_t xf;
     static int16_t yf;
     // scroll speed in 1/16th
     static int16_t xfc;
     static int16_t yfc;
-    // scroll down and right by moving upper left corner off screen
-    // more up and left (which means negative numbers)
-    static int16_t xfdir;
-    static int16_t yfdir;
+    // which direction the scroll speed is applied (-1 or 1)
+    static int8_t xfdir;
+    static int8_t yfdir;
 
+    // how much scrolling there is to do (mismatch between bitmap
+    // size and display size).
     static int16_t diffX;
     static int16_t diffY;
+
+    // How far the top left corner can be moved so as not to exceed the
+    // bottom right corner max position
     static int16_t maxXf;
     static int16_t maxYf;
 
@@ -1465,8 +1471,10 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
 	diffY = abs(mh - sizeY);
 	maxXf = (mw-sizeX) << 4;
 	maxYf = (mh-sizeY) << 4;
+	// start by showing upper left of big bitmap or centering if the display is big
 	xf = max(0, (mw-sizeX)/2) << 4;
 	yf = max(0, (mh-sizeY)/2) << 4;
+	/// Pick a default change rate for xf/yf, not too fast, not too slow
 	xfc = mmax(diffX/8, 3);
 	yfc = mmax(diffY/8, 3);
 	xfdir = -1;
@@ -1521,7 +1529,7 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
 
 uint8_t panOrBounceBitmap (uint32_t choice) {
     static uint16_t state;
-    uint16_t x, y;
+    int16_t x, y;
     const uint16_t *bitmap;
     uint16_t bitmapSize;
 
@@ -1556,10 +1564,6 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
 
 // FIXME: reset decoding counter to 0 between different GIFS
 uint8_t GifAnim(uint32_t idx) {
-    uint16_t x, y;
-    uint8_t repeat = 1;
-    static uint16_t scrollx = 0;
-    static uint16_t scrolly = 0;
     struct Animgif {
 	const char *path;
 	uint16_t looptime;
@@ -1570,10 +1574,6 @@ uint8_t GifAnim(uint32_t idx) {
 	uint16_t scrollx;
 	uint16_t scrolly;
     };
-    extern int OFFSETX;
-    extern int OFFSETY;
-    extern int FACTY;
-    extern int FACTX;
 
     #ifdef ARDUINOONPC
 	#if mheight == 192
@@ -1852,6 +1852,16 @@ uint8_t GifAnim(uint32_t idx) {
 	#endif
 	};
     #endif
+
+    int16_t x, y;
+    uint8_t repeat = 1;
+    static uint16_t scrollx = 0;
+    static uint16_t scrolly = 0;
+    extern int OFFSETX;
+    extern int OFFSETY;
+    extern int FACTY;
+    extern int FACTX;
+
     gif_cnt = ARRAY_SIZE(animgif);
     // Compute gif_cnt and exit
     if (idx == 255) return 0;
@@ -1906,7 +1916,7 @@ uint8_t scrollBigtext(uint32_t unused) {
     static uint16_t state = 0;
     static uint8_t resetcnt = 1;
     uint16_t loopcnt = 700;
-    uint16_t x, y;
+    int16_t x, y;
 
     unused = unused;
 
