@@ -875,7 +875,7 @@ uint8_t trancejesus(uint32_t unused) {
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
         if (mheight >= 192) matrix->setCursor(20, 145);
-        else matrix->setCursor(12, 64);
+        else matrix->setCursor(16, 64);
         matrix->print("JESUS");
     }
     l++;
@@ -1461,14 +1461,14 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
     static int16_t maxYf;
 
     if (reset) {
-	diffX = mw - sizeX;
-	diffY = mh - sizeY;
+	diffX = abs(mw - sizeX);
+	diffY = abs(mh - sizeY);
 	maxXf = (mw-sizeX) << 4;
 	maxYf = (mh-sizeY) << 4;
         xf = max(0, (mw-sizeX)/2) << 4;
         yf = max(0, (mh-sizeY)/2) << 4;
-        xfc = diffX/5;
-        yfc = diffY/5;
+        xfc = mmax(diffX/8, 3);
+        yfc = mmax(diffY/8, 3);
         xfdir = -1;
         yfdir = -1;
     }
@@ -1486,14 +1486,12 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
         if (xf >= 0)     { xfdir = -1; changeDir = true ; };
         // we don't go negative past right corner, go back positive
         if (xf <= maxXf) { xfdir = 1;  changeDir = true ; };
-	printf("1: ");
     }
     if (sizeY-mh>2) {
         yf += yfc*yfdir;
         // we shouldn't display past left corner, reverse direction.
         if (yf >= 0)     { yfdir = -1; changeDir = true ; };
         if (yf <= maxYf) { yfdir = 1;  changeDir = true ; };
-	printf("2: ");
     }
     // only bounce a pixmap if it's smaller than the display size
     if (mw>sizeX) {
@@ -1501,23 +1499,24 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
         // Deal with bouncing off the 'walls'
         if (xf >= maxXf) { xfdir = -1; changeDir = true ; };
         if (xf <= 0)	 { xfdir =  1; changeDir = true ; };
-	printf("3: ");
     }
     if (mh>sizeY) {
         yf += yfc*yfdir;
         if (yf >= maxYf) { yfdir = -1; changeDir = true ; };
         if (yf <= 0)	 { yfdir =  1; changeDir = true ; };
-	printf("4: ");
     }
 
     if (changeDir) {
-        // Add -1, 0 or 1 but bind result to 1 to 1.
-        // Let's take 3 as a minimum speed, otherwise it's too slow.
-        xfc = constrain(xfc + random(-1, 2), diffX/6, diffX/3);
-        yfc = constrain(yfc + random(-1, 2), diffY/6, diffY/3);
+	// Change speeds by -1, 0 or 1 but cap result to 3 to 16.
+	// Let's take 3 is a minimum speed, otherwise it's too slow.
+	//xfc = constrain(xfc + random(-1, 2), 3, 16);
+	//yfc = constrain(yfc + random(-1, 2), 3, 16);
+	// Better adjust speed to the difference between the object size and screen size
+        xfc = constrain(xfc + random(-1, 2), mmin(diffX/8, 10), mmin(diffX/6, mw/6));
+        yfc = constrain(yfc + random(-1, 2), mmin(diffY/8, 10), mmin(diffY/6, mh/6));
     }
 
-    printf("x: %d (xf:%d) mw: %d (sX: %d, diffX: %d, maxXf: %d), y: %d (yf:%d) mh: %d (sY: %d, diffY: %d, maxYf %d)\n", *x, xf, mw, sizeX, diffX, maxXf, *y, yf, mh, sizeY, diffY, maxYf);
+    //printf("x: %d (xf:%d) mw: %d (sX: %d, diffX: %d, maxXf: %d), y: %d (yf:%d) mh: %d (sY: %d, diffY: %d, maxYf %d)\n", *x, xf, mw, sizeX, diffX, maxXf, *y, yf, mh, sizeY, diffY, maxYf);
 }
 
 uint8_t panOrBounceBitmap (uint32_t choice) {
@@ -1614,13 +1613,13 @@ uint8_t GifAnim(uint32_t idx) {
             { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10, 64, 64 },
             { ROOT  "AnB_color_bands_heart.gif",10, 0,  0, 10, 10, 64, 64 },
             { ROOT  "AnB_logo_lgrey.gif",	10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10, 64, 64 },
+            { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10, 64, 32 },
             { ROOT  "BM_Lady_Fire.gif",		10, 0,  0, 10, 10, 64, 64 },
             { ROOT  "BM_Logo_lgrey.gif",	10, 0,  0, 10, 10, 64, 64 },
-            { ROOT  "BM_Man_Scroll.gif",	10, 0,  0, 10, 10, 0,  0  },
+            { ROOT  "BM_Man_Scroll.gif",	10, 0, 16, 10, 10, 0,  0  },
             { ROOT  "BM_TheMan_Blue.gif",	10,-12,-2, 10, 10, 36, 64 },
             { ROOT  "BM_TheMan_Red.gif",	10,-12, 0, 10, 10, 36, 64 },
-/*110 */    { ROOT  "BM_TheMan_Green.gif",	10,-12, 0, 10, 10, 36, 64 },
+/*110 */    { ROOT  "BM_TheMan_Green.gif",	10, 0,  4, 10, 10, 64,104 },
         #else
 /*100 */    { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10,128,128 },
             { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10,128,128 },
