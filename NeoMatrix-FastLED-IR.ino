@@ -40,7 +40,7 @@ using namespace Aiko;
 #ifdef WIFI
     #include <OmEspHelpers.h>
     OmWebServer s;
-    OmWebPages p;    
+    OmWebPages p;
 #endif
 
 #define DEMO_PREV -32768
@@ -58,7 +58,7 @@ using namespace Aiko;
 #define panelconfnum 4
 #elif mheight == 96
 #define panelconfnum 3
-#else 
+#else
 #define panelconfnum 0
 #endif
 
@@ -89,7 +89,7 @@ uint8_t gif_cnt = 0;
 // look for 'magic happens here' below
 #ifdef ARDUINOONPC
     #include <errno.h>
-    #include <fcntl.h> 
+    #include <fcntl.h>
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
@@ -173,13 +173,13 @@ uint8_t gif_cnt = 0;
 
 const uint16_t PROGMEM RGB_bmp[64] = {
       // 10: multicolor smiley face
-        0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, 
-        0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000, 
-        0x00F, 0x000, 0xF00, 0x000, 0x000, 0xF00, 0x000, 0x00F, 
-        0x00F, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x00F, 
-        0x00F, 0x000, 0x0F0, 0x000, 0x000, 0x0F0, 0x000, 0x00F, 
-        0x00F, 0x000, 0x000, 0x0F4, 0x0F3, 0x000, 0x000, 0x00F, 
-        0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000, 
+        0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000,
+        0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000,
+        0x00F, 0x000, 0xF00, 0x000, 0x000, 0xF00, 0x000, 0x00F,
+        0x00F, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x00F,
+        0x00F, 0x000, 0x0F0, 0x000, 0x000, 0x0F0, 0x000, 0x00F,
+        0x00F, 0x000, 0x000, 0x0F4, 0x0F3, 0x000, 0x000, 0x00F,
+        0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000,
         0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, };
 
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
@@ -628,12 +628,12 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
             matrix->setPassThruColor(0xD7E1EB);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x77818B);
-	    matrix->setCursor(20-size+offset, (mh>=128?64:36)+size*1.5);
+	    matrix->setCursor(20-size+offset, (mh>=128?64:20)+size*1.5);
             matrix->print("TF");
             matrix->setPassThruColor(0x05C1FF);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x00618F);
-            matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:68)+size*1.5);
+            matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:52)+size*1.5);
             matrix->print("SF");
         } else {
             if (letters[l] == 'T') offset = -2 * size/15;
@@ -665,12 +665,12 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
             matrix->setPassThruColor(0xD7E1EB);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x77818B);
-            matrix->setCursor(20-size+offset, (mh>=128?64:36)+size*1.5);
+            matrix->setCursor(20-size+offset, (mh>=128?64:20)+size*1.5);
             matrix->print("TF");
             matrix->setPassThruColor(0x05C1FF);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x00618F);
-            matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:68)+size*1.5);
+            matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:50)+size*1.5);
             matrix->print("SF");
         } else {
             if (letters[l] == 'T') offset = -2 * size/15;
@@ -682,7 +682,7 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
             matrix->setCursor(3*mw/6-size*1.75+offset, mh*7/12+size*1.60);
     #endif
             matrix->print(letters[l]);
-        }   
+        }
         matrix->setPassThruColor();
         if (size>3) size--; else { done = 1; direction = 1; delayframe = max((speed-faster*10)/2, 3); };
     }
@@ -751,7 +751,7 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
         if (mheight >= 192) matrix->setCursor(30, 48);
-        else if (mheight >= 96) matrix->setCursor(24, 20);
+        else if (mheight >= 96) matrix->setCursor(18, 20);
         else if (mheight >= 64) matrix->setCursor(18, 15);
         else matrix->setCursor(7, 6);
 
@@ -774,7 +774,7 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
         if (mheight >= 192) matrix->setCursor(22, 120);
-        else if (mheight >= 96) matrix->setCursor(14, 63);
+        else if (mheight >= 96) matrix->setCursor(14, 60);
         else if (mheight >= 64) matrix->setCursor(14, 47);
         else matrix->setCursor(5, 22);
 
@@ -850,43 +850,40 @@ uint8_t trancejesus(uint32_t unused) {
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(8, 25);
-        else matrix->setCursor(2, 16);
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+        if (mheight >= 192) matrix->setCursor(8, 25);
+        else matrix->setCursor(10, 16);
         matrix->print("TRANCE");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
         firstpass = 1;
-        if (mheight >= 192) matrix->setCursor(14, 65);
-        else matrix->setCursor(0, 32);
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        matrix->print("Because");
+        if (mheight >= 192) { matrix->setCursor(14, 65); matrix->print("Because"); }
+        else { matrix->setCursor(8, 32); matrix->print("BECAUSE"); }
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(12, 105);
-        else matrix->setCursor(5, 48);
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        matrix->print("it's what");
+        if (mheight >= 192) { matrix->setCursor(12, 105); matrix->print("it's what"); }
+        else { matrix->setCursor(5, 48); matrix->print("IT'S WHAT"); }
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
         if (mheight >= 192) matrix->setCursor(20, 145);
         else matrix->setCursor(12, 64);
-        matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
         matrix->print("JESUS");
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-        if (mheight >= 192) matrix->setCursor(2, 185);
-        else matrix->setCursor(0, 82);
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
-        matrix->print("would do!");
+        if (mheight >= 192) { matrix->setCursor(2, 185); matrix->print("would do!"); }
+        else { matrix->setCursor(0, 82); matrix->print("WOULD DO!"); }
     }
     l++;
 
@@ -1075,7 +1072,7 @@ uint8_t esrbr_fade(uint32_t unused) {
         matrix->clear();
 
         if (mheight >= 192) matrix->setCursor(30, 48);
-        else if (mheight >= 96) matrix->setCursor(24, 20);
+        else if (mheight >= 96) matrix->setCursor(18, 20);
         else if (mheight >= 64) matrix->setCursor(18, 15);
         else matrix->setCursor(7, 6);
         matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -1089,7 +1086,7 @@ uint8_t esrbr_fade(uint32_t unused) {
         matrix->print("SLEEP");
 
         if (mheight >= 192) matrix->setCursor(22, 120);
-        else if (mheight >= 96) matrix->setCursor(14, 63);
+        else if (mheight >= 96) matrix->setCursor(14, 60);
         else if (mheight >= 64) matrix->setCursor(14, 47);
         else matrix->setCursor(5, 22);
         matrix->setPassThruColor(Wheel(((wheel+=24))));
@@ -1270,7 +1267,7 @@ uint8_t webwc(uint32_t unused) {
         else if (mheight >= 64) matrix->setCursor(7, 24);
         else matrix->setCursor(3, 12);
         // going from 24 to 16 with gamma correction and back to 24 damages the wheel colors enough to make them not usable
-        // 669900  01100110 10011001 00000000 
+        // 669900  01100110 10011001 00000000
         // 64C0       01100   100110 00000
         // 1D5B00  00011101 01011011 00000000
         matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
@@ -1361,7 +1358,7 @@ uint8_t scrollText(const char str[], uint8_t len) {
         matrix->setPassThruColor(Wheel(map(c, 0, len, 0, 512)));
 
         chr[0]=str[c];
-        
+
         //Serial.println(chr);
         matrix->print(chr);
     }
@@ -1458,14 +1455,20 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
     static int16_t xfdir;
     static int16_t yfdir;
 
-    static int16_t diffx = mw - sizeX;
-    static int16_t diffy = mh - sizeY;
+    static int16_t diffX;
+    static int16_t diffY;
+    static int16_t maxXf;
+    static int16_t maxYf;
 
     if (reset) {
+	diffX = mw - sizeX;
+	diffY = mh - sizeY;
+	maxXf = (mw-sizeX) << 4;
+	maxYf = (mh-sizeY) << 4;
         xf = max(0, (mw-sizeX)/2) << 4;
         yf = max(0, (mh-sizeY)/2) << 4;
-        xfc = diffx/5;
-        yfc = diffy/5;
+        xfc = diffX/5;
+        yfc = diffY/5;
         xfdir = -1;
         yfdir = -1;
     }
@@ -1480,35 +1483,41 @@ void panOrBounce (uint16_t *x, uint16_t *y, uint16_t sizeX, uint16_t sizeY, bool
     // but not if the difference is too small or it'll look bad.
     if (sizeX-mw>2) {
         xf += xfc*xfdir;
-        if (xf >= 0)                 { xfdir = -1; changeDir = true ; };
+        if (xf >= 0)     { xfdir = -1; changeDir = true ; };
         // we don't go negative past right corner, go back positive
-        if (xf <= ((mw-sizeX) << 4)) { xfdir = 1;  changeDir = true ; };
+        if (xf <= maxXf) { xfdir = 1;  changeDir = true ; };
+	printf("1: ");
     }
     if (sizeY-mh>2) {
         yf += yfc*yfdir;
         // we shouldn't display past left corner, reverse direction.
-        if (yf >= 0)                 { yfdir = -1; changeDir = true ; };
-        if (yf <= ((mh-sizeY) << 4)) { yfdir = 1;  changeDir = true ; };
+        if (yf >= 0)     { yfdir = -1; changeDir = true ; };
+        if (yf <= maxYf) { yfdir = 1;  changeDir = true ; };
+	printf("2: ");
     }
     // only bounce a pixmap if it's smaller than the display size
     if (mw>sizeX) {
         xf += xfc*xfdir;
         // Deal with bouncing off the 'walls'
-        if (xf >= (mw-sizeX) << 4) { xfdir = -1; changeDir = true ; };
-        if (xf <= 0)           { xfdir =  1; changeDir = true ; };
+        if (xf >= maxXf) { xfdir = -1; changeDir = true ; };
+        if (xf <= 0)	 { xfdir =  1; changeDir = true ; };
+	printf("3: ");
     }
     if (mh>sizeY) {
         yf += yfc*yfdir;
-        if (yf >= (mh-sizeY) << 4) { yfdir = -1; changeDir = true ; };
-        if (yf <= 0)           { yfdir =  1; changeDir = true ; };
+        if (yf >= maxYf) { yfdir = -1; changeDir = true ; };
+        if (yf <= 0)	 { yfdir =  1; changeDir = true ; };
+	printf("4: ");
     }
 
     if (changeDir) {
         // Add -1, 0 or 1 but bind result to 1 to 1.
         // Let's take 3 as a minimum speed, otherwise it's too slow.
-        xfc = constrain(xfc + random(-1, 2), diffx/6, diffx/3);
-        yfc = constrain(yfc + random(-1, 2), diffy/6, diffy/3);
+        xfc = constrain(xfc + random(-1, 2), diffX/6, diffX/3);
+        yfc = constrain(yfc + random(-1, 2), diffY/6, diffY/3);
     }
+
+    printf("x: %d (xf:%d) mw: %d (sX: %d, diffX: %d, maxXf: %d), y: %d (yf:%d) mh: %d (sY: %d, diffY: %d, maxYf %d)\n", *x, xf, mw, sizeX, diffX, maxXf, *y, yf, mh, sizeY, diffY, maxYf);
 }
 
 uint8_t panOrBounceBitmap (uint32_t choice) {
@@ -1577,9 +1586,9 @@ uint8_t GifAnim(uint32_t idx) {
         #define ROOT ""
     #endif
     #if mheight == 64
-	#define YMUL 10    
+	#define YMUL 10
     #else
-	#define YMUL 15    
+	#define YMUL 15
     #endif
 
     #if mheight == 32
@@ -1610,8 +1619,8 @@ uint8_t GifAnim(uint32_t idx) {
             { ROOT  "BM_Logo_lgrey.gif",	10, 0,  0, 10, 10, 64, 64 },
             { ROOT  "BM_Man_Scroll.gif",	10, 0,  0, 10, 10, 0,  0  },
             { ROOT  "BM_TheMan_Blue.gif",	10,-12,-2, 10, 10, 36, 64 },
-            { ROOT  "BM_TheMan_Red.gif"		10,-12, 0, 10, 10, 36, 64 },
-/*110 */    { ROOT  "BM_TheMan_Green.gif"	10,-12, 0, 10, 10, 36, 64 },
+            { ROOT  "BM_TheMan_Red.gif",	10,-12, 0, 10, 10, 36, 64 },
+/*110 */    { ROOT  "BM_TheMan_Green.gif",	10,-12, 0, 10, 10, 36, 64 },
         #else
 /*100 */    { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10,128,128 },
             { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10,128,128 },
@@ -1648,23 +1657,23 @@ uint8_t GifAnim(uint32_t idx) {
 
         #if mheight <= 96
             { ROOT  "215_fallingcube.gif",		15, 0, 0, 10, YMUL, 0, 0 }, // 130
-            { ROOT  "257_colormesh_wave.gif",		20, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "271_mj.gif",			15,-14,3, 15, YMUL, 0, 0 }, 
-            { ROOT  "193_redplasma.gif",		10, 0, 0, 10, YMUL, 0, 0 }, 
+            { ROOT  "257_colormesh_wave.gif",		20, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "271_mj.gif",			15,-14,3, 15, YMUL, 0, 0 },
+            { ROOT  "193_redplasma.gif",		10, 0, 0, 10, YMUL, 0, 0 },
             { ROOT  "208_pulpfictiondance.gif",		25, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "412_bluecube_slide.gif",		20, 0, 0, 10, YMUL, 0, 0 }, // 135 
-            { ROOT  "236_spintriangle.gif",		20, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "281_plasma.gif",			20, 0, 0, 10, YMUL, 0, 0 }, 
+            { ROOT  "412_bluecube_slide.gif",		20, 0, 0, 10, YMUL, 0, 0 }, // 135
+            { ROOT  "236_spintriangle.gif",		20, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "281_plasma.gif",			20, 0, 0, 10, YMUL, 0, 0 },
             { ROOT  "sonic.gif",			10, 0, 0, 10, YMUL, 0, 0 },
         #else
-            { ROOT  "failingcube.gif",			10, 0,10, 10, 10, 0, 0 }, // 130  
-            { ROOT  "colormesh_wave.gif",		20,-20,0,  9, 10, 0, 0 },         
-            { ROOT  "z_5PmD_MJ_moonwalk.gif",		40, 2, 0, 12, 10, 0, 0 }, 
-            { ROOT  "z_SBMP_redplasma.gif",		10,-32,0, 10, 10, 0, 0 },         
+            { ROOT  "failingcube.gif",			10, 0,10, 10, 10, 0, 0 }, // 130
+            { ROOT  "colormesh_wave.gif",		20,-20,0,  9, 10, 0, 0 },
+            { ROOT  "z_5PmD_MJ_moonwalk.gif",		40, 2, 0, 12, 10, 0, 0 },
+            { ROOT  "z_SBMP_redplasma.gif",		10,-32,0, 10, 10, 0, 0 },
             { ROOT  "z_7VA_pulp_fiction_dance.gif",	25, 0, 0, 10, 12, 0, 0 },
-            { ROOT  "bluecube_slidepup.gif",		10, 0 ,0, 10, 10, 0, 0 }, // 135  
-            { ROOT  "z_3Ppu_spin_triangles.gif",	10, 0, 0, 10, 10, 0, 0 },         
-            { ROOT  "z_Egph_plasma_.gif",		10,-12,0,  8, 10, 0, 0 },         
+            { ROOT  "bluecube_slidepup.gif",		10, 0 ,0, 10, 10, 0, 0 }, // 135
+            { ROOT  "z_3Ppu_spin_triangles.gif",	10, 0, 0, 10, 10, 0, 0 },
+            { ROOT  "z_Egph_plasma_.gif",		10,-12,0,  8, 10, 0, 0 },
             { ROOT  "z_3F3F_sonic.gif",			10, 0, 0,  7, 10, 0, 0 },
         #endif
 /*139 */    { "", 0, 0 , 0, 0 , 0, 0 , 0  },
@@ -1691,25 +1700,25 @@ uint8_t GifAnim(uint32_t idx) {
 
         #if mheight <= 96
             { ROOT  "087_net.gif",			05, 0, 0, 10, YMUL, 0, 0 }, // 160
-            { ROOT  "196_colorstar.gif",		10, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "200_circlesmoke.gif",		10, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "203_waterdrop.gif",		10, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "210_circletriangle.gif",		10, 0, 0, 10, YMUL, 0, 0 }, 
+            { ROOT  "196_colorstar.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "200_circlesmoke.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "203_waterdrop.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "210_circletriangle.gif",		10, 0, 0, 10, YMUL, 0, 0 },
             { ROOT  "255_photon.gif",			10, 0, 0, 10, YMUL, 0, 0 }, // 165
             { ROOT  "342_spincircle.gif",		20, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "401_ghostbusters.gif",		05, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "444_hand.gif",			10, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "469_infection.gif",		05, 0, 0, 10, YMUL, 0, 0 }, 
+            { ROOT  "401_ghostbusters.gif",		05, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "444_hand.gif",			10, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "469_infection.gif",		05, 0, 0, 10, YMUL, 0, 0 },
             { ROOT  "284_comets.gif",			15, 0, 0, 10, YMUL, 0, 0 }, // 170
-            { ROOT  "377_batman.gif",			07, 0, 0, 10, YMUL, 0, 0 }, 
+            { ROOT  "377_batman.gif",			07, 0, 0, 10, YMUL, 0, 0 },
             { ROOT  "226_flyingfire.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "264_expandcircle.gif",		10, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "286_greenplasma.gif",		15, 0, 0, 10, YMUL, 0, 0 }, 
+            { ROOT  "264_expandcircle.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "286_greenplasma.gif",		15, 0, 0, 10, YMUL, 0, 0 },
             { ROOT  "291_circle2sphere.gif",		15, 0, 0, 10, YMUL, 0, 0 }, // 175
             { ROOT  "364_colortoroid.gif",		25, 0, 0, 10, YMUL, 0, 0 },
-            { ROOT  "470_scrollcubestron.gif",		25, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "358_spinningpattern.gif",		10, 0, 0, 10, YMUL, 0, 0 }, 
-            { ROOT  "328_spacetime.gif",		20, 0, 0, 10, YMUL, 0, 0 }, 
+            { ROOT  "470_scrollcubestron.gif",		25, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "358_spinningpattern.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+            { ROOT  "328_spacetime.gif",		20, 0, 0, 10, YMUL, 0, 0 },
             { ROOT  "218_circleslices.gif",		10, 0, 0, 10, YMUL, 0, 0 }, // 180
             { ROOT  "heartTunnel.gif",			10, 0, 0, 10, YMUL, 0, 0 },
         #else
@@ -1840,8 +1849,8 @@ uint8_t GifAnim(uint32_t idx) {
             { ROOT  "z_Ysrm_walking_dead.gif",		10, 0, 0,  7, 10, 0, 0 },  /* 284 */
             { ROOT  "z_Yv30_street_fighter.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 285 */
             { ROOT  "z_feM_MJ_moonwalk_spin.gif",	10,-12,0, 10, 12, 0, 0 },  /* 286 */
-	};
         #endif
+	};
     #endif
     gif_cnt = ARRAY_SIZE(animgif);
     // Compute gif_cnt and exit
@@ -1880,11 +1889,12 @@ uint8_t GifAnim(uint32_t idx) {
     // it's time to decode the next frame. If it did not, wait here to
     // add the matrix_show() delay that is expected by the caller
     //bool savl = sav_loop();
-    sav_loop();
-    // Not needed anymore with Aiko, it handles calling frequency
     //if (savl) { delay(MX_UPD_TIME); };
 
-    EVERY_N_SECONDS(1) { 
+    // Not needed anymore with Aiko, it handles calling frequency
+    sav_loop();
+
+    EVERY_N_SECONDS(1) {
         Serial.print(gifloopsec); Serial.print(" ");
         if (!gifloopsec--) { Serial.println(); return 0; };
     }
@@ -2549,7 +2559,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*107 */ { "GIF BM Man Scroll",   GifAnim,  7, 0 },
 /*108 */ { "GIF BM TheMan Blue",  GifAnim,  8, 0 },
 /*109 */ { "GIF BM TheMan_Green", GifAnim,  9, 0 },
-/*110 */ { "GIF BM TheMan GArms", GifAnim, 10, 0 },
+/*110 */ { "GIF BM TheMan Red",   GifAnim, 10, 0 },
 /*111 */ { "", NULL, -1, 0 },
 /*112 */ { "", NULL, -1, 0 },
 /*113 */ { "", NULL, -1, 0 },
@@ -2601,28 +2611,28 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*159 */ { "", NULL, -1, 0 },
 #endif
 #if mheight == 96
-/*160 */ { "GIF net"		,	 GifAnim, 60, 0 }
-/*161 */ { "GIF colorstar"	,	 GifAnim, 61, 0 }
-/*162 */ { "GIF circlesmoke"	,	 GifAnim, 62, 0 }
-/*163 */ { "GIF waterdrop"	,	 GifAnim, 63, 0 }
-/*164 */ { "GIF circletriangle"	,	 GifAnim, 64, 0 }
-/*165 */ { "GIF photon"		,	 GifAnim, 65, 0 }
-/*166 */ { "GIF spincircle"	,	 GifAnim, 66, 0 }
-/*167 */ { "GIF ghostbusters"	,	 GifAnim, 67, 0 }
-/*168 */ { "GIF hand"		,	 GifAnim, 68, 0 }
-/*169 */ { "GIF infection"	,	 GifAnim, 69, 0 }
-/*170 */ { "GIF comets"		,	 GifAnim, 70, 0 }
-/*171 */ { "GIF batman"		,	 GifAnim, 71, 0 }
-/*172 */ { "GIF flyingfire"	,	 GifAnim, 72, 0 }
-/*173 */ { "GIF expandcircle"	,	 GifAnim, 73, 0 }
-/*174 */ { "GIF greenplasma"	,	 GifAnim, 74, 0 }
-/*175 */ { "GIF circle2sphere"	,	 GifAnim, 75, 0 }
-/*176 */ { "GIF colortoroid"	,	 GifAnim, 76, 0 }
-/*177 */ { "GIF scrollcubestron",	 GifAnim, 77, 0 }
-/*178 */ { "GIF spinningpattern",	 GifAnim, 78, 0 }
-/*179 */ { "GIF spacetime"	,	 GifAnim, 79, 0 }
-/*180 */ { "GIF circleslices"	,	 GifAnim, 80, 0 }
-/*181 */ { "GIF heartTunnel"	,	 GifAnim, 81, 0 }
+/*160 */ { "GIF net"		,	 GifAnim, 60, 0 },
+/*161 */ { "GIF colorstar"	,	 GifAnim, 61, 0 },
+/*162 */ { "GIF circlesmoke"	,	 GifAnim, 62, 0 },
+/*163 */ { "GIF waterdrop"	,	 GifAnim, 63, 0 },
+/*164 */ { "GIF circletriangle"	,	 GifAnim, 64, 0 },
+/*165 */ { "GIF photon"		,	 GifAnim, 65, 0 },
+/*166 */ { "GIF spincircle"	,	 GifAnim, 66, 0 },
+/*167 */ { "GIF ghostbusters"	,	 GifAnim, 67, 0 },
+/*168 */ { "GIF hand"		,	 GifAnim, 68, 0 },
+/*169 */ { "GIF infection"	,	 GifAnim, 69, 0 },
+/*170 */ { "GIF comets"		,	 GifAnim, 70, 0 },
+/*171 */ { "GIF batman"		,	 GifAnim, 71, 0 },
+/*172 */ { "GIF flyingfire"	,	 GifAnim, 72, 0 },
+/*173 */ { "GIF expandcircle"	,	 GifAnim, 73, 0 },
+/*174 */ { "GIF greenplasma"	,	 GifAnim, 74, 0 },
+/*175 */ { "GIF circle2sphere"	,	 GifAnim, 75, 0 },
+/*176 */ { "GIF colortoroid"	,	 GifAnim, 76, 0 },
+/*177 */ { "GIF scrollcubestron",	 GifAnim, 77, 0 },
+/*178 */ { "GIF spinningpattern",	 GifAnim, 78, 0 },
+/*179 */ { "GIF spacetime"	,	 GifAnim, 79, 0 },
+/*180 */ { "GIF circleslices"	,	 GifAnim, 80, 0 },
+/*181 */ { "GIF heartTunnel"	,	 GifAnim, 81, 0 },
 /*182 */ { "", NULL, -1, 0 },
 /*183 */ { "", NULL, -1, 0 },
 /*184 */ { "", NULL, -1, 0 },
@@ -2641,6 +2651,106 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*197 */ { "", NULL, -1, 0 },
 /*198 */ { "", NULL, -1, 0 },
 /*199 */ { "", NULL, -1, 0 },
+/*200 */ { "", NULL, -1, 0 },
+/*201 */ { "", NULL, -1, 0 },
+/*202 */ { "", NULL, -1, 0 },
+/*203 */ { "", NULL, -1, 0 },
+/*204 */ { "", NULL, -1, 0 },
+/*205 */ { "", NULL, -1, 0 },
+/*206 */ { "", NULL, -1, 0 },
+/*207 */ { "", NULL, -1, 0 },
+/*208 */ { "", NULL, -1, 0 },
+/*209 */ { "", NULL, -1, 0 },
+/*210 */ { "", NULL, -1, 0 },
+/*211 */ { "", NULL, -1, 0 },
+/*212 */ { "", NULL, -1, 0 },
+/*213 */ { "", NULL, -1, 0 },
+/*214 */ { "", NULL, -1, 0 },
+/*215 */ { "", NULL, -1, 0 },
+/*216 */ { "", NULL, -1, 0 },
+/*217 */ { "", NULL, -1, 0 },
+/*218 */ { "", NULL, -1, 0 },
+/*219 */ { "", NULL, -1, 0 },
+/*220 */ { "", NULL, -1, 0 },
+/*221 */ { "", NULL, -1, 0 },
+/*222 */ { "", NULL, -1, 0 },
+/*223 */ { "", NULL, -1, 0 },
+/*224 */ { "", NULL, -1, 0 },
+/*225 */ { "", NULL, -1, 0 },
+/*226 */ { "", NULL, -1, 0 },
+/*227 */ { "", NULL, -1, 0 },
+/*228 */ { "", NULL, -1, 0 },
+/*229 */ { "", NULL, -1, 0 },
+/*230 */ { "", NULL, -1, 0 },
+/*231 */ { "", NULL, -1, 0 },
+/*232 */ { "", NULL, -1, 0 },
+/*233 */ { "", NULL, -1, 0 },
+/*234 */ { "", NULL, -1, 0 },
+/*235 */ { "", NULL, -1, 0 },
+/*236 */ { "", NULL, -1, 0 },
+/*237 */ { "", NULL, -1, 0 },
+/*238 */ { "", NULL, -1, 0 },
+/*239 */ { "", NULL, -1, 0 },
+/*240 */ { "", NULL, -1, 0 },
+/*241 */ { "", NULL, -1, 0 },
+/*242 */ { "", NULL, -1, 0 },
+/*243 */ { "", NULL, -1, 0 },
+/*244 */ { "", NULL, -1, 0 },
+/*245 */ { "", NULL, -1, 0 },
+/*246 */ { "", NULL, -1, 0 },
+/*247 */ { "", NULL, -1, 0 },
+/*248 */ { "", NULL, -1, 0 },
+/*249 */ { "", NULL, -1, 0 },
+/*250 */ { "", NULL, -1, 0 },
+/*251 */ { "", NULL, -1, 0 },
+/*252 */ { "", NULL, -1, 0 },
+/*253 */ { "", NULL, -1, 0 },
+/*254 */ { "", NULL, -1, 0 },
+/*255 */ { "", NULL, -1, 0 },
+/*256 */ { "", NULL, -1, 0 },
+/*257 */ { "", NULL, -1, 0 },
+/*258 */ { "", NULL, -1, 0 },
+/*259 */ { "", NULL, -1, 0 },
+/*260 */ { "", NULL, -1, 0 },
+/*261 */ { "", NULL, -1, 0 },
+/*262 */ { "", NULL, -1, 0 },
+/*263 */ { "", NULL, -1, 0 },
+/*264 */ { "", NULL, -1, 0 },
+/*265 */ { "", NULL, -1, 0 },
+/*266 */ { "", NULL, -1, 0 },
+/*267 */ { "", NULL, -1, 0 },
+/*268 */ { "", NULL, -1, 0 },
+/*269 */ { "", NULL, -1, 0 },
+/*270 */ { "", NULL, -1, 0 },
+/*271 */ { "", NULL, -1, 0 },
+/*272 */ { "", NULL, -1, 0 },
+/*273 */ { "", NULL, -1, 0 },
+/*274 */ { "", NULL, -1, 0 },
+/*275 */ { "", NULL, -1, 0 },
+/*276 */ { "", NULL, -1, 0 },
+/*277 */ { "", NULL, -1, 0 },
+/*278 */ { "", NULL, -1, 0 },
+/*279 */ { "", NULL, -1, 0 },
+/*280 */ { "", NULL, -1, 0 },
+/*281 */ { "", NULL, -1, 0 },
+/*282 */ { "", NULL, -1, 0 },
+/*283 */ { "", NULL, -1, 0 },
+/*284 */ { "", NULL, -1, 0 },
+/*285 */ { "", NULL, -1, 0 },
+/*286 */ { "", NULL, -1, 0 },
+/*287 */ { "", NULL, -1, 0 },
+/*288 */ { "", NULL, -1, 0 },
+/*289 */ { "", NULL, -1, 0 },
+/*290 */ { "", NULL, -1, 0 },
+/*291 */ { "", NULL, -1, 0 },
+/*292 */ { "", NULL, -1, 0 },
+/*293 */ { "", NULL, -1, 0 },
+/*294 */ { "", NULL, -1, 0 },
+/*295 */ { "", NULL, -1, 0 },
+/*296 */ { "", NULL, -1, 0 },
+/*297 */ { "", NULL, -1, 0 },
+/*298 */ { "", NULL, -1, 0 },
+/*299 */ { "", NULL, -1, 0 },
 #else
 /* 160 */ { "GIF abstract colorful",	 GifAnim,  60, 0 },
 /* 161 */ { "GIF Aki5PC6 Running",	 GifAnim,  61, 0 },
@@ -2786,7 +2896,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 };
 
 // text demos are manually added to the array in setup()
-          
+
 void matrix_change(int16_t demo, bool directmap=false) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
@@ -2796,6 +2906,8 @@ void matrix_change(int16_t demo, bool directmap=false) {
     matrix_loop = -1;
     matrix_reset_demo = 1;
 
+    Serial.print("got matrix_change code ");
+    Serial.print(demo);
     // demo is the requested demo index in the mapping array or prev/next
     // matrix_state is the index to look up in demo_list array
     // matrix_demo is the actual demo# in demo_list array
@@ -2811,8 +2923,6 @@ void matrix_change(int16_t demo, bool directmap=false) {
         // special one key press where demos are shown forever and next goes back to the normal loop
         if (demo >= 0 && demo < DEMO_TEXT_INPUT) matrix_loop = 9999;
         #endif
-        Serial.print("got matrix_change code ");
-        Serial.print(demo);
         Serial.print(", switching to index ");
         // special text demos that bypass the array mapping
         if (demo >= DEMO_TEXT_THANKYOU && demo != DEMO_NEXT) {
@@ -2839,9 +2949,9 @@ void matrix_change(int16_t demo, bool directmap=false) {
                 if (demo != DEMO_PREV && demo != DEMO_NEXT) matrix_state++;
             } while (1);
         }
+	Serial.print(", mapped to matrix demo ");
+	Serial.print(matrix_demo);
     }
-    Serial.print(", mapped to matrix demo ");
-    Serial.print(matrix_demo);
     Serial.print(" (");
     Serial.print(demo_list[matrix_demo].name);
     Serial.print(") loop ");
@@ -2856,7 +2966,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
     #endif
 }
 
-           
+
 
 void Matrix_Handler() {
     uint8_t ret;
@@ -3013,7 +3123,7 @@ bool check_startup_IR_serial() {
     if (readchar == 'p') return 1;
 
 #ifdef RECV_PIN
-    uint32_t result = 0; 
+    uint32_t result = 0;
 
     #ifndef ESP32RMTIR
         decode_results IR_result;
@@ -3081,25 +3191,25 @@ void IR_Serial_Handler() {
         }
     }
 
-    if (readchar == 'n')      { Serial.println("Serial => next"); matrix_change(DEMO_NEXT);}
-    else if (readchar == 'p') { Serial.println("Serial => previous"); matrix_change(DEMO_PREV);}
-    else if (readchar == 'N') { Serial.println("Serial => next");     send_serial("n");}
-    else if (readchar == 'P') { Serial.println("Serial => previous"); send_serial("p");}
-    else if (readchar == 'B') { Serial.println("Serial => Bestof"); show_best_demos = true;}
-    else if (readchar == 'b') { Serial.println("Serial => All Demos"); show_best_demos = false;}
-    else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU);}
-    else if (readchar == '-') { Serial.println("Serial => dim"   ); change_brightness(-1);}
-    else if (readchar == '+') { Serial.println("Serial => bright"); change_brightness(+1);}
+    if (readchar == 'n')      { Serial.println("Serial => next");	    matrix_change(DEMO_NEXT);}
+    else if (readchar == 'p') { Serial.println("Serial => previous");	    matrix_change(DEMO_PREV);}
+    else if (readchar == 'N') { Serial.println("Serial => next");	    send_serial("n");}
+    else if (readchar == 'P') { Serial.println("Serial => previous");	    send_serial("p");}
+    else if (readchar == 'B') { Serial.println("Serial => Bestof");	    show_best_demos = true;}
+    else if (readchar == 'b') { Serial.println("Serial => All Demos");	    show_best_demos = false;}
+    else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
+    else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
+    else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
 #ifdef ARDUINOONPC
-    else if (readchar == '<') { Serial.println("ESP => dim"   ); send_serial("-");}
-    else if (readchar == '>') { Serial.println("ESP => bright"); send_serial("+");}
-    else if (readchar == 'R') { Serial.println("ESP => send next number"); remotesend = true;}
+    else if (readchar == '<') { Serial.println("ESP => dim"   );	    send_serial("-");}
+    else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
+    else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
 #endif
 
     // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
     // compiling the IR code that won't build.
 #ifdef RECV_PIN
-    uint32_t result; 
+    uint32_t result;
 
     #ifndef ESP32RMTIR
         decode_results IR_result;
@@ -3533,7 +3643,7 @@ void IR_Serial_Handler() {
         uint8_t BeatsPerMinute = 62;
         CRGBPalette16 palette = PartyColors_p;
         uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
-        for( int i = 0; i < STRIP_NUM_LEDS; i++) { 
+        for( int i = 0; i < STRIP_NUM_LEDS; i++) {
             leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
         }
         gHue++;
@@ -3572,10 +3682,10 @@ void IR_Serial_Handler() {
     //Theatre-style crawling lights.
     void theaterChase(uint32_t c, uint8_t wait) {
         static uint16_t q = 0;
-        
+
         q++;
         if (q == 3) q = 0;
-        
+
         for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
             leds_setcolor(i+q, c);    //turn every third pixel on
         }
@@ -3594,7 +3704,7 @@ void IR_Serial_Handler() {
     void theaterChaseRainbow(uint8_t wait) {
         static uint16_t j = 0;
         static uint16_t q = 0;
-        
+
         q++;
         if (q == 3) {
             q = 0;
@@ -3758,7 +3868,7 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
         matrix_change(value, true);
         break;
 
-    }   
+    }
 }
 
 void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
@@ -3781,7 +3891,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
     Serial.println(request.path);
     File file;
 
-    if (! (file = FSO.open(request.path)  
+    if (! (file = FSO.open(request.path)
     #ifdef FSOSPIFFS
                                     , "r"
     #endif
@@ -3806,7 +3916,7 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
 }
 
 // Apparently I can't send a method s.tick to Aiko handler, so I need this glue function
-void wifi_html_tick() { 
+void wifi_html_tick() {
     s.tick();
 }
 
@@ -3844,22 +3954,22 @@ void setup_wifi() {
 	//Serial.print(" -> ");
 	//Serial.println(pos);
 
-        if (!demo_list[i].func) continue; 
+        if (!demo_list[i].func) continue;
         char *option = (char *) malloc (strlen (demo_list[i].name) + 13);
 	sprintf(option, "%03d->%03d/%1d: ", i, pos, demo_mapping[pos].enabled[panelconfnum]);
 	strcpy(option+12, demo_list[i].name);
         p.addSelectOption(option, i);
     }
-    
+
     p.addUrlHandler(wildcardProc);
     p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
         w.beginElement("a", "href", "/demo_map.txt");
         w.addContent("Demo Map");
-        w.endElement(); // a 
+        w.endElement(); // a
     });
 
-    p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2) 
+    p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
         const char* inputstr="<FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>";
         w.puts(inputstr);
@@ -3901,7 +4011,7 @@ void read_config_index() {
     #else
     File file;
 
-    if (! (file = FSO.open(pathname)  
+    if (! (file = FSO.open(pathname)
     #ifdef FSOSPIFFS
                                     , "r"
     #endif
@@ -3910,7 +4020,7 @@ void read_config_index() {
         // 1 0 0 0 0 012
         String line = file.readStringUntil('\n');
         sscanf(line.c_str(), "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap);
-    #endif
+    #endif // ARDUINOONPC
         demo_mapping[index].mapping = dmap;
         demo_mapping[index].enabled[0] = d32;
         demo_mapping[index].enabled[1] = d64;
@@ -3925,9 +4035,13 @@ void read_config_index() {
             delay((uint32_t) 100);
             continue;
         }
+    #if 0
 	#ifdef ESP32
-	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap, 
+	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap,
 			  demo_mapping[index].enabled[panelconfnum], demo_list[dmap].name);
+	#elif ARDUINOONPC
+	    printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap,
+		   demo_mapping[index].enabled[panelconfnum], demo_list[dmap].name);
 	#else
 	    Serial.print(index);
 	    Serial.print(" ");
@@ -3937,6 +4051,7 @@ void read_config_index() {
 	    Serial.print(" ");
 	    Serial.print(demo_list[dmap].name);
 	#endif
+    #endif
 	// reverse position mapping used in setup_wifi dropdown creation
 	demo_list[dmap].position = index;
         if (demo_mapping[index].enabled[panelconfnum] && demo_list[dmap].func == NULL) {
@@ -3946,7 +4061,7 @@ void read_config_index() {
         }
         Serial.println("");
         // keep track of the highest demo index for modulo in matrix_change
-        if (demo_mapping[index].enabled[panelconfnum]) { 
+        if (demo_mapping[index].enabled[panelconfnum]) {
             if (! matrix_state) matrix_state = index; // find first playable demo
             demo_cnt++;
             demo_last_idx = index;
@@ -3978,7 +4093,7 @@ void loop() {
     // Dev1 receives commands via IR and its web server.
     // Dev1 in turn outputs some special codes on serial like '|D: 76' to say 'demo 76'
     // Dev2 is a rPi which has every single output pin used to drive 3 panels in parallel.
-    // It however can receive serial via its USB ports (FTDI). It reads those '|D: 76' 
+    // It however can receive serial via its USB ports (FTDI). It reads those '|D: 76'
     // commands and uses them to generate the output in sync with what dev#1 did.
     // Why all this madness? Because an rPi can run 3 to 12 times more RGBPanel pixels than
     // an ESP32 or teensy with SmartMatrix.
@@ -3990,14 +4105,14 @@ void loop() {
         int rdlen;
 	struct stat stbuf;
 
-	if (ttyfd > -1 && stat(serialdev, &stbuf)) { 
+	if (ttyfd > -1 && stat(serialdev, &stbuf)) {
 	    printf("ttyfd closed %d, (%s)\n", ttyfd, serialdev);
-	    close(ttyfd); 
-	    ttyfd = -1; 
+	    close(ttyfd);
+	    ttyfd = -1;
 	    serialdev = NULL;
 	}
-	EVERY_N_SECONDS(5) { 
-	    EVERY_N_SECONDS(30) { 
+	EVERY_N_SECONDS(5) {
+	    EVERY_N_SECONDS(30) {
 		if (serialdev && (ttyfd < 0)) printf("Serial closed, (re-)opening\n");
 	    }
 	    if (ttyfd < 0) ttyfd = openttyUSB(&serialdev);
@@ -4015,7 +4130,7 @@ void loop() {
 		printf("ESP> %s", buf);
 		ptr = buf;
 		char numbuf[4];
-		// If we are getting serial pings, run the current demo for 
+		// If we are getting serial pings, run the current demo for
 		// a long time, because we expect the ESP to send us 'next'
 		if (! strncmp(buf, "FrameBuffer::GFX", 16)) matrix_loop = 20;
 		if (! strncmp(buf, "Done with demo", 14)) matrix_loop = 20;
@@ -4112,10 +4227,10 @@ void setup() {
 
     Serial.println("Init Smart or FastLED Matrix");
     // Leave enough RAM for other code.
-    // lsbMsbTransitionBit of 2 requires 12288 RAM, 39960 available, leaving 27672 free: 
+    // lsbMsbTransitionBit of 2 requires 12288 RAM, 39960 available, leaving 27672 free:
     // Raised lsbMsbTransitionBit to 2/7 to fit in RAM
-    // lsbMsbTransitionBit of 2 gives 100 Hz refresh, 120 requested: 
-    // lsbMsbTransitionBit of 3 gives 191 Hz refresh, 120 requested: 
+    // lsbMsbTransitionBit of 2 gives 100 Hz refresh, 120 requested:
+    // lsbMsbTransitionBit of 3 gives 191 Hz refresh, 120 requested:
     // Raised lsbMsbTransitionBit to 3/7 to meet minimum refresh rate
     // Descriptors for lsbMsbTransitionBit 3/7 with 16 rows require 6144 bytes of DMA RAM
     // SmartMatrix Mallocs Complete
@@ -4205,15 +4320,15 @@ void setup() {
     Events.addHandler(IR_Serial_Handler, 10);
     // This is tricky, with FastLED output, sending all the pixels will take
     // most of the CPU time, but Aiko should ensure that other handlers get
-    // run too, even if this handler never really hits its time target and 
-    // runs every single time aiko triggers. 
+    // run too, even if this handler never really hits its time target and
+    // runs every single time aiko triggers.
     // Note however that you can't reasonably have any other handler
     // running faster than MX_UPD_TIME since it would be waiting on this one
     // being done.
     Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
-    demo_list[DEMO_TEXT_THANKYOU] = { "Thank you", NULL, -1, 0  }; 
-    demo_list[DEMO_TEXT_INPUT]    = { "Web Text Input", NULL, -1, 0  }; 
+    demo_list[DEMO_TEXT_THANKYOU] = { "Thank you", NULL, -1, 0  };
+    demo_list[DEMO_TEXT_INPUT]    = { "Web Text Input", NULL, -1, 0  };
     Serial.println("Starting loop");
 }
 

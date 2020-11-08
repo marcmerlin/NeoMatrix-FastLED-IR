@@ -22,7 +22,11 @@
 	#define mheight 96
     #endif
 #elif defined(ARDUINOONPC)
-    #define mheight 192
+    #if GFXDISPLAY_M64BY96
+	#define mheight 96
+    #else
+	#define mheight 192
+    #endif
 #else
 #error "Matrix config undefined, please set height"
 #endif
