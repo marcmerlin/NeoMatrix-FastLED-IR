@@ -68,6 +68,7 @@ typedef struct mapping_entry_ {
     uint8_t enabled[CONFIGURATIONS];
 } Mapping_Entry;
 
+// demo_list[dmap].position gives a reverse mapping
 Mapping_Entry demo_mapping[DEMO_ARRAY_SIZE];
 
 
@@ -1582,7 +1583,7 @@ uint8_t GifAnim(uint32_t idx) {
 	#define ROOT FS_PREFIX "/gifs64/"
 	#endif
     #else
-	#define ROOT ""
+	#define ROOT "/gifs64/"
     #endif
     #if mheight == 64
 	#define YMUL 10
@@ -2598,8 +2599,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*136 */ { "GIF BM Logo lgrey",	    GifAnim,  36, 0 },
 /*137 */ { "GIF BM Man Scroll",	    GifAnim,  37, 0 },
 /*138 */ { "GIF BM TheMan Blue",    GifAnim,  38, 0 },
-/*139 */ { "GIF BM TheMan_Green",   GifAnim,  38, 0 },
-/*140 */ { "GIF BM TheMan Red",	    GifAnim,  38, 0 },
+/*139 */ { "GIF BM TheMan_Green",   GifAnim,  39, 0 },
+/*140 */ { "GIF BM TheMan Red",	    GifAnim,  40, 0 },
 /*141 */ { "", NULL, -1, 0 },
 /*142 */ { "", NULL, -1, 0 },
 /*143 */ { "", NULL, -1, 0 },
@@ -2970,7 +2971,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	Serial.flush();
 	Serial.print("|D:");
 	char buf[4];
-	sprintf(buf, "%3d", matrix_state);
+	sprintf(buf, "%3d", demo_list[matrix_demo].position);
 	Serial.println(buf);
 	Serial.flush();
     #endif
@@ -3214,6 +3215,8 @@ void IR_Serial_Handler() {
     else if (readchar == 'P') { Serial.println("Serial => previous");	    send_serial("p");}
     else if (readchar == '<') { Serial.println("ESP => dim"   );	    send_serial("-");}
     else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
+    else if (readchar == 'C') { Serial.println("ESP => Bestof");	    send_serial("B");}
+    else if (readchar == 'c') { Serial.println("ESP => All Demos");	    send_serial("b");}
     else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
 #endif
 
@@ -4046,13 +4049,13 @@ void read_config_index() {
 	    delay((uint32_t) 100);
 	    continue;
 	}
-    #if 0
+    #if DEBUG_CFG_READ
 	#ifdef ESP32
 	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap,
 			  demo_mapping[index].enabled[panelconfnum], demo_list[dmap].name);
 	#elif ARDUINOONPC
-	    printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap,
-		   demo_mapping[index].enabled[panelconfnum], demo_list[dmap].name);
+		   printf("%3d: %d, %d, %d, %d, %d -> %3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap,
+			  demo_mapping[index].enabled[panelconfnum], demo_list[dmap].name);
 	#else
 	    Serial.print(index);
 	    Serial.print(" ");
@@ -4066,11 +4069,15 @@ void read_config_index() {
 	// reverse position mapping used in setup_wifi dropdown creation
 	demo_list[dmap].position = index;
 	if (demo_mapping[index].enabled[panelconfnum] && demo_list[dmap].func == NULL) {
+	    #if DEBUG_CFG_READ
 	    Serial.println(" (undefined)");
+	    #endif
 	    index++;
 	    continue;
 	}
+    #if DEBUG_CFG_READ
 	Serial.println("");
+    #endif
 	// keep track of the highest demo index for modulo in matrix_change
 	if (demo_mapping[index].enabled[panelconfnum]) {
 	    if (! matrix_state) matrix_state = index; // find first playable demo
