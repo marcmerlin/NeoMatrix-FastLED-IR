@@ -3186,14 +3186,15 @@ void IR_Serial_Handler() {
 	if (new_pattern) {
 	    Serial.print("Got new pattern via serial ");
 	    Serial.println(new_pattern);
+	    #ifdef ARDUINOONPC
 	    if (remotesend) {
 		char numstr[4];
 		snprintf( numstr, 3, "%d", new_pattern );
 		send_serial(numstr);
 		remotesend = false;
-	    } else {
+	    } else
+	    #endif
 		matrix_change(new_pattern);
-	    }
 	} else {
 	    Serial.print("Got serial char ");
 	    Serial.println(readchar);
@@ -3203,14 +3204,14 @@ void IR_Serial_Handler() {
 
     if (readchar == 'n')      { Serial.println("Serial => next");	    matrix_change(DEMO_NEXT);}
     else if (readchar == 'p') { Serial.println("Serial => previous");	    matrix_change(DEMO_PREV);}
-    else if (readchar == 'N') { Serial.println("Serial => next");	    send_serial("n");}
-    else if (readchar == 'P') { Serial.println("Serial => previous");	    send_serial("p");}
     else if (readchar == 'B') { Serial.println("Serial => Bestof");	    show_best_demos = true;}
     else if (readchar == 'b') { Serial.println("Serial => All Demos");	    show_best_demos = false;}
     else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
     else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
 #ifdef ARDUINOONPC
+    else if (readchar == 'N') { Serial.println("Serial => next");	    send_serial("n");}
+    else if (readchar == 'P') { Serial.println("Serial => previous");	    send_serial("p");}
     else if (readchar == '<') { Serial.println("ESP => dim"   );	    send_serial("-");}
     else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
     else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
