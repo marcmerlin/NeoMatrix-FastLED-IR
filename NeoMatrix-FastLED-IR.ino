@@ -2984,7 +2984,25 @@ void matrix_change(int16_t demo, bool directmap=false) {
 
 
 void Matrix_Handler() {
+    static uint32_t count = 0;
+    static uint32_t count_last = 0;
+    static uint32_t time_last = 0;
+    uint32_t time_now = millis();
     uint8_t ret;
+
+    count++;
+    if (time_now - time_last > 10000) {
+	// Note that the matrix_handler FPS is what fills the framebuffer.
+	// How quickly the framebuffer memory is pushed to the display,
+	// depends on the display, used and its capabilities. Ideally
+	// it'll be more than 50fps (especially for any display like
+	// RGBPanels where pixels get turned off between refreshes)
+	Serial.print("10sec average frequency of matrix handler compared to theorical 50 fps: ");
+	Serial.println((count - count_last) * 1000 / (time_now - time_last));
+	time_last = time_now;
+	count_last = count;
+    }
+
     Demo_Entry demo_entry = demo_list[matrix_demo];
 
     if (matrix_demo == DEMO_TEXT_THANKYOU) {
@@ -4335,18 +4353,23 @@ void setup() {
     // init first strip demo
     colorWipe(0x0000FF00, 10);
     Serial.println("Neopixel strip init done");
-    Events.addHandler(Neopixel_Anim_Handler, 10);
+    Events.addHandler(Neopixel_Anim_Handler, 20);
 #endif // NEOPIXEL_PIN
 
-    // Argument is how many ms between each call to the handler
-    Events.addHandler(IR_Serial_Handler, 10);
+    // Check IR every 20ms or so (cooperative multitasking)
+    Events.addHandler(IR_Serial_Handler, 20);
+
     // This is tricky, with FastLED output, sending all the pixels will take
     // most of the CPU time, but Aiko should ensure that other handlers get
     // run too, even if this handler never really hits its time target and
     // runs every single time aiko triggers.
+    // With RGBPanels, both on ESP32 and rPI, RGBPanels are updated on a separate
+    // CPU core, so the main core runs this code without being delayed by anything
+    // other than the few other light threads and how long each frame takes to compute
     // Note however that you can't reasonably have any other handler
     // running faster than MX_UPD_TIME since it would be waiting on this one
     // being done.
+    // It's currently set at 20mn, or up to 50 fps
     Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
     demo_list[DEMO_TEXT_THANKYOU] = { "Thank you", NULL, -1, 0  };

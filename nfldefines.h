@@ -32,6 +32,10 @@
 #endif
 
 // How many ms used for each matrix update
+// This is now used to schedule Matrix_Handler every 20ms
+// if possible (50 frames generated per second). 
+// Note that actual framerate generation will be slowed
+// down by how long things take to run.
 #define MX_UPD_TIME 20
 
 // Separate Neopixel Strip, if used. Not the NeoMatrix
