@@ -1873,6 +1873,10 @@ uint8_t GifAnim(uint32_t idx) {
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	gifloopsec =  animgif[idx].looptime;
+	// ARDUINOONPC is faster than ESP32, run each loop longer
+	#ifdef ARDUINOONPC
+	    gifloopsec *= 2;
+	#endif
 	OFFSETX = animgif[idx].offx;
 	OFFSETY = animgif[idx].offy;
 	FACTX =   animgif[idx].factx;
