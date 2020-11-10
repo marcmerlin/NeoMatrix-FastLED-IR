@@ -103,7 +103,6 @@ bool show_best_demos = false;
 
 bool matrix_reset_demo = 1;
 
-// FIXME, show could be a callback function for FastLEDshowESP32
 void matrix_show();
 void aurora_setup();
 bool sav_newgif(const char *pathname);

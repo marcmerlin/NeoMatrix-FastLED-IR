@@ -82,10 +82,93 @@ uint16_t demo_last_idx = 0;
 uint16_t matrix_state = 0;
 uint16_t matrix_demo; // this is initialized after matrix_state is updated in read_config_index
 
+// computed in Matrix_Handler, displayed in ShowMHfps
+uint32_t last_fps = 0;
+bool show_last_fps = false;
+
 String displaytext="";
 
 // Compute how many GIFs have been defined (called in setup)
 uint8_t gif_cnt = 0;
+
+// Other fonts possible on http://oleddisplay.squix.ch/#/home
+// https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
+// https://learn.adafruit.com/adafruit-gfx-graphics-library/using-fonts
+// Default is 5x7, meaning 4.8 chars wide, 4 chars high
+// Picopixel: 3x5 means 6 chars wide, 5 or 6 chars high
+// #include <Fonts/Picopixel.h>
+// Proportional 5x5 font, 4.8 wide, 6 high
+// #include <Fonts/Org_01.h>
+// TomThumb: 3x5 means 4 chars wide, 5 or 6 chars high
+// -> nicer font
+#include <Fonts/TomThumb.h>
+// 3x3 but not readable
+//#include <Fonts/Tiny3x3a2pt7b.h>
+//#include <Fonts/FreeMonoBold9pt7b.h>
+//#include <Fonts/FreeMonoBold12pt7b.h>
+//#include <Fonts/FreeMonoBold18pt7b.h>
+//#include <Fonts/FreeMonoBold24pt7b.h>
+#include "fonts.h"
+
+// Choose your prefered pixmap
+#include "smileytongue24.h"
+
+// controls how many times a demo should run its pattern
+// init at -1 to indicate that a demo is run for the first time (demo switch)
+int16_t matrix_loop = -1;
+uint32_t waitmillis = 0;
+
+//----------------------------------------------------------------------------
+
+// This file contains codes I captured and mapped myself
+// using IRremote's examples/IRrecvDemo
+#include "IRcodes.h"
+
+#ifdef RECV_PIN
+    #ifdef ESP8266
+    #include <IRremoteESP8266.h>
+    #else
+	#ifdef ESP32RMTIR
+	#include <IRRecv.h> // https://github.com/lbernstone/IR32.git
+	#else
+	#include <IRremote.h>
+	#endif
+    #endif
+
+    #ifndef ESP32RMTIR
+    IRrecv irrecv(RECV_PIN);
+    #else
+    IRRecv irrecv;
+    #endif
+#endif
+
+uint32_t last_change = millis();
+
+typedef enum {
+    f_nothing = 0,
+    f_colorWipe = 1,
+    f_rainbow = 2,
+    f_rainbowCycle = 3,
+    f_theaterChase = 4,
+    f_theaterChaseRainbow = 5,
+    f_cylon = 6,
+    f_cylonTrail = 7,
+    f_doubleConverge = 8,
+    f_doubleConvergeRev = 9,
+    f_doubleConvergeTrail = 10,
+    f_flash = 11,
+    f_juggle = 12,
+    f_bpm = 13,
+} StripDemo;
+
+StripDemo nextdemo = f_theaterChaseRainbow;
+// Is the current demo linked to a color (false for rainbow demos)
+bool colorDemo = true;
+int32_t demo_color = 0x00FF00; // Green
+int16_t strip_speed = 50;
+
+
+//----------------------------------------------------------------------------
 
 // look for 'magic happens here' below
 #ifdef ARDUINOONPC
@@ -98,6 +181,11 @@ uint8_t gif_cnt = 0;
     #include <unistd.h>
     #include <sys/stat.h>
 
+    // if we're not talking to anything, ttyfd will be reset to -1
+    // however >=0 does not mean there is anything transmitting
+    // but we'll assume that it is. If this ends up being untrue later
+    // look for 'serial watchdog' lower down.
+    int ttyfd = -1;
 
     int set_interface_attribs(int ttyfd, int speed)
     {
@@ -147,7 +235,7 @@ uint8_t gif_cnt = 0;
 	    // warn for permission denied but not for no such file or directory
 	    if (!stat(*devname, &stbuf)) printf("Error opening %s: %s\n", *devname, strerror(errno));
 	}
-	/*baudrate 115200, 8 bits, no parity, 1 stop bit */
+	/* baudrate 115200, 8 bits, no parity, 1 stop bit */
 	if (ttyfd >= 0) {
 	    set_interface_attribs(ttyfd, B115200);
 	    printf("Opened %s\n", *devname);
@@ -155,7 +243,6 @@ uint8_t gif_cnt = 0;
 	return ttyfd;
     }
 
-    int ttyfd = -1;
     int send_serial(const char *xstr) {
 	int wlen;
 	int xlen = strlen(xstr);
@@ -204,7 +291,22 @@ void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, i
 }
 
 
+void ShowMHfps() {
+    uint8_t print_width = 2;
+
+    if (show_last_fps) {
+	matrix->setTextSize(1);
+	matrix->setFont(&TomThumb);
+	matrix->fillRect(0, 0, 4 * print_width, 7, 0);
+	matrix->setCursor(1, 6);
+	matrix->setTextColor(matrix->Color(255,255,255));
+	matrix->print(last_fps);
+    }
+}
+
+
 void matrix_show() {
+    ShowMHfps();
 #ifdef FASTLED_NEOMATRIX
     #ifdef ESP8266
     // Disable watchdog interrupt so that it does not trigger in the middle of
@@ -229,89 +331,6 @@ void matrix_show() {
     matrix->show();
 #endif
 }
-
-// Other fonts possible on http://oleddisplay.squix.ch/#/home
-// https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
-// https://learn.adafruit.com/adafruit-gfx-graphics-library/using-fonts
-// Default is 5x7, meaning 4.8 chars wide, 4 chars high
-// Picopixel: 3x5 means 6 chars wide, 5 or 6 chars high
-// #include <Fonts/Picopixel.h>
-// Proportional 5x5 font, 4.8 wide, 6 high
-// #include <Fonts/Org_01.h>
-// TomThumb: 3x5 means 4 chars wide, 5 or 6 chars high
-// -> nicer font
-#include <Fonts/TomThumb.h>
-// 3x3 but not readable
-//#include <Fonts/Tiny3x3a2pt7b.h>
-//#include <Fonts/FreeMonoBold9pt7b.h>
-//#include <Fonts/FreeMonoBold12pt7b.h>
-//#include <Fonts/FreeMonoBold18pt7b.h>
-//#include <Fonts/FreeMonoBold24pt7b.h>
-#include "fonts.h"
-
-// Choose your prefered pixmap
-#include "smileytongue24.h"
-
-// controls how many times a demo should run its pattern
-// init at -1 to indicate that a demo is run for the first time (demo switch)
-int16_t matrix_loop = -1;
-uint32_t waitmillis = 0;
-
-
-//----------------------------------------------------------------------------
-
-// This file contains codes I captured and mapped myself
-// using IRremote's examples/IRrecvDemo
-#include "IRcodes.h"
-
-#ifdef RECV_PIN
-    #ifdef ESP8266
-    #include <IRremoteESP8266.h>
-    #else
-	#ifdef ESP32RMTIR
-	#include <IRRecv.h> // https://github.com/lbernstone/IR32.git
-	#else
-	#include <IRremote.h>
-	#endif
-    #endif
-
-    #ifndef ESP32RMTIR
-    IRrecv irrecv(RECV_PIN);
-    #else
-    IRRecv irrecv;
-    #endif
-#endif
-
-
-typedef enum {
-    f_nothing = 0,
-    f_colorWipe = 1,
-    f_rainbow = 2,
-    f_rainbowCycle = 3,
-    f_theaterChase = 4,
-    f_theaterChaseRainbow = 5,
-    f_cylon = 6,
-    f_cylonTrail = 7,
-    f_doubleConverge = 8,
-    f_doubleConvergeRev = 9,
-    f_doubleConvergeTrail = 10,
-    f_flash = 11,
-    f_juggle = 12,
-    f_bpm = 13,
-} StripDemo;
-
-StripDemo nextdemo = f_theaterChaseRainbow;
-// Is the current demo linked to a color (false for rainbow demos)
-bool colorDemo = true;
-int32_t demo_color = 0x00FF00; // Green
-int16_t strip_speed = 50;
-
-
-uint32_t last_change = millis();
-
-// ---------------------------------------------------------------------------
-// Shared functions
-// ---------------------------------------------------------------------------
 
 // Input a value 0 to 255 to get a color value.
 // The colours are a transition r - g - b - back to r.
@@ -344,6 +363,8 @@ uint32_t Wheel(uint8_t WheelPos) {
 void display_stats() {
     static uint16_t cnt=1;
 
+    // Reset to default font
+    matrix->setFont();
     matrix->setTextSize(1);
     // not wide enough;
     if (mw<16) return;
@@ -416,7 +437,6 @@ void display_stats() {
 
 void font_test() {
     static uint16_t cnt=1;
-    matrix->setRotation(0);
 
 #if 0
     matrix->setFont(&FreeMonoBold9pt7b);
@@ -475,7 +495,6 @@ void font_test() {
     matrix->setTextColor(matrix->Color(0,255,128));
     matrix->print("REPEAT");
 
-    matrix->setRotation(1);
     matrix->setCursor(1, 5);
     matrix->setTextColor(matrix->Color(255,255,0));
     matrix->print("Repeat");
@@ -509,12 +528,12 @@ uint8_t tfsf(uint32_t unused) {
 	state = 1;
 	spd = 1.0;
 	startfade = -1;
-	matrix->setRotation(0);
 	// biggest font is 18, but this spills over
-	matrix->setFont( &Century_Schoolbook_L_Bold[16] );
 	if (mw >= 48 && mh >=48) fontsize = 2;
-	matrix->setTextSize(fontsize);
     }
+
+    matrix->setFont( &Century_Schoolbook_L_Bold[16] );
+    matrix->setTextSize(fontsize);
 
     if (startfade < l && (state > (l*duration)/spd && state < ((l+1)*duration)/spd))  {
 	matrix->setCursor(0, mh - idx*8*fontsize/3);
@@ -603,10 +622,10 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
 	l = 0;
 	if (matrix_loop == -1) { dont_exit = 1; delayframe = 2; faster = 0; };
 	matrix->setTextSize(1);
-	if (mheight >= 192) matrix->setTextSize(2);
 	repeat = 4;
 	if (zoom_type == 99) { size = 18; repeat = 10; };
     }
+    if (mheight >= 192) matrix->setTextSize(2);
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
@@ -731,16 +750,16 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
 	state = 1;
 	spd = 1.0;
 	firstpass = 0;
-	matrix->setRotation(0);
-	matrix->setTextSize(1);
-	if (mheight >= 192)  {
-	    matrix->setFont(&Century_Schoolbook_L_Bold_26);
-	} else if (mheight >= 64)  {
-	    //matrix->setFont(FreeMonoBold9pt7b);
-	    matrix->setFont(&Century_Schoolbook_L_Bold_12);
-	} else {
-	    matrix->setFont(&TomThumb);
-	}
+    }
+
+    matrix->setTextSize(1);
+    if (mheight >= 192)  {
+	matrix->setFont(&Century_Schoolbook_L_Bold_26);
+    } else if (mheight >= 64)  {
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_12);
+    } else {
+	matrix->setFont(&TomThumb);
     }
 
     // without this, we can use fadeall, but it fades too slowly for my opinion
@@ -833,16 +852,16 @@ uint8_t trancejesus(uint32_t unused) {
 	spd = 1.0;
 	didclear = 0;
 	firstpass = 0;
-	matrix->setRotation(0);
-	matrix->setTextSize(1);
-	if (mheight >= 192)  {
-	    matrix->setFont(&Century_Schoolbook_L_Bold_22);
-	} else if (mheight >= 64)  {
-	    //matrix->setFont(FreeMonoBold9pt7b);
-	    matrix->setFont(&Century_Schoolbook_L_Bold_8);
-	} else {
-	    matrix->setFont(&TomThumb);
-	}
+    }
+
+    matrix->setTextSize(1);
+    if (mheight >= 192)  {
+	matrix->setFont(&Century_Schoolbook_L_Bold_22);
+    } else if (mheight >= 64)  {
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_8);
+    } else {
+	matrix->setFont(&TomThumb);
     }
 
     if (! didclear) {
@@ -924,7 +943,6 @@ uint8_t bbb(uint32_t unused) {
 	spd = 1.0;
     }
 
-    matrix->setRotation(0);
     matrix->setTextSize(1);
     if (mw >= 64) {
 	//matrix->setFont(FreeMonoBold9pt7b);
@@ -992,7 +1010,6 @@ uint8_t esrbr_flashin() {
     bool show = 0;
 
     matrix->setFont(&TomThumb);
-    matrix->setRotation(0);
     matrix->setTextSize(1);
     matrix->clear();
 
@@ -1068,7 +1085,6 @@ uint8_t esrbr_fade(uint32_t unused) {
 	} else {
 	    matrix->setFont(&TomThumb);
 	}
-	matrix->setRotation(0);
 	matrix->setTextSize(1);
 	matrix->clear();
 
@@ -1137,15 +1153,15 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y) {
     if (matrix_reset_demo == 1) {
 	state = 0;
 	matrix_reset_demo = 0;
-	matrix->setRotation(0);
-	matrix->setTextSize(1);
-	if (mheight >= 64) {
-		//matrix->setFont(FreeMonoBold9pt7b);
-	    matrix->setFont(&Century_Schoolbook_L_Bold_16);
-	} else {
-	    matrix->setFont(&TomThumb);
-	}
 	matrix->clear();
+    }
+
+    matrix->setTextSize(1);
+    if (mheight >= 64) {
+	    //matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_16);
+    } else {
+	matrix->setFont(&TomThumb);
     }
 
     state++;
@@ -1234,16 +1250,16 @@ uint8_t webwc(uint32_t unused) {
 	spd = 1.0;
 	didclear = 0;
 	firstpass = 0;
-	matrix->setRotation(0);
-	matrix->setTextSize(1);
-	if (mheight >= 192)  {
-	    matrix->setFont(&Century_Schoolbook_L_Bold_26);
-	} else if (mheight >= 64)  {
-	    //matrix->setFont(FreeMonoBold9pt7b);
-	    matrix->setFont(&Century_Schoolbook_L_Bold_12);
-	} else {
-	    matrix->setFont(&TomThumb);
-	}
+    }
+
+    matrix->setTextSize(1);
+    if (mheight >= 192)  {
+	matrix->setFont(&Century_Schoolbook_L_Bold_26);
+    } else if (mheight >= 64)  {
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_12);
+    } else {
+	matrix->setFont(&TomThumb);
     }
 
     if (! didclear) {
@@ -1336,11 +1352,10 @@ uint8_t scrollText(const char str[], uint8_t len) {
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	x = 7;
-	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
-	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-	matrix->setTextSize(1);
-	matrix->setRotation(0);
     }
+    matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
+    matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+    matrix->setTextSize(1);
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
@@ -1407,11 +1422,10 @@ uint8_t DoublescrollText(uint32_t choice) {
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	x = 1;
-	matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
-	matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
-	matrix->setTextSize(1);
-	matrix->setRotation(0);
     }
+    matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
+    matrix->setTextWrap(false);  // we don't wrap text so it scrolls nicely
+    matrix->setTextSize(1);
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
@@ -1868,14 +1882,16 @@ uint8_t GifAnim(uint32_t idx) {
     if (idx == 255) return 0;
     // Avoid crashes due to overflows
     idx = idx % gif_cnt;
-    static uint8_t gifloopsec;
+    static uint16_t gifloopsec;
 
     if (matrix_reset_demo == 1) {
 	matrix_reset_demo = 0;
 	gifloopsec =  animgif[idx].looptime;
-	// ARDUINOONPC is faster than ESP32, run each loop longer
+	// ARDUINOONPC make the loop last longer
 	#ifdef ARDUINOONPC
 	    gifloopsec *= 2;
+	    // if we are connected to a remote device, let it change patterns for us
+	    if (ttyfd >= 0) gifloopsec = 1000;
 	#endif
 	OFFSETX = animgif[idx].offx;
 	OFFSETY = animgif[idx].offy;
@@ -1903,11 +1919,12 @@ uint8_t GifAnim(uint32_t idx) {
     // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
     // add the matrix_show() delay that is expected by the caller
+    // Not needed anymore with Aiko, it handles calling frequency
     //bool savl = sav_loop();
     //if (savl) { delay(MX_UPD_TIME); };
 
-    // Not needed anymore with Aiko, it handles calling frequency
     sav_loop();
+    ShowMHfps();
 
     EVERY_N_SECONDS(1) {
 	Serial.print(gifloopsec); Serial.print(" ");
@@ -1964,16 +1981,15 @@ uint8_t scrollBigtext(uint32_t unused) {
 	state = 0;
 	matrix_reset_demo = 0;
 	panOrBounce(&x, &y, 54*6, ARRAY_SIZE(text)*7, true);
-	matrix->setRotation(0);
-	matrix->setTextSize(1);
-	// default font is 5x7, but you really need 6x8 for spacing
-	matrix->setFont(NULL);
 	for (uint8_t i=0; i<=textlines-1; i++) {
 	    textcolor[i] = random8(96) * 65536 + (127 + random8(128))* 256, random8(96);
 	    //Serial.print("Setup color mapping: ");
 	    //Serial.println(textcolor[i], HEX);
 	}
     }
+    matrix->setTextSize(1);
+    // default font is 5x7, but you really need 6x8 for spacing
+    matrix->setFont(NULL);
 
     state++;
     panOrBounce(&x, &y, 54*6, ARRAY_SIZE(text)*7);
@@ -2108,6 +2124,7 @@ uint8_t call_twinklefox(uint32_t unused)
     }
 
     twinkle_loop();
+    ShowMHfps();
     if (state++ < 1000) return 2;
     matrix_reset_demo = 1;
     return 0;
@@ -2967,10 +2984,6 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	Serial.print(", mapped to matrix demo ");
 	Serial.print(matrix_demo);
     }
-    Serial.print(" (");
-    Serial.print(demo_list[matrix_demo].name);
-    Serial.print(") loop ");
-    Serial.println(matrix_loop);
     #ifndef ARDUINOONPC
 	Serial.flush();
 	Serial.print("|D:");
@@ -2978,7 +2991,14 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	sprintf(buf, "%3d", demo_list[matrix_demo].position);
 	Serial.println(buf);
 	Serial.flush();
+    #else
+	// if we are connected to a remote device, let it change patterns for us
+	if (ttyfd >= 0) matrix_loop = 999;
     #endif
+    Serial.print(" (");
+    Serial.print(demo_list[matrix_demo].name);
+    Serial.print(") loop ");
+    Serial.println(matrix_loop);
 }
 
 
@@ -2991,14 +3011,19 @@ void Matrix_Handler() {
     uint8_t ret;
 
     count++;
-    if (time_now - time_last > 10000) {
+    if (time_now - time_last > 1000) {
+	static uint16_t cnt = 0;
 	// Note that the matrix_handler FPS is what fills the framebuffer.
 	// How quickly the framebuffer memory is pushed to the display,
 	// depends on the display, used and its capabilities. Ideally
 	// it'll be more than 50fps (especially for any display like
 	// RGBPanels where pixels get turned off between refreshes)
-	Serial.print("10sec average frequency of matrix handler compared to theorical 50 fps: ");
-	Serial.println((count - count_last) * 1000 / (time_now - time_last));
+	last_fps = (count - count_last) * 1000 / (time_now - time_last);
+	// Display on serial every 10 seconds
+	if (cnt++ % 10 == 0) {
+	    Serial.print("avg freq of matrix handler compared to theorical 50 fps: ");
+	    Serial.println(last_fps);
+	}
 	time_last = time_now;
 	count_last = count;
     }
@@ -3014,23 +3039,23 @@ void Matrix_Handler() {
 	    ret = display_text("Thank\n  You\n  Very\n Much", 0, 14);
 #endif
 	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
+	    if (ret) goto exit;
     } else if (matrix_demo == DEMO_TEXT_INPUT) {
 	    //ret = scrollText(str, sizeof(str));
 	    ret = display_text(displaytext.c_str(), 0, 14);
 	    if (matrix_loop == -1) matrix_loop = ret;
-	    if (ret) return;
+	    if (ret) goto exit;
     } else {
 	if (! demo_entry.func) {
 	    Serial.print(">>> ERROR: No demo for ");
 	    Serial.println(matrix_demo);
 	    matrix_change(DEMO_NEXT);
-	    return;
+	    goto exit;
 	}
 
 	ret = demo_entry.func(demo_entry.arg);
 	if (matrix_loop == -1) matrix_loop = ret;
-	if (ret) return;
+	if (ret) goto exit;
     }
 
     matrix_reset_demo = 1;
@@ -3040,6 +3065,10 @@ void Matrix_Handler() {
     Serial.println(matrix_loop);
     if (--matrix_loop > 0) return;
     matrix_change(DEMO_NEXT);
+    return;
+
+    exit:
+    return;
 }
 
 // ---------------------------------------------------------------------------
@@ -3232,15 +3261,19 @@ void IR_Serial_Handler() {
     else if (readchar == 'B') { Serial.println("Serial => Bestof");	    show_best_demos = true;}
     else if (readchar == 'b') { Serial.println("Serial => All Demos");	    show_best_demos = false;}
     else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
+    else if (readchar == 'f') { show_last_fps = !show_last_fps; }
+    else if (readchar == '=') { matrix_loop = matrix_loop > 1000 ? 3 : 9999; }
     else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
 #ifdef ARDUINOONPC
     else if (readchar == 'N') { Serial.println("Serial => next");	    send_serial("n");}
     else if (readchar == 'P') { Serial.println("Serial => previous");	    send_serial("p");}
+    else if (readchar == 'F') { Serial.println("Serial => togglefps");	    send_serial("f");}
     else if (readchar == '<') { Serial.println("ESP => dim"   );	    send_serial("-");}
     else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
     else if (readchar == 'C') { Serial.println("ESP => Bestof");	    send_serial("B");}
     else if (readchar == 'c') { Serial.println("ESP => All Demos");	    send_serial("b");}
+    else if (readchar == '=') { Serial.println("ESP => All Demos");	    send_serial("=");}
     else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
 #endif
 
@@ -4099,6 +4132,7 @@ void read_config_index() {
 	    index++;
 	    continue;
 	}
+	if (demo_mapping[index].enabled[panelconfnum] & 2) best_cnt++;
     #if DEBUG_CFG_READ
 	Serial.println("");
     #endif
@@ -4172,10 +4206,15 @@ void loop() {
 		printf("ESP> %s", buf);
 		ptr = buf;
 		char numbuf[4];
-		// If we are getting serial pings, run the current demo for
-		// a long time, because we expect the ESP to send us 'next'
-		if (! strncmp(buf, "FrameBuffer::GFX", 16)) matrix_loop = 20;
-		if (! strncmp(buf, "Done with demo", 14)) matrix_loop = 20;
+		// attempt to do an active serial watchdog (protocol keepalive)
+		// to keep things simpler, though, we'll just check for ttyfd >= 0
+		// which when connected to an ESP32 USB, is close enough to being the same.
+		#if 0
+		    // If we are getting serial pings, run the current demo for
+		    // a long time, because we expect the ESP to send us 'next'
+		    if (! strncmp(buf, "FrameBuffer::GFX", 16)) matrix_loop = 20;
+		    if (! strncmp(buf, "Done with demo", 14)) matrix_loop = 20;
+		#endif
 		if (! strncmp(buf, "|D:", 3)) {
 		    int num;
 		    strncpy(numbuf, buf+3, 3);
@@ -4199,7 +4238,6 @@ void loop() {
 	}
     #endif
 }
-
 
 void setup() {
     Serial.begin(115200);
@@ -4374,9 +4412,13 @@ void setup() {
     // It's currently set at 20mn, or up to 50 fps
     Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
+    //Events.addHandler(ShowMHfps, 1000);
+
     demo_list[DEMO_TEXT_THANKYOU] = { "Thank you", NULL, -1, 0  };
     demo_list[DEMO_TEXT_INPUT]    = { "Web Text Input", NULL, -1, 0  };
     Serial.println("Starting loop");
+    // After init is done, show fps (can be turned on and off with 'f').
+    show_last_fps = true;
 }
 
 // vim:sts=4:sw=4
