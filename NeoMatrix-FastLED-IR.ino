@@ -3207,12 +3207,14 @@ void IR_Serial_Handler() {
 	}
 
 	if (new_pattern) {
-	    Serial.print("Got new pattern via serial ");
+	    Serial.print("Got new");
+	    Serial.print(remotesend?" REMOTE":"");
+	    Serial.print(" pattern via serial ");
 	    Serial.println(new_pattern);
 	    #ifdef ARDUINOONPC
 	    if (remotesend) {
 		char numstr[4];
-		snprintf( numstr, 3, "%d", new_pattern );
+		snprintf( numstr, 4, "%d", new_pattern );
 		send_serial(numstr);
 		remotesend = false;
 	    } else
