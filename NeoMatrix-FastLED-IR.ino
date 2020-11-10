@@ -1619,6 +1619,7 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "236_spintriangle.gif",		20, 0, 0, 10, YMUL, 0, 0 },
 	    { ROOT  "281_plasma.gif",			20, 0, 0, 10, YMUL, 0, 0 },
 	    { ROOT  "sonic.gif",			10, 0, 0, 10, YMUL, 0, 0 },
+	    { ROOT  "272_mj_spindance.gif",		15, 0, 0, 10, YMUL, 0, 0 },
 	#else
 /*100 */    { ROOT  "failingcube.gif",			10, 0,10, 10,   10, 0, 0 },
 	    { ROOT  "colormesh_wave.gif",		20,-20,0,  9,   10, 0, 0 },
@@ -1629,9 +1630,9 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "z_3Ppu_spin_triangles.gif",	10, 0, 0, 10,   10, 0, 0 },
 	    { ROOT  "z_Egph_plasma_.gif",		10,-12,0,  8,   10, 0, 0 },
 	    { ROOT  "z_3F3F_sonic.gif",			10, 0, 0,  7,   10, 0, 0 },
+	    { ROOT  "z_feM_MJ_moonwalk_spin.gif",	10,-12,0, 10,   12, 0, 0 },
 	#endif
 
-/*109 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
 /*110 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
 /*111 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
 /*112 */    { "", 0, 0 , 0, 0 , 0, 0 , 0 },
@@ -1849,7 +1850,6 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "z_XwIB_snoopdog_dance.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 283 */
 	    { ROOT  "z_Ysrm_walking_dead.gif",		10, 0, 0,  7, 10, 0, 0 },  /* 284 */
 	    { ROOT  "z_Yv30_street_fighter.gif",	10, 0, 0, 10, 10, 0, 0 },  /* 285 */
-	    { ROOT  "z_feM_MJ_moonwalk_spin.gif",	10,-12,0, 10, 12, 0, 0 },  /* 286 */
 	#endif
 	};
     #endif
@@ -2573,7 +2573,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /*106 */ { "GIF spintriangle"	,GifAnim,  6, 0 },
 /*107 */ { "GIF plasma"		,GifAnim,  7, 0 },
 /*108 */ { "GIF sonic"		,GifAnim,  8, 0 },
-/*109 */ { "", NULL, -1, 0 },
+/*109 */ { "GIF MJ2 spin dance"	,GifAnim,  9, 0 },
 /*110 */ { "", NULL, -1, 0 },
 /*111 */ { "", NULL, -1, 0 },
 /*112 */ { "", NULL, -1, 0 },
@@ -2893,7 +2893,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 283 */ { "GIF snoopdog dance",	 GifAnim, 183, 0 },
 /* 284 */ { "GIF walking dead",		 GifAnim, 184, 0 },
 /* 285 */ { "GIF street fighter",	 GifAnim, 185, 0 },
-/* 286 */ { "GIF MJ moonwalk spin",	 GifAnim, 186, 0 },
+/* 286 */ { "", NULL, -1, 0 },
 /* 287 */ { "", NULL, -1, 0 },
 /* 288 */ { "", NULL, -1, 0 },
 /* 289 */ { "", NULL, -1, 0 },
