@@ -2984,14 +2984,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	Serial.print(", mapped to matrix demo ");
 	Serial.print(matrix_demo);
     }
-    #ifndef ARDUINOONPC
-	Serial.flush();
-	Serial.print("|D:");
-	char buf[4];
-	sprintf(buf, "%3d", demo_list[matrix_demo].position);
-	Serial.println(buf);
-	Serial.flush();
-    #else
+    #ifdef ARDUINOONPC
 	// if we are connected to a remote device, let it change patterns for us
 	if (ttyfd >= 0) matrix_loop = 999;
     #endif
@@ -2999,6 +2992,14 @@ void matrix_change(int16_t demo, bool directmap=false) {
     Serial.print(demo_list[matrix_demo].name);
     Serial.print(") loop ");
     Serial.println(matrix_loop);
+    #ifndef ARDUINOONPC
+	Serial.flush();
+	Serial.print("|D:");
+	char buf[4];
+	sprintf(buf, "%3d", demo_list[matrix_demo].position);
+	Serial.println(buf);
+	Serial.flush();
+    #endif
 }
 
 
@@ -3262,7 +3263,7 @@ void IR_Serial_Handler() {
     else if (readchar == 'b') { Serial.println("Serial => All Demos");	    show_best_demos = false;}
     else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
     else if (readchar == 'f') { show_last_fps = !show_last_fps; }
-    else if (readchar == '=') { matrix_loop = matrix_loop > 1000 ? 3 : 9999; }
+    else if (readchar == '=') { Serial.println("Serial => keep demo?");	    matrix_loop = matrix_loop > 1000 ? 3 : 9999; }
     else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
 #ifdef ARDUINOONPC
@@ -3273,7 +3274,7 @@ void IR_Serial_Handler() {
     else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
     else if (readchar == 'C') { Serial.println("ESP => Bestof");	    send_serial("B");}
     else if (readchar == 'c') { Serial.println("ESP => All Demos");	    send_serial("b");}
-    else if (readchar == '=') { Serial.println("ESP => All Demos");	    send_serial("=");}
+    else if (readchar == '+') { Serial.println("ESP => Keep Demo?");	    send_serial("=");}
     else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
 #endif
 
