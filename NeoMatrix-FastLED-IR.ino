@@ -3274,7 +3274,11 @@ void IR_Serial_Handler() {
     else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
     else if (readchar == 'C') { Serial.println("ESP => Bestof");	    send_serial("B");}
     else if (readchar == 'c') { Serial.println("ESP => All Demos");	    send_serial("b");}
+<<<<<<< HEAD
     else if (readchar == '+') { Serial.println("ESP => Keep Demo?");	    send_serial("=");}
+=======
+    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");	    send_serial("=");}
+>>>>>>> Fixed keep demo and sending demo sync from ESP to rPi.
     else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
 #endif
 
