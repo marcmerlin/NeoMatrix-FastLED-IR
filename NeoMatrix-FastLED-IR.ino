@@ -869,8 +869,8 @@ uint8_t trancejesus(uint32_t unused) {
 	didclear = 1;
     }
 
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
+	matrix->setPassThruColor(0xFFFF00);
 	if (mheight >= 192) matrix->setCursor(8, 25);
 	else matrix->setCursor(10, 16);
 	matrix->print("TRANCE");
@@ -879,21 +879,21 @@ uint8_t trancejesus(uint32_t unused) {
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 	firstpass = 1;
-	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setPassThruColor(0xFFFFFF);
 	if (mheight >= 192) { matrix->setCursor(14, 65); matrix->print("Because"); }
 	else { matrix->setCursor(8, 32); matrix->print("BECAUSE"); }
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setPassThruColor(0xFFFFFF);
 	if (mheight >= 192) { matrix->setCursor(12, 105); matrix->print("it's what"); }
 	else { matrix->setCursor(5, 48); matrix->print("IT'S WHAT"); }
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setPassThruColor(0xFFFFFF);
 	if (mheight >= 192) matrix->setCursor(20, 145);
 	else matrix->setCursor(16, 64);
 	matrix->print("JESUS");
@@ -901,7 +901,7 @@ uint8_t trancejesus(uint32_t unused) {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
+	matrix->setPassThruColor(0xFFFFFF);
 	if (mheight >= 192) { matrix->setCursor(2, 185); matrix->print("would do!"); }
 	else { matrix->setCursor(0, 82); matrix->print("WOULD DO!"); }
     }
@@ -2947,6 +2947,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	// bypass matrix_state (which will now be incorrect) and point directly
 	// to the desired demo without going though demo_mapping array.
 	matrix_demo = demo;
+	matrix_state = demo_list[matrix_demo].position;
 	matrix_loop = 100;
     } else {
 	if (demo != DEMO_PREV && demo != DEMO_NEXT) matrix_state = demo;
@@ -2996,7 +2997,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	Serial.flush();
 	Serial.print("|D:");
 	char buf[4];
-	sprintf(buf, "%3d", demo_list[matrix_demo].position);
+	sprintf(buf, "%3d", matrix_demo);
 	Serial.println(buf);
 	Serial.flush();
     #endif
@@ -4221,8 +4222,8 @@ void loop() {
 		    strncpy(numbuf, buf+3, 3);
 		    numbuf[3] = 0;
 		    num = atoi(numbuf);
-		    printf("Got demo %d\n", num);
-		    matrix_change(num);
+		    printf("Got direct mapped demo %d\n", num);
+		    matrix_change(num, true);
 		}
 		if (! strncmp(buf, "|B:", 3)) {
 		    int num;
