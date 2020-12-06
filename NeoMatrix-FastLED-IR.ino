@@ -1,3 +1,4 @@
+
 // By Marc MERLIN <marc_soft@merlins.org>
 // License: Apache v2.0
 //
@@ -40,14 +41,14 @@ using namespace Aiko;
 #ifdef WIFI
     #include <OmEspHelpers.h>
     OmWebServer s;
-    OmWebPages p;
+    OmWebPages *p = NULL;
 #endif
 
 #define DEMO_PREV -32768
 #define DEMO_NEXT 32767
 #define DEMO_TEXT_THANKYOU 300
 #define DEMO_TEXT_INPUT 301
-#define DEMO_TEXT_FIRST DEMO_TEXT_INPUT
+#define DEMO_TEXT_FIRST DEMO_THANKYOU
 #define DEMO_TEXT_LAST DEMO_TEXT_INPUT
 
 #define DEMO_ARRAY_SIZE (DEMO_TEXT_LAST+1)
@@ -55,11 +56,11 @@ using namespace Aiko;
 #define CONFIGURATIONS 5
 
 #if mheight == 192
-#define panelconfnum 4
+uint8_t panelconfnum = 4;
 #elif mheight == 96
-#define panelconfnum 3
+uint8_t panelconfnum = 3;
 #else
-#define panelconfnum 0
+uint8_t panelconfnum = 0;
 #endif
 
 typedef struct mapping_entry_ {
@@ -3945,7 +3946,7 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 }
 
 void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
-    p.renderHttpResponseHeader("text/plain", 200);
+    p->renderHttpResponseHeader("text/plain", 200);
 
     if (! strcmp(request.path, "/form")) {
 	uint8_t k = (int)request.query.size();
@@ -3993,26 +3994,25 @@ void wifi_html_tick() {
     s.tick();
 }
 
-void setup_wifi() {
-    Serial.println("Configuring access point...");
+void build_register_page() {
+    if (p) {
+	delete(p);
+	read_config_index();
+    }
+    p = new OmWebPages();
 
-    #include "wifi_secrets.h"
-    s.addWifi(WIFI_SSID, WIFI_PASSWORD);
+    p->setBuildDateAndTime(__DATE__, __TIME__);
 
-    s.setStatusCallback(connectionStatus);
-
-    p.setBuildDateAndTime(__DATE__, __TIME__);
-
-    p.beginPage("Main");
-    p.addSlider(1, 8, "Brightness", actionProc, dfl_matrix_brightness_level, HTML_BRIGHT);
-    p.addSlider("Speed",      actionProc, 50, HTML_SPEED);
+    p->beginPage("Main");
+    p->addSlider(1, 8, "Brightness", actionProc, dfl_matrix_brightness_level, HTML_BRIGHT);
+    p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
     /*
 	 A button sends a value "1" when pressed (in the web page),
 	 and zero when released.
     */
-    p.addButton("prev", actionProc, HTML_BUTPREV);
-    p.addButton("next", actionProc, HTML_BUTNEXT);
+    p->addButton("prev", actionProc, HTML_BUTPREV);
+    p->addButton("next", actionProc, HTML_BUTNEXT);
 
     /*
 	 A select control shown as a dropdown on desktop browsers,
@@ -4020,7 +4020,7 @@ void setup_wifi() {
 	 You can add any number of options, and specify
 	 the value of each.
     */
-    p.addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
+    p->addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
     for (uint16_t i=1; i < demo_last_idx; i++) {
 	uint16_t pos = demo_list[i].position;
 	//Serial.print(i);
@@ -4031,27 +4031,38 @@ void setup_wifi() {
 	char *option = (char *) malloc (strlen (demo_list[i].name) + 13);
 	sprintf(option, "%03d->%03d/%1d: ", i, pos, demo_mapping[pos].enabled[panelconfnum]);
 	strcpy(option+12, demo_list[i].name);
-	p.addSelectOption(option, i);
+	p->addSelectOption(option, i);
     }
 
-    p.addUrlHandler(wildcardProc);
-    p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    p->addUrlHandler(wildcardProc);
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	w.beginElement("a", "href", "/demo_map.txt");
 	w.addContent("Demo Map");
 	w.endElement(); // a
     });
 
-    p.addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	const char* inputstr="<FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>";
 	w.puts(inputstr);
     });
 
-    p.addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
+    p->addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
 
     // And lastly, introduce the web pages to the wifi connection.
-    s.setHandler(p);
+    s.setHandler(*p);
+}
+
+void setup_wifi() {
+    Serial.println("Configuring access point...");
+
+    #include "wifi_secrets.h"
+    s.addWifi(WIFI_SSID, WIFI_PASSWORD);
+
+    s.setStatusCallback(connectionStatus);
+
+    build_register_page();
 
     // Make sure that aiko calls the HTML handler at 10Hz
     Events.addHandler(wifi_html_tick, 100);
@@ -4059,6 +4070,9 @@ void setup_wifi() {
 #endif
 
 void read_config_index() {
+    demo_cnt = 0;
+    best_cnt = 0;
+
     uint16_t index = 0;
     // Demo enabled for 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
     // 1: enables, 3 enables demo and adds to BestOf selection
