@@ -1588,7 +1588,8 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
     return 3;
 }
 
-// FIXME: reset decoding counter to 0 between different GIFS
+// TODO, return of all functions should be upgraded to uint16_t
+// to allow gifanim to return a gif count bigger than 255
 uint8_t GifAnim(uint32_t idx) {
     struct Animgif {
 	const char *path;
@@ -1630,14 +1631,14 @@ uint8_t GifAnim(uint32_t idx) {
 	    {"/gifs/runningedgehog.gif",		10, -4, 0, 10, 10, 0, 0 },
 /* 010 */   {"/gifs/triangles_in.gif",			10, -4, 0, 10, 10, 0, 0 },
 	    {"/gifs/wifi.gif",				10, -4, 0, 10, 10, 0, 0 },
-/* 012 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 013 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 014 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 015 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 016 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 017 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 018 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 019 */   { "", 0, 0, 0, 0, 0, 0, 0 },
+/* 012 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 013 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 014 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 015 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 016 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 017 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 018 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 019 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
 	#elif mheight <= 96
 /* 000 */   { ROOT  "215_fallingcube.gif",		15, 0, 0, 10, YMUL, 0, 0 },
 	    { ROOT  "257_colormesh_wave.gif",		20, 0, 0, 10, YMUL, 0, 0 },
@@ -1662,26 +1663,26 @@ uint8_t GifAnim(uint32_t idx) {
 /* 009 */   { ROOT  "z_feM_MJ_moonwalk_spin.gif",	10,-12,0, 10,   12, 0, 0 },
 	#endif
 
-/* 010 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 011 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 012 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 013 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 014 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 015 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 016 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 017 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 018 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 019 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 020 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 021 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 022 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 023 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 024 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 025 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 026 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 027 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 028 */   { "", 0, 0, 0, 0, 0, 0, 0 },
-/* 029 */   { "", 0, 0, 0, 0, 0, 0, 0 },
+/* 010 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 011 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 012 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 013 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 014 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 015 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 016 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 017 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 018 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 019 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 020 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 021 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 022 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 023 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 024 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 025 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 026 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 027 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 028 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
+/* 029 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
 
 	    // -- non animated, those scroll up/down
 	#if mheight <= 96
@@ -1704,30 +1705,30 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10,128, 64 },
 /* 035 */   { ROOT  "BM_Lady_Fire.gif",		10, 0, 10, 10, 10,128,212 },
 	    { ROOT  "BM_Logo_lgrey.gif",	10, 0,  0, 10, 10,128,128 },
-	    { ROOT  "",				10, 0,  0, 10, 10,128,128 },
+	    { ROOT  NULL,				10, 0,  0, 10, 10,128,128 },
 	    { ROOT  "BM_TheMan_Blue.gif",	10, 0,  6, 10, 10,128,212 },
 	    { ROOT  "BM_TheMan_Red.gif",	10, 0,  0, 10, 10,128,128 },
 /* 040 */   { ROOT  "BM_TheMan_Green.gif",	10, 0, 10, 10, 10,128,212 },
 	#endif
-/* 041 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 042 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 043 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 044 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 045 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 046 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 047 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 048 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 049 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 050 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 051 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 052 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 053 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 054 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 055 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 056 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 057 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 058 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 059 */   { "", 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 041 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 042 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 043 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 044 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 045 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 046 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 047 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 048 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 049 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 050 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 051 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 052 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 053 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 054 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 055 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 056 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 057 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 058 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 059 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 
 #if mheight <= 96
 /* 060 */   { ROOT  "087_net.gif",		05, 0, 0, 10, YMUL, 0, 0 },
@@ -1893,7 +1894,7 @@ uint8_t GifAnim(uint32_t idx) {
    
     GIF_CNT = ARRAY_SIZE(animgif);
     // Compute GIF_CNT and exit
-    if (idx == 255) return 0;
+    if (idx == 65535) return 0;
     // Avoid crashes due to overflows
     idx = idx % GIF_CNT;
     static uint16_t gifloopsec;
@@ -1913,6 +1914,12 @@ uint8_t GifAnim(uint32_t idx) {
         FACTY =   animgif[idx].facty;
         scrollx = animgif[idx].scrollx;
         scrolly = animgif[idx].scrolly;
+        if (animgif[idx].path == NULL) {
+	    Serial.print(">>>> ERROR: NO GIF for index ");
+	    Serial.print(idx);
+	    Serial.println(". Skipping... <<<<");
+	    return 0;
+	}
         matrix->clear();
         // initialize x/y by sending the reset flag
         panOrBounce(&x, &y, scrollx, scrolly, true);
@@ -2476,6 +2483,8 @@ typedef struct demo_entry_ {
     const char *name;
     uint8_t (*func)(uint32_t);
     int arg;
+    // This is generated for the wifi menu (if used)
+    char *menu_str;
 } Demo_Entry;
 
 // demo_map.txt contains a logical demo number (0 to 99 for generated, 100-129 for
@@ -2495,128 +2504,128 @@ uint16_t demoidx(uint16_t idx) {
 
 
 Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
-/* 000 */ { "", NULL, -1 },
-/* 001 */ { "Squares In",  squares, 0 },
-/* 002 */ { "Squares Out", squares, 1 },
-/* 003 */ { "EatSleepRaveBurnRepeat", esrbr, -1 },
-/* 004 */ { "EatSleepRaveBurnRepeat Fade", esrbr_fade, -1 },
-/* 005 */ { "TFSF Zoom InOut", tfsf_zoom, 1 },
-/* 006 */ { "TFSF Display", tfsf, -1 },
-/* 007 */ { "With Every Beat...", webwc, -1 },
-/* 008 */ { "Burn Baby Burn", bbb, -1 },
-/* 009 */ { "Trance Jesus Do", trancejesus, -1 },
-/* 010 */ { "", NULL, -1 },
-/* 011 */ { "", NULL, -1 },
-/* 012 */ { "", NULL, -1 },
-/* 013 */ { "", NULL, -1 },
-/* 014 */ { "Safety Third", DoublescrollText, 1 },    // adjusts
-/* 015 */ { "ScrollBigtext", scrollBigtext, -1 },     // code of scrolling code
-/* 016 */ { "Bounce Smiley", panOrBounceBitmap, 1 },  // currently only 24x32
-/* 017 */ { "Fireworks", call_fireworks, -1 },
-/* 018 */ { "TwinkleFox", call_twinklefox, -1 },
-/* 019 */ { "Pride", call_pride, -1 },		// not nice for higher res (64 and above)
-/* 020 */ { "Demoreel Stars", demoreel100, 1 },	// Twinlking stars
-/* 021 */ { "Demoreel Sweeper", demoreel100, 2 },	// color changing pixels sweeping up and down
-/* 022 */ { "Demoreel Dbl Sweeper", demoreel100, 3 },	// colored pixels being exchanged between top and bottom
-/* 023 */ { "Matrix", call_rain, 1 },			// matrix
-/* 024 */ { "Storm", call_rain, 3 },			// clouds, rain, lightening
-/* 025 */ { "Pac Man", call_pacman, -1 },		// currently only designed for 24x32
-/* 026 */ { "Plasma", plasma, -1 },
-/* 027 */ { "Fire", call_fire, -1 },
-/* 028 */ { "", NULL, -1 },
-/* 029 */ { "", NULL, -1 },
-/* 030 */ { "Aurora Attract", aurora,  0 },
-/* 031 */ { "Aurora Bounce", aurora,  1 },
-/* 032 */ { "Aurora Cube", aurora,  2 },
-/* 033 */ { "Aurora Flock", aurora,  3 },
-/* 034 */ { "Aurora Flowfield", aurora,  4 },
-/* 035 */ { "Aurora Incremental Drift", aurora,  5 },
-/* 036 */ { "Aurora Incremental Drift2", aurora,  6 },
-/* 037 */ { "Aurora Pendulum Wave ", aurora,  7 },
-/* 038 */ { "Aurora Radar", aurora,  8 },		// 8 not great on non square
-/* 039 */ { "Aurora Spiral/Line Screensave", aurora,  9 },
-/* 040 */ { "Aurora Spiro", aurora, 10 },
-/* 041 */ { "Aurora Swirl", aurora, 11 },		// 11 not great on bigger display
-/* 042 */ { "Aurora Wave", aurora, 12 },
-/* 043 */ { "", NULL, -1 },
-/* 044 */ { "", NULL, -1 },
-/* 045 */ { "TMED  0 Zoom in shapes", tmed,  0 },	// concentric colors and shapes
-/* 046 */ { "TMED  1 Concentric circles", tmed,  1 }, // 5 color windows-like pattern with circles in and out
-/* 047 */ { "TMED  2 Color Starfield", tmed,  2 },	// color worm patterns going out with circles zomming out
-/* 048 */ { "TMED  3 Dancing Circles", tmed,  3 },	// 5 circles turning together, run a bit longer
-/* 049 */ { "TMED  4 Zoom out Shapes", tmed,  4 },	// rectangles/squares/triangles zooming out
-/* 050 */ { "TMED  5 Shapes In/Out", tmed,  5 },	// opposite concentric colors and shapes (52 reversed)
-/* 051 */ { "TMED  6 Double Starfield&Shapes", tmed,  6 }, // double color starfield with shapes in/out
-/* 052 */ { "TMED  7 Hypnoswirl Starfield", tmed,  7 }, // two colors swirling bigger, creating hypno pattern
-/* 053 */ { "TMED  8 4 Dancing Balls&Shapes", tmed,  8 }, // 4 fat spinning comets with shapes growing from middle sometimes
-/* 054 */ { "TMED  9 Starfield BKringer", tmed,  9 }, // streaming lines of colored pixels with shape zooming in or out
-/* 055 */ { "TMED 10 Spinning Triangles", tmed, 10 }, // rotating triangles of color
-/* 056 */ { "TMED 11 Circles Mixing", tmed, 11 },	// circles mixing in the middle
-/* 057 */ { "TMED 12 Hypno", tmed, 12 },		// hypno
-/* 058 */ { "", NULL, -1 },
-/* 059 */ { "", NULL, -1 },
-/* 060 */ { "", NULL, -1 },
-/* 061 */ { "", NULL, -1 },
-/* 062 */ { "", NULL, -1 },
-/* 063 */ { "", NULL, -1 },
-/* 064 */ { "", NULL, -1 },
-/* 065 */ { "", NULL, -1 },
-/* 066 */ { "", NULL, -1 },
-/* 067 */ { "", NULL, -1 },
-/* 068 */ { "", NULL, -1 },
-/* 069 */ { "", NULL, -1 },
-/* 070 */ { "", NULL, -1 },
-/* 071 */ { "", NULL, -1 },
-/* 072 */ { "", NULL, -1 },
-/* 073 */ { "", NULL, -1 },
-/* 074 */ { "", NULL, -1 },
-/* 075 */ { "", NULL, -1 },
-/* 076 */ { "", NULL, -1 },
-/* 077 */ { "", NULL, -1 },
-/* 078 */ { "", NULL, -1 },
-/* 079 */ { "", NULL, -1 },
-/* 080 */ { "", NULL, -1 },
-/* 081 */ { "", NULL, -1 },
-/* 082 */ { "", NULL, -1 },
-/* 083 */ { "", NULL, -1 },
-/* 084 */ { "", NULL, -1 },
-/* 085 */ { "", NULL, -1 },
-/* 086 */ { "", NULL, -1 },
-/* 087 */ { "", NULL, -1 },
-/* 088 */ { "", NULL, -1 },
-/* 089 */ { "", NULL, -1 },
-/* 090 */ { "Thank you", NULL, -1 },	// DEMO_TEXT_THANKYOU
-/* 091 */ { "Web Text Input", NULL, -1 },	// DEMO_TEXT_INPUT
-/* 092 */ { "", NULL, -1 },
-/* 093 */ { "", NULL, -1 },
-/* 094 */ { "", NULL, -1 },
-/* 095 */ { "", NULL, -1 },
-/* 096 */ { "", NULL, -1 },
-/* 097 */ { "", NULL, -1 },
-/* 098 */ { "", NULL, -1 },
-/* 099 */ { "", NULL, -1 },
+/* 000 */ { "", NULL, -1, NULL },
+/* 001 */ { "Squares In",  squares, 0, NULL },
+/* 002 */ { "Squares Out", squares, 1, NULL },
+/* 003 */ { "EatSleepRaveBurnRepeat", esrbr, -1, NULL },
+/* 004 */ { "EatSleepRaveBurnRepeat Fade", esrbr_fade, -1, NULL },
+/* 005 */ { "TFSF Zoom InOut", tfsf_zoom, 1, NULL },
+/* 006 */ { "TFSF Display", tfsf, -1, NULL },
+/* 007 */ { "With Every Beat...", webwc, -1, NULL },
+/* 008 */ { "Burn Baby Burn", bbb, -1, NULL },
+/* 009 */ { "Trance Jesus Do", trancejesus, -1, NULL },
+/* 010 */ { "", NULL, -1, NULL },
+/* 011 */ { "", NULL, -1, NULL },
+/* 012 */ { "", NULL, -1, NULL },
+/* 013 */ { "", NULL, -1, NULL },
+/* 014 */ { "Safety Third", DoublescrollText, 1, NULL },    // adjusts
+/* 015 */ { "ScrollBigtext", scrollBigtext, -1, NULL },     // code of scrolling code
+/* 016 */ { "Bounce Smiley", panOrBounceBitmap, 1, NULL },  // currently only 24x32
+/* 017 */ { "Fireworks", call_fireworks, -1, NULL },
+/* 018 */ { "TwinkleFox", call_twinklefox, -1, NULL },
+/* 019 */ { "Pride", call_pride, -1, NULL },		// not nice for higher res (64 and above)
+/* 020 */ { "Demoreel Stars", demoreel100, 1, NULL },	// Twinlking stars
+/* 021 */ { "Demoreel Sweeper", demoreel100, 2, NULL },	// color changing pixels sweeping up and down
+/* 022 */ { "Demoreel Dbl Sweeper", demoreel100, 3, NULL },	// colored pixels being exchanged between top and bottom
+/* 023 */ { "Matrix", call_rain, 1, NULL },			// matrix
+/* 024 */ { "Storm", call_rain, 3, NULL },			// clouds, rain, lightening
+/* 025 */ { "Pac Man", call_pacman, -1, NULL },		// currently only designed for 24x32
+/* 026 */ { "Plasma", plasma, -1, NULL },
+/* 027 */ { "Fire", call_fire, -1, NULL },
+/* 028 */ { "", NULL, -1, NULL },
+/* 029 */ { "", NULL, -1, NULL },
+/* 030 */ { "Aurora Attract", aurora,  0, NULL },
+/* 031 */ { "Aurora Bounce", aurora,  1, NULL },
+/* 032 */ { "Aurora Cube", aurora,  2, NULL },
+/* 033 */ { "Aurora Flock", aurora,  3, NULL },
+/* 034 */ { "Aurora Flowfield", aurora,  4, NULL },
+/* 035 */ { "Aurora Incremental Drift", aurora,  5, NULL },
+/* 036 */ { "Aurora Incremental Drift2", aurora,  6, NULL },
+/* 037 */ { "Aurora Pendulum Wave ", aurora,  7, NULL },
+/* 038 */ { "Aurora Radar", aurora,  8, NULL },		// 8 not great on non square
+/* 039 */ { "Aurora Spiral/Line Screensave", aurora,  9, NULL },
+/* 040 */ { "Aurora Spiro", aurora, 10, NULL },
+/* 041 */ { "Aurora Swirl", aurora, 11, NULL },		// 11 not great on bigger display
+/* 042 */ { "Aurora Wave", aurora, 12, NULL },
+/* 043 */ { "", NULL, -1, NULL },
+/* 044 */ { "", NULL, -1, NULL },
+/* 045 */ { "TMED  0 Zoom in shapes", tmed,  0, NULL },	// concentric colors and shapes
+/* 046 */ { "TMED  1 Concentric circles", tmed,  1, NULL }, // 5 color windows-like pattern with circles in and out
+/* 047 */ { "TMED  2 Color Starfield", tmed,  2, NULL },	// color worm patterns going out with circles zomming out
+/* 048 */ { "TMED  3 Dancing Circles", tmed,  3, NULL },	// 5 circles turning together, run a bit longer
+/* 049 */ { "TMED  4 Zoom out Shapes", tmed,  4, NULL },	// rectangles/squares/triangles zooming out
+/* 050 */ { "TMED  5 Shapes In/Out", tmed,  5, NULL },	// opposite concentric colors and shapes (52 reversed)
+/* 051 */ { "TMED  6 Double Starfield&Shapes", tmed,  6, NULL }, // double color starfield with shapes in/out
+/* 052 */ { "TMED  7 Hypnoswirl Starfield", tmed,  7, NULL }, // two colors swirling bigger, creating hypno pattern
+/* 053 */ { "TMED  8 4 Dancing Balls&Shapes", tmed,  8, NULL }, // 4 fat spinning comets with shapes growing from middle sometimes
+/* 054 */ { "TMED  9 Starfield BKringer", tmed,  9, NULL }, // streaming lines of colored pixels with shape zooming in or out
+/* 055 */ { "TMED 10 Spinning Triangles", tmed, 10, NULL }, // rotating triangles of color
+/* 056 */ { "TMED 11 Circles Mixing", tmed, 11, NULL },	// circles mixing in the middle
+/* 057 */ { "TMED 12 Hypno", tmed, 12, NULL },		// hypno
+/* 058 */ { "", NULL, -1, NULL },
+/* 059 */ { "", NULL, -1, NULL },
+/* 060 */ { "", NULL, -1, NULL },
+/* 061 */ { "", NULL, -1, NULL },
+/* 062 */ { "", NULL, -1, NULL },
+/* 063 */ { "", NULL, -1, NULL },
+/* 064 */ { "", NULL, -1, NULL },
+/* 065 */ { "", NULL, -1, NULL },
+/* 066 */ { "", NULL, -1, NULL },
+/* 067 */ { "", NULL, -1, NULL },
+/* 068 */ { "", NULL, -1, NULL },
+/* 069 */ { "", NULL, -1, NULL },
+/* 070 */ { "", NULL, -1, NULL },
+/* 071 */ { "", NULL, -1, NULL },
+/* 072 */ { "", NULL, -1, NULL },
+/* 073 */ { "", NULL, -1, NULL },
+/* 074 */ { "", NULL, -1, NULL },
+/* 075 */ { "", NULL, -1, NULL },
+/* 076 */ { "", NULL, -1, NULL },
+/* 077 */ { "", NULL, -1, NULL },
+/* 078 */ { "", NULL, -1, NULL },
+/* 079 */ { "", NULL, -1, NULL },
+/* 080 */ { "", NULL, -1, NULL },
+/* 081 */ { "", NULL, -1, NULL },
+/* 082 */ { "", NULL, -1, NULL },
+/* 083 */ { "", NULL, -1, NULL },
+/* 084 */ { "", NULL, -1, NULL },
+/* 085 */ { "", NULL, -1, NULL },
+/* 086 */ { "", NULL, -1, NULL },
+/* 087 */ { "", NULL, -1, NULL },
+/* 088 */ { "", NULL, -1, NULL },
+/* 089 */ { "", NULL, -1, NULL },
+/* 090 */ { "Thank you", NULL, -1, NULL },	// DEMO_TEXT_THANKYOU
+/* 091 */ { "Web Text Input", NULL, -1, NULL },	// DEMO_TEXT_INPUT
+/* 092 */ { "", NULL, -1, NULL },
+/* 093 */ { "", NULL, -1, NULL },
+/* 094 */ { "", NULL, -1, NULL },
+/* 095 */ { "", NULL, -1, NULL },
+/* 096 */ { "", NULL, -1, NULL },
+/* 097 */ { "", NULL, -1, NULL },
+/* 098 */ { "", NULL, -1, NULL },
+/* 099 */ { "", NULL, -1, NULL },
 // Up to here, there is a 1-1 mapping from the ID
 // mheight == 32
-/* 100 */ { "GIF photon"	, GifAnim,  0 }, // mapped to 100
-/* 101 */ { "GIF flower"	, GifAnim,  1 },
-/* 102 */ { "GIF balls"	    	, GifAnim,  2 },
-/* 103 */ { "GIF dance"		, GifAnim,  3 },
-/* 104 */ { "GIF circles_swap"	, GifAnim,  4 },
-/* 105 */ { "GIF concentric_circles", GifAnim,  5 },
-/* 106 */ { "GIF corkscrew"	, GifAnim,  6 },
-/* 107 */ { "GIF cubeconstruct"	, GifAnim,  7 },
-/* 108 */ { "GIF cubeslide"	, GifAnim,  8 },
-/* 109 */ { "GIF runningedgehog", GifAnim,  9 },
-/* 110 */ { "GIF triangles_in"	, GifAnim, 10 },
-/* 111 */ { "GIF wifi"		, GifAnim, 11 },
-/* 112 */ { "", NULL, -1 },
-/* 113 */ { "", NULL, -1 },
-/* 114 */ { "", NULL, -1 },
-/* 115 */ { "", NULL, -1 },
-/* 116 */ { "", NULL, -1 },
-/* 117 */ { "", NULL, -1 },
-/* 118 */ { "", NULL, -1 },
-/* 119 */ { "", NULL, -1 },
+/* 100 */ { "GIF photon"	, GifAnim,  0, NULL }, // mapped to 100
+/* 101 */ { "GIF flower"	, GifAnim,  1, NULL },
+/* 102 */ { "GIF balls"	    	, GifAnim,  2, NULL },
+/* 103 */ { "GIF dance"		, GifAnim,  3, NULL },
+/* 104 */ { "GIF circles_swap"	, GifAnim,  4, NULL },
+/* 105 */ { "GIF concentric_circles", GifAnim,  5, NULL },
+/* 106 */ { "GIF corkscrew"	, GifAnim,  6, NULL },
+/* 107 */ { "GIF cubeconstruct"	, GifAnim,  7, NULL },
+/* 108 */ { "GIF cubeslide"	, GifAnim,  8, NULL },
+/* 109 */ { "GIF runningedgehog", GifAnim,  9, NULL },
+/* 110 */ { "GIF triangles_in"	, GifAnim, 10, NULL },
+/* 111 */ { "GIF wifi"		, GifAnim, 11, NULL },
+/* 112 */ { "", NULL, -1, NULL },
+/* 113 */ { "", NULL, -1, NULL },
+/* 114 */ { "", NULL, -1, NULL },
+/* 115 */ { "", NULL, -1, NULL },
+/* 116 */ { "", NULL, -1, NULL },
+/* 117 */ { "", NULL, -1, NULL },
+/* 118 */ { "", NULL, -1, NULL },
+/* 119 */ { "", NULL, -1, NULL },
 // Since ESP8266 has less memory and fewer GIFS, let's set DEMO_ARRAY_SIZE
 // to 120 on that platform
 //
@@ -2626,261 +2635,261 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 // that the display size and mapping can be changed at runtime
 // It is however ok to map them to different filenames depending on the
 // backend as long as they are the same name
-/* 120 */ { "GIF fallingcube"	,GifAnim,  0 }, // mapped to 100
-/* 121 */ { "GIF colormesh wave",GifAnim,  1 },
-/* 122 */ { "GIF Michael Jackson",GifAnim,  2 },
-/* 123 */ { "GIF redplasma"	,GifAnim,  3 },
-/* 124 */ { "GIF pulpfictiondance",GifAnim, 4 },
-/* 125 */ { "GIF bluecube_slide",GifAnim,  5 },
-/* 126 */ { "GIF spintriangle"	,GifAnim,  6 },
-/* 127 */ { "GIF plasma"	,GifAnim,  7 },
-/* 128 */ { "GIF sonic"		,GifAnim,  8 },
-/* 129 */ { "GIF MJ2 spin dance",GifAnim,  9 },
-/* 130 */ { "", NULL, -1 },
-/* 131 */ { "", NULL, -1 },
-/* 132 */ { "", NULL, -1 },
-/* 133 */ { "", NULL, -1 },
-/* 134 */ { "", NULL, -1 },
-/* 135 */ { "", NULL, -1 },
-/* 136 */ { "", NULL, -1 },
-/* 137 */ { "", NULL, -1 },
-/* 138 */ { "", NULL, -1 },
-/* 139 */ { "", NULL, -1 },
-/* 140 */ { "", NULL, -1 },
-/* 141 */ { "", NULL, -1 },
-/* 142 */ { "", NULL, -1 },
-/* 143 */ { "", NULL, -1 },
-/* 144 */ { "", NULL, -1 },
-/* 145 */ { "", NULL, -1 },
-/* 146 */ { "", NULL, -1 },
-/* 147 */ { "", NULL, -1 },
-/* 148 */ { "", NULL, -1 },
-/* 149 */ { "", NULL, -1 }, // mapped to 129
+/* 120 */ { "GIF fallingcube"	,GifAnim,  0, NULL }, // mapped to 100
+/* 121 */ { "GIF colormesh wave",GifAnim,  1, NULL },
+/* 122 */ { "GIF Michael Jackson",GifAnim,  2, NULL },
+/* 123 */ { "GIF redplasma"	,GifAnim,  3, NULL },
+/* 124 */ { "GIF pulpfictiondance",GifAnim, 4, NULL },
+/* 125 */ { "GIF bluecube_slide",GifAnim,  5, NULL },
+/* 126 */ { "GIF spintriangle"	,GifAnim,  6, NULL },
+/* 127 */ { "GIF plasma"	,GifAnim,  7, NULL },
+/* 128 */ { "GIF sonic"		,GifAnim,  8, NULL },
+/* 129 */ { "GIF MJ2 spin dance",GifAnim,  9, NULL },
+/* 130 */ { "", NULL, -1, NULL },
+/* 131 */ { "", NULL, -1, NULL },
+/* 132 */ { "", NULL, -1, NULL },
+/* 133 */ { "", NULL, -1, NULL },
+/* 134 */ { "", NULL, -1, NULL },
+/* 135 */ { "", NULL, -1, NULL },
+/* 136 */ { "", NULL, -1, NULL },
+/* 137 */ { "", NULL, -1, NULL },
+/* 138 */ { "", NULL, -1, NULL },
+/* 139 */ { "", NULL, -1, NULL },
+/* 140 */ { "", NULL, -1, NULL },
+/* 141 */ { "", NULL, -1, NULL },
+/* 142 */ { "", NULL, -1, NULL },
+/* 143 */ { "", NULL, -1, NULL },
+/* 144 */ { "", NULL, -1, NULL },
+/* 145 */ { "", NULL, -1, NULL },
+/* 146 */ { "", NULL, -1, NULL },
+/* 147 */ { "", NULL, -1, NULL },
+/* 148 */ { "", NULL, -1, NULL },
+/* 149 */ { "", NULL, -1, NULL }, // mapped to 129
 // mheight > 32, shared non animated gifs
 // It is however ok to map them to different filenames depending on the
 // backend as long as they are the same name
-/* 150 */ { "GIF A&B colors balls",  GifAnim,  30 }, // mapped to 130
-/* 151 */ { "GIF A&B Color Bands",   GifAnim,  31 },
-/* 152 */ { "GIF A&B CBands Heart",  GifAnim,  32 },
-/* 153 */ { "GIF A&B Logo lgrey",    GifAnim,  33 },
-/* 154 */ { "GIF A&B Sign lgrey",    GifAnim,  34 },
-/* 155 */ { "GIF BM Lady Fire",	     GifAnim,  35 },
-/* 156 */ { "GIF BM Logo lgrey",     GifAnim,  36 },
-/* 157 */ { "GIF BM Man Scroll",     GifAnim,  37 },
-/* 158 */ { "GIF BM TheMan Blue",    GifAnim,  38 },
-/* 159 */ { "GIF BM TheMan_Green",   GifAnim,  39 },
-/* 160 */ { "GIF BM TheMan Red",     GifAnim,  40 },
-/* 161 */ { "", NULL, -1 },
-/* 162 */ { "", NULL, -1 },
-/* 163 */ { "", NULL, -1 },
-/* 164 */ { "", NULL, -1 },
-/* 165 */ { "", NULL, -1 },
-/* 166 */ { "", NULL, -1 },
-/* 167 */ { "", NULL, -1 },
-/* 168 */ { "", NULL, -1 },
-/* 169 */ { "", NULL, -1 },
-/* 170 */ { "", NULL, -1 },
-/* 171 */ { "", NULL, -1 },
-/* 172 */ { "", NULL, -1 },
-/* 173 */ { "", NULL, -1 },
-/* 174 */ { "", NULL, -1 },
-/* 175 */ { "", NULL, -1 },
-/* 176 */ { "", NULL, -1 },
-/* 177 */ { "", NULL, -1 },
-/* 178 */ { "", NULL, -1 },
-/* 179 */ { "", NULL, -1 }, // mapped to 159
+/* 150 */ { "GIF A&B colors balls",  GifAnim,  30, NULL }, // mapped to 130
+/* 151 */ { "GIF A&B Color Bands",   GifAnim,  31, NULL },
+/* 152 */ { "GIF A&B CBands Heart",  GifAnim,  32, NULL },
+/* 153 */ { "GIF A&B Logo lgrey",    GifAnim,  33, NULL },
+/* 154 */ { "GIF A&B Sign lgrey",    GifAnim,  34, NULL },
+/* 155 */ { "GIF BM Lady Fire",	     GifAnim,  35, NULL },
+/* 156 */ { "GIF BM Logo lgrey",     GifAnim,  36, NULL },
+/* 157 */ { "GIF BM Man Scroll",     GifAnim,  37, NULL },
+/* 158 */ { "GIF BM TheMan Blue",    GifAnim,  38, NULL },
+/* 159 */ { "GIF BM TheMan_Green",   GifAnim,  39, NULL },
+/* 160 */ { "GIF BM TheMan Red",     GifAnim,  40, NULL },
+/* 161 */ { "", NULL, -1, NULL },
+/* 162 */ { "", NULL, -1, NULL },
+/* 163 */ { "", NULL, -1, NULL },
+/* 164 */ { "", NULL, -1, NULL },
+/* 165 */ { "", NULL, -1, NULL },
+/* 166 */ { "", NULL, -1, NULL },
+/* 167 */ { "", NULL, -1, NULL },
+/* 168 */ { "", NULL, -1, NULL },
+/* 169 */ { "", NULL, -1, NULL },
+/* 170 */ { "", NULL, -1, NULL },
+/* 171 */ { "", NULL, -1, NULL },
+/* 172 */ { "", NULL, -1, NULL },
+/* 173 */ { "", NULL, -1, NULL },
+/* 174 */ { "", NULL, -1, NULL },
+/* 175 */ { "", NULL, -1, NULL },
+/* 176 */ { "", NULL, -1, NULL },
+/* 177 */ { "", NULL, -1, NULL },
+/* 178 */ { "", NULL, -1, NULL },
+/* 179 */ { "", NULL, -1, NULL }, // mapped to 159
 // GIFs from here are mheight == 96, assigned to 60
 // Other resolution will also be assigned from the same index
 // so that some gif gets displayed, even if it's the wrong one.
-/* 180 */ { "GIF net"		,	 GifAnim, 60 }, // mapped to 160
-/* 181 */ { "GIF colorstar"	,	 GifAnim, 61 },
-/* 182 */ { "GIF circlesmoke"	,	 GifAnim, 62 },
-/* 183 */ { "GIF waterdrop"	,	 GifAnim, 63 },
-/* 184 */ { "GIF circletriangle",	 GifAnim, 64 },
-/* 185 */ { "GIF photon"	,	 GifAnim, 65 },
-/* 186 */ { "GIF spincircle"	,	 GifAnim, 66 },
-/* 187 */ { "GIF ghostbusters"	,	 GifAnim, 67 },
-/* 188 */ { "GIF hand"		,	 GifAnim, 68 },
-/* 189 */ { "GIF infection"	,	 GifAnim, 69 },
-/* 190 */ { "GIF comets"	,	 GifAnim, 70 },
-/* 191 */ { "GIF batman"	,	 GifAnim, 71 },
-/* 192 */ { "GIF flyingfire"	,	 GifAnim, 72 },
-/* 193 */ { "GIF expandcircle"	,	 GifAnim, 73 },
-/* 194 */ { "GIF greenplasma"	,	 GifAnim, 74 },
-/* 195 */ { "GIF circle2sphere"	,	 GifAnim, 75 },
-/* 196 */ { "GIF colortoroid"	,	 GifAnim, 76 },
-/* 197 */ { "GIF scrollcubestron",	 GifAnim, 77 },
-/* 198 */ { "GIF spinningpattern",	 GifAnim, 78 },
-/* 199 */ { "GIF spacetime"	,	 GifAnim, 79 },
-/* 200 */ { "GIF circleslices"	,	 GifAnim, 80 },
-/* 201 */ { "GIF heartTunnel"	,	 GifAnim, 81 }, // mapped to 181
-/* 202 */ { "", NULL, -1 },
-/* 203 */ { "", NULL, -1 },
-/* 204 */ { "", NULL, -1 },
-/* 205 */ { "", NULL, -1 },
-/* 206 */ { "", NULL, -1 },
-/* 207 */ { "", NULL, -1 },
-/* 208 */ { "", NULL, -1 },
-/* 209 */ { "", NULL, -1 },
-/* 210 */ { "", NULL, -1 },
-/* 211 */ { "", NULL, -1 },
-/* 212 */ { "", NULL, -1 },
-/* 213 */ { "", NULL, -1 },
-/* 214 */ { "", NULL, -1 },
-/* 215 */ { "", NULL, -1 },
-/* 216 */ { "", NULL, -1 },
-/* 217 */ { "", NULL, -1 },
-/* 218 */ { "", NULL, -1 },
-/* 219 */ { "", NULL, -1 },
-/* 220 */ { "", NULL, -1 },
-/* 221 */ { "", NULL, -1 },
-/* 222 */ { "", NULL, -1 },
-/* 223 */ { "", NULL, -1 },
-/* 224 */ { "", NULL, -1 },
-/* 225 */ { "", NULL, -1 },
-/* 226 */ { "", NULL, -1 },
-/* 227 */ { "", NULL, -1 },
-/* 228 */ { "", NULL, -1 },
-/* 229 */ { "", NULL, -1 },
-/* 230 */ { "", NULL, -1 },
-/* 231 */ { "", NULL, -1 },
-/* 232 */ { "", NULL, -1 },
-/* 233 */ { "", NULL, -1 },
-/* 234 */ { "", NULL, -1 },
-/* 235 */ { "", NULL, -1 },
-/* 236 */ { "", NULL, -1 },
-/* 237 */ { "", NULL, -1 },
-/* 238 */ { "", NULL, -1 },
-/* 239 */ { "", NULL, -1 },
+/* 180 */ { "GIF net"		,	 GifAnim, 60, NULL }, // mapped to 160
+/* 181 */ { "GIF colorstar"	,	 GifAnim, 61, NULL },
+/* 182 */ { "GIF circlesmoke"	,	 GifAnim, 62, NULL },
+/* 183 */ { "GIF waterdrop"	,	 GifAnim, 63, NULL },
+/* 184 */ { "GIF circletriangle",	 GifAnim, 64, NULL },
+/* 185 */ { "GIF photon"	,	 GifAnim, 65, NULL },
+/* 186 */ { "GIF spincircle"	,	 GifAnim, 66, NULL },
+/* 187 */ { "GIF ghostbusters"	,	 GifAnim, 67, NULL },
+/* 188 */ { "GIF hand"		,	 GifAnim, 68, NULL },
+/* 189 */ { "GIF infection"	,	 GifAnim, 69, NULL },
+/* 190 */ { "GIF comets"	,	 GifAnim, 70, NULL },
+/* 191 */ { "GIF batman"	,	 GifAnim, 71, NULL },
+/* 192 */ { "GIF flyingfire"	,	 GifAnim, 72, NULL },
+/* 193 */ { "GIF expandcircle"	,	 GifAnim, 73, NULL },
+/* 194 */ { "GIF greenplasma"	,	 GifAnim, 74, NULL },
+/* 195 */ { "GIF circle2sphere"	,	 GifAnim, 75, NULL },
+/* 196 */ { "GIF colortoroid"	,	 GifAnim, 76, NULL },
+/* 197 */ { "GIF scrollcubestron",	 GifAnim, 77, NULL },
+/* 198 */ { "GIF spinningpattern",	 GifAnim, 78, NULL },
+/* 199 */ { "GIF spacetime"	,	 GifAnim, 79, NULL },
+/* 200 */ { "GIF circleslices"	,	 GifAnim, 80, NULL },
+/* 201 */ { "GIF heartTunnel"	,	 GifAnim, 81, NULL }, // mapped to 181
+/* 202 */ { "", NULL, -1, NULL },
+/* 203 */ { "", NULL, -1, NULL },
+/* 204 */ { "", NULL, -1, NULL },
+/* 205 */ { "", NULL, -1, NULL },
+/* 206 */ { "", NULL, -1, NULL },
+/* 207 */ { "", NULL, -1, NULL },
+/* 208 */ { "", NULL, -1, NULL },
+/* 209 */ { "", NULL, -1, NULL },
+/* 210 */ { "", NULL, -1, NULL },
+/* 211 */ { "", NULL, -1, NULL },
+/* 212 */ { "", NULL, -1, NULL },
+/* 213 */ { "", NULL, -1, NULL },
+/* 214 */ { "", NULL, -1, NULL },
+/* 215 */ { "", NULL, -1, NULL },
+/* 216 */ { "", NULL, -1, NULL },
+/* 217 */ { "", NULL, -1, NULL },
+/* 218 */ { "", NULL, -1, NULL },
+/* 219 */ { "", NULL, -1, NULL },
+/* 220 */ { "", NULL, -1, NULL },
+/* 221 */ { "", NULL, -1, NULL },
+/* 222 */ { "", NULL, -1, NULL },
+/* 223 */ { "", NULL, -1, NULL },
+/* 224 */ { "", NULL, -1, NULL },
+/* 225 */ { "", NULL, -1, NULL },
+/* 226 */ { "", NULL, -1, NULL },
+/* 227 */ { "", NULL, -1, NULL },
+/* 228 */ { "", NULL, -1, NULL },
+/* 229 */ { "", NULL, -1, NULL },
+/* 230 */ { "", NULL, -1, NULL },
+/* 231 */ { "", NULL, -1, NULL },
+/* 232 */ { "", NULL, -1, NULL },
+/* 233 */ { "", NULL, -1, NULL },
+/* 234 */ { "", NULL, -1, NULL },
+/* 235 */ { "", NULL, -1, NULL },
+/* 236 */ { "", NULL, -1, NULL },
+/* 237 */ { "", NULL, -1, NULL },
+/* 238 */ { "", NULL, -1, NULL },
+/* 239 */ { "", NULL, -1, NULL },
 // GIFs from here are mheight == 192, also assigned to 60
 // Other resolution will also be assigned from the same index
 // so that some gif gets displayed, even if it's the wrong one.
-/* 240 */ { "GIF abstract colorful",	 GifAnim,  60 }, // mapped to 160
-/* 241 */ { "GIF Aki5PC6 Running",	 GifAnim,  61 },
-/* 242 */ { "GIF dancing lady",		 GifAnim,  62 },
-/* 243 */ { "GIF GirlSexyAnimateddance", GifAnim,  63 },
-/* 244 */ { "GIF green aurora",		 GifAnim,  64 },
-/* 245 */ { "GIF multi aurora",		 GifAnim,  65 },
-/* 246 */ { "GIF city aurora",		 GifAnim,  66 },
-/* 247 */ { "GIF DJ",			 GifAnim,  67 },
-/* 248 */ { "GIF color string spirals",	 GifAnim,  68 },
-/* 249 */ { "GIF orange shapes spinout", GifAnim,  69 },
-/* 250 */ { "GIF 3rdeye spin",		 GifAnim,  70 },
-/* 251 */ { "GIF 8 fish spirals",	 GifAnim,  71 },
-/* 252 */ { "GIF caniche",		 GifAnim,  72 },
-/* 253 */ { "GIF yingyang",		 GifAnim,  73 },
-/* 254 */ { "GIF color stars flash",	 GifAnim,  74 },
-/* 255 */ { "GIF dancing pink back",	 GifAnim,  75 },
-/* 256 */ { "GIF triangle merge",	 GifAnim,  76 },
-/* 257 */ { "GIF green hal9000",	 GifAnim,  77 },
-/* 258 */ { "GIF bird dance",		 GifAnim,  78 },
-/* 259 */ { "GIF concentric lights",	 GifAnim,  79 },
-/* 260 */ { "GIF spiral pentagon dance", GifAnim,  80 },
-/* 261 */ { "GIF double stargate",	 GifAnim,  81 },
-/* 262 */ { "GIF RGB smirout",		 GifAnim,  82 },
-/* 263 */ { "GIF fractal zoom",		 GifAnim,  83 },
-/* 264 */ { "GIF pacmac",		 GifAnim,  84 },
-/* 265 */ { "GIF purple hair spiralout", GifAnim,  85 },
-/* 266 */ { "GIF flip triangles",	 GifAnim,  86 },
-/* 267 */ { "GIF rgb color plates",	 GifAnim,  87 },
-/* 268 */ { "GIF red round unfold",	 GifAnim,  88 },
-/* 269 */ { "GIF triangrect shapes out", GifAnim,  89 },
-/* 270 */ { "GIF light tunnel",		 GifAnim,  90 },
-/* 271 */ { "GIF heart rotate",		 GifAnim,  91 },
-/* 272 */ { "GIF colorflowers spiralout",GifAnim,  92 },
-/* 273 */ { "GIF green mobius rotate",	 GifAnim,  93 },
-/* 274 */ { "GIF cauliflower",		 GifAnim,  94 },
-/* 275 */ { "GIF triple 3D smiley",	 GifAnim,  95 },
-/* 276 */ { "GIF lightman running",	 GifAnim,  96 },
-/* 277 */ { "GIF green zoomout lasers",	 GifAnim,  97 },
-/* 278 */ { "GIF BW spiral out",	 GifAnim,  98 },
-/* 279 */ { "GIF starship shooting",	 GifAnim,  99 },
-/* 280 */ { "GIF blue smoke out",	 GifAnim, 100 },
-/* 281 */ { "GIF red jacket dancer",	 GifAnim, 101 },
-/* 282 */ { "GIF white grey smoke",	 GifAnim, 102 },
-/* 283 */ { "GIF flowers spinout",	 GifAnim, 103 },
-/* 284 */ { "GIF colors pulsing in out", GifAnim, 104 },
-/* 285 */ { "GIF red smoke spiral in",	 GifAnim, 105 },
-/* 286 */ { "GIF grey cubes tunnel",	 GifAnim, 106 },
-/* 287 */ { "GIF blue amber juggler",	 GifAnim, 107 },
-/* 288 */ { "GIF flying through pipes",	 GifAnim, 108 },
-/* 289 */ { "GIF blue robot heart",	 GifAnim, 109 },
-/* 290 */ { "GIF 3D Mobius loop",	 GifAnim, 110 },
-/* 291 */ { "GIF endless corridor",	 GifAnim, 111 },
-/* 292 */ { "GIF BW zoomout gears",	 GifAnim, 112 },
-/* 293 */ { "GIF RGB toroid",		 GifAnim, 113 },
-/* 294 */ { "GIF mushroom spots",	 GifAnim, 114 },
-/* 295 */ { "GIF you rock",		 GifAnim, 115 },
-/* 296 */ { "GIF morphing 3D shape",	 GifAnim, 116 },
-/* 297 */ { "GIF flower petals",	 GifAnim, 117 },
-/* 298 */ { "GIF eatme",		 GifAnim, 118 },
-/* 299 */ { "GIF sparkling spiralin",	 GifAnim, 119 },
-/* 300 */ { "GIF spingout RGB",		 GifAnim, 120 },
-/* 301 */ { "GIF green cube mobius",	 GifAnim, 121 },
-/* 302 */ { "GIF 3D green wheel ridge",	 GifAnim, 122 },
-/* 303 */ { "GIF colorspiral zoomout",	 GifAnim, 123 },
-/* 304 */ { "GIF spinning dancer",	 GifAnim, 124 },
-/* 305 */ { "GIF color projectors",	 GifAnim, 125 },
-/* 306 */ { "GIF sailormoon highdance",	 GifAnim, 126 },
-/* 307 */ { "GIF smiling dancing girl",	 GifAnim, 127 },
-/* 308 */ { "GIF coiling fern",		 GifAnim, 128 },
-/* 309 */ { "GIF yellow lighthouse",	 GifAnim, 129 },
-/* 310 */ { "GIF color pyramids",	 GifAnim, 130 },
-/* 311 */ { "GIF tunnel spark dancer",	 GifAnim, 131 },
-/* 312 */ { "GIF cube sphere pill",	 GifAnim, 132 },
-/* 313 */ { "GIF hyperspace",		 GifAnim, 133 },
-/* 314 */ { "GIF conifer zoom in",	 GifAnim, 134 },
-/* 315 */ { "GIF 3D hypercube RGB",	 GifAnim, 135 },
-/* 316 */ { "GIF grapefuit zoomin",	 GifAnim, 136 },
-/* 317 */ { "GIF pink flaming circle",	 GifAnim, 137 },
-/* 318 */ { "GIF center moving spiral",	 GifAnim, 138 },
-/* 319 */ { "GIF hypnotoad",		 GifAnim, 139 },
-/* 320 */ { "GIF pizza zoomin",		 GifAnim, 140 },
-/* 321 */ { "GIF RGB spiralin",		 GifAnim, 141 },
-/* 322 */ { "GIF bluebee zoomin",	 GifAnim, 142 },
-/* 323 */ { "GIF green neutron star",	 GifAnim, 143 },
-/* 324 */ { "GIF clock in",		 GifAnim, 144 },
-/* 325 */ { "GIF piano zoomin",		 GifAnim, 145 },
-/* 326 */ { "GIF puzzle spiralout",	 GifAnim, 146 },
-/* 327 */ { "GIF shiny snail shell",	 GifAnim, 147 },
-/* 328 */ { "GIF hypercube",		 GifAnim, 148 },
-/* 329 */ { "GIF color dots spiralin",	 GifAnim, 149 },
-/* 330 */ { "GIF 3D fractal roll",	 GifAnim, 150 },
-/* 331 */ { "GIF Kaleidoscope spiral",	 GifAnim, 151 },
-/* 332 */ { "GIF acid cat",		 GifAnim, 152 },
-/* 333 */ { "GIF purple geometrical",	 GifAnim, 153 },
-/* 334 */ { "GIF fly buildings",	 GifAnim, 154 },
-/* 335 */ { "GIF pulsing color rects",	 GifAnim, 155 },
-/* 336 */ { "GIF white geometric out",	 GifAnim, 156 },
-/* 337 */ { "GIF color marble",		 GifAnim, 157 },
-/* 338 */ { "GIF passionfruit zoomout",	 GifAnim, 158 },
-/* 339 */ { "GIF I am drugs",		 GifAnim, 159 },
-/* 340 */ { "GIF smileys spinout",	 GifAnim, 160 },
-/* 341 */ { "GIF flyin cavern",		 GifAnim, 161 },
-/* 342 */ { "GIF mario mushroom dance",	 GifAnim, 162 },
-/* 343 */ { "GIF baby pig fall",	 GifAnim, 163 },
-/* 344 */ { "GIF color shapes out",	 GifAnim, 164 },
-/* 345 */ { "GIF blue cubes flyin",	 GifAnim, 165 },
-/* 346 */ { "GIF triangles RGB out",	 GifAnim, 166 },
-/* 347 */ { "GIF rubiks cube",		 GifAnim, 167 },
-/* 348 */ { "GIF fractal2 zoom",	 GifAnim, 168 },
-/* 349 */ { "GIF color sticks",		 GifAnim, 169 },
-/* 350 */ { "GIF mushroom walk",	 GifAnim, 170 },
-/* 351 */ { "GIF BW bubbles",		 GifAnim, 171 },
-/* 352 */ { "GIF flying grass",		 GifAnim, 172 },
-/* 353 */ { "GIF blue gecko dance",	 GifAnim, 173 },
-/* 354 */ { "GIF dancing flames",	 GifAnim, 174 },
-/* 355 */ { "GIF skeleton",		 GifAnim, 175 },
-/* 356 */ { "GIF fly purple gates",	 GifAnim, 176 },
-/* 357 */ { "GIF bluelady smoke",	 GifAnim, 177 },
-/* 358 */ { "GIF sailor moon",		 GifAnim, 178 },
-/* 359 */ { "GIF inca spiralin",	 GifAnim, 179 },
-/* 360 */ { "GIF eye",			 GifAnim, 180 },
-/* 361 */ { "GIF blue shark dance",	 GifAnim, 181 },
-/* 362 */ { "GIF blue dancer",		 GifAnim, 182 },
-/* 363 */ { "GIF snoopdog dance",	 GifAnim, 183 },
-/* 364 */ { "GIF walking dead",		 GifAnim, 184 },
-/* 365 */ { "GIF street fighter",	 GifAnim, 185 }, // mapped to 285
+/* 240 */ { "GIF abstract colorful",	 GifAnim,  60, NULL }, // mapped to 160
+/* 241 */ { "GIF Aki5PC6 Running",	 GifAnim,  61, NULL },
+/* 242 */ { "GIF dancing lady",		 GifAnim,  62, NULL },
+/* 243 */ { "GIF GirlSexyAnimateddance", GifAnim,  63, NULL },
+/* 244 */ { "GIF green aurora",		 GifAnim,  64, NULL },
+/* 245 */ { "GIF multi aurora",		 GifAnim,  65, NULL },
+/* 246 */ { "GIF city aurora",		 GifAnim,  66, NULL },
+/* 247 */ { "GIF DJ",			 GifAnim,  67, NULL },
+/* 248 */ { "GIF color string spirals",	 GifAnim,  68, NULL },
+/* 249 */ { "GIF orange shapes spinout", GifAnim,  69, NULL },
+/* 250 */ { "GIF 3rdeye spin",		 GifAnim,  70, NULL },
+/* 251 */ { "GIF 8 fish spirals",	 GifAnim,  71, NULL },
+/* 252 */ { "GIF caniche",		 GifAnim,  72, NULL },
+/* 253 */ { "GIF yingyang",		 GifAnim,  73, NULL },
+/* 254 */ { "GIF color stars flash",	 GifAnim,  74, NULL },
+/* 255 */ { "GIF dancing pink back",	 GifAnim,  75, NULL },
+/* 256 */ { "GIF triangle merge",	 GifAnim,  76, NULL },
+/* 257 */ { "GIF green hal9000",	 GifAnim,  77, NULL },
+/* 258 */ { "GIF bird dance",		 GifAnim,  78, NULL },
+/* 259 */ { "GIF concentric lights",	 GifAnim,  79, NULL },
+/* 260 */ { "GIF spiral pentagon dance", GifAnim,  80, NULL },
+/* 261 */ { "GIF double stargate",	 GifAnim,  81, NULL },
+/* 262 */ { "GIF RGB smirout",		 GifAnim,  82, NULL },
+/* 263 */ { "GIF fractal zoom",		 GifAnim,  83, NULL },
+/* 264 */ { "GIF pacmac",		 GifAnim,  84, NULL },
+/* 265 */ { "GIF purple hair spiralout", GifAnim,  85, NULL },
+/* 266 */ { "GIF flip triangles",	 GifAnim,  86, NULL },
+/* 267 */ { "GIF rgb color plates",	 GifAnim,  87, NULL },
+/* 268 */ { "GIF red round unfold",	 GifAnim,  88, NULL },
+/* 269 */ { "GIF triangrect shapes out", GifAnim,  89, NULL },
+/* 270 */ { "GIF light tunnel",		 GifAnim,  90, NULL },
+/* 271 */ { "GIF heart rotate",		 GifAnim,  91, NULL },
+/* 272 */ { "GIF colorflowers spiralout",GifAnim,  92, NULL },
+/* 273 */ { "GIF green mobius rotate",	 GifAnim,  93, NULL },
+/* 274 */ { "GIF cauliflower",		 GifAnim,  94, NULL },
+/* 275 */ { "GIF triple 3D smiley",	 GifAnim,  95, NULL },
+/* 276 */ { "GIF lightman running",	 GifAnim,  96, NULL },
+/* 277 */ { "GIF green zoomout lasers",	 GifAnim,  97, NULL },
+/* 278 */ { "GIF BW spiral out",	 GifAnim,  98, NULL },
+/* 279 */ { "GIF starship shooting",	 GifAnim,  99, NULL },
+/* 280 */ { "GIF blue smoke out",	 GifAnim, 100, NULL },
+/* 281 */ { "GIF red jacket dancer",	 GifAnim, 101, NULL },
+/* 282 */ { "GIF white grey smoke",	 GifAnim, 102, NULL },
+/* 283 */ { "GIF flowers spinout",	 GifAnim, 103, NULL },
+/* 284 */ { "GIF colors pulsing in out", GifAnim, 104, NULL },
+/* 285 */ { "GIF red smoke spiral in",	 GifAnim, 105, NULL },
+/* 286 */ { "GIF grey cubes tunnel",	 GifAnim, 106, NULL },
+/* 287 */ { "GIF blue amber juggler",	 GifAnim, 107, NULL },
+/* 288 */ { "GIF flying through pipes",	 GifAnim, 108, NULL },
+/* 289 */ { "GIF blue robot heart",	 GifAnim, 109, NULL },
+/* 290 */ { "GIF 3D Mobius loop",	 GifAnim, 110, NULL },
+/* 291 */ { "GIF endless corridor",	 GifAnim, 111, NULL },
+/* 292 */ { "GIF BW zoomout gears",	 GifAnim, 112, NULL },
+/* 293 */ { "GIF RGB toroid",		 GifAnim, 113, NULL },
+/* 294 */ { "GIF mushroom spots",	 GifAnim, 114, NULL },
+/* 295 */ { "GIF you rock",		 GifAnim, 115, NULL },
+/* 296 */ { "GIF morphing 3D shape",	 GifAnim, 116, NULL },
+/* 297 */ { "GIF flower petals",	 GifAnim, 117, NULL },
+/* 298 */ { "GIF eatme",		 GifAnim, 118, NULL },
+/* 299 */ { "GIF sparkling spiralin",	 GifAnim, 119, NULL },
+/* 300 */ { "GIF spingout RGB",		 GifAnim, 120, NULL },
+/* 301 */ { "GIF green cube mobius",	 GifAnim, 121, NULL },
+/* 302 */ { "GIF 3D green wheel ridge",	 GifAnim, 122, NULL },
+/* 303 */ { "GIF colorspiral zoomout",	 GifAnim, 123, NULL },
+/* 304 */ { "GIF spinning dancer",	 GifAnim, 124, NULL },
+/* 305 */ { "GIF color projectors",	 GifAnim, 125, NULL },
+/* 306 */ { "GIF sailormoon highdance",	 GifAnim, 126, NULL },
+/* 307 */ { "GIF smiling dancing girl",	 GifAnim, 127, NULL },
+/* 308 */ { "GIF coiling fern",		 GifAnim, 128, NULL },
+/* 309 */ { "GIF yellow lighthouse",	 GifAnim, 129, NULL },
+/* 310 */ { "GIF color pyramids",	 GifAnim, 130, NULL },
+/* 311 */ { "GIF tunnel spark dancer",	 GifAnim, 131, NULL },
+/* 312 */ { "GIF cube sphere pill",	 GifAnim, 132, NULL },
+/* 313 */ { "GIF hyperspace",		 GifAnim, 133, NULL },
+/* 314 */ { "GIF conifer zoom in",	 GifAnim, 134, NULL },
+/* 315 */ { "GIF 3D hypercube RGB",	 GifAnim, 135, NULL },
+/* 316 */ { "GIF grapefuit zoomin",	 GifAnim, 136, NULL },
+/* 317 */ { "GIF pink flaming circle",	 GifAnim, 137, NULL },
+/* 318 */ { "GIF center moving spiral",	 GifAnim, 138, NULL },
+/* 319 */ { "GIF hypnotoad",		 GifAnim, 139, NULL },
+/* 320 */ { "GIF pizza zoomin",		 GifAnim, 140, NULL },
+/* 321 */ { "GIF RGB spiralin",		 GifAnim, 141, NULL },
+/* 322 */ { "GIF bluebee zoomin",	 GifAnim, 142, NULL },
+/* 323 */ { "GIF green neutron star",	 GifAnim, 143, NULL },
+/* 324 */ { "GIF clock in",		 GifAnim, 144, NULL },
+/* 325 */ { "GIF piano zoomin",		 GifAnim, 145, NULL },
+/* 326 */ { "GIF puzzle spiralout",	 GifAnim, 146, NULL },
+/* 327 */ { "GIF shiny snail shell",	 GifAnim, 147, NULL },
+/* 328 */ { "GIF hypercube",		 GifAnim, 148, NULL },
+/* 329 */ { "GIF color dots spiralin",	 GifAnim, 149, NULL },
+/* 330 */ { "GIF 3D fractal roll",	 GifAnim, 150, NULL },
+/* 331 */ { "GIF Kaleidoscope spiral",	 GifAnim, 151, NULL },
+/* 332 */ { "GIF acid cat",		 GifAnim, 152, NULL },
+/* 333 */ { "GIF purple geometrical",	 GifAnim, 153, NULL },
+/* 334 */ { "GIF fly buildings",	 GifAnim, 154, NULL },
+/* 335 */ { "GIF pulsing color rects",	 GifAnim, 155, NULL },
+/* 336 */ { "GIF white geometric out",	 GifAnim, 156, NULL },
+/* 337 */ { "GIF color marble",		 GifAnim, 157, NULL },
+/* 338 */ { "GIF passionfruit zoomout",	 GifAnim, 158, NULL },
+/* 339 */ { "GIF I am drugs",		 GifAnim, 159, NULL },
+/* 340 */ { "GIF smileys spinout",	 GifAnim, 160, NULL },
+/* 341 */ { "GIF flyin cavern",		 GifAnim, 161, NULL },
+/* 342 */ { "GIF mario mushroom dance",	 GifAnim, 162, NULL },
+/* 343 */ { "GIF baby pig fall",	 GifAnim, 163, NULL },
+/* 344 */ { "GIF color shapes out",	 GifAnim, 164, NULL },
+/* 345 */ { "GIF blue cubes flyin",	 GifAnim, 165, NULL },
+/* 346 */ { "GIF triangles RGB out",	 GifAnim, 166, NULL },
+/* 347 */ { "GIF rubiks cube",		 GifAnim, 167, NULL },
+/* 348 */ { "GIF fractal2 zoom",	 GifAnim, 168, NULL },
+/* 349 */ { "GIF color sticks",		 GifAnim, 169, NULL },
+/* 350 */ { "GIF mushroom walk",	 GifAnim, 170, NULL },
+/* 351 */ { "GIF BW bubbles",		 GifAnim, 171, NULL },
+/* 352 */ { "GIF flying grass",		 GifAnim, 172, NULL },
+/* 353 */ { "GIF blue gecko dance",	 GifAnim, 173, NULL },
+/* 354 */ { "GIF dancing flames",	 GifAnim, 174, NULL },
+/* 355 */ { "GIF skeleton",		 GifAnim, 175, NULL },
+/* 356 */ { "GIF fly purple gates",	 GifAnim, 176, NULL },
+/* 357 */ { "GIF bluelady smoke",	 GifAnim, 177, NULL },
+/* 358 */ { "GIF sailor moon",		 GifAnim, 178, NULL },
+/* 359 */ { "GIF inca spiralin",	 GifAnim, 179, NULL },
+/* 360 */ { "GIF eye",			 GifAnim, 180, NULL },
+/* 361 */ { "GIF blue shark dance",	 GifAnim, 181, NULL },
+/* 362 */ { "GIF blue dancer",		 GifAnim, 182, NULL },
+/* 363 */ { "GIF snoopdog dance",	 GifAnim, 183, NULL },
+/* 364 */ { "GIF walking dead",		 GifAnim, 184, NULL },
+/* 365 */ { "GIF street fighter",	 GifAnim, 185, NULL }, // mapped to 285
     // mapping is the index number in demo_map.txt to account for
     // last index in that file is 299, or 379
     // demos for multiple platforms that share the same slot numbers
@@ -2946,6 +2955,9 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	}
 	Serial.print(", mapped to matrix demo ");
 	Serial.print(MATRIX_DEMO);
+	Serial.print("  / demoidx map: ");
+	Serial.print(demoidx(MATRIX_DEMO));
+	Serial.print(")");
     }
     #ifdef ARDUINOONPC
 	// if we are connected to a remote device, let it change patterns for us
@@ -3231,10 +3243,14 @@ void IR_Serial_Handler() {
     else if (readchar == '=') { Serial.println("Serial => keep demo?");	    MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
     else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
+#ifdef WIFI
+    else if (readchar == 's') { Serial.println("ChangePanel3");	    PANELCONFNUM = 3; build_register_page(); }
+    else if (readchar == 'S') { Serial.println("ChangePanel4");	    PANELCONFNUM = 4; build_register_page(); }
+#endif
 #ifdef ARDUINOONPC
-    else if (readchar == 'N') { Serial.println("Serial => next");	    send_serial("n");}
-    else if (readchar == 'P') { Serial.println("Serial => previous");	    send_serial("p");}
-    else if (readchar == 'F') { Serial.println("Serial => togglefps");	    send_serial("f");}
+    else if (readchar == 'N') { Serial.println("ESP => next");		    send_serial("n");}
+    else if (readchar == 'P') { Serial.println("ESP => previous");	    send_serial("p");}
+    else if (readchar == 'F') { Serial.println("ESP => togglefps");	    send_serial("f");}
     else if (readchar == '<') { Serial.println("ESP => dim"   );	    send_serial("-");}
     else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
     else if (readchar == 'C') { Serial.println("ESP => Bestof");	    send_serial("B");}
@@ -3958,15 +3974,31 @@ void wifi_html_tick() {
 }
 
 void build_register_page() {
+    static uint8_t count=0;
+    count++;
+
+    show_free_mem("Before build_register_page free");
     if (p) {
 	delete(p);
 	read_config_index();
     }
+    show_free_mem("After build_register_page free");
     p = new OmWebPages();
 
     p->setBuildDateAndTime(__DATE__, __TIME__);
 
     p->beginPage("Main");
+
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    {
+	// Keep track of how many times the web page is rebuilt
+	w.puts("Version: ");
+	char *v = (char *) mallocordie("addContent", 4);
+	sprintf(v, "%03d", count);
+	w.puts(v);
+	w.puts("<BR>\n");
+    });
+
     p->addSlider(1, 8, "Brightness", actionProc, dfl_matrix_brightness_level, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
@@ -3990,11 +4022,13 @@ void build_register_page() {
 	//Serial.print(" -> ");
 	//Serial.println(pos);
 
+	if (demo_list[demoidx(i)].menu_str != NULL) free(demo_list[demoidx(i)].menu_str);
 	if (!demo_list[demoidx(i)].func) continue;
-	char *option = (char *) malloc (strlen (demo_list[demoidx(i)].name) + 13);
+	char *option = (char *) mallocordie("wifi addselectoption", strlen (demo_list[demoidx(i)].name) + 13);
 	sprintf(option, "%03d->%03d/%1d: ", i, pos, demo_mapping[pos].enabled[PANELCONFNUM]);
 	strcpy(option+12, demo_list[demoidx(i)].name);
 	p->addSelectOption(option, i);
+	demo_list[demoidx(i)].menu_str = option;
     }
 
     p->addUrlHandler(wildcardProc);
@@ -4015,6 +4049,7 @@ void build_register_page() {
 
     // And lastly, introduce the web pages to the wifi connection.
     s.setHandler(*p);
+    show_free_mem("After wifi");
 }
 
 void setup_wifi() {
@@ -4092,11 +4127,11 @@ void read_config_index() {
     #define DEBUG_CFG_READ
     #ifdef DEBUG_CFG_READ
 	#ifdef ESP32
-	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap, demoidx(dmap),
-			  demo_mapping[index].enabled[PANELCONFNUM], demo_list[demoidx(dmap)].name);
+	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,  
+			  dmap, demoidx(dmap), demo_mapping[index].enabled[PANELCONFNUM]);
 	#elif ARDUINOONPC
-		   printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => %s", index, d32,  d64,  d96bm,  d96,  d192,  dmap, demoidx(dmap),
-			  demo_mapping[index].enabled[PANELCONFNUM], demo_list[demoidx(dmap)].name);
+	           printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,  
+			  dmap, demoidx(dmap), demo_mapping[index].enabled[PANELCONFNUM]);
 	#else
 	    Serial.print(index);
 	    Serial.print(" ");
@@ -4104,8 +4139,12 @@ void read_config_index() {
 	    Serial.print(" ");
 	    Serial.print(demo_mapping[index].enabled[PANELCONFNUM]);
 	    Serial.print(" ");
-	    Serial.print(demo_list[demoidx(dmap)].name);
 	#endif
+	    if (demo_list[demoidx(dmap)].name != NULL) {
+		Serial.print(demo_list[demoidx(dmap)].name);
+	    } else {
+		Serial.print("undefined");
+	    }
     #endif
 	// reverse position mapping used in setup_wifi dropdown creation
 	demo_mapping[dmap].reverse = index;
@@ -4320,7 +4359,7 @@ void setup() {
     Serial.println(RECV_PIN);
 #endif
 
-    GifAnim(255); // Compute how many GIFs are defined
+    GifAnim(65535); // Compute how many GIFs are defined
     Serial.println("vvvvvvvvvvvvvvvvvvvvvvvv");
     Serial.print("Number of GIFs defined: ");
     Serial.println(GIF_CNT);
