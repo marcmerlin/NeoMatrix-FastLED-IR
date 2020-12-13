@@ -58,6 +58,12 @@ using namespace Aiko;
 #endif
 // Different panel configurations: 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
 #define CONFIGURATIONS 5
+const char *panelconfnames[CONFIGURATIONS] = {
+    "Neopixel Shirt 24x32 ESP8266",
+    "Burning Man Neopixel Panel 64x64 ESP32",
+    "SmartMatrix Shirt BM 64x96 ESP32",
+    "SmartMatrix Shirt Dance 64x96 ESP32",
+    "RPI-RGB-Panels Shirt Dance 128x192 rPi" };
 
 #if mheight == 192
 uint8_t PANELCONFNUM = 4;
@@ -250,6 +256,9 @@ int16_t strip_speed = 50;
 	if (ttyfd >= 0) {
 	    set_interface_attribs(ttyfd, B115200);
 	    printf("Opened %s\n", *devname);
+	    // Assume we just connected to an ESP32, which starts in its PANELCONFNUM 3 (ESP32 mode)
+	    // and switch it to PANELCONFNUM 4 (rPI with longer menus).
+	    send_serial("d");
 	}
 	return ttyfd;
     }
@@ -505,11 +514,6 @@ void font_test() {
     matrix->setCursor(0, 30);
     matrix->setTextColor(matrix->Color(0,255,128));
     matrix->print("REPEAT");
-
-    matrix->setCursor(1, 5);
-    matrix->setTextColor(matrix->Color(255,255,0));
-    matrix->print("Repeat");
-    matrix_show();
 }
 
 
@@ -810,7 +814,7 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
 	else matrix->setCursor(5, 22);
 
 	matrix->setTextColor(matrix->Color(0,255,0));
-	if (mheight == 64) matrix->print("BURN");
+	if (PANELCONFNUM == 2 || PANELCONFNUM == 3) matrix->print("BURN");
 	else matrix->print("RAVE");
     }
     l++;
@@ -1118,7 +1122,7 @@ uint8_t esrbr_fade(uint32_t unused) {
 	else if (mheight >= 64) matrix->setCursor(14, 47);
 	else matrix->setCursor(5, 22);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
-	if (mheight == 64) {
+	if (PANELCONFNUM == 2 || PANELCONFNUM == 3) {
 	    matrix->print("BURN");
 	} else {
 	    matrix->print("RAVE");
@@ -1731,7 +1735,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 059 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 
 // update FIRSTESP32 if you change the index
-/* 060 */   { ROOT  "087_net.gif",		05, 0, 0, 10, YMUL, 0, 0 }, 
+/* 060 */   { ROOT  "087_net.gif",		05, 0, 0, 10, YMUL, 0, 0 },
 /* 061 */   { ROOT  "196_colorstar.gif",	10, 0, 0, 10, YMUL, 0, 0 },
 /* 062 */   { ROOT  "200_circlesmoke.gif",	10, 0, 0, 10, YMUL, 0, 0 },
 /* 063 */   { ROOT  "203_waterdrop.gif",	10, 0, 0, 10, YMUL, 0, 0 },
@@ -1921,11 +1925,11 @@ uint8_t GifAnim(uint32_t idx) {
 /* 245 */   { ROOT  "z_Yv30_street_fighter.gif",	10, 0, 0, 10, 10, 0, 0 },
         };
 
-    // 
+    //
     #define FIRSTESP32 60
     #define LASTESP32 81
     #define LASTESP32IDX 119
-   
+
     int16_t x, y;
     uint8_t repeat = 1;
     static uint16_t scrollx = 0;
@@ -1935,14 +1939,14 @@ uint8_t GifAnim(uint32_t idx) {
     extern int FACTY;
     extern int FACTX;
     const char *path;
-   
+
     GIF_CNT = ARRAY_SIZE(animgif);
     // Compute GIF_CNT and exit
     if (idx == 65535) return 0;
     // Avoid crashes due to overflows
     idx = idx % GIF_CNT;
     static uint16_t gifloopsec;
-   
+
     if (matrix_reset_demo == 1) {
         matrix_reset_demo = 0;
         gifloopsec =  animgif[idx].looptime;
@@ -1954,7 +1958,7 @@ uint8_t GifAnim(uint32_t idx) {
         #endif
 	#ifdef ESP32
 	    if (idx > LASTESP32IDX) {
-		// when using ESP32 to control an rPi, we can get GIF indexes that do 
+		// when using ESP32 to control an rPi, we can get GIF indexes that do
 		// not exist on ESP32. If so, convert them to a locally viewable one.
 		idx = ((idx - LASTESP32IDX -1) % (LASTESP32 - FIRSTESP32)) + FIRSTESP32;
 	    }
@@ -2944,8 +2948,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
     // last index in that file is 299, or 379
     // demos for multiple platforms that share the same slot numbers
     // If you add elements past 379, please update DEMO_ARRAY_SIZE
-};        
-          
+};
+
 void matrix_change(int16_t demo, bool directmap=false) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
@@ -3286,16 +3290,16 @@ void IR_Serial_Handler() {
 
     if (readchar == 'n')      { Serial.println("Serial => next");	    matrix_change(DEMO_NEXT);}
     else if (readchar == 'p') { Serial.println("Serial => previous");	    matrix_change(DEMO_PREV);}
-    else if (readchar == 'B') { Serial.println("Serial => Bestof");	    show_best_demos = true;}
-    else if (readchar == 'b') { Serial.println("Serial => All Demos");	    show_best_demos = false;}
+    else if (readchar == 'b') { Serial.println("Serial => Bestof");	    show_best_demos = true;}
+    else if (readchar == 'a') { Serial.println("Serial => All Demos");	    show_best_demos = false;}
     else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
     else if (readchar == 'f') { SHOW_LAST_FPS = !SHOW_LAST_FPS; }
     else if (readchar == '=') { Serial.println("Serial => keep demo?");	    MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
     else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
 #ifdef WIFI
-    else if (readchar == 's') { Serial.println("ChangePanel3");	    PANELCONFNUM = 3; build_register_page(); }
-    else if (readchar == 'S') { Serial.println("ChangePanel4");	    PANELCONFNUM = 4; build_register_page(); }
+    else if (readchar == 'c') { Serial.println("ChangePanel3");	PANELCONFNUM = 3; build_register_page(); }
+    else if (readchar == 'd') { Serial.println("ChangePanel4");	PANELCONFNUM = 4; build_register_page(); }
 #endif
 #ifdef ARDUINOONPC
     else if (readchar == 'N') { Serial.println("ESP => next");		    send_serial("n");}
@@ -3303,12 +3307,12 @@ void IR_Serial_Handler() {
     else if (readchar == 'F') { Serial.println("ESP => togglefps");	    send_serial("f");}
     else if (readchar == '<') { Serial.println("ESP => dim"   );	    send_serial("-");}
     else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
-    else if (readchar == 'C') { Serial.println("ESP => Bestof");	    send_serial("B");}
-    else if (readchar == 'c') { Serial.println("ESP => All Demos");	    send_serial("b");}
+    else if (readchar == 'B') { Serial.println("ESP => Bestof");	    send_serial("B");}
+    else if (readchar == 'A') { Serial.println("ESP => All Demos");	    send_serial("b");}
     else if (readchar == '_') { Serial.println("ESP => Keep Demo?");	    send_serial("=");}
     else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
-    else if (readchar == 't') { Serial.println("ESP => ChangePanel3");	    send_serial("s"); }
-    else if (readchar == 'T') { Serial.println("ESP => ChangePanel4");	    send_serial("S"); }
+    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");	    send_serial("c"); }
+    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");	    send_serial("d"); }
 #endif
 
     // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
@@ -3928,6 +3932,8 @@ void IR_Serial_Handler() {
 // ================================================================================
 
 #ifdef WIFI
+#define HTML_DEMOLIST_CHOICE 90
+#define HTML_BESTOF  100
 #define HTML_BRIGHT  101
 #define HTML_SPEED   102
 #define HTML_BUTPREV 110
@@ -3952,6 +3958,12 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	matrix_change(DEMO_NEXT);
 	break;
 
+    case HTML_BESTOF:
+	Serial.print("Bestof on/off: ");
+	Serial.println(value);
+	show_best_demos = value;
+	break;
+
     case HTML_BRIGHT:
 	if (!value) break;
 	Serial.print("Brightness change to ");
@@ -3964,6 +3976,19 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	Serial.print("Speed change to ");
 	Serial.println(value);
 	change_speed(value, true);
+	break;
+
+    case HTML_DEMOLIST_CHOICE:
+	Serial.print("Got HTML Demolist Choice ");
+	Serial.print(value);
+	if (value<0 || value >= CONFIGURATIONS) {
+	    Serial.println(" => invalid, skipping");
+	    break;
+	}
+	Serial.print(": ");
+	Serial.println(panelconfnames[value]);
+	PANELCONFNUM = value;
+	build_register_page();
 	break;
 
     case HTML_DEMOCHOICE:
@@ -4043,7 +4068,12 @@ void build_register_page() {
 	w.puts(v);
 	w.puts("<BR>\n");
     });
+    p->addSelect("Demo Mode", actionProc, PANELCONFNUM, HTML_DEMOLIST_CHOICE);
+    for (uint16_t i=0; i <= 4; i++) {
+	p->addSelectOption(panelconfnames[i], i);
+    }
 
+    p->addSlider(0, 1, "Enable BestOf Only?", actionProc, show_best_demos, HTML_BESTOF);
     p->addSlider(1, 8, "Brightness", actionProc, dfl_matrix_brightness_level, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
@@ -4060,7 +4090,7 @@ void build_register_page() {
 	 You can add any number of options, and specify
 	 the value of each.
     */
-    p->addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
+    p->addSelect("Choose Demo", actionProc, MATRIX_STATE, HTML_DEMOCHOICE);
     for (uint16_t i=0; i <= DEMO_LAST_IDX; i++) {
 	uint16_t pos = demo_mapping[i].reverse;
 	//Serial.print(i);
@@ -4076,21 +4106,23 @@ void build_register_page() {
 	demo_list[demoidx(i)].menu_str = option;
     }
 
+    // Catches random non registered URLs
     p->addUrlHandler(wildcardProc);
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
-    {
-	w.beginElement("a", "href", "/demo_map.txt");
-	w.addContent("Demo Map");
-	w.endElement(); // a
-    });
+    // p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    // {
+    //	w.beginElement("a", "href", "/demo_map.txt");
+    //	w.addContent("Demo Map");
+    //	w.endElement(); // a
+    // });
+    // This replaces the above
+    p->addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
 
     p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
-	const char* inputstr="<FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>";
+	const char* inputstr="Demo Text Input: <FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>";
 	w.puts(inputstr);
     });
 
-    p->addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
 
     // And lastly, introduce the web pages to the wifi connection.
     show_free_mem("After wifi");
@@ -4122,15 +4154,13 @@ void read_config_index() {
     int d32, d64, d96bm, d96, d192;
     int dmap;
     char pathname[] = FS_PREFIX "/demo_map.txt";
-    const char *confname[] = {"Neopixel Shirt 24x32", "Burning Man Neopixel 64x64", "BM RGBPanel 64x96",
-	"RGBPanel Shirt 64x96", "RGBPanel rPi 128x192"};
 
     Serial.print("*********** Reading ");
     Serial.print(pathname);
     Serial.print(" for display ");
     Serial.print(PANELCONFNUM);
     Serial.print(" / ");
-    Serial.print(confname[PANELCONFNUM]);
+    Serial.print(panelconfnames[PANELCONFNUM]);
     Serial.println(" ***********");
 
     #ifdef ARDUINOONPC
@@ -4172,10 +4202,10 @@ void read_config_index() {
     //#define DEBUG_CFG_READ
     #ifdef DEBUG_CFG_READ
 	#ifdef ESP32
-	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,  
+	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,
 			  dmap, demoidx(dmap), demo_mapping[index].enabled[PANELCONFNUM]);
 	#elif ARDUINOONPC
-	           printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,  
+	           printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,
 			  dmap, demoidx(dmap), demo_mapping[index].enabled[PANELCONFNUM]);
 	#else
 	    Serial.print(index);
