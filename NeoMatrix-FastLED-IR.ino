@@ -241,11 +241,24 @@ int16_t strip_speed = 50;
 	return 0;
     }
 
-    int openttyUSB(const char ** devname) {
+    int send_serial(const char *xstr) {
+	int wlen;
+	int xlen = strlen(xstr);
+
+	wlen = write(ttyfd, xstr, xlen);
+	// tcdrain(ttyfd);
+	if (wlen != xlen) {
+	    printf("Error from write: %d, %s\n", wlen, strerror(errno));
+	    return -1;
+	}
+	printf(">>>ESP: %s\n", xstr);
+	return 0;
+    }
+
+    void openttyUSB(const char ** devname) {
 	// static because the name is sent back to the caller
 	static const char *dev[] = { "/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2" };
 	int devidx = 0;
-	int ttyfd;
 
 	while (devidx<3 && (ttyfd = open((*devname = dev[devidx]), O_RDWR | O_NOCTTY | O_SYNC)) < 0 && ++devidx) {
 	    struct stat stbuf;
@@ -260,21 +273,6 @@ int16_t strip_speed = 50;
 	    // and switch it to PANELCONFNUM 4 (rPI with longer menus).
 	    send_serial("d");
 	}
-	return ttyfd;
-    }
-
-    int send_serial(const char *xstr) {
-	int wlen;
-	int xlen = strlen(xstr);
-
-	wlen = write(ttyfd, xstr, xlen);
-	// tcdrain(ttyfd);
-	if (wlen != xlen) {
-	    printf("Error from write: %d, %d\n", wlen, errno);
-	    return -1;
-	}
-	printf(">>>ESP: %s\n", xstr);
-	return 0;
     }
 #endif // ARDUINOONPC
 
@@ -4289,7 +4287,7 @@ void loop() {
 	    EVERY_N_SECONDS(30) {
 		if (serialdev && (ttyfd < 0)) printf("Serial closed, (re-)opening\n");
 	    }
-	    if (ttyfd < 0) ttyfd = openttyUSB(&serialdev);
+	    if (ttyfd < 0) openttyUSB(&serialdev);
 	}
 	if (ttyfd < 0) return;
 		
