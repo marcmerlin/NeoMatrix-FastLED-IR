@@ -3272,9 +3272,7 @@ void IR_Serial_Handler() {
 	    Serial.println(new_pattern);
 	    #ifdef ARDUINOONPC
 	    if (remotesend) {
-		char numstr[4];
-		snprintf( numstr, 4, "%d", new_pattern );
-		send_serial(numstr);
+		send_serial(String(new_pattern).c_str());
 		remotesend = false;
 	    } else
 	    #endif
@@ -4061,9 +4059,7 @@ void build_register_page() {
     {
 	// Keep track of how many times the web page is rebuilt
 	w.puts("Version: ");
-	char *v = (char *) mallocordie("addContent", 4);
-	sprintf(v, "%03d", count);
-	w.puts(v);
+	w.puts(String(count));
 	w.puts("<BR>\n");
     });
     p->addSelect("Demo Mode", actionProc, PANELCONFNUM, HTML_DEMOLIST_CHOICE);
