@@ -1705,7 +1705,7 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10,128, 64 },
 /* 035 */   { ROOT  "BM_Lady_Fire.gif",		10, 0, 10, 10, 10,128,212 },
 	    { ROOT  "BM_Logo_lgrey.gif",	10, 0,  0, 10, 10,128,128 },
-	    { ROOT  NULL,				10, 0,  0, 10, 10,128,128 },
+	    { NULL,				10, 0,  0, 10, 10,128,128 },
 	    { ROOT  "BM_TheMan_Blue.gif",	10, 0,  6, 10, 10,128,212 },
 	    { ROOT  "BM_TheMan_Red.gif",	10, 0,  0, 10, 10,128,128 },
 /* 040 */   { ROOT  "BM_TheMan_Green.gif",	10, 0, 10, 10, 10,128,212 },
