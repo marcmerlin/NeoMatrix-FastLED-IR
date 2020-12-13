@@ -4061,7 +4061,7 @@ void build_register_page() {
 	 the value of each.
     */
     p->addSelect("Choose Demo", actionProc, 2, HTML_DEMOCHOICE);
-    for (uint16_t i=1; i < DEMO_LAST_IDX; i++) {
+    for (uint16_t i=0; i <= DEMO_LAST_IDX; i++) {
 	uint16_t pos = demo_mapping[i].reverse;
 	//Serial.print(i);
 	//Serial.print(" -> ");
