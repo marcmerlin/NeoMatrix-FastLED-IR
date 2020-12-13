@@ -3307,6 +3307,8 @@ void IR_Serial_Handler() {
     else if (readchar == 'c') { Serial.println("ESP => All Demos");	    send_serial("b");}
     else if (readchar == '_') { Serial.println("ESP => Keep Demo?");	    send_serial("=");}
     else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
+    else if (readchar == 't') { Serial.println("ESP => ChangePanel3");	    send_serial("s"); }
+    else if (readchar == 'T') { Serial.println("ESP => ChangePanel4");	    send_serial("S"); }
 #endif
 
     // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
