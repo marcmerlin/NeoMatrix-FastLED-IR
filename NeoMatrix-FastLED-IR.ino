@@ -72,6 +72,7 @@ uint8_t PANELCONFNUM = 3;
 #else
 uint8_t PANELCONFNUM = 0;
 #endif
+uint16_t DEMO_MAP_LENGTH;
 
 typedef struct mapping_entry_ {
     uint16_t mapping;
@@ -3294,8 +3295,8 @@ void IR_Serial_Handler() {
     else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
 #ifdef WIFI
-    else if (readchar == 'c') { Serial.println("ChangePanel3");	PANELCONFNUM = 3; build_register_page(); }
-    else if (readchar == 'd') { Serial.println("ChangePanel4");	PANELCONFNUM = 4; build_register_page(); }
+    else if (readchar == 'c') { Serial.println("ChangePanel3");	PANELCONFNUM = 3; build_main_page(); }
+    else if (readchar == 'd') { Serial.println("ChangePanel4");	PANELCONFNUM = 4; build_main_page(); }
 #endif
 #ifdef ARDUINOONPC
     else if (readchar == 'N') { Serial.println("ESP => next");		    send_serial("n");}
@@ -3984,7 +3985,7 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	Serial.print(": ");
 	Serial.println(panelconfnames[value]);
 	PANELCONFNUM = value;
-	build_register_page();
+	build_main_page();
 	break;
 
     case HTML_DEMOCHOICE:
@@ -3995,6 +3996,25 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	break;
 
     }
+}
+
+void wputsFile(OmXmlWriter &w, const char*path) {
+    File file;
+
+    Serial.print("Adding file to web page: ");
+    Serial.println(path);
+    if (! (file = FSO.open(path)
+    #ifdef FSOSPIFFS
+				    , "r"
+    #endif
+					    ) ) {
+	Serial.println("Error opening file");
+	return;
+    }
+
+    while (file.available()) w.put(file.read());
+
+    file.close();
 }
 
 void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
@@ -4013,22 +4033,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	return;
     }
 
-    Serial.print("Serving ");
-    Serial.println(request.path);
-    File file;
-
-    if (! (file = FSO.open(request.path)
-    #ifdef FSOSPIFFS
-				    , "r"
-    #endif
-					    ) ) {
-	Serial.println("Error opening file");
-	return;
-    }
-
-    while (file.available()) w.put(file.read());
-
-    file.close();
+    wputsFile(w, request.path);
 }
 
 void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
@@ -4046,7 +4051,7 @@ void wifi_html_tick() {
     s.tick();
 }
 
-void build_register_page() {
+void build_main_page() {
     static uint8_t count=0;
     count++;
 
@@ -4059,7 +4064,7 @@ void build_register_page() {
     {
 	// Keep track of how many times the web page is rebuilt
 	w.puts("Version: ");
-	w.puts(String(count));
+	w.puts(String(count).c_str());
 	w.puts("<BR>\n");
     });
     p->addSelect("Demo Mode", actionProc, PANELCONFNUM, HTML_DEMOLIST_CHOICE);
@@ -4117,9 +4122,31 @@ void build_register_page() {
 	w.puts(inputstr);
     });
 
-
     // And lastly, introduce the web pages to the wifi connection.
     show_free_mem("After wifi");
+}
+
+void build_config_page() {
+    static uint8_t count=0;
+    count++;
+
+    p->beginPage("Config");
+
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    {
+	// Keep track of how many times the web page is rebuilt
+	w.puts("Version: ");
+	w.puts(String(count).c_str());
+	w.puts("<BR>\n");
+	w.puts("<FORM METHOD=GET ACTION=/form>\n");
+	w.puts("<TEXTAREA NAME=newdemomap COLS=12 ROWS=");
+	w.puts(String(DEMO_MAP_LENGTH).c_str());
+	w.puts(">\n");
+	wputsFile(w, "/demo_map.txt");
+	w.puts("</TEXTAREA><BR>\n");
+	w.puts("<INPUT TYPE=submit VALUE=Submit>\n");
+	w.puts("</FORM>\n");
+    });
 }
 
 void setup_wifi() {
@@ -4130,7 +4157,8 @@ void setup_wifi() {
 
     s.setStatusCallback(connectionStatus);
 
-    build_register_page();
+    build_main_page();
+    build_config_page();
     s.setHandler(*p);
 
     // Make sure that aiko calls the HTML handler at 10Hz
@@ -4237,6 +4265,7 @@ void read_config_index() {
 	}
 	index++;
     }
+    DEMO_MAP_LENGTH = index;
 
     #ifdef ARDUINOONPC
     fclose(file);
