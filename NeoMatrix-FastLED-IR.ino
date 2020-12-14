@@ -56,6 +56,10 @@ using namespace Aiko;
 #else
 #define DEMO_ARRAY_SIZE 380
 #endif
+
+// number of lines read in demo_map.txt
+uint16_t CFG_LAST_INDEX = 0;
+
 // Different panel configurations: 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
 #define CONFIGURATIONS 5
 const char *panelconfnames[CONFIGURATIONS] = {
@@ -72,7 +76,6 @@ uint8_t PANELCONFNUM = 3;
 #else
 uint8_t PANELCONFNUM = 0;
 #endif
-uint16_t DEMO_MAP_LENGTH;
 
 typedef struct mapping_entry_ {
     uint16_t mapping;
@@ -3998,42 +4001,95 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
     }
 }
 
-void wputsFile(OmXmlWriter &w, const char*path) {
-    File file;
+// opens a file and output one line at a time until empty
+bool PutFileLine(OmXmlWriter &w, const char *path) {
+    static File file;
+    char c;
 
-    Serial.print("Adding file to web page: ");
-    Serial.println(path);
-    if (! (file = FSO.open(path)
-    #ifdef FSOSPIFFS
-				    , "r"
-    #endif
-					    ) ) {
-	Serial.println("Error opening file");
-	return;
+    if (! file) {
+	Serial.print("Opening file for line by line read: ");
+	Serial.println(path);
+	if (! (file = FSO.open(path)
+	#ifdef FSOSPIFFS
+					, "r"
+	#endif
+						) ) {
+	    Serial.println("Error opening file");
+	    return 0;
+	}
     }
 
-    while (file.available()) w.put(file.read());
+    if (!file.available()) {
+	Serial.print("Done reading file ");
+	Serial.println(path);
+	file.close();
+	return 0;
+    }
 
-    file.close();
+    while (1) {    
+	c = file.read();
+	if (c == '\n') break;
+	w.put(c);
+    };
+    return 1;
 }
 
 void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
-    p->renderHttpResponseHeader("text/plain", 200);
 
-    if (! strcmp(request.path, "/form")) {
+    if (strcmp(request.path, "/form") == 0) {
 	uint8_t k = (int)request.query.size();
 	uint8_t idx = 0;
 
-	if (! strcmp(request.query[0], "text")) {
+	
+	if (strcmp(request.query[0], "text") == 0) {
+	    p->renderHttpResponseHeader("text/plain", 200);
 	    DISPLAYTEXT = request.query[1];
 	    matrix_change(DEMO_TEXT_INPUT);
 	}
+	// Changes to config file lines, look like this:
+	// arg 0: 0001 = 1 3 3 3 3 106
+	if (request.query[0][0] == '0') {
+	    // This is a perfect example of how you should never scan untrusted
+	    // input, but honestly if specially crafted input causes a crash, I
+	    // don't care :)
+	    int d32, d64, d96bm, d96, d192;
+	    int index, dmap;
+	    index = atoi(request.query[0]);
+	    if (6 == sscanf(request.query[1], "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap)) {
+		// Serial.printf("0:%s, 1:%s\n", request.query[0], request.query[1]);
+		Serial.printf("Got demo_list update for index %d: %d %d %d %d %d, mapped to %d\n", index, d32, d64, d96bm, d96, d192, dmap);
+		demo_mapping[index].mapping = dmap;
+		demo_mapping[index].enabled[0] = d32;
+		demo_mapping[index].enabled[1] = d64;
+		demo_mapping[index].enabled[2] = d96bm;
+		demo_mapping[index].enabled[3] = d96;
+		demo_mapping[index].enabled[4] = d192;
+		demo_mapping[dmap].reverse = index;
+		// rebuilding the page also re-processes the config
+		build_main_page();
+		// no need to rebuild the config page because it generates
+		// its html at runtime
+		// build_config_page();
+		p->renderHttpResponseHeader("text/html", 200);
+		w.putf("<meta http-equiv=refresh content=\"0; URL=/Config\" />\n");
+		
+	    } else { 
+		Serial.printf("sscanf failed on %s\n", request.query[1]);
+	    }
+	    return;
+	}
+
+	// else show arguments sent (for debugging)
 	for (int ix = idx; ix < k - 1; ix += 2)
 	    w.putf("arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
 	return;
     }
 
-    wputsFile(w, request.path);
+    // else assume the path is a filename to read on the FS
+    // this is also not safe, it allows jumping outside the root path with "../foo"
+    // but on ESP32, there is nowhere to go, so who cares?
+    p->renderHttpResponseHeader("text/plain", 200);
+    while (PutFileLine(w, request.path)) { 1; };
 }
 
 void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
@@ -4055,7 +4111,8 @@ void build_main_page() {
     static uint8_t count=0;
     count++;
 
-    if (!p) p = new OmWebPages(); else read_config_index();
+    // First time around, process_config is run by read_config_index;
+    if (!p) p = new OmWebPages(); else process_config();
     p->setBuildDateAndTime(__DATE__, __TIME__);
 
     p->beginPage("Main");
@@ -4118,12 +4175,8 @@ void build_main_page() {
 
     p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
-	const char* inputstr="Demo Text Input: <FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>";
-	w.puts(inputstr);
+	w.puts("Demo Text Input: <FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>");
     });
-
-    // And lastly, introduce the web pages to the wifi connection.
-    show_free_mem("After wifi");
 }
 
 void build_config_page() {
@@ -4132,20 +4185,40 @@ void build_config_page() {
 
     p->beginPage("Config");
 
+    // This lamba function is re-run every time /Config is called
     p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
+	bool readingfile = true;
+	char lineidx[5];
+	char mapstr[14]; // "1 1 1 1 1 053" + NULL
 	// Keep track of how many times the web page is rebuilt
 	w.puts("Version: ");
 	w.puts(String(count).c_str());
 	w.puts("<BR>\n");
-	w.puts("<FORM METHOD=GET ACTION=/form>\n");
-	w.puts("<TEXTAREA NAME=newdemomap COLS=12 ROWS=");
-	w.puts(String(DEMO_MAP_LENGTH).c_str());
-	w.puts(">\n");
-	wputsFile(w, "/demo_map.txt");
-	w.puts("</TEXTAREA><BR>\n");
-	w.puts("<INPUT TYPE=submit VALUE=Submit>\n");
-	w.puts("</FORM>\n");
+	for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
+	    snprintf(lineidx, 5, "%04d", index);
+	    w.puts("<FORM METHOD=GET ACTION=/form>");
+	    w.puts(lineidx);
+	    w.puts(": <INPUT NAME=");
+	    w.puts(lineidx);
+	    w.puts(" VALUE=\"");
+	    // We used to read the file, but now we render the in memory table
+	    //readingfile = PutFileLine(w, "/demo_map.txt");
+	    snprintf(mapstr, 14, "%d %d %d %d %d %03d", 
+		demo_mapping[index].enabled[0],
+		demo_mapping[index].enabled[1],
+		demo_mapping[index].enabled[2],
+		demo_mapping[index].enabled[3],
+		demo_mapping[index].enabled[4],
+		demo_mapping[index].mapping );
+	    w.puts(mapstr);
+	    w.puts("\"></FORM>\n");
+	}
+	// empty the rest of the file, but there shouldn't be anything:
+	// this is required so that the file gets closed, and next caller
+	// gets to open a file from scratch.
+	// Ok, we used to read the file, but now we render the in memory table
+	//while ( PutFileLine(w, "/demo_map.txt") ) { 1; };
     });
 }
 
@@ -4166,16 +4239,44 @@ void setup_wifi() {
 }
 #endif
 
-void read_config_index() {
+void process_config() {
     DEMO_CNT = 0;
     BEST_CNT = 0;
+    DEMO_LAST_IDX = 0;
+    
+    for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) {
+	if (demo_mapping[index].enabled[PANELCONFNUM] & 2) BEST_CNT++;
+	// keep track of the highest demo index for modulo in matrix_change
+	if (demo_mapping[index].enabled[PANELCONFNUM]) {
+	    if (! MATRIX_STATE) MATRIX_STATE = index; // find first playable demo
+	    DEMO_CNT++;
+	    DEMO_LAST_IDX = index;
+	    //Serial.print(index); Serial.print(" "); Serial.print(DEMO_CNT); Serial.print(" "); Serial.println(DEMO_LAST_IDX);
+	}
+    }
+    Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+    Serial.print("Number of Demos enabled: ");
+    Serial.print(DEMO_CNT);
+    Serial.print(". Number of Best Demos: ");
+    Serial.println(BEST_CNT);
+    Serial.print("Number of lines in CFG File: ");
+    Serial.print(CFG_LAST_INDEX + 1);
+    Serial.print(". Last Playable Demo idx: ");
+    Serial.print(DEMO_LAST_IDX);
+    Serial.print(". Next Demo to play: ");
+    Serial.println(MATRIX_STATE);
+    Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+}
 
+void read_config_index() {
     uint16_t index = 0;
     // Demo enabled for 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
     // 1: enables, 3 enables demo and adds to BestOf selection
     int d32, d64, d96bm, d96, d192;
     int dmap;
     char pathname[] = FS_PREFIX "/demo_map.txt";
+
+    CFG_LAST_INDEX = 0;
 
     Serial.print("*********** Reading ");
     Serial.print(pathname);
@@ -4252,26 +4353,20 @@ void read_config_index() {
 	    index++;
 	    continue;
 	}
-	if (demo_mapping[index].enabled[PANELCONFNUM] & 2) BEST_CNT++;
     #ifdef DEBUG_CFG_READ
 	Serial.println("");
     #endif
-	// keep track of the highest demo index for modulo in matrix_change
-	if (demo_mapping[index].enabled[PANELCONFNUM]) {
-	    if (! MATRIX_STATE) MATRIX_STATE = index; // find first playable demo
-	    DEMO_CNT++;
-	    DEMO_LAST_IDX = index;
-	    //Serial.print(index); Serial.print(" "); Serial.print(DEMO_CNT); Serial.print(" "); Serial.println(DEMO_LAST_IDX);
-	}
+	// keep track of the last line read (0 based)
+	CFG_LAST_INDEX = index;
 	index++;
     }
-    DEMO_MAP_LENGTH = index;
 
     #ifdef ARDUINOONPC
     fclose(file);
     #else
     file.close();
     #endif
+    process_config();
 }
 
 
@@ -4438,6 +4533,8 @@ void setup() {
     // Heap/32-bit Memory Available: 181472 bytes total,  85748 bytes largest free block
     // 8-bit/DMA Memory Available  :  95724 bytes total,  39960 bytes largest free block
     matrix_setup(false, 25000);
+
+    // Init demos here
     Serial.println("Init Aurora");
     aurora_setup();
     Serial.println("Init TwinkleFox");
@@ -4446,6 +4543,9 @@ void setup() {
     fireworks_setup();
     Serial.println("Init sublime");
     sublime_setup();
+    show_free_mem("After Demos Init");
+
+
     Serial.println("Enabling IRin");
 #ifdef RECV_PIN
     #ifndef ESP32RMTIR
@@ -4458,15 +4558,9 @@ void setup() {
 #endif
 
     GifAnim(65535); // Compute how many GIFs are defined
-    Serial.println("vvvvvvvvvvvvvvvvvvvvvvvv");
+    Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
     Serial.print("Number of GIFs defined: ");
     Serial.println(GIF_CNT);
-
-    Serial.print("Number of Demos defined: ");
-    Serial.println(DEMO_CNT);
-
-    Serial.print("Last Playable Demo Index: ");
-    Serial.println(DEMO_LAST_IDX);
 
     // MATRIX_STATE is set in read_config_index()
     MATRIX_DEMO = demo_mapping[MATRIX_STATE].mapping;
@@ -4475,7 +4569,6 @@ void setup() {
 
     Serial.print(" mapped to: ");
     Serial.println(MATRIX_DEMO);
-    Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^");
 
     Serial.print("Matrix Size: ");
     Serial.print(mw);
