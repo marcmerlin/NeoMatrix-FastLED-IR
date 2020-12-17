@@ -4069,14 +4069,21 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 		build_main_page();
 		// no need to rebuild the config page because it generates
 		// its html at runtime
-		// build_config_page();
+		// register_config_page();
 		p->renderHttpResponseHeader("text/html", 200);
-		w.putf("<meta http-equiv=refresh content=\"0; URL=/Config\" />\n");
+		w.puts("<meta http-equiv=refresh content=\"0; URL=/Config\" />\n");
 		
 	    } else { 
 		Serial.printf("sscanf failed on %s\n", request.query[1]);
 	    }
 	    return;
+	}
+	// We assume that any pathname means file rename or delete
+	if (request.query[0][0] == '/') {
+	    Serial.printf("Rename %s to %s\n", request.query[0], request.query[1]);
+	    FFat.rename(request.query[0], request.query[1]);
+	    p->renderHttpResponseHeader("text/html", 200);
+	    w.puts("<meta http-equiv=refresh content=\"0; URL=/FS\" />\n");
 	}
 
 	// else show arguments sent (for debugging)
@@ -4089,7 +4096,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
     // this is also not safe, it allows jumping outside the root path with "../foo"
     // but on ESP32, there is nowhere to go, so who cares?
     p->renderHttpResponseHeader("text/plain", 200);
-    while (PutFileLine(w, request.path)) { 1; };
+    while (PutFileLine(w, request.path)) { w.putf("\n"); };
 }
 
 void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
@@ -4179,10 +4186,7 @@ void build_main_page() {
     });
 }
 
-void build_config_page() {
-    static uint8_t count=0;
-    count++;
-
+void register_config_page() {
     p->beginPage("Config");
 
     // This lamba function is re-run every time /Config is called
@@ -4191,19 +4195,9 @@ void build_config_page() {
 	bool readingfile = true;
 	char lineidx[5];
 	char mapstr[14]; // "1 1 1 1 1 053" + NULL
-	// Keep track of how many times the web page is rebuilt
-	w.puts("Version: ");
-	w.puts(String(count).c_str());
-	w.puts("<BR>\n");
+
 	for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
 	    snprintf(lineidx, 5, "%04d", index);
-	    w.puts("<FORM METHOD=GET ACTION=/form>");
-	    w.puts(lineidx);
-	    w.puts(": <INPUT NAME=");
-	    w.puts(lineidx);
-	    w.puts(" VALUE=\"");
-	    // We used to read the file, but now we render the in memory table
-	    //readingfile = PutFileLine(w, "/demo_map.txt");
 	    snprintf(mapstr, 14, "%d %d %d %d %d %03d", 
 		demo_mapping[index].enabled[0],
 		demo_mapping[index].enabled[1],
@@ -4211,8 +4205,10 @@ void build_config_page() {
 		demo_mapping[index].enabled[3],
 		demo_mapping[index].enabled[4],
 		demo_mapping[index].mapping );
-	    w.puts(mapstr);
-	    w.puts("\"></FORM>\n");
+	    w.putf("<FORM METHOD=GET ACTION=/form>%s: <INPUT NAME=%s VALUE=\"%s\"></FORM>\n", 
+		   lineidx, lineidx, mapstr);
+	    // We used to read the file, but now we render the in memory table
+	    //readingfile = PutFileLine(w, "/demo_map.txt");
 	}
 	// empty the rest of the file, but there shouldn't be anything:
 	// this is required so that the file gets closed, and next caller
@@ -4221,6 +4217,27 @@ void build_config_page() {
 	//while ( PutFileLine(w, "/demo_map.txt") ) { 1; };
     });
 }
+
+void register_FS_page() {
+    p->beginPage("FS");
+
+    // This lamba function is re-run every time /Config is called
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    {
+	w.putf("Total space: %d<BR>Free space:  %d<BR><BR>\n", FFat.totalBytes(), FFat.freeBytes());
+
+	File dir = FFat.open("/");
+	while (File file = dir.openNextFile()) {
+	    if (file.isDirectory()) continue;
+	    w.putf("<FORM METHOD=GET ACTION=/form><INPUT NAME=\"%s\" VALUE=\"%s\">", 
+		   file.name(), file.name());
+	    w.putf(" <A HREF=\"%s\">Size: %d (click to view)</A></FORM>\n", file.name(), file.size());
+	    close(file);
+	}
+	close(dir);
+    });
+}
+
 
 void setup_wifi() {
     Serial.println("Configuring access point...");
@@ -4231,7 +4248,8 @@ void setup_wifi() {
     s.setStatusCallback(connectionStatus);
 
     build_main_page();
-    build_config_page();
+    register_config_page();
+    register_FS_page();
     s.setHandler(*p);
 
     // Make sure that aiko calls the HTML handler at 10Hz
@@ -4481,23 +4499,16 @@ void setup() {
 #endif
 
 #ifdef HAS_FS
-    Serial.println("Init GIF Viewer");
+    Serial.println("Init Filesystem and GIF Viewer");
     sav_setup();
 #endif
+
     // This is now required, if there is no arduino FS support, you need to replace this function
+    // You could feed it a hardcoded array in the code (what used to be here)
     Serial.println("Read config file");
     read_config_index();
 
 #ifdef WIFI
-//  Before Wifi
-//  Heap/32-bit Memory Available     : 274076 bytes total, 113792 bytes largest free block
-//  8-bit/malloc/DMA Memory Available: 231496 bytes total, 113792 bytes largest free block
-//  Total PSRAM used: 0 bytess total, 4194252 PSRAM bytes free
-//  Configuring access point...
-//  After Wifi/Before SPIFFS/FFat
-//  Heap/32-bit Memory Available     : 215172 bytes total, 113792 bytes largest free block
-//  8-bit/malloc/DMA Memory Available: 172592 bytes total, 113792 bytes largest free block
-//  Total PSRAM used: 3760 bytes total, 4190276 PSRAM bytes free
     show_free_mem("Before Wifi");
     setup_wifi();
     show_free_mem("After Wifi/Before SPIFFS/FFat");
@@ -4543,6 +4554,7 @@ void setup() {
     fireworks_setup();
     Serial.println("Init sublime");
     sublime_setup();
+
     show_free_mem("After Demos Init");
 
 
