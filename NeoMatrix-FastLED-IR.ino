@@ -4040,6 +4040,8 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	uint8_t k = (int)request.query.size();
 	uint8_t idx = 0;
 
+	for (int ix = idx; ix < k - 1; ix += 2)
+	    Serial.printf("FORM arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
 	
 	if (strcmp(request.query[0], "text") == 0) {
 	    p->renderHttpResponseHeader("text/plain", 200);
@@ -4079,11 +4081,22 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	    return;
 	}
 	// We assume that any pathname means file rename or delete
+	// delete looks like this:
+	// arg 0: /demo_map.txt_headers = /demo_map.txt_headers
+	// arg 1: really delete = delete
+	// rename looks like this:
+	// arg 0: /demo_map.txt_headers = /demo_map.txt_headers
 	if (request.query[0][0] == '/') {
-	    Serial.printf("Rename %s to %s\n", request.query[0], request.query[1]);
-	    FFat.rename(request.query[0], request.query[1]);
+	    if (k>2 && strcmp(request.query[3], "delete") == 0) {
+		Serial.printf("Delete %s\n", request.query[0]);
+		FFat.remove(request.query[0]);
+	    } else {
+		Serial.printf("Rename %s to %s\n", request.query[0], request.query[1]);
+		FFat.rename(request.query[0], request.query[1]);
+	    }
 	    p->renderHttpResponseHeader("text/html", 200);
 	    w.puts("<meta http-equiv=refresh content=\"0; URL=/FS\" />\n");
+	    return;
 	}
 
 	// else show arguments sent (for debugging)
@@ -4162,7 +4175,9 @@ void build_main_page() {
 
 	if (demo_list[demoidx(i)].menu_str != NULL) free(demo_list[demoidx(i)].menu_str);
 	if (!demo_list[demoidx(i)].func) continue;
-	char *option = (char *) mallocordie("wifi addselectoption", strlen (demo_list[demoidx(i)].name) + 13);
+	// It may not be safe to use PSRAM with code called inside wifi callback
+	// FIXME: check if crashes go away with this, and whether it can go back to PSRAM
+	char *option = (char *) mallocordie("wifi addselectoption", strlen (demo_list[demoidx(i)].name) + 13, false);
 	sprintf(option, "%03d->%03d/%1d: ", i, pos, demo_mapping[pos].enabled[PANELCONFNUM]);
 	strcpy(option+12, demo_list[demoidx(i)].name);
 	p->addSelectOption(option, i);
@@ -4229,9 +4244,13 @@ void register_FS_page() {
 	File dir = FFat.open("/");
 	while (File file = dir.openNextFile()) {
 	    if (file.isDirectory()) continue;
-	    w.putf("<FORM METHOD=GET ACTION=/form><INPUT NAME=\"%s\" VALUE=\"%s\">", 
-		   file.name(), file.name());
-	    w.putf(" <A HREF=\"%s\">Size: %d (click to view)</A></FORM>\n", file.name(), file.size());
+	    w.putf("<FORM METHOD=GET ACTION=/form>\n");
+	    w.putf("<INPUT NAME=\"%s\" VALUE=\"%s\">", file.name(), file.name());
+	    w.putf(" <A HREF=\"%s\">Size: %8d</A>", file.name(), file.size());
+	    w.putf("  del -> <INPUT TYPE=checkbox name=\"really delete\" VALUE=delete>\n", file.name());
+	    // we can't use the value of that submit button because it's sent even if submit is not clicked
+	    w.putf("<INPUT TYPE=submit\n>");
+	    w.putf("</FORM>\n");
 	    close(file);
 	}
 	close(dir);
