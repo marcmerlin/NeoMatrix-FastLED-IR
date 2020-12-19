@@ -292,6 +292,8 @@ const uint16_t PROGMEM RGB_bmp[64] = {
 	0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000,
 	0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, };
 
+void(* resetFunc) (void) = 0; // jump to 0 to cause a sofware reboot
+
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
 void fixdrawRGBBitmap(int16_t x, int16_t y, const uint16_t *bitmap, int16_t w, int16_t h) {
     // work around "a15 cannot be used in asm here" compiler bug when using an array on ESP8266
@@ -3053,8 +3055,10 @@ void Matrix_Handler() {
 	LAST_FPS = (count - count_last) * 1000 / (time_now - time_last);
 	// Display on serial every 10 seconds
 	if (cnt++ % 10 == 0) {
+#ifdef ESP32
 	    Serial.print("avg freq of matrix handler compared to theorical 50 fps: ");
 	    Serial.println(LAST_FPS);
+#endif
 	}
 	time_last = time_now;
 	count_last = count;
@@ -3212,11 +3216,12 @@ bool is_change(bool force=false) {
 }
 
 // Allow checking for a pause command, p over serial or power over IR
-bool check_startup_IR_serial() {
+uint8_t check_startup_IR_serial() {
     char readchar;
 
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
     if (readchar == 'p') return 1;
+    if (readchar == 'w') return 2;
 
 #ifdef RECV_PIN
     uint32_t result = 0;
@@ -4006,6 +4011,8 @@ bool PutFileLine(OmXmlWriter &w, const char *path) {
     static File file;
     char c;
 
+    if (strcmp(path, "/favicon.ico") == 0) return 0;
+
     if (! file) {
 	Serial.print("Opening file for line by line read: ");
 	Serial.println(path);
@@ -4042,6 +4049,13 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 
 	for (int ix = idx; ix < k - 1; ix += 2)
 	    Serial.printf("FORM arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
+
+	if (strcmp(request.query[0], "REBOOT") == 0) { 
+	    p->renderHttpResponseHeader("text/html", 200);
+	    w.puts("<meta http-equiv=refresh content=\"1; URL=/FS\" />\n");
+	    delay(1000);
+	    resetFunc();
+	}
 	
 	if (strcmp(request.query[0], "text") == 0) {
 	    p->renderHttpResponseHeader("text/plain", 200);
@@ -4073,13 +4087,21 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 		// its html at runtime
 		// register_config_page();
 		p->renderHttpResponseHeader("text/html", 200);
-		w.puts("<meta http-equiv=refresh content=\"0; URL=/Config\" />\n");
+		w.puts("<meta http-equiv=refresh content=\"1; URL=/Config\" />\n");
 		
 	    } else { 
 		Serial.printf("sscanf failed on %s\n", request.query[1]);
 	    }
 	    return;
 	}
+
+	if (strcmp(request.query[1], "SAVE") == 0) {
+	    p->renderHttpResponseHeader("text/html", 200);
+	    w.putf("<meta http-equiv=refresh content=\"4; URL=/Config\" />\n");
+	    write_config_index(w);
+	    return;
+	}
+
 	// We assume that any pathname means file rename or delete
 	// delete looks like this:
 	// arg 0: /demo_map.txt_headers = /demo_map.txt_headers
@@ -4132,8 +4154,7 @@ void build_main_page() {
     count++;
 
     // First time around, process_config is run by read_config_index;
-    if (!p) p = new OmWebPages(); else process_config();
-    p->setBuildDateAndTime(__DATE__, __TIME__);
+    if (count > 1) process_config();
 
     p->beginPage("Main");
 
@@ -4211,6 +4232,11 @@ void register_config_page() {
 	char lineidx[5];
 	char mapstr[14]; // "1 1 1 1 1 053" + NULL
 
+	w.putf("<FORM METHOD=GET ACTION=/form>\n");
+	w.putf("Save In Memory Demo Mapping ");
+	w.putf("<INPUT TYPE=submit NAME=submit VALUE=SAVE>\n");
+	w.putf("</FORM><BR>\n");
+
 	for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
 	    snprintf(lineidx, 5, "%04d", index);
 	    snprintf(mapstr, 14, "%d %d %d %d %d %03d", 
@@ -4240,6 +4266,9 @@ void register_FS_page() {
     p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	w.putf("Total space: %d<BR>Free space:  %d<BR><BR>\n", FFat.totalBytes(), FFat.freeBytes());
+	w.putf("<FORM METHOD=GET ACTION=/form>\n");
+	w.putf("<INPUT TYPE=submit NAME=REBOOT VALUE=REBOOT\n>");
+	w.putf("</FORM><BR>\n");
 
 	File dir = FFat.open("/");
 	while (File file = dir.openNextFile()) {
@@ -4249,7 +4278,7 @@ void register_FS_page() {
 	    w.putf(" <A HREF=\"%s\">Size: %8d</A>", file.name(), file.size());
 	    w.putf("  del -> <INPUT TYPE=checkbox name=\"really delete\" VALUE=delete>\n", file.name());
 	    // we can't use the value of that submit button because it's sent even if submit is not clicked
-	    w.putf("<INPUT TYPE=submit\n>");
+	    w.putf("<INPUT TYPE=submit VALUE=delete\n>");
 	    w.putf("</FORM>\n");
 	    close(file);
 	}
@@ -4266,8 +4295,9 @@ void setup_wifi() {
 
     s.setStatusCallback(connectionStatus);
 
-    build_main_page();
-    register_config_page();
+    p = new OmWebPages();
+    p->setBuildDateAndTime(__DATE__, __TIME__);
+
     register_FS_page();
     s.setHandler(*p);
 
@@ -4323,11 +4353,14 @@ void read_config_index() {
     Serial.print(panelconfnames[PANELCONFNUM]);
     Serial.println(" ***********");
 
+    int scanret;
     #ifdef ARDUINOONPC
     FILE *file;
     if (! (file = fopen(pathname, "r"))) die ("Error opening " FS_PREFIX "demo_map.txt");
+    char line[160];
 
-    while ( fscanf(file, "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap) != EOF) {
+    while ( fgets(line, 160, file) != NULL) {
+	scanret = sscanf(line, "%d %d %d %d %d %d", &d32, &d64, &d96bm, &d96, &d192, &dmap);
     #else
     File file;
 
@@ -4335,12 +4368,19 @@ void read_config_index() {
     #ifdef FSOSPIFFS
 				    , "r"
     #endif
-					    ) ) die ("Error opening demo_map.txt");
+					    ) ) Serial.println("Error opening demo_map.txt");
     while (file.available()) {
 	// 1 0 0 0 0 012
 	String line = file.readStringUntil('\n');
-	sscanf(line.c_str(), "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap);
+	// input looks like this
+	// 1 3 3 3 3 106 001 the last column is line number, used for resorting the file
+	scanret = sscanf(line.c_str(), "%d %d %d %d %d %d", &d32, &d64, &d96bm, &d96, &d192, &dmap);
     #endif // ARDUINOONPC
+	if (line[0] == '#' || scanret != 6) {
+	    Serial.print("Skipping ");
+	    Serial.println(line);
+	    continue;
+	}
 	// We use dmap, the original mapping defined in the config file
 	// it is only mapped to a real demo in demo_list[] at runtime
 	demo_mapping[index].mapping = dmap;
@@ -4359,7 +4399,7 @@ void read_config_index() {
 	    delay((uint32_t) 100);
 	    continue;
 	}
-    //#define DEBUG_CFG_READ
+    #define DEBUG_CFG_READ
     #ifdef DEBUG_CFG_READ
 	#ifdef ESP32
 	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,
@@ -4405,6 +4445,59 @@ void read_config_index() {
     #endif
     process_config();
 }
+
+#ifdef WIFI
+// This code is ESP32 only since the web interface only runs on ESP32
+void write_config_index(OmXmlWriter w) {
+    uint16_t renameidx = 0;
+    char pathname[] = "/demo_map.txt";
+    char renamepathname[] = "/demo_map_00.txt";
+
+    // Yes, if you create 100 files, you will overflow the array
+    while (sprintf(renamepathname+10, "%02d.txt", renameidx)) {
+	if (FSO.exists(renamepathname)) {
+	    Serial.printf("Cannot rename %s to %s, already exists\n", pathname, renamepathname);
+	    w.putf("Cannot rename %s to %s, already exists<BR>\n", pathname, renamepathname);
+	    renameidx++;
+	    continue;
+	}
+	break;
+    }
+    Serial.printf("Renaming existing %s to %s\n", pathname, renamepathname);
+    w.putf("Renaming existing %s to %s<BR>\n", pathname, renamepathname);
+    if (!FSO.rename(pathname, renamepathname)) Serial.printf("Can't rename %s to %s\n", pathname, renamepathname);
+
+    // See https://github.com/espressif/arduino-esp32/blob/master/libraries/FFat/examples/FFat_Test/FFat_Test.ino
+    // file is a Stream, https://www.arduino.cc/reference/en/language/functions/communication/stream/
+    File file;
+    char mapstr[19]; // "1 1 1 1 1 053 001\n" + NULL
+
+    if (! (file = FSO.open(pathname, FILE_WRITE)) ) {
+	Serial.println("Error creating demo_map.txt");
+	w.putf("Error creating demo_map.txt, go to FS tab and restore the previous file<BR>");
+    }
+
+    file.print("#       demo #\n");
+    file.print("#             position in sorted file\n");
+    file.print("# :%!sort -k7\n");
+
+    for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
+	snprintf(mapstr, 19, "%d %d %d %d %d %03d %03d\n", 
+	    demo_mapping[index].enabled[0],
+	    demo_mapping[index].enabled[1],
+	    demo_mapping[index].enabled[2],
+	    demo_mapping[index].enabled[3],
+	    demo_mapping[index].enabled[4],
+	    demo_mapping[index].mapping, index );
+	if (! file.print(mapstr)) {
+	    Serial.printf("Couldn't write line %03d: %s<BR>\n", index, mapstr);
+	    w.putf("Couldn't write line %03d: %s\n", index, mapstr);
+	}
+    }
+    file.close();
+    w.putf("Saved config to demo_map.txt<BR>");
+}
+#endif
 
 
 void loop() {
@@ -4522,15 +4615,33 @@ void setup() {
     sav_setup();
 #endif
 
+    uint32_t i = 100;
+    #ifdef WIFI
+	// Bring wifi up early to allow renaming files if they cause a crash
+	show_free_mem("Before Wifi");
+	setup_wifi();
+	show_free_mem("After Wifi/Before SPIFFS/FFat");
+
+	Serial.println("Pause to run wifi before config file parsing ('w' to stay here)");
+	while (i--) {
+	    char readchar;
+	    if (check_startup_IR_serial() == 2) {
+		Serial.println("Will pause on debug screen");
+		i = 6000;
+	    }
+	    s.tick();
+	    delay((uint32_t) 10);
+	}
+    #endif
+
     // This is now required, if there is no arduino FS support, you need to replace this function
     // You could feed it a hardcoded array in the code (what used to be here)
     Serial.println("Read config file");
     read_config_index();
 
 #ifdef WIFI
-    show_free_mem("Before Wifi");
-    setup_wifi();
-    show_free_mem("After Wifi/Before SPIFFS/FFat");
+    build_main_page();
+    register_config_page();
 #endif
 
     Serial.println("\nEnabling Neopixels strip (if any) and Configured Display.");
@@ -4617,7 +4728,7 @@ void setup() {
     // init first matrix demo
     matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
     matrix_show();
-    int i = 100;
+    i = 100;
     Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
     while (i--) {
 	if (check_startup_IR_serial()) {
@@ -4630,6 +4741,13 @@ void setup() {
 
     display_stats();
     delay((uint32_t) 2000);
+    if (DEMO_CNT == 0) {
+	// Allow web server to run, create/save rename files to make sure demos exist
+	Serial.println("No demos, cannot proceed. Starting web server to fix if possible, reboot when fixed");
+	#ifdef WIFI
+	while (1) s.tick();
+	#endif
+    }
 
     Serial.println("Matrix Libraries Test done");
     //font_test();
