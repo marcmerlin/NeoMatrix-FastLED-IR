@@ -42,6 +42,13 @@ using namespace Aiko;
     #include <OmEspHelpers.h>
     OmWebServer s;
     OmWebPages *p = NULL;
+    // Every time things change like the current demo, brightness,
+    // bestof, etc, rebuild the page show to the user.
+    // Unfortunately this does not force a page reload.
+    void rebuild_main_page(bool show_summary=false);
+#else
+    // Without WIFI (like rPi/ArduinoOnPC), this is a no-op
+    void rebuild_main_page(bool show_summary=false) { show_summary = show_summary; }
 #endif
 
 #define DEMO_PREV -32768
@@ -272,7 +279,7 @@ int16_t strip_speed = 50;
 	/* baudrate 115200, 8 bits, no parity, 1 stop bit */
 	if (ttyfd >= 0) {
 	    set_interface_attribs(ttyfd, B115200);
-	    printf("Opened %s\n", *devname);
+	    printf("Opened %s telling ESP32 to switch to PANELCONFNUM 4\n", *devname);
 	    // Assume we just connected to an ESP32, which starts in its PANELCONFNUM 3 (ESP32 mode)
 	    // and switch it to PANELCONFNUM 4 (rPI with longer menus).
 	    send_serial("d");
@@ -1126,7 +1133,7 @@ uint8_t esrbr_fade(uint32_t unused) {
 	else if (mheight >= 64) matrix->setCursor(14, 47);
 	else matrix->setCursor(5, 22);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
-	if (PANELCONFNUM == 2 || PANELCONFNUM == 3) {
+	if (PANELCONFNUM == 1 || PANELCONFNUM == 2) {
 	    matrix->print("BURN");
 	} else {
 	    matrix->print("RAVE");
@@ -2979,7 +2986,7 @@ void matrix_change(int16_t demo, bool directmap=false) {
     } else {
 	if (demo != DEMO_PREV && demo != DEMO_NEXT) MATRIX_STATE = demo;
 
-	#ifdef neopixel_pin
+	#ifdef NEOPIXEL_PIN
 	// special one key press where demos are shown forever and next goes back to the normal loop
 	if (demo >= 0 && demo < DEMO_NEXT) MATRIX_LOOP = 9999;
 	#endif
@@ -3033,6 +3040,9 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	Serial.println(buf);
 	Serial.flush();
     #endif
+
+    // We changed the current demo, update the selection in the big dropdown
+    rebuild_main_page();
 }
 
 
@@ -3167,6 +3177,10 @@ void change_brightness(int8_t change, bool absolute=false) {
     // if using 2 independent fastled strips (1D + 2D matrix)
     matrix->setBrightness(matrix_brightness);
 #endif
+    // TODO: brightness on rPi (ArduinoOnPC)
+
+    // We changed the current brightness, update the selection in the big dropdown
+    rebuild_main_page();
 }
 
 void change_speed(int8_t change, bool absolute=false) {
@@ -3195,6 +3209,9 @@ void change_speed(int8_t change, bool absolute=false) {
 #ifndef ARDUINOONPC
     Serial.flush();
 #endif
+
+    // We changed the current speed, update the selection in the big dropdown
+    rebuild_main_page();
 }
 
 bool is_change(bool force=false) {
@@ -3259,7 +3276,17 @@ uint8_t check_startup_IR_serial() {
     return 0;
 }
 
+void changeBestOf(bool bestof) {
+    show_best_demos = bestof;
+    rebuild_main_page();
+}
 
+void changePanelConf(uint8_t conf, bool ) {
+    Serial.print("ChangePanel to conf ");
+    Serial.println(panelconfnames[conf]);
+    PANELCONFNUM = conf;
+    rebuild_main_page(true);
+}
 
 void IR_Serial_Handler() {
     int16_t new_pattern = 0;
@@ -3295,17 +3322,15 @@ void IR_Serial_Handler() {
 
     if (readchar == 'n')      { Serial.println("Serial => next");	    matrix_change(DEMO_NEXT);}
     else if (readchar == 'p') { Serial.println("Serial => previous");	    matrix_change(DEMO_PREV);}
-    else if (readchar == 'b') { Serial.println("Serial => Bestof");	    show_best_demos = true;}
-    else if (readchar == 'a') { Serial.println("Serial => All Demos");	    show_best_demos = false;}
+    else if (readchar == 'b') { Serial.println("Serial => Bestof");	    changeBestOf(true); }
+    else if (readchar == 'a') { Serial.println("Serial => All Demos");	    changeBestOf(false);}
     else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
     else if (readchar == 'f') { SHOW_LAST_FPS = !SHOW_LAST_FPS; }
     else if (readchar == '=') { Serial.println("Serial => keep demo?");	    MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
     else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
     else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
-#ifdef WIFI
-    else if (readchar == 'c') { Serial.println("ChangePanel3");	PANELCONFNUM = 3; build_main_page(); }
-    else if (readchar == 'd') { Serial.println("ChangePanel4");	PANELCONFNUM = 4; build_main_page(); }
-#endif
+    else if (readchar == 'c') { changePanelConf(3, true); }
+    else if (readchar == 'd') { changePanelConf(4, true); }
 #ifdef ARDUINOONPC
     else if (readchar == 'N') { Serial.println("ESP => next");		    send_serial("n");}
     else if (readchar == 'P') { Serial.println("ESP => previous");	    send_serial("p");}
@@ -3338,7 +3363,7 @@ void IR_Serial_Handler() {
 	switch (result) {
 	case IR_RGBZONE_BRIGHT:
 	case IR_RGBZONE_BRIGHT2:
-	    if (is_change(true)) { show_best_demos = true; Serial.println("Got IR: Bright, Only show best demos"); return; }
+	    if (is_change(true)) { Serial.println("Got IR: Bright, Only show best demos"); changeBestOf(true); return; }
 	    change_brightness(+1);
 	    Serial.println("Got IR: Bright");
 	    return;
@@ -3348,7 +3373,7 @@ void IR_Serial_Handler() {
 	    if (is_change(true)) {
 		Serial.println("Got IR: Dim, show all demos again and Hang on this demo");
 		MATRIX_LOOP = 9999;
-		show_best_demos = false;
+		changeBestOf(false);
 		return;
 	    }
 
@@ -3371,7 +3396,7 @@ void IR_Serial_Handler() {
 	    if (is_change()) { matrix_change(DEMO_PREV); return; }
 	    Serial.println("Got IR: Power, show all demos again and Hang on this demo");
 	    MATRIX_LOOP = 9999;
-	    show_best_demos = false;
+	    changeBestOf(false);
 	    return;
 
 	case IR_RGBZONE_RED:
@@ -3936,6 +3961,38 @@ void IR_Serial_Handler() {
 
 // ================================================================================
 
+void process_config(bool show_summary=false) {
+    DEMO_CNT = 0;
+    BEST_CNT = 0;
+    DEMO_LAST_IDX = 0;
+    
+    for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) {
+	if (demo_mapping[index].enabled[PANELCONFNUM] & 2) BEST_CNT++;
+	// keep track of the highest demo index for modulo in matrix_change
+	if (demo_mapping[index].enabled[PANELCONFNUM]) {
+	    if (! MATRIX_STATE) MATRIX_STATE = index; // find first playable demo
+	    DEMO_CNT++;
+	    DEMO_LAST_IDX = index;
+	    //Serial.print(index); Serial.print(" "); Serial.print(DEMO_CNT); Serial.print(" "); Serial.println(DEMO_LAST_IDX);
+	}
+    }
+    if (show_summary) {
+	Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+	Serial.print("Number of Demos enabled: ");
+	Serial.print(DEMO_CNT);
+	Serial.print(". Number of Best Demos: ");
+	Serial.println(BEST_CNT);
+	Serial.print("Number of lines in CFG File: ");
+	Serial.print(CFG_LAST_INDEX + 1);
+	Serial.print(". Last Playable Demo idx: ");
+	Serial.print(DEMO_LAST_IDX);
+	Serial.print(". Next Demo to play: ");
+	Serial.println(MATRIX_STATE);
+	Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+    }
+}
+
+
 #ifdef WIFI
 #define HTML_DEMOLIST_CHOICE 90
 #define HTML_BESTOF  100
@@ -3966,7 +4023,7 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
     case HTML_BESTOF:
 	Serial.print("Bestof on/off: ");
 	Serial.println(value);
-	show_best_demos = value;
+	changeBestOf(value);
 	break;
 
     case HTML_BRIGHT:
@@ -3992,8 +4049,7 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	}
 	Serial.print(": ");
 	Serial.println(panelconfnames[value]);
-	PANELCONFNUM = value;
-	build_main_page();
+	changePanelConf(value, true);
 	break;
 
     case HTML_DEMOCHOICE:
@@ -4082,7 +4138,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 		demo_mapping[index].enabled[4] = d192;
 		demo_mapping[dmap].reverse = index;
 		// rebuilding the page also re-processes the config
-		build_main_page();
+		rebuild_main_page(true);
 		// no need to rebuild the config page because it generates
 		// its html at runtime
 		// register_config_page();
@@ -4149,12 +4205,12 @@ void wifi_html_tick() {
     s.tick();
 }
 
-void build_main_page() {
+void rebuild_main_page(bool show_summary) {
     static uint8_t count=0;
     count++;
 
     // First time around, process_config is run by read_config_index;
-    if (count > 1) process_config();
+    if (count > 1) process_config(show_summary);
 
     p->beginPage("Main");
 
@@ -4305,35 +4361,6 @@ void setup_wifi() {
     Events.addHandler(wifi_html_tick, 100);
 }
 #endif
-
-void process_config() {
-    DEMO_CNT = 0;
-    BEST_CNT = 0;
-    DEMO_LAST_IDX = 0;
-    
-    for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) {
-	if (demo_mapping[index].enabled[PANELCONFNUM] & 2) BEST_CNT++;
-	// keep track of the highest demo index for modulo in matrix_change
-	if (demo_mapping[index].enabled[PANELCONFNUM]) {
-	    if (! MATRIX_STATE) MATRIX_STATE = index; // find first playable demo
-	    DEMO_CNT++;
-	    DEMO_LAST_IDX = index;
-	    //Serial.print(index); Serial.print(" "); Serial.print(DEMO_CNT); Serial.print(" "); Serial.println(DEMO_LAST_IDX);
-	}
-    }
-    Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
-    Serial.print("Number of Demos enabled: ");
-    Serial.print(DEMO_CNT);
-    Serial.print(". Number of Best Demos: ");
-    Serial.println(BEST_CNT);
-    Serial.print("Number of lines in CFG File: ");
-    Serial.print(CFG_LAST_INDEX + 1);
-    Serial.print(". Last Playable Demo idx: ");
-    Serial.print(DEMO_LAST_IDX);
-    Serial.print(". Next Demo to play: ");
-    Serial.println(MATRIX_STATE);
-    Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-}
 
 void read_config_index() {
     uint16_t index = 0;
@@ -4640,7 +4667,6 @@ void setup() {
     read_config_index();
 
 #ifdef WIFI
-    build_main_page();
     register_config_page();
 #endif
 
@@ -4779,9 +4805,9 @@ void setup() {
 
     Serial.println("Starting loop");
     // After init is done, show fps (can be turned on and off with 'f').
-    #ifdef ESP32
-    SHOW_LAST_FPS = true;
-    #endif
+    //#ifdef ESP32
+    //SHOW_LAST_FPS = true;
+    //#endif
 }
 
 // vim:sts=4:sw=4
