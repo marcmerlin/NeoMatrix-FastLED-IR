@@ -84,6 +84,22 @@ uint8_t PANELCONFNUM = 3;
 uint8_t PANELCONFNUM = 0;
 #endif
 
+typedef struct demo_entry_ {
+    const char *name;
+    uint8_t (*func)(uint32_t);
+    int arg;
+    // This is generated for the wifi menu (if used in the generated drop down menu)
+    // it could remain NULL, so don't dereference it blindly.
+    char *menu_str;
+} Demo_Entry;
+
+// demoidx() does the mapping from demo index number to a slot in demo_list
+// this it to given slots like 100 to a different demo depending on the runtime
+// chosen (like ESP32 64x96 to 128x192)
+// Demo_Entry demo_list[] is defined below
+
+// Those are the lines defined in demo_map.txt config
+// 300 lines for 365 in demo_list
 typedef struct mapping_entry_ {
     uint16_t mapping;
     // 1: enabled, 2: bestof enabled only, 3: both
@@ -95,8 +111,8 @@ typedef struct mapping_entry_ {
 // demo_mapping actually does not need to be as big as DEMO_ARRAY_SIZE
 // because demo_list contains elements that share the same demo slots
 // (different demos can be defined for the same slot to account for different
-// platforms). It's safe and easy to define it a bit too large, though.
-// demoidx() does the mapping from demo index number to slot in demo_list
+// platforms). 
+// It's safe and easy to define it a bit too large, though.
 Mapping_Entry demo_mapping[DEMO_ARRAY_SIZE];
 
 
@@ -2546,14 +2562,6 @@ uint8_t tmed(uint32_t demo) {
 
 // ================================================================================
 
-typedef struct demo_entry_ {
-    const char *name;
-    uint8_t (*func)(uint32_t);
-    int arg;
-    // This is generated for the wifi menu (if used)
-    char *menu_str;
-} Demo_Entry;
-
 // demo_map.txt contains a logical demo number (0 to 99 for generated, 100-129 for
 // animated gifs on 32h, or shared animated gifs on 64/96/192h, and 160+ for unshared
 // animated gifs in 64/96/192h)
@@ -4302,8 +4310,14 @@ void register_config_page() {
 		demo_mapping[index].enabled[3],
 		demo_mapping[index].enabled[4],
 		demo_mapping[index].mapping );
-	    w.putf("<FORM METHOD=GET ACTION=/form>%s: <INPUT NAME=%s VALUE=\"%s\"></FORM>\n", 
+	    w.putf("<FORM METHOD=GET ACTION=/form>%s: <INPUT NAME=%s SIZE=15 VALUE=\"%s\"> ", 
 		   lineidx, lineidx, mapstr);
+	    if (demo_list[demoidx(index)].name != NULL) {
+		w.putf(demo_list[index].name);
+	    } else {
+		w.putf("undefined");
+	    }
+	    w.putf("</FORM>\n");
 	    // We used to read the file, but now we render the in memory table
 	    //readingfile = PutFileLine(w, "/demo_map.txt");
 	}
@@ -4347,7 +4361,8 @@ void setup_wifi() {
     Serial.println("Configuring access point...");
 
     #include "wifi_secrets.h"
-    s.addWifi(WIFI_SSID, WIFI_PASSWORD);
+    //s.addWifi(WIFI_SSID, WIFI_PASSWORD);
+    s.setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
 
     s.setStatusCallback(connectionStatus);
 
@@ -4426,7 +4441,7 @@ void read_config_index() {
 	    delay((uint32_t) 100);
 	    continue;
 	}
-    #define DEBUG_CFG_READ
+    //#define DEBUG_CFG_READ
     #ifdef DEBUG_CFG_READ
 	#ifdef ESP32
 	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,
