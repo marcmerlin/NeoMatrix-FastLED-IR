@@ -101,6 +101,8 @@ typedef struct demo_entry_ {
 // Those are the lines defined in demo_map.txt config
 // 300 lines for 365 in demo_list
 typedef struct mapping_entry_ {
+    // reverse mapping to the original demo slot (for demos that are
+    // swapped to a different slot)
     uint16_t mapping;
     // 1: enabled, 2: bestof enabled only, 3: both
     uint8_t enabled[CONFIGURATIONS];
@@ -2569,6 +2571,11 @@ uint8_t tmed(uint32_t demo) {
 // PANELCONFNUM 0:24x32, 1:64x64 (BM), 2:64x96 (BM), 3:64x96 (Trance), 4:128x192
 uint16_t demoidx(uint16_t idx) {
     if (idx<100) return idx;
+
+    // If the demo# is too high, map to the null demo
+    if (PANELCONFNUM == 0 && idx>129) return 0;
+    if (PANELCONFNUM < 4  && idx>219) return 0;
+
     // panelconf0 has direct mapping to 100, the others start at 120
     if (PANELCONFNUM == 0) return idx;
     if (PANELCONFNUM < 4) return (idx+20);
@@ -2579,7 +2586,7 @@ uint16_t demoidx(uint16_t idx) {
 
 
 Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
-/* 000 */ { "", NULL, -1, NULL },
+/* 000 */ { "NULL Demo", NULL, -1, NULL },
 /* 001 */ { "Squares In",  squares, 0, NULL },
 /* 002 */ { "Squares Out", squares, 1, NULL },
 /* 003 */ { "EatSleepRaveBurnRepeat", esrbr, -1, NULL },
@@ -4310,13 +4317,14 @@ void register_config_page() {
 		demo_mapping[index].enabled[3],
 		demo_mapping[index].enabled[4],
 		demo_mapping[index].mapping );
-	    w.putf("<FORM METHOD=GET ACTION=/form>%s: <INPUT NAME=%s SIZE=15 VALUE=\"%s\"> ", 
+	    w.putf("<FORM METHOD=GET ACTION=/form>%s: <INPUT NAME=%s SIZE=10 VALUE=\"%s\"> ", 
 		   lineidx, lineidx, mapstr);
 	    if (demo_list[demoidx(index)].name != NULL) {
-		w.putf(demo_list[index].name);
+		w.putf(demo_list[demoidx(index)].name);
 	    } else {
 		w.putf("undefined");
 	    }
+	    w.putf(" (%d)", demoidx(index));
 	    w.putf("</FORM>\n");
 	    // We used to read the file, but now we render the in memory table
 	    //readingfile = PutFileLine(w, "/demo_map.txt");
@@ -4361,14 +4369,21 @@ void setup_wifi() {
     Serial.println("Configuring access point...");
 
     #include "wifi_secrets.h"
-    //s.addWifi(WIFI_SSID, WIFI_PASSWORD);
-    s.setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+    s.addWifi(WIFI_SSID, WIFI_PASSWORD);
+    //s.setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
 
     s.setStatusCallback(connectionStatus);
 
     p = new OmWebPages();
     p->setBuildDateAndTime(__DATE__, __TIME__);
 
+    // To get the ordering we want, we start with a dummy page
+    // that gets replaced with the full page later.
+    p->beginPage("Main");
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    {
+	w.putf("Placeholder\n");
+    });
     register_FS_page();
     s.setHandler(*p);
 
