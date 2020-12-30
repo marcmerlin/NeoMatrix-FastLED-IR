@@ -1,4 +1,3 @@
-
 // By Marc MERLIN <marc_soft@merlins.org>
 // License: Apache v2.0
 //
@@ -39,6 +38,7 @@ using namespace Aiko;
 #endif
 
 #ifdef WIFI
+    #include "wifi_secrets.h"
     #include <OmEspHelpers.h>
     OmWebServer s;
     OmWebPages *p = NULL;
@@ -4207,12 +4207,26 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 
 void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
 {
+  static uint8_t failure_cnt = 0;
+  static bool ap = false;
   const char *what = "?";
-  if (trying) what = "trying";
-  else if (failure) what = "failure";
-  else if (success) what = "success";
 
-  Serial.printf("%s: connectionStatus for '%s' is now '%s'\n", __func__, ssid, what);
+  if (trying)       { what = "trying"; }
+  else if (failure) { what = "failure"; failure_cnt++; }
+  else if (success) { what = "success"; failure_cnt = 0; }
+
+  Serial.printf("%s: connectionStatus for '%s' is now '%s' fail cnt: %d\n", __func__, ssid, what, failure_cnt, failure_cnt);
+
+  if (!ap and failure_cnt > 2) {
+  // FIXME, clear some wifi stuff if connection worked to the client
+    Serial.println("Too many failures setting up Wifi client, swicthing to Wifi AP mode");
+    ap = true;
+    s.clearWifis();
+    WiFi.disconnect();
+    s.setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+    failure_cnt = 0;
+
+  }
 }
 
 // Apparently I can't send a method s.tick to Aiko handler, so I need this glue function
@@ -4268,8 +4282,8 @@ void rebuild_main_page(bool show_summary) {
 	if (demo_list[demoidx(i)].menu_str != NULL) free(demo_list[demoidx(i)].menu_str);
 	if (!demo_list[demoidx(i)].func) continue;
 	// It may not be safe to use PSRAM with code called inside wifi callback
-	// FIXME: check if crashes go away with this, and whether it can go back to PSRAM
-	char *option = (char *) mallocordie("wifi addselectoption", strlen (demo_list[demoidx(i)].name) + 13, false);
+	// actually it seems like it is now that PSRAM is turned off in SmartMatrix
+	char *option = (char *) mallocordie("wifi addselectoption", strlen (demo_list[demoidx(i)].name) + 13);
 	sprintf(option, "%03d->%03d/%1d: ", i, pos, demo_mapping[pos].enabled[PANELCONFNUM]);
 	strcpy(option+12, demo_list[demoidx(i)].name);
 	p->addSelectOption(option, i);
@@ -4368,11 +4382,8 @@ void register_FS_page() {
 void setup_wifi() {
     Serial.println("Configuring access point...");
 
-    #include "wifi_secrets.h"
-    s.addWifi(WIFI_SSID, WIFI_PASSWORD);
-    //s.setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
-
     s.setStatusCallback(connectionStatus);
+    s.addWifi(WIFI_SSID, WIFI_PASSWORD);
 
     p = new OmWebPages();
     p->setBuildDateAndTime(__DATE__, __TIME__);
@@ -4718,7 +4729,10 @@ void setup() {
     Serial.println("LEDs on");
 #endif // NEOPIXEL_PIN
 
-    Serial.println("Init Smart or FastLED Matrix");
+    Serial.print("Init Smart or FastLED Matrix. Matrix Size: ");
+    Serial.print(mw);
+    Serial.print(" ");
+    Serial.println(mh);
     // Leave enough RAM for other code.
     // lsbMsbTransitionBit of 2 requires 12288 RAM, 39960 available, leaving 27672 free:
     // Raised lsbMsbTransitionBit to 2/7 to fit in RAM
@@ -4768,10 +4782,6 @@ void setup() {
     Serial.print(" mapped to: ");
     Serial.println(MATRIX_DEMO);
 
-    Serial.print("Matrix Size: ");
-    Serial.print(mw);
-    Serial.print(" ");
-    Serial.println(mh);
     // Turn off dithering https://github.com/FastLED/FastLED/wiki/FastLED-Temporal-Dithering
     FastLED.setDither( 0 );
     // Set brightness as appropriate for backend by sending a null change from the default
