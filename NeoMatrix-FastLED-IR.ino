@@ -3033,7 +3033,10 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 		if (demo==DEMO_NEXT) if (++MATRIX_STATE > DEMO_LAST_IDX) MATRIX_STATE = 0;
 	
 		// skip text demos on prev/next
-		if (MATRIX_STATE >= DEMO_TEXT_FIRST && MATRIX_STATE <= DEMO_TEXT_LAST) { MATRIX_STATE++; continue;}
+		if (MATRIX_STATE >= DEMO_TEXT_FIRST && MATRIX_STATE <= DEMO_TEXT_LAST) { 
+		    if (demo==DEMO_PREV) MATRIX_STATE--; else MATRIX_STATE++; 
+		    continue;
+		}
 
 		MATRIX_STATE = (MATRIX_STATE % (DEMO_LAST_IDX+1));
 		Serial.print(MATRIX_STATE);
