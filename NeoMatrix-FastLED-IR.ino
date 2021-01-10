@@ -3167,7 +3167,10 @@ void change_brightness(int8_t change, bool absolute=false) {
 	brightness = constrain(brightness + change, 2, 8);
     }
     led_brightness = min((1 << (brightness+1)) - 1, 255);
-    uint8_t smartmatrix_brightness = min( (1 << (brightness+2)), 255);
+
+    // rgbpanels are dim, bump up brightness
+    uint8_t rgbpanel_brightness = min( (1 << (brightness+2)), 255);
+    // neopixels are bright, we tone brightness down
     matrix_brightness = (1 << (brightness-1)) - 1;
 
     Serial.print("Changing brightness ");
@@ -3176,8 +3179,8 @@ void change_brightness(int8_t change, bool absolute=false) {
     Serial.print(brightness);
     Serial.print(" led value: ");
     Serial.print(led_brightness);
-    Serial.print(" / smartmatrix value: ");
-    Serial.print(smartmatrix_brightness);
+    Serial.print(" / RGBPanel value: ");
+    Serial.print(rgbpanel_brightness);
     Serial.print(" / neomatrix value: ");
     Serial.println(matrix_brightness);
     Serial.print("|B:");
@@ -3186,7 +3189,9 @@ void change_brightness(int8_t change, bool absolute=false) {
     Serial.flush();
 #endif
 #ifdef SMARTMATRIX
-    matrixLayer.setBrightness(smartmatrix_brightness);
+    matrixLayer.setBrightness(rgbpanel_brightness);
+#elif RPIRGBPANEL
+    matrix->setBrightness(rgbpanel_brightness);
 #else
     // This is needed if using the ESP32 driver but won't work
     // if using 2 independent fastled strips (1D + 2D matrix)
@@ -4793,8 +4798,9 @@ void setup() {
     // while (1) { display_stats(); yield();};
     // init first matrix demo
     matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
+    //matrix->fillScreen(matrix->Color(0xFF, 0xFF, 0xFF));
     matrix_show();
-    i = 100;
+    i = 200;
     Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
     while (i--) {
 	if (check_startup_IR_serial()) {
