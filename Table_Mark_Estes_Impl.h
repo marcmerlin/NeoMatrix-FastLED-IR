@@ -136,6 +136,7 @@ void td_init() {
 //      ringme = true;
 //  }
 
+  // old TME uses flip, new one uses flop
   flip = false;
   flip2 = false;
   flip3 = false;
@@ -145,6 +146,14 @@ void td_init() {
     flip2 = true;
   if (random8() > 127)
     flip3 = true;
+
+  // New TME
+  velo = random8();
+  for (int8_t g = 0; g < 12; g++) {
+  flop[g] = false;
+  if (random8() < 128)
+      flop[g] = true;
+  }
 
   hue += random(64);//picks the next color basis
   h = hue;
@@ -459,6 +468,8 @@ void starer() {
   }
 }
 
+#if 0
+// Old TME1 version
 void hypnoduck2()
 {
   // MM FLAGS
@@ -494,6 +505,35 @@ void hypnoduck2()
     zeds.DrawFilledCircle( driftx + xangle * (jj /  (19 - dot)) ,  drifty + yangle * (jj / (19 - dot)), dot, CHSV(h , 255, 255));
   }
 }
+#endif
+
+void hypnoduck2()
+// spirals with speckles of hyponic light random direction based on flop[1]
+{
+  if (counter == 0) {
+    dot = random8(2, 5);
+    quash = -9;
+  }
+
+  for (int jj = 0; jj < beatsin16(4, 199, 1750, 500) ; jj += 3)
+  {
+    poffset = 0;
+    if (flop[2] )
+      poffset = jj / 2;
+    else if (flop[4])
+      poffset = jj / 4;
+
+    xangle =  (sin8(jj + quash * h) - 128.0) / 128.0;
+    yangle =  (cos8(jj + quash * h) - 128.0) / 128.0;
+    DFCircle( driftx + xangle * jj / 15 , drifty + yangle * jj / 15, dot, CHSV(-h + ccoolloorr - 85 + poffset, 255 - velo / 5 , 255));
+
+    xangle =  (sin8(jj + quash * h + 128) - 128.0) / 128.0;
+    yangle =  (cos8(jj + quash * h + 128) - 128.0) / 128.0;
+    DFCircle( driftx + xangle * jj / 15 ,  drifty + yangle * jj / 15, dot, CHSV(-h + ccoolloorr + 85 + poffset, 255 - velo / 2, 255));
+  }
+
+}
+
 
 void boxer() {
   if (counter >= ringdelay)
@@ -938,6 +978,375 @@ void solid()
   if (counter == 0)
     rr = random8();
   zeds.DrawFilledRectangle(0 , 0,  MATRIX_WIDTH, MATRIX_HEIGHT, CHSV(rr + h, 255, 90));
+}
+
+// New TME
+void DFCircle(int16_t xc, int16_t yc, uint16_t r, CRGB Col)
+{
+  int16_t x = r;
+  int16_t y = 0;
+  int16_t e = 1 - x;
+  while (x >= y)
+  {
+    DLine(xc + x, yc + y, xc - x, yc + y, Col);
+    DLine(xc + y, yc + x, xc - y, yc + x, Col);
+    DLine(xc - x, yc - y, xc + x, yc - y, Col);
+    DLine(xc - y, yc - x, xc + y, yc - x, Col);
+    ++y;
+    if (e >= 0)
+    {
+      --x;
+      e += 2 * ((y - x) + 1);
+    }
+    else
+      e += (2 * y) + 1;
+  }
+}
+
+void ADFCircle(int16_t xc, int16_t yc, uint16_t r, CRGB Col)
+{
+  int16_t x = r;
+  int16_t y = 0;
+  int16_t e = 1 - x;
+  while (x >= y)
+  {
+    DALine(xc + x, yc + y, xc - x, yc + y, Col);
+    DALine(xc + y, yc + x, xc - y, yc + x, Col);
+    DALine(xc - x, yc - y, xc + x, yc - y, Col);
+    DALine(xc - y, yc - x, xc + y, yc - x, Col);
+    ++y;
+    if (e >= 0)
+    {
+      --x;
+      e += 2 * ((y - x) + 1);
+    }
+    else
+      e += (2 * y) + 1;
+  }
+}
+
+void DLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col)
+{
+  int16_t dx = x1 - x0;
+  int16_t dy = y1 - y0;
+  if (abs(dx) >= abs(dy))
+  {
+    int32_t y = ((int32_t)y0 << 16) + 32768;
+    // Support a single dot line without diving by 0 and crashing below
+    if (!dx) {
+      zeds(x0, (y >> 16)) = Col;
+    } else {
+      int32_t f = ((int32_t)dy << 16) / (int32_t)abs(dx);
+      if (dx >= 0)
+      {
+        for (; x0 <= x1; ++x0, y += f)
+          zeds(x0, (y >> 16)) = Col;
+      }
+      else
+      {
+        for (; x0 >= x1; --x0, y += f)
+          zeds(x0, (y >> 16)) = Col;
+      }
+    }
+  }
+  else
+  {
+    int32_t f = ((int32_t)dx << 16) / (int32_t)abs(dy);
+    int32_t x = ((int32_t)x0 << 16) + 32768;
+    if (dy >= 0)
+    {
+      for (; y0 <= y1; ++y0, x += f)
+        zeds((x >> 16), y0) = Col;
+    }
+    else
+    {
+      for (; y0 >= y1; --y0, x += f)
+        zeds((x >> 16), y0) = Col;
+    }
+  }
+}
+
+void DALine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col)
+{
+  int16_t dx = x1 - x0;
+  int16_t dy = y1 - y0;
+  if (abs(dx) >= abs(dy))
+  {
+    int32_t y = ((int32_t)y0 << 16) + 32768;
+    // Support a single dot line without diving by 0 and crashing below
+    if (!dx) {
+      zeds(x0, (y >> 16)) += Col;
+    } else {
+      int32_t f = ((int32_t)dy << 16) / (int32_t)abs(dx);
+      if (dx >= 0)
+      {
+        for (; x0 <= x1; ++x0, y += f)
+          zeds(x0, (y >> 16)) += Col;
+      }
+      else
+      {
+        for (; x0 >= x1; --x0, y += f)
+          zeds(x0, (y >> 16)) += Col;
+      }
+    }
+  }
+  else
+  {
+    int32_t f = ((int32_t)dx << 16) / (int32_t)abs(dy);
+    int32_t x = ((int32_t)x0 << 16) + 32768;
+    if (dy >= 0)
+    {
+      for (; y0 <= y1; ++y0, x += f)
+        zeds((x >> 16), y0) += Col;
+    }
+    else
+    {
+      for (; y0 >= y1; --y0, x += f)
+        zeds((x >> 16), y0) += Col;
+    }
+  }
+}
+void DRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col)
+{
+  DLine(x0, y0, x0, y1, Col);
+  DLine(x0, y1, x1, y1, Col);
+  DLine(x1, y1, x1, y0, Col);
+  DLine(x1, y0, x0, y0, Col);
+}
+
+void ADRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col)
+{
+  DALine(x0, y0, x0, y1, Col);
+  DALine(x0, y1, x1, y1, Col);
+  DALine(x1, y1, x1, y0, Col);
+  DALine(x1, y0, x0, y0, Col);
+}
+
+void DCircle(int16_t xc, int16_t yc, uint16_t r, CRGB Col)
+{
+  int16_t x = -r;
+  int16_t y = 0;
+  int16_t e = 2 - (2 * r);
+  do
+  {
+    zeds(xc + x, yc - y) = Col;
+    zeds(xc - x, yc + y) = Col;
+    zeds(xc + y, yc + x) = Col;
+    zeds(xc - y, yc - x) = Col;
+    int16_t _e = e;
+    if (_e <= y)
+      e += (++y * 2) + 1;
+    if ((_e > x) || (e > y))
+      e += (++x * 2) + 1;
+  }
+  while (x < 0);
+}
+
+void ADCircle(int16_t xc, int16_t yc, uint16_t r, CRGB Col)
+{
+  int16_t x = -r;
+  int16_t y = 0;
+  int16_t e = 2 - (2 * r);
+  do
+  {
+    zeds(xc + x, yc - y) += Col;
+    zeds(xc - x, yc + y) += Col;
+    zeds(xc + y, yc + x) += Col;
+    zeds(xc - y, yc - x) += Col;
+    int16_t _e = e;
+    if (_e <= y)
+      e += (++y * 2) + 1;
+    if ((_e > x) || (e > y))
+      e += (++x * 2) + 1;
+  }
+  while (x < 0);
+}
+
+void DFRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col)
+{
+  int16_t y = mmin(y0, y1);
+  for (int16_t c = abs(y1 - y0); c >= 0; --c, ++y)
+    DLine(x0, y, x1, y, Col);
+}
+
+void ADFRectangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, CRGB Col)
+{
+  int16_t y = mmin(y0, y1);
+  for (int16_t c = abs(y1 - y0); c >= 0; --c, ++y)
+    DALine(x0, y, x1, y, Col);
+}
+
+
+
+
+void spire2() {
+  if (counter == 0)
+  {
+    radius =  BIGGER / 2 ;
+    flop[0] = true;
+    radius2 =  5;
+    flop[1] = false;
+    dot = dot + 5 + random(3, 7);
+  }
+
+  if (h % 24 == 0)
+  {
+    if (radius < 4)
+      flop[0] = 1 - flop[0];
+    if (radius > BIGGER * 2 / 3)
+      flop[0] = 1 - flop[0];
+    if ( flop[0])
+      radius --;
+    else
+      radius++;
+
+    if (radius2 < 4)
+      flop[1] = 1 - flop[1];
+    if (radius2 > BIGGER * 2 / 3)
+      flop[1] = 1 - flop[1];
+    if (flop[1])
+      radius2 --;
+    else
+      radius2++;
+  }
+
+  float xer = driftx + radius * (cos8(h * 2) - 128.0) / 128.0;
+  float yer = drifty + radius * (sin8(h * 2) - 128.0) / 128.0;
+  DFCircle(xer, yer, dot, CHSV(h , 255 - velo / 5, 255));
+  if (flop[2])  DCircle(xer, yer, dot + 1, CRGB::White);
+  xer = driftx - radius2 * (cos8( h * 2) - 128.0) / 128.0;
+  yer = drifty - radius2 * (sin8( h * 2) - 128.0) / 128.0;
+  DFCircle(xer, yer, dot, CHSV(h + 128, 255 - velo / 5, 255));
+  if (flop[2])  DCircle(xer, yer, dot + 1, CRGB::White);
+  xer = driftx + radius * (cos8(h * 2 + 85) - 128.0) / 128.0;
+  yer = drifty + radius * (sin8( h * 2 + 85) - 128.0) / 128.0;
+  DFCircle(xer, yer, dot, CHSV(h + 85, 255 - velo / 5, 255));
+  if (flop[2])  DCircle(xer, yer, dot + 1, CRGB::White);
+  xer = driftx - radius2 * (cos8( h * 2 + 85) - 128.0) / 128.0;
+  yer = drifty - radius2 * (sin8( h * 2 + 85) - 128.0) / 128.0;
+  DFCircle(xer, yer, dot, CHSV(h + 128 + 85, 255 - velo / 5, 255));
+  if (flop[2])  DCircle(xer, yer, dot + 1, CRGB::White);
+
+  xer = driftx + radius * (cos8(h * 2 + 174) - 128.0) / 128.0;
+  yer = drifty + radius * (sin8(h * 2 + 174) - 128.0) / 128.0;
+  DFCircle(xer, yer, dot, CHSV(h + 174, 255 - velo / 5, 255));
+  if (flop[2])  DCircle(xer, yer, dot + 1, CRGB::White);
+  xer = driftx - radius2 * (cos8( h * 2 + 174) - 128.0) / 128.0;
+  yer = drifty - radius2 * (sin8( h * 2 + 174) - 128.0) / 128.0;
+  DFCircle(xer, yer, dot, CHSV(h + 128 + 174, 255 - velo / 5, 255));
+  if (flop[2])  DCircle(xer, yer, dot + 1, CRGB::White);
+}
+
+void confetti4() {
+  if (!flop[2]) {
+    for (int16_t hijk = 0; hijk < 2 * dot + 2; hijk++)
+      zeds(random(MATRIX_WIDTH), random(MATRIX_HEIGHT)) = CHSV(blender + random(64), 255 - velo / 5, 190 + (random(64)));
+    if (counter % 27 == 0)
+      zeds(random(MATRIX_WIDTH), random(MATRIX_HEIGHT)) = CRGB::White;
+  }
+  else
+  {
+    for (int16_t hijk = 0; hijk < 2 * dot + 2; hijk++)
+      zeds(random(MATRIX_WIDTH), random(MATRIX_HEIGHT)) = CRGB::White;
+    if (counter % 27 == 0)
+      zeds(random(MATRIX_WIDTH), random(MATRIX_HEIGHT)) = CHSV(blender + random(64), 255 - velo / 5, 190 + (random(64)));
+  }
+  int holder = beatsin16(4, 6, MATRIX_WIDTH);
+  drawstar(driftx, drifty, holder, holder / (dot3 + 1), dot3 + 2, h,  h); // random multipoint star
+}
+
+void triforce() {//88
+  dot = 5;
+  if (flop[9]) dot = 7;
+
+  for (int i = 0; i < BIGGER / 2 ; i ++ ) {
+    if (flop[5])
+      triangle(MIDLX, MIDLY,  10 + i, xblender + h + i, blender + h + dot * i );
+    else
+      triangle(MIDLX, MIDLY,  10 + i, xblender - h + i, blender + h - dot * i );
+  }
+}
+
+void triangle(int16_t xloc, int16_t yloc, uint16_t bigg, uint8_t dangle, uint8_t kolor)
+{
+  int16_t ax = xloc + bigg * (sin8(dangle) - 128.0) / 128;
+  int16_t ay = yloc + bigg * (cos8(dangle) - 128.0) / 128;
+  int16_t bx = xloc + bigg * (sin8(dangle + 85) - 128.0) / 128;
+  int16_t by = yloc + bigg * (cos8(dangle + 85) - 128.0) / 128;
+  int16_t cx = xloc + bigg * (sin8(dangle - 85) - 128.0) / 128;
+  int16_t cy = yloc + bigg * (cos8(dangle - 85) - 128.0) / 128;
+  DLine(ax, ay, bx, by, CHSV(kolor, 255 - (counter % 64), 255));
+  DLine(cx, cy, bx, by, CHSV(kolor, 255 - (counter % 64), 255));
+  DLine(ax, ay, cx, cy, CHSV(kolor, 255 - (counter % 64), 255));
+}
+
+
+
+// -------------------------------------------
+
+void adjustme() {  // applies the screen wide effect
+  if (counter == 0) {
+    Serial.print (",  Adjusting: ");
+    Serial.print(adjunct);
+    Serial.print("  ");
+
+  }
+  switch (adjunct) {
+    case 0://no effect
+      break;
+    case 1://no effect
+      break;
+    case 2:
+      zeds.VerticalMirror();
+      break;
+    case 3:
+      zeds.TriangleTopMirror(1);
+      zeds.HorizontalMirror();
+      break;
+    case 4:
+      zeds.HorizontalMirror(1);
+      break;
+    case 5:
+      zeds.VerticalMirror();
+      break;
+    case 6:// ng with fat
+      zeds.QuadrantRotateMirror();
+      break;
+    case 7:// ng with fat
+      zeds.TriangleTopMirror(1);
+      break;
+    case 8:
+      zeds.QuadrantMirror();
+      break;
+    case 9:
+      zeds.HorizontalMirror(1);
+      break;
+    case 10:// ng with fat
+      zeds.TriangleBottomMirror(1);
+      break;
+    case 11:// ng with fat
+      zeds.TriangleBottomMirror(1);
+      break;
+    case 12:// ng with fat
+      zeds.TriangleTopMirror(1);
+      zeds.VerticalMirror();
+      break;
+    case 13:
+      mirror();
+      break;
+    case 14:// ng with fat
+      zeds.TriangleTopMirror(1);
+      break;
+    default:// no effect
+      break;
+  }
+}
+
+void mirror() {
+  for (xx = 0; xx < MATRIX_WIDTH; xx++)
+    for (yy = 0; yy < MIDLY; yy++)
+      zeds(xx, yy) = zeds(xx, MATRIX_HEIGHT - yy - 1);
+
 }
 
 // vim:sts=2:sw=2

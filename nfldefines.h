@@ -46,6 +46,14 @@ uint8_t dfl_matrix_brightness_level = 5;
 
 #ifdef ESP32
 // Use https://github.com/lbernstone/IR32.git instead of IRRemote
+// 0x4008fd64: invoke_abort at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp32/panic.c line 155
+// 0x4008ff95: abort at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp32/panic.c line 170
+// 0x4008b6f7: xRingbufferReceive at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp_ringbuf/ringbuf.c line 845
+// 0x400f323c: IRRecv::read(char*&, bool) at /home/merlin/Arduino/libraries/IR32/src/IRRecv.cpp line 128
+// 0x400e7689: check_startup_IR_serial() at /home/merlin/arduino/emulation/ArduinoOnPc-FastLED-GFX-LEDMatrix/examples/NeoMatrix-FastLED-IR/NeoMatrix-FastLED-IR.ino line 3287
+// 0x400e805a: setup() at /home/merlin/arduino/emulation/ArduinoOnPc-FastLED-GFX-LEDMatrix/examples/NeoMatrix-FastLED-IR/NeoMatrix-FastLED-IR.ino line 4715
+// 0x400f7e6b: loopTask(void*) at /home/merlin/Arduino/hardware/espressif/esp32/cores/esp32/main.cpp line 14
+// 0x4008bb7d: vPortTaskWrapper at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/freertos/port.c line 143
 //#define ESP32RMTIR
 #endif
 
@@ -62,7 +70,7 @@ uint8_t dfl_matrix_brightness_level = 5;
     // Heap/32-bit Memory Available: 132476 bytes total,  85748 bytes largest free block
     // 8-bit/DMA Memory Available  :  46728 bytes total,  40976 bytes largest free block
     #ifndef ARDUINOONPC
-        #define RECV_PIN 34
+        #define IR_RECV_PIN 34
     
         #define STRIP_NUM_LEDS 48
         CRGB leds[STRIP_NUM_LEDS];
@@ -79,14 +87,14 @@ uint8_t dfl_matrix_brightness_level = 5;
 #elif mheight == 64
     // Make the burning man 64x64 brighter by default, we have a big power supply :)
     dfl_matrix_brightness_level = 6;
-    #define RECV_PIN 34
+    #define IR_RECV_PIN 34
 
 #elif mheight == 32
     #define STRIP_NUM_LEDS 48
     CRGB leds[STRIP_NUM_LEDS];
     #define NEOPIXEL_PIN D1 // GPIO5
 
-    #define RECV_PIN D4
+    #define IR_RECV_PIN D4
 #else
     #error "unknown matrix height, no idea what demos to run"
 #endif

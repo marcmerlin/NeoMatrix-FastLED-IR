@@ -170,7 +170,7 @@ uint32_t waitmillis = 0;
 // using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
 
-#ifdef RECV_PIN
+#ifdef IR_RECV_PIN
     #ifdef ESP8266
     #include <IRremoteESP8266.h>
     #else
@@ -182,7 +182,7 @@ uint32_t waitmillis = 0;
     #endif
 
     #ifndef ESP32RMTIR
-    IRrecv irrecv(RECV_PIN);
+    IRrecv irrecv(IR_RECV_PIN);
     #else
     IRRecv irrecv;
     #endif
@@ -2407,6 +2407,8 @@ uint8_t tmed(uint32_t demo) {
 	{  80, 5, 200 },  // 10 rotating triangles of color
 	{ 104, 6, 200 },  //    circles mixing in the middle
 	{ 105, 2, 400 },  //    hypno
+	{  14, 3, 200 },  //    
+	{  23, 3, 200 },  //    
 
     };
 //	{  29, 5, 300 },  // XX swirly RGB colored dots meant to go to music
@@ -2467,6 +2469,7 @@ uint8_t tmed(uint32_t demo) {
       // boxer();
       adjuster();
       break;
+
     case 10:
 	corner();
 	bkringer();
@@ -2551,6 +2554,18 @@ uint8_t tmed(uint32_t demo) {
 	//if (flip3) solid2();
 	bubbles();
 	break;
+
+    // New TME
+    case 14:
+      spire2();
+      if (flop[0] && flop[1])
+        adjustme();
+      break;
+
+    case 23:
+      triforce();
+      if (flop[6] && (flop[1] || !flop[2])) adjustme();
+      break;
     }
 
     td_loop();
@@ -2638,14 +2653,14 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 049 */ { "TMED  4 Zoom out Shapes", tmed,  4, NULL },	// rectangles/squares/triangles zooming out
 /* 050 */ { "TMED  5 Shapes In/Out", tmed,  5, NULL },	// opposite concentric colors and shapes (52 reversed)
 /* 051 */ { "TMED  6 Double Starfield&Shapes", tmed,  6, NULL }, // double color starfield with shapes in/out
-/* 052 */ { "TMED  7 Hypnoswirl Starfield", tmed,  7, NULL }, // two colors swirling bigger, creating hypno pattern
+/* 052 */ { "TMED  7 New Hypnoswirl", tmed,  7, NULL }, // two colors swirling bigger, creating hypno pattern
 /* 053 */ { "TMED  8 4 Dancing Balls&Shapes", tmed,  8, NULL }, // 4 fat spinning comets with shapes growing from middle sometimes
 /* 054 */ { "TMED  9 Starfield BKringer", tmed,  9, NULL }, // streaming lines of colored pixels with shape zooming in or out
 /* 055 */ { "TMED 10 Spinning Triangles", tmed, 10, NULL }, // rotating triangles of color
 /* 056 */ { "TMED 11 Circles Mixing", tmed, 11, NULL },	// circles mixing in the middle
 /* 057 */ { "TMED 12 Hypno", tmed, 12, NULL },		// hypno
-/* 058 */ { "", NULL, -1, NULL },
-/* 059 */ { "", NULL, -1, NULL },
+/* 058 */ { "TMED 13 Circling circles", tmed, 13, NULL },// 3 color circles circling around 3 middle ones
+/* 059 */ { "TMED 14 Spinning Offset Triangle", tmed, 14, NULL },// FIXME
 /* 060 */ { "", NULL, -1, NULL },
 /* 061 */ { "", NULL, -1, NULL },
 /* 062 */ { "", NULL, -1, NULL },
@@ -3260,7 +3275,7 @@ uint8_t check_startup_IR_serial() {
     if (readchar == 'p') return 1;
     if (readchar == 'w') return 2;
 
-#ifdef RECV_PIN
+#ifdef IR_RECV_PIN
     uint32_t result = 0;
 
     #ifndef ESP32RMTIR
@@ -3367,7 +3382,7 @@ void IR_Serial_Handler() {
 
     // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
     // compiling the IR code that won't build.
-#ifdef RECV_PIN
+#ifdef IR_RECV_PIN
     uint32_t result;
 
     #ifndef ESP32RMTIR
@@ -4438,6 +4453,7 @@ void read_config_index() {
     File file;
 
     if (! (file = FSO.open(pathname)
+    // FIXME: should this say ESP8266 instead?
     #ifdef FSOSPIFFS
 				    , "r"
     #endif
@@ -4764,14 +4780,14 @@ void setup() {
 
 
     Serial.println("Enabling IRin");
-#ifdef RECV_PIN
+#ifdef IR_RECV_PIN
     #ifndef ESP32RMTIR
 	irrecv.enableIRIn(); // Start the receiver
     #else
-	irrecv.start(RECV_PIN);
+	irrecv.start(IR_RECV_PIN);
     #endif
     Serial.print("Enabled IRin on pin ");
-    Serial.println(RECV_PIN);
+    Serial.println(IR_RECV_PIN);
 #endif
 
     GifAnim(65535); // Compute how many GIFs are defined
