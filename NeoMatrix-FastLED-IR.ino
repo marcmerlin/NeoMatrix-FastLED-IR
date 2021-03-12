@@ -1189,10 +1189,18 @@ uint8_t esrbr_fade(uint32_t unused) {
 }
 
 
-uint8_t display_text(const char *text, uint16_t x, uint16_t y) {
+uint8_t display_text(const char *text, uint16_t x, uint16_t y, uint16_t loopcnt = 10, GFXfont *f = NULL) {
     static uint16_t state;
-    uint16_t loopcnt = 300;
 
+    if (! f) {
+	if (mheight >= 64) {
+		// f = FreeMonoBold9pt7b;
+		f = (GFXfont *) &Century_Schoolbook_L_Bold_16;
+	} else {
+		f = (GFXfont *) &TomThumb;
+	}
+    }
+    matrix->setFont(f);
 
     if (matrix_reset_demo == 1) {
 	state = 0;
@@ -1201,12 +1209,6 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y) {
     }
 
     matrix->setTextSize(1);
-    if (mheight >= 64) {
-	    //matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_16);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
 
     state++;
 
@@ -2991,13 +2993,13 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
     // If you add elements past 379, please update DEMO_ARRAY_SIZE
 };
 
-void matrix_change(int16_t demo, bool directmap=false) {
+void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
     // Reset passthrough from previous demo
     matrix->setPassThruColor();
     // Clear screen when changing demos.
     matrix->clear();
     // this ensures the next demo returns the number of times it should loop
-    MATRIX_LOOP = -1;
+    MATRIX_LOOP = loop;
     matrix_reset_demo = 1;
 
     Serial.print("got matrix_change code ");
@@ -3012,13 +3014,13 @@ void matrix_change(int16_t demo, bool directmap=false) {
 	// to the desired demo without going though demo_mapping array.
 	MATRIX_DEMO = demo;
 	MATRIX_STATE = demo_mapping[MATRIX_DEMO].reverse;
-	MATRIX_LOOP = 100;
+	if (MATRIX_LOOP==-1) MATRIX_LOOP = 100;
     } else {
 	if (demo != DEMO_PREV && demo != DEMO_NEXT) MATRIX_STATE = demo;
 
 	#ifdef NEOPIXEL_PIN
 	// special one key press where demos are shown forever and next goes back to the normal loop
-	if (demo >= 0 && demo < DEMO_NEXT) MATRIX_LOOP = 9999;
+	if ((demo >= 0 && demo < DEMO_NEXT) && MATRIX_LOOP==-1) MATRIX_LOOP = 9999;
 	#endif
 	Serial.print(", switching to index ");
 	if (demo >= DEMO_TEXT_FIRST && demo <= DEMO_TEXT_LAST && demo != DEMO_NEXT) {
@@ -3064,6 +3066,10 @@ void matrix_change(int16_t demo, bool directmap=false) {
     Serial.println(MATRIX_LOOP);
     #ifndef ARDUINOONPC
 	Serial.flush();
+	if (MATRIX_DEMO == DEMO_TEXT_INPUT) {
+	    Serial.print("|T:");
+	    Serial.println(DISPLAYTEXT);
+	}
 	Serial.print("|D:");
 	char buf[4];
 	sprintf(buf, "%3d", MATRIX_DEMO);
@@ -3113,13 +3119,14 @@ void Matrix_Handler() {
 	    ret = scrollText(str, sizeof(str));
 #else
 	    fixdrawRGBBitmap(28, 87, RGB_bmp, 8, 8);
-	    ret = display_text("Thank\n  You\n  Very\n Much", 0, 14);
+	    ret = display_text("Thank\n  You\n  Very\n Much", 0, 14, 100);
 #endif
 	    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
 	    if (ret) goto exit;
     } else if (MATRIX_DEMO == DEMO_TEXT_INPUT) {
 	    //ret = scrollText(str, sizeof(str));
-	    ret = display_text(DISPLAYTEXT.c_str(), 0, 14);
+	    // font is 5x3 (6x4 with spacing)
+	    ret = display_text(DISPLAYTEXT.c_str(), 0, 6, 10, (GFXfont *) &TomThumb);
 	    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
 	    if (ret) goto exit;
     } else {
@@ -4151,7 +4158,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	if (strcmp(request.query[0], "text") == 0) {
 	    p->renderHttpResponseHeader("text/plain", 200);
 	    DISPLAYTEXT = request.query[1];
-	    matrix_change(DEMO_TEXT_INPUT);
+	    matrix_change(DEMO_TEXT_INPUT, false, 10);
 	}
 	// Changes to config file lines, look like this:
 	// arg 0: 0001 = 1 3 3 3 3 106
@@ -4467,7 +4474,10 @@ void read_config_index() {
     #endif // ARDUINOONPC
 	if (line[0] == '#' || scanret != 6) {
 	    Serial.print("Skipping ");
-	    Serial.println(line);
+	    Serial.print(line);
+	    #ifndef ARDUINOONPC
+		Serial.println();
+	    #endif
 	    continue;
 	}
 	// We use dmap, the original mapping defined in the config file
@@ -4630,7 +4640,7 @@ void loop() {
 	}
 	if (ttyfd < 0) return;
 		
-	// Read up to 40 characters in the buffer and then continue the loop
+	// Read up to 80 characters in the buffer and then continue the loop
 	// this should cause a loop hang of up to 7ms at 115200bps.
 	uint8_t readcnt = 80;
 	while (readcnt-- && (rdlen = read(ttyfd, &s, 1)) > 0) {
@@ -4665,6 +4675,18 @@ void loop() {
 		    num = atoi(numbuf);
 		    printf("Got brightness %d\n", num);
 		    change_brightness(num, true);
+		}
+		if (! strncmp(buf, "|I:", 3)) {
+		    DISPLAYTEXT = String("ESP32: ") + String(buf+3);
+		    Serial.print("Got IP from ");
+		    Serial.print(DISPLAYTEXT);
+		    matrix_change(DEMO_TEXT_INPUT, false, 10);
+		}
+		// Allow ESP32 to send string to rPi
+		if (! strncmp(buf, "|T:", 3)) {
+		    DISPLAYTEXT = String(buf+3);
+		    Serial.print("Got string from ESP32: ");
+		    Serial.print(DISPLAYTEXT);
 		}
 	    }
 	}
@@ -4864,6 +4886,13 @@ void setup() {
     Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
     //Events.addHandler(ShowMHfps, 1000);
+
+#ifndef ARDUINOONPC
+    DISPLAYTEXT = WiFi.localIP().toString();
+    matrix_change(DEMO_TEXT_INPUT, false, 10);
+    Serial.print("|I:");
+    Serial.println(DISPLAYTEXT);
+#endif
 
     Serial.println("Starting loop");
     // After init is done, show fps (can be turned on and off with 'f').
