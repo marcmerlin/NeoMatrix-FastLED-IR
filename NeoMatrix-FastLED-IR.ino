@@ -4680,10 +4680,15 @@ void loop() {
 		    change_brightness(num, true);
 		}
 		if (! strncmp(buf, "|I:", 3)) {
-		    DISPLAYTEXT = String("ESP32: ") + String(buf+3);
+		    char IP[128];
+		    FILE *fp;
+		    fp = popen("hostname -I", "r");
+		    fgets(IP, 128, fp);
+
+		    DISPLAYTEXT = String("ESP32: ") + String(buf+3) + "local: " + String(IP);
 		    Serial.print("Got IP from ");
 		    Serial.print(DISPLAYTEXT);
-		    matrix_change(DEMO_TEXT_INPUT, false, 10);
+		    matrix_change(DEMO_TEXT_INPUT, false, 20);
 		}
 		// Allow ESP32 to send string to rPi
 		if (! strncmp(buf, "|T:", 3)) {
