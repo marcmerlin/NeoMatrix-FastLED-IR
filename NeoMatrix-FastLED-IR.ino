@@ -3456,6 +3456,7 @@ void IR_Serial_Handler() {
 	    if (is_change()) { matrix_change(3); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00FF00;
+	    showip();
 	    return;
 
 	case IR_RGBZONE_BLUE:
@@ -4245,7 +4246,7 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   else if (failure) { what = "failure"; failure_cnt++; }
   else if (success) { what = "success"; failure_cnt = 0; }
 
-  Serial.printf("%s: connectionStatus for '%s' is now '%s' fail cnt: %d\n", __func__, ssid, what, failure_cnt, failure_cnt);
+  Serial.printf("%s: connectionStatus for '%s' is now '%s' fail cnt: %d\n", __func__, ssid, what, failure_cnt);
 
   if (!ap and failure_cnt > 2) {
   // FIXME, clear some wifi stuff if connection worked to the client
@@ -4343,7 +4344,7 @@ void register_config_page() {
     // This lamba function is re-run every time /Config is called
     p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
-	bool readingfile = true;
+	//bool readingfile = true;
 	char lineidx[5];
 	char mapstr[14]; // "1 1 1 1 1 053" + NULL
 
@@ -4704,6 +4705,15 @@ void loop() {
     #endif
 }
 
+void showip() {
+#ifndef ARDUINOONPC
+    DISPLAYTEXT = WiFi.localIP().toString();
+    matrix_change(DEMO_TEXT_INPUT, false, 10);
+    Serial.print("|I:");
+    Serial.println(DISPLAYTEXT);
+#endif
+}
+
 void setup() {
     Serial.begin(115200);
     Serial.println("Hello World");
@@ -4743,7 +4753,6 @@ void setup() {
 
 	Serial.println("Pause to run wifi before config file parsing ('w' to stay here)");
 	while (i--) {
-	    char readchar;
 	    if (check_startup_IR_serial() == 2) {
 		Serial.println("Will pause on debug screen");
 		i = 6000;
@@ -4894,13 +4903,7 @@ void setup() {
     Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
     //Events.addHandler(ShowMHfps, 1000);
-
-#ifndef ARDUINOONPC
-    DISPLAYTEXT = WiFi.localIP().toString();
-    matrix_change(DEMO_TEXT_INPUT, false, 10);
-    Serial.print("|I:");
-    Serial.println(DISPLAYTEXT);
-#endif
+    showip();
 
     Serial.println("Starting loop");
     // After init is done, show fps (can be turned on and off with 'f').
