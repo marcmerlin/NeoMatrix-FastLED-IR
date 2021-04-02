@@ -3456,7 +3456,6 @@ void IR_Serial_Handler() {
 	    if (is_change()) { matrix_change(3); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0x00FF00;
-	    showip();
 	    return;
 
 	case IR_RGBZONE_BLUE:
@@ -3471,6 +3470,7 @@ void IR_Serial_Handler() {
 	    if (is_change()) { matrix_change(7); return; }
 	    if (!colorDemo) nextdemo = f_colorWipe;
 	    demo_color = 0xFFFFFF;
+	    showip();
 	    return;
 
 
@@ -4739,10 +4739,36 @@ void setup() {
     #endif
 #endif
 
+    Serial.println("\nEnabling Neopixels strip (if any) and Configured Display.");
+#ifdef NEOPIXEL_PIN
+    Serial.print("Using FastLED on pin ");
+    Serial.print(NEOPIXEL_PIN);
+    Serial.print(" to drive LEDs: ");
+    Serial.println(STRIP_NUM_LEDS);
+    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
+    FastLED.setBrightness(led_brightness);
+    // Turn off all LEDs and light 3 of them for debug.
+    leds[0] = CRGB::Red;
+    leds[1] = CRGB::Blue;
+    leds[2] = CRGB::Green;
+    leds[10] = CRGB::Blue;
+    leds[20] = CRGB::Green;
+    leds_show();
+    Serial.println("LEDs on");
+#endif // NEOPIXEL_PIN
+
 #ifdef HAS_FS
     Serial.println("Init Filesystem and GIF Viewer");
     sav_setup();
 #endif
+
+#ifdef NEOPIXEL_PIN
+    leds[0] = CRGB::Black;
+    leds[1] = CRGB::Red;
+    leds[2] = CRGB::Blue;
+    leds[3] = CRGB::Green;
+    leds_show();
+#endif // NEOPIXEL_PIN
 
     uint32_t i = 100;
     #ifdef WIFI
@@ -4762,31 +4788,38 @@ void setup() {
 	}
     #endif
 
+#ifdef NEOPIXEL_PIN
+    leds[1] = CRGB::Black;
+    leds[2] = CRGB::Red;
+    leds[3] = CRGB::Blue;
+    leds[4] = CRGB::Green;
+    leds_show();
+#endif // NEOPIXEL_PIN
+
     // This is now required, if there is no arduino FS support, you need to replace this function
     // You could feed it a hardcoded array in the code (what used to be here)
     Serial.println("Read config file");
     read_config_index();
 
+#ifdef NEOPIXEL_PIN
+    leds[2] = CRGB::Black;
+    leds[3] = CRGB::Red;
+    leds[4] = CRGB::Blue;
+    leds[5] = CRGB::Green;
+    leds_show();
+#endif // NEOPIXEL_PIN
+
+
 #ifdef WIFI
     register_config_page();
 #endif
 
-    Serial.println("\nEnabling Neopixels strip (if any) and Configured Display.");
 #ifdef NEOPIXEL_PIN
-    Serial.print("Using FastLED on pin ");
-    Serial.print(NEOPIXEL_PIN);
-    Serial.print(" to drive LEDs: ");
-    Serial.println(STRIP_NUM_LEDS);
-    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
-    FastLED.setBrightness(led_brightness);
-    // Turn off all LEDs and light 3 of them for debug.
-    leds[0] = CRGB::Red;
-    leds[1] = CRGB::Blue;
-    leds[2] = CRGB::Green;
-    leds[10] = CRGB::Blue;
-    leds[20] = CRGB::Green;
+    leds[3] = CRGB::Black;
+    leds[4] = CRGB::Red;
+    leds[5] = CRGB::Blue;
+    leds[6] = CRGB::Green;
     leds_show();
-    Serial.println("LEDs on");
 #endif // NEOPIXEL_PIN
 
     Serial.print("Init Smart or FastLED Matrix. Matrix Size: ");
@@ -4817,6 +4850,13 @@ void setup() {
 
     show_free_mem("After Demos Init");
 
+#ifdef NEOPIXEL_PIN
+    leds[4] = CRGB::Black;
+    leds[5] = CRGB::Red;
+    leds[6] = CRGB::Blue;
+    leds[7] = CRGB::Green;
+    leds_show();
+#endif // NEOPIXEL_PIN
 
     Serial.println("Enabling IRin");
 #ifdef IR_RECV_PIN
@@ -4848,14 +4888,17 @@ void setup() {
     change_brightness( 0 );
     matrix->setTextWrap(false);
     Serial.println("Matrix Test");
-    // speed test
-    // I only get 50fps with SmartMatrix 96x64, but good enough I guess
-    // while (1) { display_stats(); yield();};
+
     // init first matrix demo
     matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
+    // more bright
     //matrix->fillScreen(matrix->Color(0xFF, 0xFF, 0xFF));
     matrix_show();
+    #ifdef NEOPIXEL_PIN
+    i = 100;
+    #else
     i = 200;
+    #endif
     Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
     while (i--) {
 	if (check_startup_IR_serial()) {
@@ -4866,8 +4909,20 @@ void setup() {
     }
     Serial.println("Done with debug grey screen, display stats");
 
+#ifdef NEOPIXEL_PIN
+    leds[5] = CRGB::Black;
+    leds[6] = CRGB::Red;
+    leds[7] = CRGB::Blue;
+    leds[8] = CRGB::Green;
+    leds_show();
+#endif // NEOPIXEL_PIN
+
     display_stats();
+    #ifdef NEOPIXEL_PIN
+    delay((uint32_t) 1000);
+    #else
     delay((uint32_t) 2000);
+    #endif
     if (DEMO_CNT == 0) {
 	// Allow web server to run, create/save rename files to make sure demos exist
 	Serial.println("No demos, cannot proceed. Starting web server to fix if possible, reboot when fixed");
