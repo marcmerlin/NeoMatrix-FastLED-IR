@@ -4041,12 +4041,14 @@ void process_config(bool show_summary=false) {
 
 #ifdef WIFI
 #define HTML_DEMOLIST_CHOICE 90
-#define HTML_BESTOF  100
-#define HTML_BRIGHT  101
-#define HTML_SPEED   102
-#define HTML_BUTPREV 110
-#define HTML_BUTNEXT 111
-#define HTML_DEMOCHOICE 120
+#define HTML_BESTOF	    100
+#define HTML_BRIGHT	    101
+#define HTML_SPEED	    102
+#define HTML_BUTPREV	    110
+#define HTML_BUTNEXT	    111
+#define HTML_SHOWIP	    120
+#define HTML_REBOOTPI	    121
+#define HTML_DEMOCHOICE	    130
 
 void actionProc(const char *pageName, const char *parameterName, int value, int ref1, void *ref2) {
     static int actionCount = 0;
@@ -4065,6 +4067,19 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	Serial.println("NEXT pressed");
 	matrix_change(DEMO_NEXT);
 	break;
+
+    case HTML_SHOWIP:
+	if (!value) break;
+	Serial.println("ShowIP pressed");
+	showip();
+	break;
+
+    case HTML_REBOOTPI:
+	if (!value) break;
+	Serial.println("Reboot PI pressed");
+	rebootpi();
+	break;
+
 
     case HTML_BESTOF:
 	Serial.print("Bestof on/off: ");
@@ -4319,6 +4334,11 @@ void rebuild_main_page(bool show_summary) {
 	strcpy(option+12, demo_list[demoidx(i)].name);
 	p->addSelectOption(option, i);
 	demo_list[demoidx(i)].menu_str = option;
+    }
+
+    if (PANELCONFNUM == 4) {
+	p->addButton("Show RPI IP", actionProc, HTML_SHOWIP);
+	p->addButton("Reboot RPI", actionProc,  HTML_REBOOTPI);
     }
 
     // Catches random non registered URLs
@@ -4697,6 +4717,10 @@ void loop() {
 		    Serial.print("Got string from ESP32: ");
 		    Serial.print(DISPLAYTEXT);
 		}
+		if (! strncmp(buf, "|RB", 3)) {
+		    Serial.println("Got reboot");
+		    system("/root/rebootme");
+		}
 	    }
 	}
 	if (rdlen < 0) {
@@ -4711,6 +4735,12 @@ void showip() {
     matrix_change(DEMO_TEXT_INPUT, false, 10);
     Serial.print("|I:");
     Serial.println(DISPLAYTEXT);
+#endif
+}
+
+void rebootpi() {
+#ifndef ARDUINOONPC
+    Serial.println("|RB");
 #endif
 }
 
