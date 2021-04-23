@@ -3335,60 +3335,66 @@ void changePanelConf(uint8_t conf, bool ) {
 
 void IR_Serial_Handler() {
     int16_t new_pattern = 0;
-    char readchar;
+    static char last_readchar = 0;
+    char readchar = 0;
     static bool remotesend = false;
 
-    if (Serial.available()) readchar = Serial.read(); else readchar = 0;
-    if (readchar) {
-	while ((readchar >= '0') && (readchar <= '9')) {
-	    new_pattern = 10 * new_pattern + (readchar - '0');
-	    readchar = 0;
-	    if (Serial.available()) readchar = Serial.read();
-	}
+    if (Serial.available()) { 
+	last_readchar = readchar;
+	readchar = Serial.read();
+	if (readchar) {
+	    while ((readchar >= '0') && (readchar <= '9')) {
+		new_pattern = 10 * new_pattern + (readchar - '0');
+		readchar = 0;
+		if (Serial.available()) readchar = Serial.read();
+	    }
 
-	if (new_pattern) {
-	    Serial.print("Got new");
-	    Serial.print(remotesend?" REMOTE":"");
-	    Serial.print(" pattern via serial ");
-	    Serial.println(new_pattern);
-	    #ifdef ARDUINOONPC
-	    if (remotesend) {
-		send_serial(String(new_pattern).c_str());
+	    if (new_pattern) {
+		Serial.print("Got new");
+		Serial.print(remotesend?" REMOTE":"");
+		Serial.print(" pattern via serial ");
+		Serial.println(new_pattern);
+		#ifdef ARDUINOONPC
+		if (remotesend) {
+		    send_serial(String(new_pattern).c_str());
+		    remotesend = false;
+		} else
+		#endif
+		    matrix_change(new_pattern);
+	    } else {
+		Serial.print("Got serial char ");
+		Serial.println(readchar);
 		remotesend = false;
-	    } else
-	    #endif
-		matrix_change(new_pattern);
-	} else {
-	    Serial.print("Got serial char ");
-	    Serial.println(readchar);
-	    remotesend = false;
+	    }
+	}
+	//if (last_readchar == '\n') {
+	if (1) {
+	    if (readchar == 'n')      { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
+	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
+	    else if (readchar == 'b') { Serial.println("Serial => Bestof");	changeBestOf(true); }
+	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(false);}
+	    else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
+	    else if (readchar == 'f') { SHOW_LAST_FPS = !SHOW_LAST_FPS; }
+	    else if (readchar == '=') { Serial.println("Serial => keep demo?"); MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
+	    else if (readchar == '-') { Serial.println("Serial => dim"   );	change_brightness(-1);}
+	    else if (readchar == '+') { Serial.println("Serial => bright");	change_brightness(+1);}
+	    else if (readchar == 'c') { changePanelConf(3, true); }
+	    else if (readchar == 'd') { changePanelConf(4, true); }
+	#ifdef ARDUINOONPC
+	    else if (readchar == 'N') { Serial.println("ESP => next");		send_serial("\nn");}
+	    else if (readchar == 'P') { Serial.println("ESP => previous");	send_serial("\np");}
+	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("\nf");}
+	    else if (readchar == '<') { Serial.println("ESP => dim"   );	send_serial("\n-");}
+	    else if (readchar == '>') { Serial.println("ESP => bright");	send_serial("\n+");}
+	    else if (readchar == 'B') { Serial.println("ESP => Bestof");	send_serial("\nB");}
+	    else if (readchar == 'A') { Serial.println("ESP => All Demos");	send_serial("\nb");}
+	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("\n=");}
+	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  send_serial("\nc");}
+	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  send_serial("\nd");}
+	    else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
+	#endif
 	}
     }
-
-    if (readchar == 'n')      { Serial.println("Serial => next");	    matrix_change(DEMO_NEXT);}
-    else if (readchar == 'p') { Serial.println("Serial => previous");	    matrix_change(DEMO_PREV);}
-    else if (readchar == 'b') { Serial.println("Serial => Bestof");	    changeBestOf(true); }
-    else if (readchar == 'a') { Serial.println("Serial => All Demos");	    changeBestOf(false);}
-    else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
-    else if (readchar == 'f') { SHOW_LAST_FPS = !SHOW_LAST_FPS; }
-    else if (readchar == '=') { Serial.println("Serial => keep demo?");	    MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
-    else if (readchar == '-') { Serial.println("Serial => dim"   );	    change_brightness(-1);}
-    else if (readchar == '+') { Serial.println("Serial => bright");	    change_brightness(+1);}
-    else if (readchar == 'c') { changePanelConf(3, true); }
-    else if (readchar == 'd') { changePanelConf(4, true); }
-#ifdef ARDUINOONPC
-    else if (readchar == 'N') { Serial.println("ESP => next");		    send_serial("n");}
-    else if (readchar == 'P') { Serial.println("ESP => previous");	    send_serial("p");}
-    else if (readchar == 'F') { Serial.println("ESP => togglefps");	    send_serial("f");}
-    else if (readchar == '<') { Serial.println("ESP => dim"   );	    send_serial("-");}
-    else if (readchar == '>') { Serial.println("ESP => bright");	    send_serial("+");}
-    else if (readchar == 'B') { Serial.println("ESP => Bestof");	    send_serial("B");}
-    else if (readchar == 'A') { Serial.println("ESP => All Demos");	    send_serial("b");}
-    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");	    send_serial("=");}
-    else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
-    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");	    send_serial("c"); }
-    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");	    send_serial("d"); }
-#endif
 
     // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
     // compiling the IR code that won't build.
@@ -4720,6 +4726,10 @@ void loop() {
 		if (! strncmp(buf, "|RB", 3)) {
 		    Serial.println("Got reboot");
 		    system("/root/rebootme");
+		}
+		if (! strncmp(buf, "|RS", 3)) {
+		    Serial.println("Got restart");
+		    exit(0);
 		}
 	    }
 	}
