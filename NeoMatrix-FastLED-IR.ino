@@ -280,7 +280,7 @@ int16_t strip_speed = 50;
 	    printf("Error from write: %d, %s\n", wlen, strerror(errno));
 	    return -1;
 	}
-	printf(">>>ESP: %s\n", xstr);
+	printf("ESP<<< %s\n", xstr);
 	return 0;
     }
 
@@ -300,6 +300,9 @@ int16_t strip_speed = 50;
 	    printf("Opened %s telling ESP32 to switch to PANELCONFNUM 4\n", *devname);
 	    // Assume we just connected to an ESP32, which starts in its PANELCONFNUM 3 (ESP32 mode)
 	    // and switch it to PANELCONFNUM 4 (rPI with longer menus).
+	    delay(10);
+	    send_serial("|");
+	    delay(10);
 	    send_serial("d");
 	}
     }
@@ -3335,14 +3338,25 @@ void changePanelConf(uint8_t conf, bool ) {
 
 void IR_Serial_Handler() {
     int16_t new_pattern = 0;
-    static char last_readchar = 0;
     char readchar = 0;
     static bool remotesend = false;
+    static bool startcmd = false;
 
+    // on rPi, we accept 'serial' (really tty) input right away
+    #ifdef ARDUINOONPC
+    startcmd = true;
+    #endif
+
+    // Serial on rPi actually reads from STDIN (ssh)
+    // rPi gets remote serial commands from /dev/ttyUSB at end of loop
     if (Serial.available()) { 
-	last_readchar = readchar;
 	readchar = Serial.read();
 	if (readchar) {
+	    if (readchar == '|' && !startcmd) {
+		Serial.println("Got remote serial start, now accepting serial commands");
+		startcmd = true;
+	    }
+	    if (! startcmd) readchar = 0;
 	    while ((readchar >= '0') && (readchar <= '9')) {
 		new_pattern = 10 * new_pattern + (readchar - '0');
 		readchar = 0;
@@ -3366,9 +3380,7 @@ void IR_Serial_Handler() {
 		Serial.println(readchar);
 		remotesend = false;
 	    }
-	}
-	//if (last_readchar == '\n') {
-	if (1) {
+
 	    if (readchar == 'n')      { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
 	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
 	    else if (readchar == 'b') { Serial.println("Serial => Bestof");	changeBestOf(true); }
@@ -3381,16 +3393,16 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'c') { changePanelConf(3, true); }
 	    else if (readchar == 'd') { changePanelConf(4, true); }
 	#ifdef ARDUINOONPC
-	    else if (readchar == 'N') { Serial.println("ESP => next");		send_serial("\nn");}
-	    else if (readchar == 'P') { Serial.println("ESP => previous");	send_serial("\np");}
-	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("\nf");}
-	    else if (readchar == '<') { Serial.println("ESP => dim"   );	send_serial("\n-");}
-	    else if (readchar == '>') { Serial.println("ESP => bright");	send_serial("\n+");}
-	    else if (readchar == 'B') { Serial.println("ESP => Bestof");	send_serial("\nB");}
-	    else if (readchar == 'A') { Serial.println("ESP => All Demos");	send_serial("\nb");}
-	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("\n=");}
-	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  send_serial("\nc");}
-	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  send_serial("\nd");}
+	    else if (readchar == 'N') { Serial.println("ESP => next");		send_serial("n");}
+	    else if (readchar == 'P') { Serial.println("ESP => previous");	send_serial("p");}
+	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("f");}
+	    else if (readchar == '<') { Serial.println("ESP => dim"   );	send_serial("-");}
+	    else if (readchar == '>') { Serial.println("ESP => bright");	send_serial("+");}
+	    else if (readchar == 'B') { Serial.println("ESP => Bestof");	send_serial("B");}
+	    else if (readchar == 'A') { Serial.println("ESP => All Demos");	send_serial("b");}
+	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("=");}
+	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  send_serial("c");}
+	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  send_serial("d");}
 	    else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
 	#endif
 	}
@@ -5006,6 +5018,9 @@ void setup() {
     //#ifdef ESP32
     //SHOW_LAST_FPS = true;
     //#endif
+    #ifndef ARDUINOONPC
+    Serial.println("Send '|' to enable serial commands");
+    #endif
 }
 
 // vim:sts=4:sw=4
