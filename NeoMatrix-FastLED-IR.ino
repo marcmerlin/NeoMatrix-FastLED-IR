@@ -296,7 +296,11 @@ int16_t strip_speed = 50;
 	}
 	/* baudrate 115200, 8 bits, no parity, 1 stop bit */
 	if (ttyfd >= 0) {
+	    char s;
+
 	    set_interface_attribs(ttyfd, B115200);
+	    // empty input buffer of possible garbage
+	    while (read(ttyfd, &s, 1)) {}
 	    printf("Opened %s telling ESP32 to switch to PANELCONFNUM 4\n", *devname);
 	    // Assume we just connected to an ESP32, which starts in its PANELCONFNUM 3 (ESP32 mode)
 	    // and switch it to PANELCONFNUM 4 (rPI with longer menus).
@@ -3348,7 +3352,7 @@ void IR_Serial_Handler() {
     #endif
 
     // Serial on rPi actually reads from STDIN (ssh)
-    // rPi gets remote serial commands from /dev/ttyUSB at end of loop
+    // rPi gets remote serial commands from /dev/ttyUSB at end of main loop
     if (Serial.available()) { 
 	readchar = Serial.read();
 	if (readchar) {
@@ -4709,6 +4713,13 @@ void loop() {
 		    if (! strncmp(buf, "FrameBuffer::GFX", 16)) MATRIX_LOOP = 20;
 		    if (! strncmp(buf, "Done with demo", 14)) MATRIX_LOOP = 20;
 		#endif
+		if (! strncmp(buf, "|St", 3)) {
+		    Serial.println("Got ESP start, enable ESP serial input");
+		    delay(10);
+		    send_serial("|");
+		    delay(10);
+		    send_serial("d");
+		    }
 		if (! strncmp(buf, "|D:", 3)) {
 		    int num;
 		    strncpy(numbuf, buf+3, 3);
@@ -5013,7 +5024,7 @@ void setup() {
     //Events.addHandler(ShowMHfps, 1000);
     showip();
 
-    Serial.println("Starting loop");
+    Serial.println("|Starting loop");
     // After init is done, show fps (can be turned on and off with 'f').
     //#ifdef ESP32
     //SHOW_LAST_FPS = true;
