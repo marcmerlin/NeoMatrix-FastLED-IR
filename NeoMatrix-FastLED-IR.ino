@@ -3030,15 +3030,14 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 	if ((demo >= 0 && demo < DEMO_NEXT) && MATRIX_LOOP==-1) MATRIX_LOOP = 9999;
 	#endif
 	Serial.print(", switching to index ");
-	if (demo >= DEMO_TEXT_FIRST && demo <= DEMO_TEXT_LAST && demo != DEMO_NEXT) {
-	    MATRIX_STATE = demo;
+	if (demo >= DEMO_TEXT_FIRST && demo <= DEMO_TEXT_LAST) {
 	    Serial.print(MATRIX_STATE);
 	    MATRIX_DEMO = MATRIX_STATE;
 	} else {
 	    do {
+		// Otherwise prev/next go to the next demo
 		if (demo==DEMO_PREV) if (MATRIX_STATE-- == 0) MATRIX_STATE = DEMO_LAST_IDX;
 		if (demo==DEMO_NEXT) if (++MATRIX_STATE > DEMO_LAST_IDX) MATRIX_STATE = 0;
-	
 		// skip text demos on prev/next
 		if (MATRIX_STATE >= DEMO_TEXT_FIRST && MATRIX_STATE <= DEMO_TEXT_LAST) { 
 		    if (demo==DEMO_PREV) MATRIX_STATE--; else MATRIX_STATE++; 
@@ -3716,28 +3715,28 @@ void IR_Serial_Handler() {
 	    return;
 
 	case IR_RGBZONE_DIY6:
-	    Serial.println("Got IR: DIY6 (61)");
-	    if (is_change()) { matrix_change(61); return; }
+	    Serial.println("Got IR: DIY6 (100)");
+	    if (is_change()) { matrix_change(100); return; }
 	    nextdemo = f_doubleConvergeRev;
 	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
 	    return;
 
 	case IR_RGBZONE_FLASH:
-	    Serial.println("Got IR: FLASH (63)");
-	    if (is_change()) { matrix_change(63); return; }
+	    Serial.println("Got IR: FLASH/RPI restart");
+	    if (is_change()) { Serial.println("Restart PI pressed"); Serial.println("|RS"); return; }
 	    nextdemo = f_flash;
 	    return;
 
 	// And from here, jump across a few GIF anims (45-53)
 	case IR_RGBZONE_JUMP3:
-	    Serial.println("Got IR: JUMP3/Cylon (65)");
-	    if (is_change()) { matrix_change(65); return; }
+	    Serial.println("Got IR: JUMP3/Cylon (130)");
+	    if (is_change()) { matrix_change(130); return; }
 	    nextdemo = f_cylon;
 	    return;
 
 	case IR_RGBZONE_JUMP7:
-	    Serial.println("Got IR: JUMP7/CylonWithTrail (67)");
-	    if (is_change()) { matrix_change(67); return; }
+	    Serial.println("Got IR: JUMP7/CylonWithTrail (160)");
+	    if (is_change()) { matrix_change(160); return; }
 	    nextdemo = f_cylonTrail;
 	    return;
 
@@ -3748,8 +3747,9 @@ void IR_Serial_Handler() {
 	    return;
 
 	case IR_RGBZONE_FADE7:
-	    Serial.println("Got IR: FADE7/DoubleConvergeTrail (71)");
-	    if (is_change()) { matrix_change(71); return; }
+	    Serial.println("Got IR: FADE7/DoubleConvergeTrail (108)");
+	    // TFSF display
+	    if (is_change()) { matrix_change(108); return; }
 	    nextdemo = f_doubleConvergeTrail;
 	    return;
 
@@ -4772,7 +4772,7 @@ void loop() {
 void showip() {
 #ifndef ARDUINOONPC
     DISPLAYTEXT = WiFi.localIP().toString();
-    matrix_change(DEMO_TEXT_INPUT, false, 10);
+    matrix_change(DEMO_TEXT_INPUT, false, 20);
     Serial.print("|I:");
     Serial.println(DISPLAYTEXT);
 #endif
