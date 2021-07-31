@@ -3184,11 +3184,16 @@ void leds_setcolor(uint16_t i, uint32_t c) {
 
 void change_brightness(int8_t change, bool absolute=false) {
     static uint8_t brightness = dfl_matrix_brightness_level;
-    static uint32_t last_brightness_change = 0 ;
+    static int32_t last_brightness_change = 0 ;
+    static bool firsttime = true ;
 
-    if (!absolute && millis() - last_brightness_change < 300) {
+    if (firsttime) 
+    {
+	firsttime=false;
+    } else if (!absolute && millis() - last_brightness_change < 300) {
 	Serial.print("Too soon... Ignoring brightness change from ");
 	Serial.println(brightness);
+	Serial.println();
 	return;
     }
     last_brightness_change = millis();
@@ -3200,7 +3205,7 @@ void change_brightness(int8_t change, bool absolute=false) {
     led_brightness = min((1 << (brightness+1)) - 1, 255);
 
     // rgbpanels are dim, bump up brightness
-    uint8_t rgbpanel_brightness = min( (1 << (brightness+3)), 255);
+    uint8_t rgbpanel_brightness = 31+min( (1 << (brightness+2)), 224);
     // neopixels are bright, we tone brightness down
     matrix_brightness = (1 << (brightness-1)) - 1;
 
@@ -3407,6 +3412,8 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  send_serial("c");}
 	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  send_serial("d");}
 	    else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
+	    else if (readchar == 'e') { Serial.println("exit");			exit(0);}
+	    else if (readchar == 'x') { Serial.println("exit");			exit(0);}
 	#endif
 	}
     }
