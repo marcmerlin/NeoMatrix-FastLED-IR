@@ -207,7 +207,26 @@ typedef enum {
     f_bpm = 13,
 } StripDemo;
 
-StripDemo nextdemo = f_theaterChaseRainbow;
+
+char *StripDemoName[] = {
+    "nothing",
+    "colorWipe",
+    "rainbow",
+    "rainbowCycle",
+    "theaterChase",
+    "theaterChaseRainbow",
+    "cylon",
+    "cylonTrail",
+    "doubleConverge",
+    "doubleConvergeRev",
+    "doubleConvergeTrail",
+    "flash",
+    "juggle",
+    "bpm",
+};
+uint8_t StripDemoCnt = ARRAY_SIZE(StripDemoName)-1;
+
+StripDemo STRIPDEMO = f_theaterChaseRainbow;
 // Is the current demo linked to a color (false for rainbow demos)
 bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
@@ -3480,28 +3499,28 @@ void IR_Serial_Handler() {
 	case IR_RGBZONE_RED:
 	    Serial.println("Got IR: Red (0)");
 	    if (is_change()) { matrix_change(0); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0xFF0000;
 	    return;
 
 	case IR_RGBZONE_GREEN:
 	    Serial.println("Got IR: Green (3)");
 	    if (is_change()) { matrix_change(3); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x00FF00;
 	    return;
 
 	case IR_RGBZONE_BLUE:
 	    Serial.println("Got IR: Blue (5)");
 	    if (is_change()) { matrix_change(5); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x0000FF;
 	    return;
 
 	case IR_RGBZONE_WHITE:
 	    Serial.println("Got IR: White (7)");
 	    if (is_change()) { matrix_change(7); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0xFFFFFF;
 	    showip();
 	    return;
@@ -3511,28 +3530,28 @@ void IR_Serial_Handler() {
 	case IR_RGBZONE_RED2:
 	    Serial.println("Got IR: Red2 (9)");
 	    if (is_change()) { matrix_change(9); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0xCE6800;
 	    return;
 
 	case IR_RGBZONE_GREEN2:
 	    Serial.println("Got IR: Green2 (11)");
 	    if (is_change()) { matrix_change(11); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x00BB00;
 	    return;
 
 	case IR_RGBZONE_BLUE2:
 	    Serial.println("Got IR: Blue2 (13)");
 	    if (is_change()) { matrix_change(13); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x0000BB;
 	    return;
 
 	case IR_RGBZONE_PINK:
 	    Serial.println("Got IR: Pink (15)");
 	    if (is_change()) { matrix_change(15); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0xFF50FE;
 	    return;
 
@@ -3541,28 +3560,28 @@ void IR_Serial_Handler() {
 	case IR_RGBZONE_ORANGE:
 	    Serial.println("Got IR: Orange (17)");
 	    if (is_change()) { matrix_change(17); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0xFF8100;
 	    return;
 
 	case IR_RGBZONE_BLUE3:
 	    Serial.println("Got IR: Green2 (19)");
 	    if (is_change()) { matrix_change(19); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x00BB00;
 	    return;
 
 	case IR_RGBZONE_PURPLED:
 	    Serial.println("Got IR: DarkPurple (21)");
 	    if (is_change()) { matrix_change(21); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x270041;
 	    return;
 
 	case IR_RGBZONE_PINK2:
 	    Serial.println("Got IR: Pink2 (23)");
 	    if (is_change()) { matrix_change(23); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0xFFB9FF;
 	    Serial.println("Got IR: Pink2");
 	    return;
@@ -3572,28 +3591,28 @@ void IR_Serial_Handler() {
 	case IR_RGBZONE_ORANGE2:
 	    Serial.println("Got IR: Orange2 (25)");
 	    if (is_change()) { matrix_change(25); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0xFFCA49;
 	    return;
 
 	case IR_RGBZONE_GREEN3:
 	    Serial.println("Got IR: Green2 (27)");
 	    if (is_change()) { matrix_change(27); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x006A00;
 	    return;
 
 	case IR_RGBZONE_PURPLE:
 	    Serial.println("Got IR: DarkPurple2 (29)");
 	    if (is_change()) { matrix_change(29); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x2B0064;
 	    return;
 
 	case IR_RGBZONE_BLUEL:
 	    Serial.println("Got IR: BlueLight (31)");
 	    if (is_change()) { matrix_change(31); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x50A7FF;
 	    return;
 
@@ -3602,28 +3621,28 @@ void IR_Serial_Handler() {
 	case IR_RGBZONE_YELLOW:
 	    Serial.println("Got IR: Yellow (33)");
 	    if (is_change()) { matrix_change(33); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0xF0FF00;
 	    return;
 
 	case IR_RGBZONE_GREEN4:
 	    Serial.println("Got IR: Green2 (35)");
 	    if (is_change()) { matrix_change(35); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x00BB00;
 	    return;
 
 	case IR_RGBZONE_PURPLE2:
 	    Serial.println("Got IR: Purple2 (37)");
 	    if (is_change()) { matrix_change(37); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x660265;
 	    return;
 
 	case IR_RGBZONE_BLUEL2:
 	    Serial.println("Got IR: BlueLight2 (39)");
 	    if (is_change()) { matrix_change(39); return; }
-	    if (!colorDemo) nextdemo = f_colorWipe;
+	    if (!colorDemo) STRIPDEMO = f_colorWipe;
 	    demo_color = 0x408BD8;
 	    return;
 
@@ -3684,7 +3703,7 @@ void IR_Serial_Handler() {
 	    Serial.println("Got IR: DIY1 (49)");
 	    if (is_change()) { matrix_change(49); return; }
 	    // this uses the last color set
-	    nextdemo = f_colorWipe;
+	    STRIPDEMO = f_colorWipe;
 	    Serial.println("Got IR: DIY1 colorWipe");
 	    return;
 
@@ -3692,14 +3711,14 @@ void IR_Serial_Handler() {
 	    Serial.println("Got IR: DIY2 (51)");
 	    if (is_change()) { matrix_change(51); return; }
 	    // this uses the last color set
-	    nextdemo = f_theaterChase;
+	    STRIPDEMO = f_theaterChase;
 	    Serial.println("Got IR: DIY2/theaterChase");
 	    return;
 
 	case IR_RGBZONE_DIY3:
 	    Serial.println("Got IR: DIY3 (53)");
 	    if (is_change()) { matrix_change(53); return; }
-	    nextdemo = f_juggle;
+	    STRIPDEMO = f_juggle;
 	    Serial.println("Got IR: DIY3/Juggle");
 	    return;
 
@@ -3707,7 +3726,7 @@ void IR_Serial_Handler() {
 	    Serial.println("Got IR: AUTO/bpm (55)");
 	    if (is_change()) { matrix_change(55); return; }
 	    matrix_change(DEMO_TEXT_THANKYOU);
-	    nextdemo = f_bpm;
+	    STRIPDEMO = f_bpm;
 	    return;
 
 
@@ -3715,54 +3734,54 @@ void IR_Serial_Handler() {
 	case IR_RGBZONE_DIY4:
 	    Serial.println("Got IR: DIY4 (57)");
 	    if (is_change()) { matrix_change(57); return; }
-	    nextdemo = f_rainbowCycle;
+	    STRIPDEMO = f_rainbowCycle;
 	    Serial.println("Got IR: DIY4/rainbowCycle");
 	    return;
 
 	case IR_RGBZONE_DIY5:
 	    Serial.println("Got IR: DIY5 (59)");
 	    if (is_change()) { matrix_change(59); return; }
-	    nextdemo = f_theaterChaseRainbow;
+	    STRIPDEMO = f_theaterChaseRainbow;
 	    Serial.println("Got IR: DIY5/theaterChaseRainbow");
 	    return;
 
 	case IR_RGBZONE_DIY6:
 	    Serial.println("Got IR: DIY6 (100)");
 	    if (is_change()) { matrix_change(100); return; }
-	    nextdemo = f_doubleConvergeRev;
+	    STRIPDEMO = f_doubleConvergeRev;
 	    Serial.println("Got IR: DIY6/DoubleConvergeRev");
 	    return;
 
 	case IR_RGBZONE_FLASH:
 	    Serial.println("Got IR: FLASH/RPI restart");
 	    if (is_change()) { Serial.println("Restart PI pressed"); Serial.println("|RS"); return; }
-	    nextdemo = f_flash;
+	    STRIPDEMO = f_flash;
 	    return;
 
 	// And from here, jump across a few GIF anims (45-53)
 	case IR_RGBZONE_JUMP3:
 	    Serial.println("Got IR: JUMP3/Cylon (130)");
 	    if (is_change()) { matrix_change(130); return; }
-	    nextdemo = f_cylon;
+	    STRIPDEMO = f_cylon;
 	    return;
 
 	case IR_RGBZONE_JUMP7:
 	    Serial.println("Got IR: JUMP7/CylonWithTrail (160)");
 	    if (is_change()) { matrix_change(160); return; }
-	    nextdemo = f_cylonTrail;
+	    STRIPDEMO = f_cylonTrail;
 	    return;
 
 	case IR_RGBZONE_FADE3:
 	    Serial.println("Got IR: FADE3/DoubleConverge (69)");
 	    if (is_change()) { matrix_change(69); return; }
-	    nextdemo = f_doubleConverge;
+	    STRIPDEMO = f_doubleConverge;
 	    return;
 
 	case IR_RGBZONE_FADE7:
 	    Serial.println("Got IR: FADE7/DoubleConvergeTrail (108)");
 	    // TFSF display
 	    if (is_change()) { matrix_change(108); return; }
-	    nextdemo = f_doubleConvergeTrail;
+	    STRIPDEMO = f_doubleConvergeTrail;
 	    return;
 
 	case IR_JUNK:
@@ -3973,7 +3992,7 @@ void IR_Serial_Handler() {
     void Neopixel_Anim_Handler() {
 	if (millis() < waitmillis) return;
 
-	switch (nextdemo) {
+	switch (STRIPDEMO) {
 	// Colors on DIY1-3
 	case f_colorWipe:
 	    colorDemo = true;
@@ -4083,7 +4102,8 @@ void process_config(bool show_summary=false) {
 #define HTML_SHOWIP	    120
 #define HTML_RESTARTPI	    121
 #define HTML_REBOOTPI	    122
-#define HTML_DEMOCHOICE	    130
+#define HTML_STRIPCHOICE    130
+#define HTML_DEMOCHOICE	    131
 
 void actionProc(const char *pageName, const char *parameterName, int value, int ref1, void *ref2) {
     static int actionCount = 0;
@@ -4151,6 +4171,13 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	Serial.print(": ");
 	Serial.println(panelconfnames[value]);
 	changePanelConf(value, true);
+	break;
+
+    case HTML_STRIPCHOICE:
+	if (!value) break;
+	Serial.print("Got Strip Demo Choice ");
+	Serial.println(value);
+	STRIPDEMO = (StripDemo) value;
 	break;
 
     case HTML_DEMOCHOICE:
@@ -4358,7 +4385,12 @@ void rebuild_main_page(bool show_summary) {
 	 You can add any number of options, and specify
 	 the value of each.
     */
-    p->addSelect("Choose Demo", actionProc, MATRIX_STATE, HTML_DEMOCHOICE);
+    p->addSelect("Strip Demo", actionProc, STRIPDEMO, HTML_STRIPCHOICE);
+    for (uint8_t i=1; i <= StripDemoCnt; i++) {
+	p->addSelectOption(StripDemoName[i], i);
+    }
+
+    p->addSelect("Panel Demo", actionProc, MATRIX_STATE, HTML_DEMOCHOICE);
     for (uint16_t i=0; i <= DEMO_LAST_IDX; i++) {
 	uint16_t pos = demo_mapping[i].reverse;
 	//Serial.print(i);
