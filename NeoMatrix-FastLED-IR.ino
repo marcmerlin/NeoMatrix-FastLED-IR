@@ -4751,7 +4751,8 @@ void loop() {
 		if (! strncmp(buf, "|I:", 3)) {
 		    char IP[128];
 		    FILE *fp;
-		    fp = popen("hostname -I", "r");
+		    //fp = popen("hostname -I", "r");
+		    fp = popen("cat /root/IP", "r");
 		    fgets(IP, 128, fp);
 
 		    DISPLAYTEXT = String("ESP32: ") + String(buf+3) + "local: " + String(IP);
