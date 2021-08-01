@@ -1990,9 +1990,11 @@ uint8_t GifAnim(uint32_t idx) {
         gifloopsec =  animgif[idx].looptime;
         // ARDUINOONPC make the loop last longer
         #ifdef ARDUINOONPC
-            gifloopsec *= 2;
+            gifloopsec *= 4;
             // if we are connected to a remote device, let it change patterns for us
             if (ttyfd >= 0) gifloopsec = 1000;
+	#else
+            gifloopsec *= 2;
         #endif
 	#ifdef ESP32
 	    if (idx > LASTESP32IDX) {
@@ -3203,6 +3205,9 @@ void change_brightness(int8_t change, bool absolute=false) {
 	brightness = constrain(brightness + change, 2, 8);
     }
     led_brightness = min((1 << (brightness+1)) - 1, 255);
+#ifndef FASTLED_NEOMATRIX
+    FastLED.setBrightness(led_brightness);
+#endif
 
     // rgbpanels are dim, bump up brightness
     uint8_t rgbpanel_brightness = 31+min( (1 << (brightness+2)), 224);
@@ -3404,8 +3409,8 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'N') { Serial.println("ESP => next");		send_serial("n");}
 	    else if (readchar == 'P') { Serial.println("ESP => previous");	send_serial("p");}
 	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("f"); SHOW_LAST_FPS = !SHOW_LAST_FPS;}
-	    else if (readchar == '<') { Serial.println("ESP => dim"   );	send_serial("-"); change_brightness(-1);}
-	    else if (readchar == '>') { Serial.println("ESP => bright");	send_serial("+"); change_brightness(+1);}
+	    else if (readchar == '<') { Serial.println("ESP => dim"   );        send_serial("-"); change_brightness(-1);}
+	    else if (readchar == '>') { Serial.println("ESP => bright");        send_serial("+"); change_brightness(+1);}
 	    else if (readchar == 'B') { Serial.println("ESP => Bestof");	send_serial("B"); changeBestOf(true); }
 	    else if (readchar == 'A') { Serial.println("ESP => All Demos");	send_serial("b"); changeBestOf(false);}
 	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("=");}
