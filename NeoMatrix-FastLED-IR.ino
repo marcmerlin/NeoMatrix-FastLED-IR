@@ -208,7 +208,7 @@ typedef enum {
 } StripDemo;
 
 
-char *StripDemoName[] = {
+const char *StripDemoName[] = {
     "nothing",
     "colorWipe",
     "rainbow",
