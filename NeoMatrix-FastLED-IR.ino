@@ -4747,7 +4747,7 @@ void loop() {
 	if (((ttyfd < 0) || (millis() - last_esp32_ping) > 20000) && 
 	    esp32_connected) {
 	    esp32_connected = false;
-	    Serial.println("ESP32 ping timeout, going to local timeouts");
+	    Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>> ESP32 ping timeout, going to local timeouts");
 	    MATRIX_LOOP = 1;
 	    GIFLOOPSEC = 1;
 	}
@@ -4774,7 +4774,7 @@ void loop() {
 		    last_esp32_ping = millis();
 		    if (! esp32_connected) {
 			esp32_connected = true;
-			Serial.println("ESP32 ping received, going to long timeouts");
+			Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>> ESP32 ping received, going to long timeouts");
 		    }
 		//}
 		if (! strncmp(buf, "|St", 3)) {
