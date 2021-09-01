@@ -162,6 +162,7 @@ uint8_t GIF_CNT = 0;
 // controls how many times a demo should run its pattern
 // init at -1 to indicate that a demo is run for the first time (demo switch)
 int16_t MATRIX_LOOP = -1;
+uint16_t GIFLOOPSEC;
 uint32_t waitmillis = 0;
 
 //----------------------------------------------------------------------------
@@ -237,6 +238,8 @@ int16_t strip_speed = 50;
 
 // look for 'magic happens here' below
 #ifdef ARDUINOONPC
+    bool esp32_connected = false;
+
     #include <errno.h>
     #include <fcntl.h>
     #include <stdio.h>
@@ -320,6 +323,7 @@ int16_t strip_speed = 50;
 	    set_interface_attribs(ttyfd, B115200);
 	    // empty input buffer of possible garbage
 	    while (read(ttyfd, &s, 1)) {}
+	    esp32_connected = true;
 	    printf("Opened %s telling ESP32 to switch to PANELCONFNUM 4\n", *devname);
 	    // Assume we just connected to an ESP32, which starts in its PANELCONFNUM 3 (ESP32 mode)
 	    // and switch it to PANELCONFNUM 4 (rPI with longer menus).
@@ -2002,18 +2006,16 @@ uint8_t GifAnim(uint32_t idx) {
     if (idx == 65535) return 0;
     // Avoid crashes due to overflows
     idx = idx % GIF_CNT;
-    static uint16_t gifloopsec;
 
     if (matrix_reset_demo == 1) {
         matrix_reset_demo = 0;
-        gifloopsec =  animgif[idx].looptime;
+        GIFLOOPSEC =  animgif[idx].looptime;
         // ARDUINOONPC make the loop last longer
         #ifdef ARDUINOONPC
-            gifloopsec *= 4;
             // if we are connected to a remote device, let it change patterns for us
-            if (ttyfd >= 0) gifloopsec = 1000;
+            if (ttyfd >= 0 && esp32_connected) GIFLOOPSEC = 1000;
 	#else
-            gifloopsec *= 2;
+            GIFLOOPSEC *= 2;
         #endif
 	#ifdef ESP32
 	    if (idx > LASTESP32IDX) {
@@ -2063,8 +2065,8 @@ uint8_t GifAnim(uint32_t idx) {
     ShowMHfps();
 
     EVERY_N_SECONDS(1) {
-	Serial.print(gifloopsec); Serial.print(" ");
-	if (!gifloopsec--) { Serial.println(); return 0; };
+	Serial.print(GIFLOOPSEC); Serial.print(" ");
+	if (!GIFLOOPSEC--) { Serial.println(); return 0; };
     }
     return repeat;
 }
@@ -3088,7 +3090,7 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
     }
     #ifdef ARDUINOONPC
 	// if we are connected to a remote device, let it change patterns for us
-	if (ttyfd >= 0) MATRIX_LOOP = 999;
+	if (ttyfd >= 0 && esp32_connected) MATRIX_LOOP = 999;
     #endif
     Serial.print(" (");
     Serial.print(demo_list[demoidx(MATRIX_DEMO)].name);
@@ -4722,6 +4724,7 @@ void loop() {
 	char s;
 	int rdlen;
 	struct stat stbuf;
+	static uint32_t last_esp32_ping = millis();
 
 	if (ttyfd > -1 && stat(serialdev, &stbuf)) {
 	    printf("ttyfd closed %d, (%s)\n", ttyfd, serialdev);
@@ -4735,6 +4738,20 @@ void loop() {
 	    }
 	    if (ttyfd < 0) openttyUSB(&serialdev);
 	}
+
+	//Serial.print((millis() - last_esp32_ping));
+	//Serial.print(" ");
+	//Serial.println(esp32_connected);
+	// If nothing is received after 20 seconds, it can be that the USB connection
+	// died while staying up, or the ESP32 crashed
+	if (((ttyfd < 0) || (millis() - last_esp32_ping) > 20000) && 
+	    esp32_connected) {
+	    esp32_connected = false;
+	    Serial.println("ESP32 ping timeout, going to local timeouts");
+	    MATRIX_LOOP = 1;
+	    GIFLOOPSEC = 1;
+	}
+
 	if (ttyfd < 0) return;
 		
 	// Read up to 80 characters in the buffer and then continue the loop
@@ -4751,12 +4768,15 @@ void loop() {
 		// attempt to do an active serial watchdog (protocol keepalive)
 		// to keep things simpler, though, we'll just check for ttyfd >= 0
 		// which when connected to an ESP32 USB, is close enough to being the same.
-		#if 0
-		    // If we are getting serial pings, run the current demo for
-		    // a long time, because we expect the ESP to send us 'next'
-		    if (! strncmp(buf, "FrameBuffer::GFX", 16)) MATRIX_LOOP = 20;
-		    if (! strncmp(buf, "Done with demo", 14)) MATRIX_LOOP = 20;
-		#endif
+		// If we are getting serial pings, run the current demo for
+		// a long time, because we expect the ESP to send us 'next'
+		//if (! strncmp(buf, "FrameBuffer::GFX", 16) || ! strncmp(buf, "Done with demo", 14)) {
+		    last_esp32_ping = millis();
+		    if (! esp32_connected) {
+			esp32_connected = true;
+			Serial.println("ESP32 ping received, going to long timeouts");
+		    }
+		//}
 		if (! strncmp(buf, "|St", 3)) {
 		    Serial.println("Got ESP start, enable ESP serial input");
 		    delay(10);
