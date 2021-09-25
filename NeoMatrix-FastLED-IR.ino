@@ -67,6 +67,14 @@ using namespace Aiko;
 // number of lines read in demo_map.txt
 uint16_t CFG_LAST_INDEX = 0;
 
+// By default text demos rotate but they can be made to stay still for a picture
+bool ROTATE_TEXT = true;
+
+// show all demos by default,
+bool SHOW_BEST_DEMOS = false;
+
+bool MATRIX_RESET_DEMO = true;
+
 // Different panel configurations: 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
 #define CONFIGURATIONS 5
 const char *panelconfnames[CONFIGURATIONS] = {
@@ -596,8 +604,8 @@ uint8_t tfsf(uint32_t unused) {
     if (mheight >= 64) return tfsf_zoom(99);
 
     // For smaller displays, flash letters one by one.
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 1;
 	spd = 1.0;
@@ -665,7 +673,7 @@ uint8_t tfsf(uint32_t unused) {
 	startfade = -1;
 	spd += spdincr;
 	if (spd > resetspd) {
-	    matrix_reset_demo = 1;
+	    MATRIX_RESET_DEMO = true;
 	    return 0;
 	}
     }
@@ -689,8 +697,8 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
     bool done = 0;
     static uint8_t repeat = 4;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	direction = 1;
 	size = 3;
 	l = 0;
@@ -794,7 +802,7 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
 
     //Serial.println("Done with font animation");
     faster++;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     dont_exit =  0;
     // Serial.print("delayframe on last letter ");
     // Serial.println(delayframe);
@@ -816,15 +824,16 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
     uint8_t resetspd = 24;
     uint8_t l = 0;
 
-    unused = unused;
-
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 1;
 	spd = 1.0;
 	firstpass = 0;
     }
+
+    unused = unused;
+    if (! ROTATE_TEXT) spd = displayall+1;
 
     matrix->setTextSize(1);
     if (mheight >= 192)  {
@@ -894,7 +903,7 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
 	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
-	    matrix_reset_demo = 1;
+	    MATRIX_RESET_DEMO = true;
 	    return 0;
 	}
     }
@@ -904,6 +913,85 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
     matrix_show();
     return 1;
 }
+
+uint8_t becauseofcourse(uint32_t unused) {
+    static uint16_t state;
+    static float spd;
+    static bool didclear;
+    static bool firstpass;
+    float spdincr = 1.2;
+    uint16_t duration = 100;
+    uint16_t overlap = 50;
+    uint8_t displayall = 14;
+    uint8_t resetspd = 24;
+    uint8_t l = 0;
+
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
+	matrix->clear();
+	state = 1;
+	spd = 1.0;
+	didclear = 0;
+	firstpass = 0;
+    }
+
+    unused = unused;
+    if (! ROTATE_TEXT) spd = displayall+1;
+
+    matrix->setTextSize(1);
+    if (mheight >= 192)  {
+	matrix->setFont(&Century_Schoolbook_L_Bold_22);
+    } else if (mheight >= 64)  {
+	//matrix->setFont(FreeMonoBold9pt7b);
+	matrix->setFont(&Century_Schoolbook_L_Bold_8);
+    } else {
+	matrix->setFont(&TomThumb);
+    }
+
+    if (! didclear) {
+	matrix->clear();
+	didclear = 1;
+    }
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
+	matrix->setPassThruColor(0xFF0000);
+	if (mheight >= 192) matrix->setCursor(22, 65);
+	else matrix->setCursor(10, 32);
+	matrix->print("Trance");
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
+	firstpass = 1;
+	matrix->setPassThruColor(0xFFFFFF);
+	if (mheight >= 192) { matrix->setCursor(14, 105); matrix->print("Because"); }
+	else { matrix->setCursor(8, 48); matrix->print("BECAUSE"); }
+    }
+    l++;
+
+    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
+	matrix->setPassThruColor(0xFFFFFF);
+	if (mheight >= 192) { matrix->setCursor(0, 145); matrix->print("Of Course"); }
+	else { matrix->setCursor(0, 64); matrix->print("OF COURSE"); }
+    }
+    l++;
+
+    matrix->setPassThruColor();
+    if (state++ > (l*duration-l*overlap)/spd) {
+	state = 1;
+	spd += spdincr;
+	if (spd > resetspd) {
+	    MATRIX_RESET_DEMO = true;
+	    return 0;
+	}
+    }
+
+    if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
+
+    matrix_show();
+    return 2;
+}
+
 
 uint8_t trancejesus(uint32_t unused) {
     static uint16_t state;
@@ -917,16 +1005,17 @@ uint8_t trancejesus(uint32_t unused) {
     uint8_t resetspd = 24;
     uint8_t l = 0;
 
-    unused = unused;
-
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 1;
 	spd = 1.0;
 	didclear = 0;
 	firstpass = 0;
     }
+
+    unused = unused;
+    if (! ROTATE_TEXT) spd = displayall+1;
 
     matrix->setTextSize(1);
     if (mheight >= 192)  {
@@ -986,7 +1075,7 @@ uint8_t trancejesus(uint32_t unused) {
 	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
-	    matrix_reset_demo = 1;
+	    MATRIX_RESET_DEMO = true;
 	    return 0;
 	}
     }
@@ -1008,14 +1097,15 @@ uint8_t bbb(uint32_t unused) {
     uint8_t resetspd = 24;
     uint8_t l = 0;
 
-    unused = unused;
-
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 1;
 	spd = 1.0;
     }
+
+    unused = unused;
+    if (! ROTATE_TEXT) spd = displayall+1;
 
     matrix->setTextSize(1);
     if (mw >= 64) {
@@ -1064,7 +1154,7 @@ uint8_t bbb(uint32_t unused) {
 	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
-	    matrix_reset_demo = 1;
+	    MATRIX_RESET_DEMO = true;
 	    return 0;
 	}
     }
@@ -1139,8 +1229,8 @@ uint8_t esrbr_fade(uint32_t unused) {
 
     unused = unused;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 0;
 	wheel = 0;
@@ -1210,7 +1300,7 @@ uint8_t esrbr_fade(uint32_t unused) {
 	//Serial.println(spd);
 	//Serial.println(state);
 	if (spd > resetspd) {
-	    matrix_reset_demo = 1;
+	    MATRIX_RESET_DEMO = true;
 	    return 0;
 	}
     }
@@ -1232,9 +1322,9 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y, uint16_t loopcnt 
     }
     matrix->setFont(f);
 
-    if (matrix_reset_demo == 1) {
+    if (MATRIX_RESET_DEMO) {
 	state = 0;
-	matrix_reset_demo = 0;
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
     }
 
@@ -1249,7 +1339,7 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y, uint16_t loopcnt 
     matrix_show();
 
     if (state > loopcnt) {
-	matrix_reset_demo = 1;
+	MATRIX_RESET_DEMO = true;
 	return 0;
     }
     return 2;
@@ -1263,8 +1353,8 @@ uint8_t squares(uint32_t reverse) {
     uint8_t repeat = 1;
     static uint16_t delayframe = sqdelay;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 0;
 	wheel = 0;
@@ -1297,7 +1387,7 @@ uint8_t squares(uint32_t reverse) {
     // Serial.print("state ");
     // Serial.println(state);
     if (state > 250) {
-	matrix_reset_demo = 1;
+	MATRIX_RESET_DEMO = true;
 	return 0;
     }
     matrix_show();
@@ -1317,16 +1407,17 @@ uint8_t webwc(uint32_t unused) {
     uint8_t resetspd = 24;
     uint8_t l = 0;
 
-    unused = unused;
-
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 1;
 	spd = 1.0;
 	didclear = 0;
 	firstpass = 0;
     }
+
+    unused = unused;
+    if (! ROTATE_TEXT) spd = displayall+1;
 
     matrix->setTextSize(1);
     if (mheight >= 192)  {
@@ -1403,7 +1494,7 @@ uint8_t webwc(uint32_t unused) {
 	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
-	    matrix_reset_demo = 1;
+	    MATRIX_RESET_DEMO = true;
 	    return 0;
 	}
     }
@@ -1425,8 +1516,8 @@ uint8_t scrollText(const char str[], uint8_t len) {
     uint8_t stdelay = 1;
     static uint16_t delayframe = stdelay;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	x = 7;
     }
     matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
@@ -1460,7 +1551,7 @@ uint8_t scrollText(const char str[], uint8_t len) {
     x--;
 
     if (x < (-1 * (int16_t)len * fontwidth)) {
-	matrix_reset_demo = 1;
+	MATRIX_RESET_DEMO = true;
 	return 0;
     }
     matrix_show();
@@ -1495,8 +1586,8 @@ uint8_t DoublescrollText(uint32_t choice) {
     }
     static uint16_t delayframe = stdelay;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	x = 1;
     }
     matrix->setFont( &Century_Schoolbook_L_Bold[fontsize] );
@@ -1523,7 +1614,7 @@ uint8_t DoublescrollText(uint32_t choice) {
     x++;
 
     if (x > 1.8 * len * fontwidth) {
-	matrix_reset_demo = 1;
+	MATRIX_RESET_DEMO = true;
 	return 0;
     }
     matrix_show();
@@ -1633,8 +1724,8 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
 	bitmapSize = 24;
     }
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 0;
 	panOrBounce(&x, &y, bitmapSize, bitmapSize, true);
@@ -1647,7 +1738,7 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
     matrix_show();
 
     if (state++ == 600) {
-	matrix_reset_demo = 1;
+	MATRIX_RESET_DEMO = true;
 	return 0;
     }
     return 3;
@@ -2007,8 +2098,8 @@ uint8_t GifAnim(uint32_t idx) {
     // Avoid crashes due to overflows
     idx = idx % GIF_CNT;
 
-    if (matrix_reset_demo == 1) {
-        matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+        MATRIX_RESET_DEMO = false;
         GIFLOOPSEC =  animgif[idx].looptime;
         // ARDUINOONPC make the loop last longer
         #ifdef ARDUINOONPC
@@ -2115,9 +2206,9 @@ uint8_t scrollBigtext(uint32_t unused) {
     const uint8_t textlines = ARRAY_SIZE(text);
     static uint32_t textcolor[textlines];
 
-    if (matrix_reset_demo == 1) {
+    if (MATRIX_RESET_DEMO) {
 	state = 0;
-	matrix_reset_demo = 0;
+	MATRIX_RESET_DEMO = false;
 	panOrBounce(&x, &y, 54*6, ARRAY_SIZE(text)*7, true);
 	for (uint8_t i=0; i<=textlines-1; i++) {
 	    textcolor[i] = random8(96) * 65536 + (127 + random8(128))* 256, random8(96);
@@ -2142,7 +2233,7 @@ uint8_t scrollBigtext(uint32_t unused) {
     matrix_show();
 
     if (state > loopcnt) {
-	matrix_reset_demo = 1;
+	MATRIX_RESET_DEMO = true;
 	return 0;
     }
     return resetcnt;
@@ -2184,8 +2275,8 @@ uint8_t demoreel100(uint32_t demo) {
     static uint8_t gHue = 0;
     uint8_t repeat = 2;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 0;
     }
@@ -2241,7 +2332,7 @@ uint8_t demoreel100(uint32_t demo) {
 	    }
 	}
     } else {
-	matrix_reset_demo = 1;
+	MATRIX_RESET_DEMO = true;
 	return 0;
     }
 
@@ -2256,15 +2347,15 @@ uint8_t call_twinklefox(uint32_t unused)
 
     unused = unused;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	state = 0;
     }
 
     twinkle_loop();
     ShowMHfps();
     if (state++ < 1000) return 2;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     return 0;
 }
 
@@ -2274,15 +2365,15 @@ uint8_t call_pride(uint32_t unused)
 
     unused = unused;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	state = 0;
     }
 
     pride();
     matrix_show();
     if (state++ < 1000) return 1;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     return 0;
 }
 
@@ -2291,8 +2382,8 @@ uint8_t call_fireworks(uint32_t unused) {
 
     unused = unused;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 0;
     }
@@ -2300,7 +2391,7 @@ uint8_t call_fireworks(uint32_t unused) {
     fireworks();
     matrix_show();
     if (state++ < 500) return 1;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     return 0;
 }
 
@@ -2309,8 +2400,8 @@ uint8_t call_fire(uint32_t unused) {
 
     unused = unused;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
 	state = 0;
     }
@@ -2320,7 +2411,7 @@ uint8_t call_fire(uint32_t unused) {
     fire();
     matrix_show();
     if (state++ < 1500) return 1;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     return 0;
 }
 
@@ -2329,9 +2420,9 @@ uint8_t call_rain(uint32_t which) {
     static uint16_t state;
     static uint16_t delayframe = raindelay;
 
-    if (matrix_reset_demo == 1) {
+    if (MATRIX_RESET_DEMO) {
 	sublime_reset();
-	matrix_reset_demo = 0;
+	MATRIX_RESET_DEMO = false;
 	state = 0;
     }
 
@@ -2349,7 +2440,7 @@ uint8_t call_rain(uint32_t which) {
     if (which == 3) stormyRain();
     matrix_show();
     if (state++ < 500) return 2;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     return 0;
 }
 
@@ -2360,8 +2451,8 @@ uint8_t call_pacman(uint32_t unused) {
 
     unused = unused;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	pacman_setup(loopcnt);
     }
 
@@ -2375,7 +2466,7 @@ uint8_t call_pacman(uint32_t unused) {
     delayframe = pacmandelay;
 
     if (pacman_loop()) return 1;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     return 0;
 }
 
@@ -2391,8 +2482,8 @@ uint8_t plasma(uint32_t unused) {
 
     static uint16_t state;
 
-    if (matrix_reset_demo == 1) {
-	matrix_reset_demo = 0;
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
 	state = 0;
     }
 
@@ -2417,7 +2508,7 @@ uint8_t plasma(uint32_t unused) {
 
     matrix_show();
     if (state++ < 200) return 1;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     return 0;
 }
 
@@ -2453,10 +2544,10 @@ uint8_t tmed(uint32_t demo) {
     static uint8_t delayframe = dfinit;
     demo = tmed_mapping[demo][0];
 
-    if (matrix_reset_demo == 1) {
+    if (MATRIX_RESET_DEMO) {
 	Serial.print("Starting ME Table Demo #");
 	Serial.println(demo);
-	matrix_reset_demo = 0;
+	MATRIX_RESET_DEMO = false;
 	td_init();
 
 	switch (demo) {
@@ -2603,7 +2694,7 @@ uint8_t tmed(uint32_t demo) {
     td_loop();
     matrix_show();
     if (counter < loops) return 2;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     return 0;
 }
 
@@ -2643,7 +2734,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 007 */ { "With Every Beat...", webwc, -1, NULL },
 /* 008 */ { "Burn Baby Burn", bbb, -1, NULL },
 /* 009 */ { "Trance Jesus Do", trancejesus, -1, NULL },
-/* 010 */ { "", NULL, -1, NULL },
+/* 010 */ { "Trance Because Of Course", becauseofcourse, -1, NULL },
 /* 011 */ { "", NULL, -1, NULL },
 /* 012 */ { "", NULL, -1, NULL },
 /* 013 */ { "", NULL, -1, NULL },
@@ -3030,7 +3121,7 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
     matrix->clear();
     // this ensures the next demo returns the number of times it should loop
     MATRIX_LOOP = loop;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
 
     Serial.print("got matrix_change code ");
     Serial.print(demo);
@@ -3070,7 +3161,7 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 		MATRIX_STATE = (MATRIX_STATE % (DEMO_LAST_IDX+1));
 		Serial.print(MATRIX_STATE);
 		MATRIX_DEMO = demo_mapping[MATRIX_STATE].mapping;
-		if (show_best_demos) {
+		if (SHOW_BEST_DEMOS) {
 		    Serial.print(" (bestof mode) ");
 		    if (demo_mapping[MATRIX_STATE].enabled[PANELCONFNUM] & 2) break;
 		} else {
@@ -3175,7 +3266,7 @@ void Matrix_Handler() {
 	if (ret) goto exit;
     }
 
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     Serial.print("Done with demo ");
     Serial.print(MATRIX_DEMO);
     Serial.print(" loop ");
@@ -3206,7 +3297,7 @@ void leds_setcolor(uint16_t i, uint32_t c) {
 #endif // NEOPIXEL_PIN
 
 void change_brightness(int8_t change, bool absolute=false) {
-    static uint8_t brightness = dfl_matrix_brightness_level;
+    static uint8_t brightness = DFL_MATRIX_BRIGHTNESS_LEVEL;
     static int32_t last_brightness_change = 0 ;
     static bool firsttime = true ;
 
@@ -3359,7 +3450,7 @@ uint8_t check_startup_IR_serial() {
 }
 
 void changeBestOf(bool bestof) {
-    show_best_demos = bestof;
+    SHOW_BEST_DEMOS = bestof;
     rebuild_main_page();
 }
 
@@ -3408,7 +3499,7 @@ void IR_Serial_Handler() {
 		    remotesend = false;
 		} else
 		#endif
-		    matrix_change(new_pattern);
+		    matrix_change(new_pattern, true);
 	    } else {
 		Serial.print("Got serial char ");
 		Serial.println(readchar);
@@ -3419,6 +3510,8 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
 	    else if (readchar == 'b') { Serial.println("Serial => Bestof");	changeBestOf(true); }
 	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(false);}
+	    else if (readchar == 'z') { Serial.println("Serial => Rotating Text"); ROTATE_TEXT = true; }
+	    else if (readchar == 'Z') { Serial.println("Serial => Stable Text");   ROTATE_TEXT = false;}
 	    //else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
 	    else if (readchar == 'f') { SHOW_LAST_FPS = !SHOW_LAST_FPS; }
 	    else if (readchar == '=') { Serial.println("Serial => keep demo?"); MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
@@ -4099,6 +4192,7 @@ void process_config(bool show_summary=false) {
 #define HTML_BESTOF	    100
 #define HTML_BRIGHT	    101
 #define HTML_SPEED	    102
+#define HTML_ROTATE	    103
 #define HTML_BUTPREV	    110
 #define HTML_BUTNEXT	    111
 #define HTML_SHOWIP	    120
@@ -4147,6 +4241,13 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	Serial.print("Bestof on/off: ");
 	Serial.println(value);
 	changeBestOf(value);
+	break;
+
+    case HTML_ROTATE_TEXT:
+	Serial.print("Rotate Text on/off: ");
+	Serial.println(value);
+	if (value) Serial.println("|zz") else Serial.println("|ZZ");
+	ROTATE_TEXT = value;
 	break;
 
     case HTML_BRIGHT:
@@ -4370,8 +4471,9 @@ void rebuild_main_page(bool show_summary) {
 	p->addSelectOption(panelconfnames[i], i);
     }
 
-    p->addSlider(0, 1, "Enable BestOf Only?", actionProc, show_best_demos, HTML_BESTOF);
-    p->addSlider(1, 8, "Brightness", actionProc, dfl_matrix_brightness_level, HTML_BRIGHT);
+    p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
+    p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE);
+    p->addSlider(1, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
     /*
@@ -4825,6 +4927,14 @@ void loop() {
 		if (! strncmp(buf, "|RB", 3)) {
 		    Serial.println("Got reboot");
 		    system("/root/rebootme");
+		}
+		if (! strncmp(buf, "|zz", 3)) {
+		    Serial.println("Switching to rotating text");
+		    ROTATE_TEXT = true;
+		}
+		if (! strncmp(buf, "|ZZ", 3)) {
+		    Serial.println("Switching to stable text for pictures");
+		    ROTATE_TEXT = false;
 		}
 	    }
 	}

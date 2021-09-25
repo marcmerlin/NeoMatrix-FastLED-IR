@@ -42,7 +42,7 @@
 uint8_t led_brightness = 64;
 // matrix_brightness is defined on neomatrix_config.h
 
-uint8_t dfl_matrix_brightness_level = 5;
+uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
 
 #ifdef ESP32
 // Use https://github.com/lbernstone/IR32.git instead of IRRemote
@@ -86,7 +86,7 @@ uint8_t dfl_matrix_brightness_level = 5;
 
 #elif mheight == 64
     // Make the burning man 64x64 brighter by default, we have a big power supply :)
-    dfl_matrix_brightness_level = 6;
+    DFL_MATRIX_BRIGHTNESS_LEVEL = 6;
     #define IR_RECV_PIN 34
 
 #elif mheight == 32
@@ -104,12 +104,6 @@ uint8_t dfl_matrix_brightness_level = 5;
 // Global variables use 32880 bytes (40%) of dynamic memory, leaving 49040 bytes for local variables. Maximum is 81920 bytes.
 // Uploading 287936 bytes from /tmp/arduino_build_498793/NeoMatrix-FastLED-IR.ino.bin to flash at 0x00000000
 //#define NOFONTS 1
-
-// show all demos by default,
-bool show_best_demos = false;
-
-
-bool matrix_reset_demo = 1;
 
 void matrix_show();
 void aurora_setup();

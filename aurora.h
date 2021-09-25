@@ -52,6 +52,9 @@ AuroraDrawable* items[] = {
 };
 AuroraDrawable *drawable;
 
+// defined in NeoMatrix-FastLED-IR.ino
+extern bool MATRIX_RESET_DEMO;
+
 int8_t item = -1;
 uint8_t numitems = sizeof(items) / sizeof(items[0]);
 
@@ -68,7 +71,7 @@ uint8_t aurora(uint32_t item) {
     if (item == 7 ) { loops = 5000; } // Pendulum Wave
     if (item == 10) { loops = 7000; } // Spiro
 
-    if (matrix_reset_demo == 1) {
+    if (MATRIX_RESET_DEMO) {
 	counter = 0;
 	drawable = items[item];
 	Serial.print("Switching to drawable #");
@@ -76,7 +79,7 @@ uint8_t aurora(uint32_t item) {
 	Serial.print(": ");
 	Serial.println(drawable->name);
 	drawable->start();
-	matrix_reset_demo = 0;
+	MATRIX_RESET_DEMO = false;
 	matrix->clear();
     }
 
@@ -90,7 +93,7 @@ uint8_t aurora(uint32_t item) {
     matrix_show();
 
     if (counter++ < loops) return repeat;
-    matrix_reset_demo = 1;
+    MATRIX_RESET_DEMO = true;
     matrix->setPassThruColor();
     return 0;
 }
