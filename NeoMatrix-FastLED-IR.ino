@@ -4334,10 +4334,9 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 
     if (strcmp(request.path, "/form") == 0) {
 	uint8_t k = (int)request.query.size();
-	uint8_t idx = 0;
 
-	for (int ix = idx; ix < k - 1; ix += 2)
-	    Serial.printf("FORM arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
+	for (int ix = 0; ix < k - 1; ix += 2)
+	    Serial.printf("FORM arg %d of %d: %s = %s\n", ix / 2, k/2, request.query[ix], request.query[ix + 1]);
 
 	if (strcmp(request.query[0], "REBOOT") == 0) { 
 	    p->renderHttpResponseHeader("text/html", 200);
@@ -4354,33 +4353,40 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	// Changes to config file lines, look like this:
 	// arg 0: 0001 = 1 3 3 3 3 106
 	if (request.query[0][0] == '0') {
-	    // This is a perfect example of how you should never scan untrusted
-	    // input, but honestly if specially crafted input causes a crash, I
-	    // don't care :)
-	    int d32, d64, d96bm, d96, d192;
-	    int index, dmap;
-	    index = atoi(request.query[0]);
-	    if (6 == sscanf(request.query[1], "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap)) {
-		// Serial.printf("0:%s, 1:%s\n", request.query[0], request.query[1]);
-		Serial.printf("Got demo_list update for index %d: %d %d %d %d %d, mapped to %d\n", index, d32, d64, d96bm, d96, d192, dmap);
-		demo_mapping[index].mapping = dmap;
-		demo_mapping[index].enabled[0] = d32;
-		demo_mapping[index].enabled[1] = d64;
-		demo_mapping[index].enabled[2] = d96bm;
-		demo_mapping[index].enabled[3] = d96;
-		demo_mapping[index].enabled[4] = d192;
-		demo_mapping[dmap].reverse = index;
-		// rebuilding the page also re-processes the config
-		rebuild_main_page(true);
-		// no need to rebuild the config page because it generates
-		// its html at runtime
-		// register_config_page();
-		p->renderHttpResponseHeader("text/html", 200);
-		w.puts("<meta http-equiv=refresh content=\"3; URL=/Config\" />\n");
-		
-	    } else { 
-		Serial.printf("sscanf failed on %s\n", request.query[1]);
+	    uint16_t ix = 0;
+	    // k counts arg + value, we only want the number of pairs
+	    k = k/2;
+
+	    while (k-->0 && (request.query[ix][0] == '0')) {
+		// This is a perfect example of how you should never scan untrusted
+		// input, but honestly if specially crafted input causes a crash, I
+		// don't care :)
+		int d32, d64, d96bm, d96, d192;
+		int index, dmap;
+		index = atoi(request.query[ix]);
+		if (6 == sscanf(request.query[++ix], "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap)) {
+		    // Serial.printf("0:%s, 1:%s\n", request.query[0], request.query[1]);
+		    Serial.printf("Got demo_list update for index %d: %d %d %d %d %d, mapped to %d\n", index, d32, d64, d96bm, d96, d192, dmap);
+		    demo_mapping[index].mapping = dmap;
+		    demo_mapping[index].enabled[0] = d32;
+		    demo_mapping[index].enabled[1] = d64;
+		    demo_mapping[index].enabled[2] = d96bm;
+		    demo_mapping[index].enabled[3] = d96;
+		    demo_mapping[index].enabled[4] = d192;
+		    demo_mapping[dmap].reverse = index;
+		    
+		} else { 
+		    Serial.printf("sscanf failed on %s\n", request.query[++ix]);
+		}
+		ix++;
 	    }
+	    // rebuilding the page also re-processes the config
+	    rebuild_main_page(true);
+	    // no need to rebuild the config page because it generates
+	    // its html at runtime
+	    // register_config_page();
+	    p->renderHttpResponseHeader("text/html", 200);
+	    w.puts("<meta http-equiv=refresh content=\"3; URL=/Config\" />\n");
 	    return;
 	}
 
@@ -4411,7 +4417,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	}
 
 	// else show arguments sent (for debugging)
-	for (int ix = idx; ix < k - 1; ix += 2)
+	for (int ix = 0; ix < k - 1; ix += 2)
 	    w.putf("arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
 	return;
     }
