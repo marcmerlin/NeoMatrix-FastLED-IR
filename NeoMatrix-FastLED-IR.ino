@@ -111,10 +111,12 @@ typedef struct demo_entry_ {
 typedef struct mapping_entry_ {
     // reverse mapping to the original demo slot (for demos that are
     // swapped to a different slot)
+    // get filled with dmap which is the the one colum before last in demo_map.txt
     uint16_t mapping;
     // 1: enabled, 2: bestof enabled only, 3: both
     uint8_t enabled[CONFIGURATIONS];
-    // allow reversing a demo to its original index
+    // allow reversing a demo to its original index (each demo points to its new
+    // slot and that new slot as an index back with .reverse)
     uint16_t reverse;
 } Mapping_Entry;
 
@@ -4192,7 +4194,7 @@ void process_config(bool show_summary=false) {
 #define HTML_BESTOF	    100
 #define HTML_BRIGHT	    101
 #define HTML_SPEED	    102
-#define HTML_ROTATE	    103
+#define HTML_ROTATE_TEXT    103
 #define HTML_BUTPREV	    110
 #define HTML_BUTNEXT	    111
 #define HTML_SHOWIP	    120
@@ -4246,7 +4248,7 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
     case HTML_ROTATE_TEXT:
 	Serial.print("Rotate Text on/off: ");
 	Serial.println(value);
-	if (value) Serial.println("|zz") else Serial.println("|ZZ");
+	if (value) Serial.println("|zz"); else Serial.println("|ZZ");
 	ROTATE_TEXT = value;
 	break;
 
@@ -4374,7 +4376,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 		// its html at runtime
 		// register_config_page();
 		p->renderHttpResponseHeader("text/html", 200);
-		w.puts("<meta http-equiv=refresh content=\"1; URL=/Config\" />\n");
+		w.puts("<meta http-equiv=refresh content=\"3; URL=/Config\" />\n");
 		
 	    } else { 
 		Serial.printf("sscanf failed on %s\n", request.query[1]);
@@ -4472,7 +4474,7 @@ void rebuild_main_page(bool show_summary) {
     }
 
     p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
-    p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE);
+    p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE_TEXT);
     p->addSlider(1, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
@@ -4546,11 +4548,14 @@ void register_config_page() {
 	char mapstr[14]; // "1 1 1 1 1 053" + NULL
 
 	w.putf("<FORM METHOD=GET ACTION=/form>\n");
-	w.putf("Save In Memory Demo Mapping ");
+	w.putf("Save In Memory Demo Mapping to flash");
 	w.putf("<INPUT TYPE=submit NAME=submit VALUE=SAVE>\n");
 	w.putf("</FORM><BR>\n");
 
+	w.putf("Array idx below is offset for GIF mappings<BR>\n");
+
 	for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
+	    uint16_t targetidx = demo_mapping[index].mapping;
 	    snprintf(lineidx, 5, "%04d", index);
 	    snprintf(mapstr, 14, "%d %d %d %d %d %03d", 
 		demo_mapping[index].enabled[0],
@@ -4561,12 +4566,12 @@ void register_config_page() {
 		demo_mapping[index].mapping );
 	    w.putf("<FORM METHOD=GET ACTION=/form>%s: <INPUT NAME=%s SIZE=10 VALUE=\"%s\"> ", 
 		   lineidx, lineidx, mapstr);
-	    if (demo_list[demoidx(index)].name != NULL) {
-		w.putf(demo_list[demoidx(index)].name);
+	    if (demo_list[demoidx(targetidx)].name != NULL) {
+		w.putf(demo_list[demoidx(targetidx)].name);
 	    } else {
 		w.putf("undefined");
 	    }
-	    w.putf(" (%d)", demoidx(index));
+	    w.putf(" (idx: %d)", demoidx(targetidx));
 	    w.putf("</FORM>\n");
 	    // We used to read the file, but now we render the in memory table
 	    //readingfile = PutFileLine(w, "/demo_map.txt");
@@ -4779,7 +4784,8 @@ void write_config_index(OmXmlWriter w) {
 
     file.print("#       demo #\n");
     file.print("#             position in sorted file\n");
-    file.print("# :%!sort -k7\n");
+    file.print("# :%!sort -k7 (or -k6 to edit and then -k7)\n");
+    file.print("# The last slot is not read by the code, it's only there for sorting the file\n");
 
     for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
 	snprintf(mapstr, 19, "%d %d %d %d %d %03d %03d\n", 
