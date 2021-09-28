@@ -3503,8 +3503,9 @@ void IR_Serial_Handler() {
 		#endif
 		    matrix_change(new_pattern, true);
 	    } else {
-		Serial.print("Got serial char ");
-		Serial.println(readchar);
+		Serial.print("Got serial char '");
+		Serial.print(readchar);
+		Serial.println("'");
 		remotesend = false;
 	    }
 
@@ -3535,6 +3536,8 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
 	    else if (readchar == 'e') { Serial.println("exit");			exit(0);}
 	    else if (readchar == 'x') { Serial.println("exit");			exit(0);}
+	#else
+	    else if (readchar == 'r') { Serial.println("Reboot"); resetFunc(); }
 	#endif
 	}
     }
@@ -4357,6 +4360,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	    // k counts arg + value, we only want the number of pairs
 	    k = k/2;
 
+	    p->renderHttpResponseHeader("text/html", 200);
 	    while (k-->0 && (request.query[ix][0] == '0')) {
 		// This is a perfect example of how you should never scan untrusted
 		// input, but honestly if specially crafted input causes a crash, I
@@ -4366,7 +4370,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 		index = atoi(request.query[ix]);
 		if (6 == sscanf(request.query[++ix], "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap)) {
 		    // Serial.printf("0:%s, 1:%s\n", request.query[0], request.query[1]);
-		    Serial.printf("Got demo_list update for index %d: %d %d %d %d %d, mapped to %d\n", index, d32, d64, d96bm, d96, d192, dmap);
+		    w.putf("Got demo_list update for index %d: %d %d %d %d %d, mapped to %d<BR>\n", index, d32, d64, d96bm, d96, d192, dmap);
 		    demo_mapping[index].mapping = dmap;
 		    demo_mapping[index].enabled[0] = d32;
 		    demo_mapping[index].enabled[1] = d64;
@@ -4376,16 +4380,17 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 		    demo_mapping[dmap].reverse = index;
 		    
 		} else { 
+		    w.putf("sscanf failed on %s\n", request.query[++ix]);
 		    Serial.printf("sscanf failed on %s\n", request.query[++ix]);
 		}
 		ix++;
 	    }
 	    // rebuilding the page also re-processes the config
+	    w.puts("Rebuilding index but not saving to flash<BR>\n");
 	    rebuild_main_page(true);
 	    // no need to rebuild the config page because it generates
 	    // its html at runtime
 	    // register_config_page();
-	    p->renderHttpResponseHeader("text/html", 200);
 	    w.puts("<meta http-equiv=refresh content=\"3; URL=/Config\" />\n");
 	    return;
 	}
@@ -4552,6 +4557,7 @@ void register_config_page() {
 	//bool readingfile = true;
 	char lineidx[5];
 	char mapstr[14]; // "1 1 1 1 1 053" + NULL
+	uint8_t display_cnt = 0;
 
 	w.putf("<FORM METHOD=GET ACTION=/form>\n");
 	w.putf("Save In Memory Demo Mapping to flash");
@@ -4559,8 +4565,10 @@ void register_config_page() {
 	w.putf("</FORM><BR>\n");
 
 	w.putf("Array idx below is offset for GIF mappings<BR>\n");
+	w.putf("Click Commit Button at the bottom to save to RAM<BR><BR>\n");
+	w.putf("<FORM METHOD=GET ACTION=/form>\n");
 
-	for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
+	for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) {
 	    uint16_t targetidx = demo_mapping[index].mapping;
 	    snprintf(lineidx, 5, "%04d", index);
 	    snprintf(mapstr, 14, "%d %d %d %d %d %03d", 
@@ -4570,18 +4578,25 @@ void register_config_page() {
 		demo_mapping[index].enabled[3],
 		demo_mapping[index].enabled[4],
 		demo_mapping[index].mapping );
-	    w.putf("<FORM METHOD=GET ACTION=/form>%s: <INPUT NAME=%s SIZE=10 VALUE=\"%s\"> ", 
+	    w.putf("%s: <INPUT NAME=%s SIZE=10 VALUE=\"%s\"> ", 
 		   lineidx, lineidx, mapstr);
 	    if (demo_list[demoidx(targetidx)].name != NULL) {
 		w.putf(demo_list[demoidx(targetidx)].name);
 	    } else {
 		w.putf("undefined");
 	    }
-	    w.putf(" (idx: %d)", demoidx(targetidx));
-	    w.putf("</FORM>\n");
+	    w.putf(" (%d)<BR>", demoidx(targetidx));
+	    if (display_cnt && display_cnt % 15 == 0) {
+		w.putf("<INPUT TYPE=submit NAME=save VALUE=SUBMIT>\n");
+		w.putf("</FORM>\n");
+		w.putf("<FORM METHOD=GET ACTION=/form>\n");
+	    }
+	    display_cnt++;
 	    // We used to read the file, but now we render the in memory table
 	    //readingfile = PutFileLine(w, "/demo_map.txt");
 	}
+	w.putf("<INPUT TYPE=submit NAME=save VALUE=SUBMIT>\n");
+	w.putf("</FORM>\n");
 	// empty the rest of the file, but there shouldn't be anything:
 	// this is required so that the file gets closed, and next caller
 	// gets to open a file from scratch.
