@@ -3534,8 +3534,9 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  send_serial("c");}
 	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  send_serial("d");}
 	    else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
-	    else if (readchar == 'e') { Serial.println("exit");			exit(0);}
-	    else if (readchar == 'x') { Serial.println("exit");			exit(0);}
+	    // Don't use a character that can be easily received by ESP32
+	    else if (readchar == '|') { Serial.println("exit");			exit(0);}
+	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); }
 	#else
 	    else if (readchar == 'r') { Serial.println("Reboot"); resetFunc(); }
 	#endif
