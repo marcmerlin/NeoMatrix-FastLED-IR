@@ -142,7 +142,7 @@ uint16_t MATRIX_DEMO; // this is initialized after MATRIX_STATE is updated in re
 uint32_t LAST_FPS = 0;
 bool SHOW_LAST_FPS = false;
 
-String DISPLAYTEXT="";
+String DISPLAYTEXT="00,28,0100,7,1,Hello";
 
 // Compute how many GIFs have been defined (called in setup)
 uint8_t GIF_CNT = 0;
@@ -1323,30 +1323,51 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y, uint16_t loopcnt 
     if (! f) {
 	switch (fontsel) {
 	case 1:
+	    // 32 UPPERCASE chars, or 32 wide lowercase
+	    // |T:00,05,0100,1,1,HELLOLOLO0LOLO5OLOL2LOLO5LOLO3LO
+	    // |T:00,05,0100,1,1,hellololo0lolo5olol2lolo5lolo3lo
 	    f = (GFXfont *) &TomThumb;
 	    break;
 
 	case 2:
-	    f = (GFXfont *) &Century_Schoolbook_L_Bold_10;
+	    // 13.5 UPPERCASE chars, or 18 wide lowercase
+	    // |T:00,09,0100,2,1,HELLOLOL0LOLO
+	    // |T:00,09,0100,2,1,hellololo0lolo5olo
+	    f = (GFXfont *) &Century_Schoolbook_L_Bold_12;
 	    break;
 
 	case 3:
+	    // 10 UPPERCASE chars, or 13 wide lowercase
+	    // |T:00,12,0100,3,1,HELLOLOL01
+	    // |T:00,12,0100,3,1,hellololo01lolol
 	    f = (GFXfont *) &Century_Schoolbook_L_Bold_16;
 	    break;
 
 	case 4:
+	    // 8 UPPERCASE chars, or 11.5 wide lowercase
+	    // |T:00,16,0100,4,1,HELLOLOL
+	    // |T:00,16,0100,4,1,hellololo012
 	    f = (GFXfont *) &Century_Schoolbook_L_Bold_20;
 	    break;
 
 	case 5:
+	    // 6.6 UPPERCASE chars, or 10 wide lowercase
+	    // |T:00,20,0100,5,1,HELLOLO
+	    // |T:00,20,0100,5,1,hellololo01
 	    f = (GFXfont *) &Century_Schoolbook_L_Bold_24;
 	    break;
 
 	case 6:
+	    // 5.2 UPPERCASE chars, or 8 wide lowercase
+	    // |T:00,24,0100,6,1,HELLO
+	    // |T:00,24,0100,6,1,hellololo
 	    f = (GFXfont *) &Century_Schoolbook_L_Bold_30;
 	    break;
 
 	case 7:
+	    // 28 wide, 4.5 UPPERCASE chars, or 6-7 wide lowercase
+	    // |T:00,28,0100,7,1,HELLO
+	    // |T:00,28,0100,7,1,hellolo
 	    f = (GFXfont *) &Century_Schoolbook_L_Bold_36;
 	    break;
 
