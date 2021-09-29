@@ -248,6 +248,8 @@ int16_t strip_speed = 50;
 
 // look for 'magic happens here' below
 #ifdef ARDUINOONPC
+    #define RPISERIALINPUTSIZE 1024
+    char ttyusbbuf[RPISERIALINPUTSIZE];
     bool esp32_connected = false;
 
     #include <errno.h>
@@ -343,6 +345,7 @@ int16_t strip_speed = 50;
 	    send_serial("d");
 	}
     }
+
 #endif // ARDUINOONPC
 
 
@@ -1311,15 +1314,49 @@ uint8_t esrbr_fade(uint32_t unused) {
 }
 
 
-uint8_t display_text(const char *text, uint16_t x, uint16_t y, uint16_t loopcnt = 10, GFXfont *f = NULL) {
+// Font can be passed by name, or by index number (if f is NULL)
+uint8_t display_text(const char *text, uint16_t x, uint16_t y, uint16_t loopcnt = 10, GFXfont *f = NULL, uint8_t fontsel=0, uint8_t zoom=1) {
     static uint16_t state;
 
+    matrix->setTextSize(zoom);
+
     if (! f) {
-	if (mheight >= 64) {
-		// f = FreeMonoBold9pt7b;
-		f = (GFXfont *) &Century_Schoolbook_L_Bold_16;
-	} else {
-		f = (GFXfont *) &TomThumb;
+	switch (fontsel) {
+	case 1:
+	    f = (GFXfont *) &TomThumb;
+	    break;
+
+	case 2:
+	    f = (GFXfont *) &Century_Schoolbook_L_Bold_10;
+	    break;
+
+	case 3:
+	    f = (GFXfont *) &Century_Schoolbook_L_Bold_16;
+	    break;
+
+	case 4:
+	    f = (GFXfont *) &Century_Schoolbook_L_Bold_20;
+	    break;
+
+	case 5:
+	    f = (GFXfont *) &Century_Schoolbook_L_Bold_24;
+	    break;
+
+	case 6:
+	    f = (GFXfont *) &Century_Schoolbook_L_Bold_30;
+	    break;
+
+	case 7:
+	    f = (GFXfont *) &Century_Schoolbook_L_Bold_36;
+	    break;
+
+	default:
+	    if (mheight >= 64) {
+		    // f = FreeMonoBold9pt7b;
+		    f = (GFXfont *) &Century_Schoolbook_L_Bold_16;
+	    } else {
+		    f = (GFXfont *) &TomThumb;
+	    }
 	}
     }
     matrix->setFont(f);
@@ -1330,8 +1367,6 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y, uint16_t loopcnt 
 	matrix->clear();
     }
 
-    matrix->setTextSize(1);
-
     state++;
 
     matrix->setCursor(x, y);
@@ -1340,6 +1375,7 @@ uint8_t display_text(const char *text, uint16_t x, uint16_t y, uint16_t loopcnt 
     matrix->setPassThruColor();
     matrix_show();
 
+    matrix->setTextSize(1);
     if (state > loopcnt) {
 	MATRIX_RESET_DEMO = true;
 	return 0;
@@ -3251,7 +3287,22 @@ void Matrix_Handler() {
     } else if (MATRIX_DEMO == DEMO_TEXT_INPUT) {
 	    //ret = scrollText(str, sizeof(str));
 	    // font is 5x3 (6x4 with spacing)
-	    ret = display_text(DISPLAYTEXT.c_str(), 0, 6, 10, (GFXfont *) &TomThumb);
+	    if (DISPLAYTEXT.c_str()[0] < 64) {
+                // 0123456789012345
+		// XX,YY,LOOP,F,Z,TEXT  (offset of first char, # of times to loop, Font idx, zoom, text (with newlines)
+		uint8_t x, y, loop, fontidx, zoom;
+		String displaystr;
+
+		x =	    atoi(DISPLAYTEXT.c_str()+0);
+		y =	    atoi(DISPLAYTEXT.c_str()+3);
+		loop =	    atoi(DISPLAYTEXT.c_str()+6);
+		fontidx =   atoi(DISPLAYTEXT.c_str()+11);
+		zoom =	    atoi(DISPLAYTEXT.c_str()+13);
+		displaystr= DISPLAYTEXT.substring(15);
+		ret = display_text(displaystr.c_str(), x, y, loop, NULL, fontidx, zoom);
+	    } else {
+		ret = display_text(DISPLAYTEXT.c_str(), 0, 6, 10, NULL, 1);
+	    }
 	    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
 	    if (ret) goto exit;
     } else {
@@ -3463,6 +3514,70 @@ void changePanelConf(uint8_t conf, bool ) {
     rebuild_main_page(true);
 }
 
+#ifdef ARDUINOONPC
+void handle_rpi_serial_cmd() {
+    char numbuf[4];
+
+    if (! strncmp(ttyusbbuf, "|St", 3)) {
+	Serial.println("Got ESP start, enable ESP serial input");
+	delay(10);
+	send_serial("|");
+	delay(10);
+	send_serial("d");
+	}
+    if (! strncmp(ttyusbbuf, "|D:", 3)) {
+	int num;
+	strncpy(numbuf, ttyusbbuf+3, 3);
+	numbuf[3] = 0;
+	num = atoi(numbuf);
+	printf("Got direct mapped demo %d\n", num);
+	matrix_change(num, true);
+    }
+    if (! strncmp(ttyusbbuf, "|B:", 3)) {
+	int num;
+	strncpy(numbuf, ttyusbbuf+3, 1);
+	numbuf[1] = 0;
+	num = atoi(numbuf);
+	printf("Got brightness %d\n", num);
+	change_brightness(num, true);
+    }
+    if (! strncmp(ttyusbbuf, "|I:", 3)) {
+	char IP[128];
+	FILE *fp;
+	//fp = popen("hostname -I", "r");
+	fp = popen("cat /root/IP", "r");
+	fgets(IP, 128, fp);
+
+	DISPLAYTEXT = String("ESP32: ") + String(ttyusbbuf+3) + "local: " + String(IP);
+	Serial.print("Got IP from ");
+	Serial.print(DISPLAYTEXT);
+	matrix_change(DEMO_TEXT_INPUT, false, 20);
+    }
+    // Allow ESP32 to send string to rPi
+    if (! strncmp(ttyusbbuf, "|T:", 3)) {
+	DISPLAYTEXT = String(ttyusbbuf+3);
+	Serial.print("Got string to display: ");
+	Serial.print(DISPLAYTEXT);
+    }
+    if (! strncmp(ttyusbbuf, "|RS", 3)) {
+	Serial.println("Got restart");
+	exit(0);
+    }
+    if (! strncmp(ttyusbbuf, "|RB", 3)) {
+	Serial.println("Got reboot");
+	system("/root/rebootme");
+    }
+    if (! strncmp(ttyusbbuf, "|zz", 3)) {
+	Serial.println("Switching to rotating text");
+	ROTATE_TEXT = true;
+    }
+    if (! strncmp(ttyusbbuf, "|ZZ", 3)) {
+	Serial.println("Switching to stable text for pictures");
+	ROTATE_TEXT = false;
+    }
+}
+#endif
+
 void IR_Serial_Handler() {
     int16_t new_pattern = 0;
     char readchar = 0;
@@ -3471,6 +3586,8 @@ void IR_Serial_Handler() {
 
     // on rPi, we accept 'serial' (really tty) input right away
     #ifdef ARDUINOONPC
+    static bool rpireadserialcmd = false;
+    static char *ptr = ttyusbbuf;
     startcmd = true;
     #endif
 
@@ -3479,11 +3596,41 @@ void IR_Serial_Handler() {
     if (Serial.available()) { 
 	readchar = Serial.read();
 	if (readchar) {
+
+	    // Have ESP32 ignore serial input until it gets the remote start command
 	    if (readchar == '|' && !startcmd) {
 		Serial.println("Got remote serial start, now accepting serial commands");
 		startcmd = true;
 	    }
-	    if (! startcmd) readchar = 0;
+	    if (! startcmd) { Serial.println("Ignoring input without startcmd |"); goto endserial; }
+
+	    #ifdef ARDUINOONPC
+		// Allow feeding rPi commands that would normally be received over ttyUSB*
+		if (readchar == '|') rpireadserialcmd = true;
+
+		if (rpireadserialcmd) {
+		    // Note that there is a race condition between his and ttyUSB read, they both write in the
+		    // same buffer. The good news is that arduino emulation sends all characters on a line all at once
+		    // so this reduces the race. Also, this is really meant to be used for debugging when most of the
+		    // time the ESP32 isn't even plugged in, so there will be no race.
+		    if (readchar == '\n' ) {
+			ptr[0] = readchar;
+			ptr[1] = 0;
+			// reset pointer for next time
+			ptr = ttyusbbuf;
+			printf("RPI received serial cmd: %s", ttyusbbuf);
+			rpireadserialcmd = false;
+			handle_rpi_serial_cmd();
+			goto endserial;
+		    }
+		    if (readchar == '\\') readchar = '\n';
+		    ptr[0] = readchar;
+		    ptr[1] = 0;
+		    ptr++;
+		    goto endserial;
+		}
+	    #endif
+
 	    while ((readchar >= '0') && (readchar <= '9')) {
 		new_pattern = 10 * new_pattern + (readchar - '0');
 		readchar = 0;
@@ -3508,22 +3655,26 @@ void IR_Serial_Handler() {
 		Serial.println("'");
 	    }
 
-	    // Remotesend shouldn't be needed for commands as all commands have an rPI resent
-	    // equivalent
-	    if (remotesend) { 
-		char str[]= { readchar, 0 };
-		remotesend = false; 
-		Serial.print("ESP => forward "); 
-		Serial.print(readchar); 
-		send_serial((const char *) str);
-	    } 
-	    else if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
+	    #ifdef ARDUINOONPC
+		// Remotesend shouldn't be needed for commands as all commands have an rPI resent
+		// equivalent
+		if (remotesend) { 
+		    char str[]= { readchar, 0 };
+		    remotesend = false; 
+		    Serial.print("ESP => forward "); 
+		    Serial.print(readchar); 
+		    send_serial((const char *) str);
+		    goto endserial;
+		} 
+	    #endif
+	    
+	    if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
 	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
 	    else if (readchar == 'b') { Serial.println("Serial => Bestof");	changeBestOf(true); }
 	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(false);}
 	    else if (readchar == 'z') { Serial.println("Serial => Rotating Text"); ROTATE_TEXT = true; }
 	    else if (readchar == 'Z') { Serial.println("Serial => Stable Text");   ROTATE_TEXT = false;}
-	    //else if (readchar == 't') { Serial.println("Serial => text thankyou");  matrix_change(DEMO_TEXT_THANKYOU);}
+	    else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU);}
 	    else if (readchar == 'f') { SHOW_LAST_FPS = !SHOW_LAST_FPS; }
 	    else if (readchar == '=') { Serial.println("Serial => keep demo?"); MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
 	    else if (readchar == '-') { Serial.println("Serial => dim"   );	change_brightness(-1);}
@@ -3543,7 +3694,7 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  send_serial("d");}
 	    else if (readchar == 'R') { Serial.println("ESP => send next number/char");  remotesend = true;}
 	    // Don't use a character that can be easily received by ESP32
-	    else if (readchar == '|') { Serial.println("exit");			exit(0);}
+	    else if (readchar == '~') { Serial.println("exit");			exit(0);}
 	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); }
 	#else
 	    else if (readchar == 'r') { Serial.println("Reboot"); resetFunc(); }
@@ -3551,21 +3702,27 @@ void IR_Serial_Handler() {
 	}
     }
 
+    endserial:
+
     // allow working on hardware that doens't have IR. In that case, we use serial only and avoid
     // compiling the IR code that won't build.
 #ifdef IR_RECV_PIN
     uint32_t result;
 
-    #ifndef ESP32RMTIR
-	decode_results IR_result;
-	if (irrecv.decode(&IR_result)) {
-	    irrecv.resume(); // Receive the next value
-	    result = IR_result.value;
-    #else
-	char* rcvGroup = NULL;
-	if (irrecv.available()) {
-	    result = irrecv.read(rcvGroup);
-    #endif
+#ifndef ESP32RMTIR
+    decode_results IR_result;
+    if (irrecv.decode(&IR_result)) 
+#else
+    char* rcvGroup = NULL;
+    if (irrecv.available())
+#endif
+				    {
+#ifndef ESP32RMTIR
+	irrecv.resume(); // Receive the next value
+	result = IR_result.value;
+#else
+	result = irrecv.read(rcvGroup);
+#endif
 	switch (result) {
 	case IR_RGBZONE_BRIGHT:
 	case IR_RGBZONE_BRIGHT2:
@@ -3906,7 +4063,9 @@ void IR_Serial_Handler() {
 	    return;
 	}
     }
-#endif
+#else
+    return;
+#endif // IR_RECV_PIN
 }
 
 
@@ -4835,7 +4994,6 @@ void write_config_index(OmXmlWriter w) {
 }
 #endif
 
-
 void loop() {
     // Run the Aiko event loop, all the magic is in there.
     Events.loop();
@@ -4857,8 +5015,7 @@ void loop() {
     // an ESP32 or teensy with SmartMatrix.
     #ifdef ARDUINOONPC
 	static const char *serialdev = NULL;
-	static char buf[1024];
-	static char *ptr = buf;
+	static char *ptr = ttyusbbuf;
 	char s;
 	int rdlen;
 	struct stat stbuf;
@@ -4900,78 +5057,22 @@ void loop() {
 	    ptr[1] = 0;
 	    ptr++;
 	    if (s == '\n' ) {
-		printf("ESP> %s", buf);
-		ptr = buf;
-		char numbuf[4];
+		printf("ESP> %s", ttyusbbuf);
+		// reset pointer for next time
+		ptr = ttyusbbuf;
 		// attempt to do an active serial watchdog (protocol keepalive)
 		// to keep things simpler, though, we'll just check for ttyfd >= 0
 		// which when connected to an ESP32 USB, is close enough to being the same.
 		// If we are getting serial pings, run the current demo for
 		// a long time, because we expect the ESP to send us 'next'
-		//if (! strncmp(buf, "FrameBuffer::GFX", 16) || ! strncmp(buf, "Done with demo", 14)) {
+		//if (! strncmp(ttyusbbuf, "FrameBuffer::GFX", 16) || ! strncmp(ttyusbbuf, "Done with demo", 14)) {
 		    last_esp32_ping = millis();
 		    if (! esp32_connected) {
 			esp32_connected = true;
 			Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>> ESP32 ping received, going to long timeouts");
 		    }
 		//}
-		if (! strncmp(buf, "|St", 3)) {
-		    Serial.println("Got ESP start, enable ESP serial input");
-		    delay(10);
-		    send_serial("|");
-		    delay(10);
-		    send_serial("d");
-		    }
-		if (! strncmp(buf, "|D:", 3)) {
-		    int num;
-		    strncpy(numbuf, buf+3, 3);
-		    numbuf[3] = 0;
-		    num = atoi(numbuf);
-		    printf("Got direct mapped demo %d\n", num);
-		    matrix_change(num, true);
-		}
-		if (! strncmp(buf, "|B:", 3)) {
-		    int num;
-		    strncpy(numbuf, buf+3, 1);
-		    numbuf[1] = 0;
-		    num = atoi(numbuf);
-		    printf("Got brightness %d\n", num);
-		    change_brightness(num, true);
-		}
-		if (! strncmp(buf, "|I:", 3)) {
-		    char IP[128];
-		    FILE *fp;
-		    //fp = popen("hostname -I", "r");
-		    fp = popen("cat /root/IP", "r");
-		    fgets(IP, 128, fp);
-
-		    DISPLAYTEXT = String("ESP32: ") + String(buf+3) + "local: " + String(IP);
-		    Serial.print("Got IP from ");
-		    Serial.print(DISPLAYTEXT);
-		    matrix_change(DEMO_TEXT_INPUT, false, 20);
-		}
-		// Allow ESP32 to send string to rPi
-		if (! strncmp(buf, "|T:", 3)) {
-		    DISPLAYTEXT = String(buf+3);
-		    Serial.print("Got string from ESP32: ");
-		    Serial.print(DISPLAYTEXT);
-		}
-		if (! strncmp(buf, "|RS", 3)) {
-		    Serial.println("Got restart");
-		    exit(0);
-		}
-		if (! strncmp(buf, "|RB", 3)) {
-		    Serial.println("Got reboot");
-		    system("/root/rebootme");
-		}
-		if (! strncmp(buf, "|zz", 3)) {
-		    Serial.println("Switching to rotating text");
-		    ROTATE_TEXT = true;
-		}
-		if (! strncmp(buf, "|ZZ", 3)) {
-		    Serial.println("Switching to stable text for pictures");
-		    ROTATE_TEXT = false;
-		}
+		handle_rpi_serial_cmd();
 	    }
 	}
 	if (rdlen < 0) {
