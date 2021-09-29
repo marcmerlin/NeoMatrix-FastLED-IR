@@ -3506,10 +3506,18 @@ void IR_Serial_Handler() {
 		Serial.print("Got serial char '");
 		Serial.print(readchar);
 		Serial.println("'");
-		remotesend = false;
 	    }
 
-	    if (readchar == 'n')      { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
+	    // Remotesend shouldn't be needed for commands as all commands have an rPI resent
+	    // equivalent
+	    if (remotesend) { 
+		char str[]= { readchar, 0 };
+		remotesend = false; 
+		Serial.print("ESP => forward "); 
+		Serial.print(readchar); 
+		send_serial((const char *) str);
+	    } 
+	    else if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
 	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
 	    else if (readchar == 'b') { Serial.println("Serial => Bestof");	changeBestOf(true); }
 	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(false);}
@@ -3533,7 +3541,7 @@ void IR_Serial_Handler() {
 	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("=");}
 	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  send_serial("c");}
 	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  send_serial("d");}
-	    else if (readchar == 'R') { Serial.println("ESP => send next number");  remotesend = true;}
+	    else if (readchar == 'R') { Serial.println("ESP => send next number/char");  remotesend = true;}
 	    // Don't use a character that can be easily received by ESP32
 	    else if (readchar == '|') { Serial.println("exit");			exit(0);}
 	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); }
