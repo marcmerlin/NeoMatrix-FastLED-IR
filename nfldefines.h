@@ -72,7 +72,7 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     #ifndef ARDUINOONPC
         #define IR_RECV_PIN 34
     
-        #define STRIP_NUM_LEDS 48
+        #define STRIP_NUM_LEDS 49
         CRGB leds[STRIP_NUM_LEDS];
         #define NEOPIXEL_PIN 13
 	#ifdef BOARD_HAS_PSRAM
@@ -90,7 +90,7 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     #define IR_RECV_PIN 34
 
 #elif mheight == 32
-    #define STRIP_NUM_LEDS 48
+    #define STRIP_NUM_LEDS 49
     CRGB leds[STRIP_NUM_LEDS];
     #define NEOPIXEL_PIN D1 // GPIO5
 

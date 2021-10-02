@@ -4839,7 +4839,7 @@ void register_config_page() {
 void register_FS_page() {
     p->beginPage("FS");
 
-    // This lamba function is re-run every time /Config is called
+    // This lamba function is re-run every time /FS is called
     p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	w.putf("Total space: %d<BR>Free space:  %d<BR><BR>\n", FFat.totalBytes(), FFat.freeBytes());
@@ -4847,6 +4847,29 @@ void register_FS_page() {
 	w.putf("<INPUT TYPE=submit NAME=REBOOT VALUE=REBOOT\n>");
 	w.putf("</FORM><BR>\n");
 
+	File dir = FFat.open("/");
+	while (File file = dir.openNextFile()) {
+	    if (file.isDirectory()) continue;
+	    w.putf("<FORM METHOD=GET ACTION=/form>\n");
+	    w.putf("<INPUT NAME=\"%s\" VALUE=\"%s\">", file.name(), file.name());
+	    w.putf(" <A HREF=\"%s\">Size: %8d</A>", file.name(), file.size());
+	    w.putf("  del -> <INPUT TYPE=checkbox name=\"really delete\" VALUE=delete>\n", file.name());
+	    // we can't use the value of that submit button because it's sent even if submit is not clicked
+	    w.putf("<INPUT TYPE=submit VALUE=delete\n>");
+	    w.putf("</FORM>\n");
+	    close(file);
+	}
+	close(dir);
+    });
+}
+
+
+void register_Text_page() {
+    p->beginPage("Text");
+
+    // This lamba function is re-run every time /Text is called
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    {
 	File dir = FFat.open("/");
 	while (File file = dir.openNextFile()) {
 	    if (file.isDirectory()) continue;
@@ -4881,6 +4904,8 @@ void setup_wifi() {
 	w.putf("Placeholder\n");
     });
     register_FS_page();
+    //register_Text_page();
+
     s.setHandler(*p);
 
     // Make sure that aiko calls the HTML handler at 10Hz
