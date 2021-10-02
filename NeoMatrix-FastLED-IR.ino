@@ -1965,11 +1965,11 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "BM_TheMan_Red.gif",	10, 0,  0, 10, 10,128,128 },
 /* 040 */   { ROOT  "BM_TheMan_Green.gif",	10, 0, 10, 10, 10,128,212 },
 	#endif
-/* 041 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 042 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 043 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 044 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 045 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 041 */   { ROOT  "DJ_RDR_lgrey.gif",		10, 0 , 0, 10, 10,128,128 },
+/* 042 */   { ROOT  "DJ_Ruben.gif",		10, 0 , 0, 10, 10,128,170 },
+/* 043 */   { ROOT  "DJ_GO_lgrey.gif",		10, 0 , 0, 10, 10,128,117 },
+/* 044 */   { ROOT  "DJ_GO_face.gif",		10, 0 , 0, 10, 10, 0 , 0  },
+/* 045 */   { ROOT  "DJ_Somna.gif",		10, 0 , 0, 10, 10, 0 , 0  },
 /* 046 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 047 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 048 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
@@ -2998,11 +2998,11 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 158 */ { "GIF BM TheMan Blue",    GifAnim,  38, NULL },
 /* 159 */ { "GIF BM TheMan_Green",   GifAnim,  39, NULL },
 /* 160 */ { "GIF BM TheMan Red",     GifAnim,  40, NULL },
-/* 161 */ { "", NULL, -1, NULL },
-/* 162 */ { "", NULL, -1, NULL },
-/* 163 */ { "", NULL, -1, NULL },
-/* 164 */ { "", NULL, -1, NULL },
-/* 165 */ { "", NULL, -1, NULL },
+/* 161 */ { "GIF RDR Logo",	     GifAnim,  41, NULL },
+/* 162 */ { "GIF RubenDeRonde",	     GifAnim,  42, NULL },
+/* 163 */ { "GIF Giuseppe Logo",     GifAnim,  43, NULL },
+/* 164 */ { "GIF Giuseppe",	     GifAnim,  44, NULL },
+/* 165 */ { "GIF Somna",	     GifAnim,  45, NULL },
 /* 166 */ { "", NULL, -1, NULL },
 /* 167 */ { "", NULL, -1, NULL },
 /* 168 */ { "", NULL, -1, NULL },
@@ -3711,9 +3711,11 @@ void IR_Serial_Handler() {
 		#endif
 		    matrix_change(new_pattern, true);
 	    } else {
-		Serial.print("Got serial char '");
-		Serial.print(readchar);
-		Serial.println("'");
+		if (readchar != '\n') {
+		    Serial.print("Got serial char '");
+		    Serial.print(readchar);
+		    Serial.println("'");
+		}
 	    }
 
 	    #ifdef ARDUINOONPC
