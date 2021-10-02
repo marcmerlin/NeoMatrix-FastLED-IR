@@ -142,7 +142,7 @@ uint16_t MATRIX_DEMO; // this is initialized after MATRIX_STATE is updated in re
 uint32_t LAST_FPS = 0;
 bool SHOW_LAST_FPS = false;
 
-String DISPLAYTEXT="00,28,0100,7,1,Hello";
+String DISPLAYTEXT="00,00,0100,0,1,Hello World";
 
 // Compute how many GIFs have been defined (called in setup)
 uint8_t GIF_CNT = 0;
@@ -1315,7 +1315,7 @@ uint8_t esrbr_fade(uint32_t unused) {
 
 
 // Font can be passed by name, or by index number (if f is NULL)
-uint8_t display_text(const char *text, int16_t x, int16_t y, uint16_t loopcnt = 10, GFXfont *f = NULL, uint8_t fontsel=0, uint8_t zoom=1) {
+uint8_t display_text(const char *text, int16_t x, int16_t y, uint16_t loopcnt = 50, GFXfont *f = NULL, uint8_t fontsel=0, uint8_t zoom=1) {
     static uint16_t state;
     // displayx and displayy
     static int16_t  dx=x, dy=y;
@@ -1323,9 +1323,17 @@ uint8_t display_text(const char *text, int16_t x, int16_t y, uint16_t loopcnt = 
     int16_t  bx, by;
     uint16_t w, h, fontheight;
 
+    if (strcmp((char *)text, "") == 0) {
+	Serial.println("No text to display");
+	return 0;
+    }
+
     if (MATRIX_RESET_DEMO) {
 	if (!f) {
 	    if (!fontsel) {
+		Serial.print("Need to display: '");
+		Serial.println(text);
+		Serial.println("'");
 		for (int8_t fibx = ARRAY_SIZE(Century_Schoolbook_L_Bold)-1; fibx >= 0; fibx--) {
 		    f = (GFXfont *) &Century_Schoolbook_L_Bold[fibx];
 
@@ -3340,15 +3348,16 @@ void Matrix_Handler() {
 	    const char str[] = "Thank You :)";
 	    ret = scrollText(str, sizeof(str));
 #else
-	    fixdrawRGBBitmap(28, 87, RGB_bmp, 8, 8);
-	    ret = display_text("Thank\n  You\n  Very\n Much", 0, 14, 100);
+	    ret = display_text("Thank\nYou\nVery\nMuch", 0, 0, 100, NULL, 0, 1);
+	    fixdrawRGBBitmap(120, 96, RGB_bmp, 8, 8);
 #endif
 	    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
 	    if (ret) goto exit;
     } else if (MATRIX_DEMO == DEMO_TEXT_INPUT) {
 	    //ret = scrollText(str, sizeof(str));
-	    // font is 5x3 (6x4 with spacing)
-	    if (DISPLAYTEXT.c_str()[0] < 64) {
+	    // If first char is a digit, we assume it's a full string with coordinates
+	    // to display a number, prepend '>'
+	    if (DISPLAYTEXT.c_str()[0] < 58) {
                 // 0123456789012345
 		// XX,YY,LOOP,F,Z,TEXT  (offset of first char, # of times to loop, Font idx, zoom, text (with newlines)
 		uint8_t x, y, loop, fontidx, zoom;
@@ -3362,7 +3371,7 @@ void Matrix_Handler() {
 		displaystr= DISPLAYTEXT.substring(15);
 		ret = display_text(displaystr.c_str(), x, y, loop, NULL, fontidx, zoom);
 	    } else {
-		ret = display_text(DISPLAYTEXT.c_str(), 0, 6, 10, NULL, 1);
+		ret = display_text(DISPLAYTEXT.c_str(), 0, 0, 40, NULL, 0, 1);
 	    }
 	    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
 	    if (ret) goto exit;
@@ -3609,7 +3618,7 @@ void handle_rpi_serial_cmd() {
 	fp = popen("cat /root/IP", "r");
 	fgets(IP, 128, fp);
 
-	DISPLAYTEXT = String("ESP32: ") + String(ttyusbbuf+3) + "local: " + String(IP);
+	DISPLAYTEXT = String("ESP32:\n") + String(ttyusbbuf+3) + "\nlocal:\n" + String(IP);
 	Serial.print("Got IP from ");
 	Serial.print(DISPLAYTEXT);
 	matrix_change(DEMO_TEXT_INPUT, false, 20);
@@ -5141,10 +5150,9 @@ void loop() {
 	// this should cause a loop hang of up to 7ms at 115200bps.
 	uint8_t readcnt = 80;
 	while (readcnt-- && (rdlen = read(ttyfd, &s, 1)) > 0) {
-	    ptr[0] = s;
-	    ptr[1] = 0;
-	    ptr++;
 	    if (s == '\n' ) {
+		ptr[0] = s;
+		ptr[1] = 0;
 		printf("ESP> %s", ttyusbbuf);
 		// reset pointer for next time
 		ptr = ttyusbbuf;
@@ -5161,7 +5169,12 @@ void loop() {
 		    }
 		//}
 		handle_rpi_serial_cmd();
+		return;
 	    }
+	    if (s == '\\') s = '\n';
+	    ptr[0] = s;
+	    ptr[1] = 0;
+	    ptr++;
 	}
 	if (rdlen < 0) {
 	    printf("Error from read: %d: %s\n", rdlen, strerror(errno));
