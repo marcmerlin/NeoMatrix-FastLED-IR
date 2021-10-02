@@ -5075,7 +5075,7 @@ void loop() {
     // Why all this madness? Because an rPi can run 3 to 12 times more RGBPanel pixels than
     // an ESP32 or teensy with SmartMatrix.
     #ifdef ARDUINOONPC
-	static const char *serialdev = NULL;
+	static const char *serialdev = "";
 	static char *ptr = ttyusbbuf;
 	char s;
 	int rdlen;
