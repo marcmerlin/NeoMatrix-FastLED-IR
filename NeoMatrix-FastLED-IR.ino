@@ -3685,7 +3685,7 @@ void IR_Serial_Handler() {
 		Serial.println("Got remote serial start, now accepting serial commands");
 		startcmd = true;
 	    }
-	    if (! startcmd) { Serial.println("Ignoring input without startcmd |"); goto endserial; }
+	    if (! startcmd) { Serial.println("Ignoring input without startcmd |St"); goto endserial; }
 
 	    #ifdef ARDUINOONPC
 		// Allow feeding rPi commands that would normally be received over ttyUSB*
