@@ -71,10 +71,6 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     // 8-bit/DMA Memory Available  :  46728 bytes total,  40976 bytes largest free block
     #ifndef ARDUINOONPC
         #define IR_RECV_PIN 34
-    
-        #define STRIP_NUM_LEDS 48
-        CRGB leds[STRIP_NUM_LEDS];
-        #define NEOPIXEL_PIN 13
 	#ifdef BOARD_HAS_PSRAM
 	    // There isn't enough RAM to do Wifi with all the demos I have
 	    #pragma message "PSRAM and WIFI enabled"
@@ -84,13 +80,20 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
 	#endif
     #endif
 
+    // No LED strip on rPi, but good to run the code on linux to exercise compiler warnings (and ASAN)
+    #ifndef RPI
+        #define STRIP_NUM_LEDS 49
+        CRGB leds[STRIP_NUM_LEDS];
+        #define NEOPIXEL_PIN 13
+    #endif
+
 #elif mheight == 64
     // Make the burning man 64x64 brighter by default, we have a big power supply :)
     DFL_MATRIX_BRIGHTNESS_LEVEL = 6;
     #define IR_RECV_PIN 34
 
 #elif mheight == 32
-    #define STRIP_NUM_LEDS 48
+    #define STRIP_NUM_LEDS 49
     CRGB leds[STRIP_NUM_LEDS];
     #define NEOPIXEL_PIN D1 // GPIO5
 

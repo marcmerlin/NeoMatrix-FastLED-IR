@@ -4277,13 +4277,13 @@ void IR_Serial_Handler() {
 	q++;
 	if (q == 3) q = 0;
 
-	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	for (uint16_t i=0; i < STRIP_NUM_LEDS-2; i=i+3) {
 	    leds_setcolor(i+q, c);    //turn every third pixel on
 	}
 	leds_show();
 
 	#if 0
-	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	for (uint16_t i=0; i < STRIP_NUM_LEDS-2; i=i+3) {
 	    leds_setcolor(i+q, 0);	//turn every third pixel off
 	}
 	#endif
@@ -4303,13 +4303,13 @@ void IR_Serial_Handler() {
 	    if (j >= 256) j = 0;   // cycle all 256 colors in the wheel
 	}
 
-	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	for (uint16_t i=0; i < STRIP_NUM_LEDS-2; i=i+3) {
 	    leds_setcolor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
 	}
 	leds_show();
 
 	#if 0
-	for (uint16_t i=0; i < STRIP_NUM_LEDS; i=i+3) {
+	for (uint16_t i=0; i < STRIP_NUM_LEDS-2; i=i+3) {
 	    leds_setcolor(i+q, 0);	//turn every third pixel off
 	}
 	#endif
@@ -5235,7 +5235,13 @@ void setup() {
     Serial.print(NEOPIXEL_PIN);
     Serial.print(" to drive LEDs: ");
     Serial.println(STRIP_NUM_LEDS);
-    FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
+
+    #ifndef LINUX_RENDERER_SDL
+	FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
+    #else
+        FastLED.addLeds<SDL, STRIP_NUM_LEDS, 1>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
+	#pragma message "Enabling test neopixel strip on non RPI ARDUINOONPC"
+    #endif
     FastLED.setBrightness(led_brightness);
     // Turn off all LEDs and light 3 of them for debug.
     leds[0] = CRGB::Red;
