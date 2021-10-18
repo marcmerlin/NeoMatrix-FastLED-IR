@@ -82,7 +82,7 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
 
     // No LED strip on rPi, but good to run the code on linux to exercise compiler warnings (and ASAN)
     #ifndef RPI
-        #define STRIP_NUM_LEDS 49
+        #define STRIP_NUM_LEDS 50
         CRGB leds[STRIP_NUM_LEDS];
         #define NEOPIXEL_PIN 13
     #endif
@@ -93,7 +93,7 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     #define IR_RECV_PIN 34
 
 #elif mheight == 32
-    #define STRIP_NUM_LEDS 49
+    #define STRIP_NUM_LEDS 50
     CRGB leds[STRIP_NUM_LEDS];
     #define NEOPIXEL_PIN D1 // GPIO5
 

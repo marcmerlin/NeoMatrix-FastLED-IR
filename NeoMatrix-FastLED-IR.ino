@@ -4737,7 +4737,6 @@ void rebuild_main_page(bool show_summary) {
 	p->addSelectOption(panelconfnames[i], i);
     }
 
-    p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
     p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE_TEXT);
     p->addSlider(1, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
@@ -4778,14 +4777,26 @@ void rebuild_main_page(bool show_summary) {
 	demo_list[demoidx(i)].menu_str = option;
     }
 
+    // Catches random non registered URLs
+    p->addUrlHandler(wildcardProc);
+
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    {
+	w.puts("Demo Text Input: <FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>");
+    });
+}
+
+void register_advanced_page() {
+    p->beginPage("Advanced");
+
+    p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
+
     if (PANELCONFNUM == 4) {
 	p->addButton("Show RPI IP", actionProc, HTML_SHOWIP);
 	p->addButton("Restart RPI", actionProc, HTML_RESTARTPI);
 	p->addButton("Reboot RPI", actionProc,  HTML_REBOOTPI);
     }
 
-    // Catches random non registered URLs
-    p->addUrlHandler(wildcardProc);
     // p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     // {
     //	w.beginElement("a", "href", "/demo_map.txt");
@@ -4794,12 +4805,8 @@ void rebuild_main_page(bool show_summary) {
     // });
     // This replaces the above
     p->addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
-
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
-    {
-	w.puts("Demo Text Input: <FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>");
-    });
 }
+
 
 void register_config_page() {
     p->beginPage("Config");
@@ -4925,6 +4932,7 @@ void setup_wifi() {
     {
 	w.putf("Placeholder\n");
     });
+    register_advanced_page();
     register_FS_page();
     //register_Text_page();
 
