@@ -19,7 +19,7 @@ unsigned long lasttest, lastmillis, dwell = 5000,  longhammer;
 float locusx, locusy, driftx, drifty, xcen, ycen, yangle, xangle;
 byte raad, lender = 128, xsizer, ysizer, xx,  yy, flipme = 1;
 byte shifty = 6, pattern = 0, poffset;
-byte sinewidth, mstep, faudio[64], inner, bfade = 6;
+byte sinewidth, mstep, faudio[MATRIX_WIDTH], inner, bfade = 6;
 int directn = 1, quash = 5;
 
 // New TME
