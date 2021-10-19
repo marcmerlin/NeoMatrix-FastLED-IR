@@ -3587,7 +3587,7 @@ uint8_t check_startup_IR_serial() {
 
 void changeBestOf(bool bestof) {
     SHOW_BEST_DEMOS = bestof;
-    rebuild_main_page();
+    rebuild_advanced_page();
 }
 
 void changePanelConf(uint8_t conf, bool ) {
@@ -3595,6 +3595,7 @@ void changePanelConf(uint8_t conf, bool ) {
     Serial.println(panelconfnames[conf]);
     PANELCONFNUM = conf;
     rebuild_main_page(true);
+    rebuild_advanced_page();
 }
 
 #ifdef ARDUINOONPC
@@ -4786,7 +4787,7 @@ void rebuild_main_page(bool show_summary) {
     });
 }
 
-void register_advanced_page() {
+void rebuild_advanced_page() {
     p->beginPage("Advanced");
 
     p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
@@ -4932,7 +4933,7 @@ void setup_wifi() {
     {
 	w.putf("Placeholder\n");
     });
-    register_advanced_page();
+    rebuild_advanced_page();
     register_FS_page();
     //register_Text_page();
 
