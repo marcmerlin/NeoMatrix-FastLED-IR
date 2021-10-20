@@ -2936,8 +2936,11 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 087 */ { "", NULL, -1, NULL },
 /* 088 */ { "", NULL, -1, NULL },
 /* 089 */ { "", NULL, -1, NULL },
-/* 090 */ { "Thank you", NULL, -1, NULL },	// DEMO_TEXT_THANKYOU
-/* 091 */ { "Web Text Input", NULL, -1, NULL },	// DEMO_TEXT_INPUT
+// Give a fake demo we won't call. We actually call display_text but it takes
+// more arguments, so it can't be used in this struct.and the function called
+// manually is display_text with more arguments
+/* 090 */ { "Thank you",	squares, -1, NULL },	// DEMO_TEXT_THANKYOU
+/* 091 */ { "Web Text Input",	squares, -1, NULL },	// DEMO_TEXT_INPUT
 /* 092 */ { "", NULL, -1, NULL },
 /* 093 */ { "", NULL, -1, NULL },
 /* 094 */ { "", NULL, -1, NULL },
@@ -3311,10 +3314,6 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
     Serial.println(MATRIX_LOOP);
     #ifndef ARDUINOONPC
 	Serial.flush();
-	if (MATRIX_DEMO == DEMO_TEXT_INPUT) {
-	    Serial.print("|T:");
-	    Serial.println(DISPLAYTEXT);
-	}
 	Serial.print("|D:");
 	char buf[4];
 	sprintf(buf, "%3d", MATRIX_DEMO);
@@ -3363,7 +3362,7 @@ void Matrix_Handler() {
 	    const char str[] = "Thank You :)";
 	    ret = scrollText(str, sizeof(str));
 #else
-	    ret = display_text("Thank\nYou\nVery\nMuch", 0, 0, 100, NULL, 0, 1);
+	    ret = display_text("Thank\nYou\nVery\nMuch", 0, 0, 10, NULL, 0, 1);
 	    fixdrawRGBBitmap(120, 96, RGB_bmp, 8, 8);
 #endif
 	    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
@@ -3372,7 +3371,7 @@ void Matrix_Handler() {
 	    //ret = scrollText(str, sizeof(str));
 	    // If first char is a digit, we assume it's a full string with coordinates
 	    // to display a number, prepend '>'
-	    if (DISPLAYTEXT.c_str()[0] < 58) {
+	    if (DISPLAYTEXT.c_str()[0] < 58 && DISPLAYTEXT.c_str()[2] == ',') {
                 // 0123456789012345
 		// XX,YY,LOOP,F,Z,TEXT  (offset of first char, # of times to loop, Font idx, zoom, text (with newlines)
 		uint8_t x, y, loop, fontidx, zoom;
@@ -3637,6 +3636,8 @@ void handle_rpi_serial_cmd() {
 	DISPLAYTEXT = String("ESP32:\n") + String(ttyusbbuf+3) + "\nlocal:\n" + String(IP);
 	Serial.print("Got IP from ");
 	Serial.print(DISPLAYTEXT);
+	Serial.print("|T:");
+	Serial.println(DISPLAYTEXT);
 	matrix_change(DEMO_TEXT_INPUT, false, 20);
     }
     // Allow ESP32 to send string to rPi
@@ -3878,7 +3879,6 @@ void IR_Serial_Handler() {
 	    demo_color = 0xFFFFFF;
 	    showip();
 	    return;
-
 
 
 	case IR_RGBZONE_RED2:
@@ -4607,6 +4607,8 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	if (strcmp(request.query[0], "text") == 0) {
 	    p->renderHttpResponseHeader("text/plain", 200);
 	    DISPLAYTEXT = request.query[1];
+	    Serial.print("|T:");
+	    Serial.println(DISPLAYTEXT);
 	    matrix_change(DEMO_TEXT_INPUT, false, 10);
 	}
 	// Changes to config file lines, look like this:
@@ -5211,9 +5213,9 @@ void loop() {
 void showip() {
 #ifndef ARDUINOONPC
     DISPLAYTEXT = WiFi.localIP().toString();
-    matrix_change(DEMO_TEXT_INPUT, false, 20);
     Serial.print("|I:");
     Serial.println(DISPLAYTEXT);
+    matrix_change(DEMO_TEXT_INPUT, false, 3);
 #endif
 }
 
@@ -5306,7 +5308,8 @@ void setup() {
 #endif // NEOPIXEL_PIN
 
     // This is now required, if there is no arduino FS support, you need to replace this function
-    // You could feed it a hardcoded array in the code (what used to be here)
+    // You could feed it a hardcoded array in the code (what used to be here, go back in git history
+    // for an older version)
     Serial.println("Read config file");
     read_config_index();
 
