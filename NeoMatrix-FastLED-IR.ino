@@ -46,9 +46,11 @@ using namespace Aiko;
     // bestof, etc, rebuild the page show to the user.
     // Unfortunately this does not force a page reload.
     void rebuild_main_page(bool show_summary=false);
+    void rebuild_advanced_page();
 #else
     // Without WIFI (like rPi/ArduinoOnPC), this is a no-op
     void rebuild_main_page(bool show_summary=false) { show_summary = show_summary; }
+    void rebuild_advanced_page() {};
 #endif
 
 #define DEMO_PREV -32768
@@ -248,7 +250,7 @@ int16_t strip_speed = 50;
 
 // look for 'magic happens here' below
 #ifdef ARDUINOONPC
-    #define RPISERIALINPUTSIZE 1024
+    #define RPISERIALINPUTSIZE 10240
     char ttyusbbuf[RPISERIALINPUTSIZE];
     bool esp32_connected = false;
 
@@ -5140,6 +5142,8 @@ void loop() {
 	struct stat stbuf;
 	static uint32_t last_esp32_ping = millis();
 
+	Serial.print("\nREAD: ");
+
 	if (ttyfd > -1 && stat(serialdev, &stbuf)) {
 	    printf("ttyfd closed %d, (%s)\n", ttyfd, serialdev);
 	    close(ttyfd);
@@ -5194,6 +5198,8 @@ void loop() {
 		return;
 	    }
 	    if (s == '\\') s = '\n';
+	    // FIXME: there is no control on the ESP32 input length. If it is too long before a newline
+	    // we get a buffer overflow
 	    ptr[0] = s;
 	    ptr[1] = 0;
 	    ptr++;
