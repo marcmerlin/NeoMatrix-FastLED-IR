@@ -47,6 +47,9 @@ using namespace Aiko;
     // Unfortunately this does not force a page reload.
     void rebuild_main_page(bool show_summary=false);
     void rebuild_advanced_page();
+
+    // Allows a connected device via serial to feed a remote IP as a 32bit number
+    IPAddress Remote_IP = IPAddress(0, 0, 0, 0);
 #else
     // Without WIFI (like rPi/ArduinoOnPC), this is a no-op
     void rebuild_main_page(bool show_summary=false) { show_summary = show_summary; }
@@ -262,6 +265,27 @@ int16_t strip_speed = 50;
     #include <termios.h>
     #include <unistd.h>
     #include <sys/stat.h>
+    // inet_addr
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    
+    #define Swap4Bytes(val) \
+     ( (((val) >> 24) & 0x000000FF) | (((val) >>  8) & 0x0000FF00) | \
+       (((val) <<  8) & 0x00FF0000) | (((val) << 24) & 0xFF000000) )
+
+    char rPI_IP[20];
+    char rPI_IPn[11];
+    char *get_rPI_IP() {
+	    FILE *fp;
+	    //fp = popen("hostname -I", "r");
+	    fp = popen("cat /root/IP", "r");
+	    fgets(rPI_IP, 19, fp);
+	    uint32_t addr = Swap4Bytes(inet_addr(rPI_IP));
+	    snprintf(rPI_IPn, 11, "%ud", addr);
+	    //Serial.println(IP);
+	    //Serial.println(addr, HEX);
+	    return rPI_IPn;
+    }
 
     // if we're not talking to anything, ttyfd will be reset to -1
     // however >=0 does not mean there is anything transmitting
@@ -321,6 +345,7 @@ int16_t strip_speed = 50;
     }
 
     void openttyUSB(const char ** devname) {
+	static bool firstconnection = true;
 	// static because the name is sent back to the caller
 	static const char *dev[] = { "/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2" };
 	int devidx = 0;
@@ -345,6 +370,15 @@ int16_t strip_speed = 50;
 	    send_serial("|");
 	    delay(10);
 	    send_serial("d");
+	    delay(10);
+	    if (firstconnection) {
+		// First time code starts, tell ESP32 to trigger the IP screen.
+		send_serial("i");
+		firstconnection = false;
+	    } else {
+		// on USB reconnect, feed the local IP to ESP32 but don't cause ESP32 to tell us to switch to the IP screen
+		send_serial(get_rPI_IP());
+	    }
 	}
     }
 
@@ -3609,7 +3643,8 @@ void handle_rpi_serial_cmd() {
 	send_serial("|");
 	delay(10);
 	send_serial("d");
-	}
+	// When we receive St, ESP32 will auto-run showip()
+    }
     if (! strncmp(ttyusbbuf, "|D:", 3)) {
 	int num;
 	strncpy(numbuf, ttyusbbuf+3, 3);
@@ -3627,13 +3662,8 @@ void handle_rpi_serial_cmd() {
 	change_brightness(num, true);
     }
     if (! strncmp(ttyusbbuf, "|I:", 3)) {
-	char IP[128];
-	FILE *fp;
-	//fp = popen("hostname -I", "r");
-	fp = popen("cat /root/IP", "r");
-	fgets(IP, 128, fp);
-
-	DISPLAYTEXT = String("ESP32:\n") + String(ttyusbbuf+3) + "\nlocal:\n" + String(IP);
+	send_serial(get_rPI_IP());
+	DISPLAYTEXT = String("ESP32:\n") + String(ttyusbbuf+3) + "\nlocal:\n" + String(rPI_IP);
 	Serial.print("Got IP from ");
 	Serial.print(DISPLAYTEXT);
 	Serial.print("|T:");
@@ -3666,7 +3696,7 @@ void handle_rpi_serial_cmd() {
 #endif
 
 void IR_Serial_Handler() {
-    int16_t new_pattern = 0;
+    uint32_t new_pattern = 0;
     char readchar = 0;
     static bool remotesend = false;
     static bool startcmd = false;
@@ -3718,12 +3748,24 @@ void IR_Serial_Handler() {
 		}
 	    #endif
 
+	    // Feeding a number either tells us what pattern to change to or feeds a remote IP
 	    while ((readchar >= '0') && (readchar <= '9')) {
 		new_pattern = 10 * new_pattern + (readchar - '0');
 		readchar = 0;
+		#ifdef WIFI
+		if (new_pattern > DEMO_LAST_IDX) {
+		    Remote_IP = IPAddress(
+			(new_pattern & 0xFF000000) / 0x1000000,
+			(new_pattern & 0x00FF0000) / 0x10000,
+			(new_pattern & 0x0000FF00) / 0x100,
+			(new_pattern & 0x000000FF) / 1
+		    );
+		}
+		#endif
 		if (Serial.available()) readchar = Serial.read();
 	    }
 
+	    if (new_pattern > DEMO_LAST_IDX) new_pattern = 0;
 	    if (new_pattern) {
 		Serial.print("Got new");
 		Serial.print(remotesend?" REMOTE":"");
@@ -3787,6 +3829,7 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); }
 	#else
 	    else if (readchar == 'r') { Serial.println("Reboot"); resetFunc(); }
+	    else if (readchar == 'i') { Serial.println("Serial => showip");     showip();}
 	#endif
 	}
     }
@@ -4737,12 +4780,21 @@ void rebuild_main_page(bool show_summary) {
 	w.puts(String(count).c_str());
 	w.puts("<BR>\n");
     });
+    if (PANELCONFNUM == 4) {
+	p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+	{
+	    w.puts("RPI IP: ");
+	    w.puts(Remote_IP.toString().c_str());
+	    w.puts("<BR>\n");
+	});
+    }
     p->addSelect("Demo Mode", actionProc, PANELCONFNUM, HTML_DEMOLIST_CHOICE);
     for (uint16_t i=0; i <= 4; i++) {
 	p->addSelectOption(panelconfnames[i], i);
     }
 
     p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE_TEXT);
+    p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
     p->addSlider(1, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
@@ -4793,8 +4845,6 @@ void rebuild_main_page(bool show_summary) {
 
 void rebuild_advanced_page() {
     p->beginPage("Advanced");
-
-    p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
 
     if (PANELCONFNUM == 4) {
 	p->addButton("Show RPI IP", actionProc, HTML_SHOWIP);
@@ -5470,7 +5520,6 @@ void setup() {
     Events.addHandler(Matrix_Handler, MX_UPD_TIME);
 
     //Events.addHandler(ShowMHfps, 1000);
-    showip();
 
     Serial.println("|Starting loop");
     // After init is done, show fps (can be turned on and off with 'f').
@@ -5480,6 +5529,8 @@ void setup() {
     #ifndef ARDUINOONPC
     while (Serial.available()) Serial.read();
     Serial.println("Send '|' to enable serial commands");
+
+    showip();
     #endif
 }
 
