@@ -14,6 +14,21 @@ It uses these libraries
 - https://github.com/marcmerlin/SmartMatrix_GFX + https://github.com/pixelmatix/SmartMatrix/tree/teensylc (SmartMatrix backend only)
 - https://github.com/adafruit/Adafruit-GFX-Library
 
+Hardware Support
+----------------
+This code was originally written for ESP8266 running a 24x32 Neopixel Matrix, and I eventually moved to ESP32 running
+64x96 SmartMatrix, and later ported the code to Raspberry Pi where it now runs via rpi-rgb-panel at 128x192 via the
+ArduinoOnPC compat layer.  
+While the code is meant to work on all 3 platforms, some time after tag 20200307_last_ESP8266 
+( https://github.com/marcmerlin/NeoMatrix-FastLED-IR/tree/5d5ce13e24b5d6c08fbcb5a46119bb32f51a1af8 )
+I added Wifi support on ESP32, and moved the hardcoded demo config from code to a demo_map.txt read 
+from the filesystem. This allows modifying the file at runtime, but not on SPIFFS. Running FatFS/LittleFS
+on ESP8266 just takes too much RAM, so if you are set on using ESP8266 (but really, why? Please buy an ESP32)
+then you should use the code at tag 20200307_last_ESP8266 (this is also a good place to get the code before
+I added Wifi support in case Wifi is an issue for you, and Wifi can be turned off with a #define).
+
+More generally you can find historical tags here https://github.com/marcmerlin/NeoMatrix-FastLED-IR/tags
+
 Photos and videos
 -----------------
 https://www.youtube.com/watch?v=tU_wkrrv_4A
