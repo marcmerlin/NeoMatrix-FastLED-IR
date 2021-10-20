@@ -5142,8 +5142,6 @@ void loop() {
 	struct stat stbuf;
 	static uint32_t last_esp32_ping = millis();
 
-	Serial.print("\nREAD: ");
-
 	if (ttyfd > -1 && stat(serialdev, &stbuf)) {
 	    printf("ttyfd closed %d, (%s)\n", ttyfd, serialdev);
 	    close(ttyfd);
