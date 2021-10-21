@@ -853,7 +853,7 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
     return repeat;
 }
 
-uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
+uint8_t esrbr(uint32_t trance=false) { // eat sleep rave/burn repeat
     static uint16_t state;
     static float spd;
     //static bool didclear;
@@ -873,7 +873,6 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
 	firstpass = 0;
     }
 
-    unused = unused;
     if (! ROTATE_TEXT) spd = displayall+1;
 
     matrix->setTextSize(1);
@@ -917,14 +916,13 @@ uint8_t esrbr(uint32_t unused) { // eat sleep rave/burn repeat
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mheight >= 192) matrix->setCursor(22, 120);
-	else if (mheight >= 96) matrix->setCursor(14, 60);
-	else if (mheight >= 64) matrix->setCursor(14, 47);
-	else matrix->setCursor(5, 22);
-
 	matrix->setTextColor(matrix->Color(0,255,0));
+	if (mheight >= 192) matrix->setCursor(trance?2:22, 120);
+	else if (mheight >= 96) matrix->setCursor(trance?2:14, 60);
+	else if (mheight >= 64) matrix->setCursor(trance?2:14, 47);
+	else matrix->setCursor(trance?0:5, 22);
 	if (PANELCONFNUM == 2 || PANELCONFNUM == 3) matrix->print("BURN");
-	else matrix->print("RAVE");
+	else matrix->print(trance?"TRANCE":"RAVE");
     }
     l++;
 
@@ -1261,14 +1259,12 @@ uint8_t esrbr_flashin() {
 }
 #endif
 
-uint8_t esrbr_fade(uint32_t unused) {
+uint8_t esrbr_fade(uint32_t trance=false) {
     static uint16_t state;
     static uint8_t wheel;
     static float spd;
     float spdincr = 0.5;
     uint8_t resetspd = 5;
-
-    unused = unused;
 
     if (MATRIX_RESET_DEMO) {
 	MATRIX_RESET_DEMO = false;
@@ -1307,16 +1303,13 @@ uint8_t esrbr_fade(uint32_t unused) {
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
 	matrix->print("SLEEP");
 
-	if (mheight >= 192) matrix->setCursor(22, 120);
-	else if (mheight >= 96) matrix->setCursor(14, 60);
-	else if (mheight >= 64) matrix->setCursor(14, 47);
-	else matrix->setCursor(5, 22);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
-	if (PANELCONFNUM == 1 || PANELCONFNUM == 2) {
-	    matrix->print("BURN");
-	} else {
-	    matrix->print("RAVE");
-	}
+	if (mheight >= 192) matrix->setCursor(trance?2:22, 120);
+	else if (mheight >= 96) matrix->setCursor(trance?2:14, 60);
+	else if (mheight >= 64) matrix->setCursor(trance?2:14, 47);
+	else matrix->setCursor(trance?0:5, 22);
+	if (PANELCONFNUM == 2 || PANELCONFNUM == 3) matrix->print("BURN");
+	else matrix->print(trance?"TRANCE":"RAVE");
 
 	if (mheight >= 192) matrix->setCursor(2, 160);
 	else if (mheight >= 96) matrix->setCursor(2, 82);
@@ -2883,8 +2876,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 000 */ { "NULL Demo", NULL, -1, NULL },
 /* 001 */ { "Squares In",  squares, 0, NULL },
 /* 002 */ { "Squares Out", squares, 1, NULL },
-/* 003 */ { "EatSleepRaveBurnRepeat", esrbr, -1, NULL },
-/* 004 */ { "EatSleepRaveBurnRepeat Fade", esrbr_fade, -1, NULL },
+/* 003 */ { "EatSleepRaveBurnRepeat", esrbr, 0, NULL },
+/* 004 */ { "EatSleepRaveBurnRepeat Fade", esrbr_fade, 0, NULL },
 /* 005 */ { "TFSF Zoom InOut", tfsf_zoom, 1, NULL },
 /* 006 */ { "TFSF Display", tfsf, -1, NULL },
 /* 007 */ { "With Every Beat...", webwc, -1, NULL },
@@ -2923,8 +2916,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 040 */ { "Aurora Spiro", aurora, 10, NULL },
 /* 041 */ { "Aurora Swirl", aurora, 11, NULL },		// 11 not great on bigger display
 /* 042 */ { "Aurora Wave", aurora, 12, NULL },
-/* 043 */ { "", NULL, -1, NULL },
-/* 044 */ { "", NULL, -1, NULL },
+/* 043 */ { "EatSleepTranceRepeat", esrbr, 1, NULL },
+/* 004 */ { "EatSleepTranceRepeat Fade", esrbr_fade, 1, NULL },
 /* 045 */ { "TMED  0 Zoom in shapes", tmed,  0, NULL },	// concentric colors and shapes
 /* 046 */ { "TMED  1 Concentric circles", tmed,  1, NULL }, // 5 color windows-like pattern with circles in and out
 /* 047 */ { "TMED  2 Color Starfield", tmed,  2, NULL },	// color worm patterns going out with circles zomming out
@@ -3165,7 +3158,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 261 */ { "GIF double stargate",	 GifAnim, 141, NULL },
 /* 262 */ { "GIF RGB smirout",		 GifAnim, 142, NULL },
 /* 263 */ { "GIF fractal zoom",		 GifAnim, 143, NULL },
-/* 264 */ { "GIF pacmac",		 GifAnim, 144, NULL },
+/* 264 */ { "GIF pacman",		 GifAnim, 144, NULL },
 /* 265 */ { "GIF purple hair spiralout", GifAnim, 145, NULL },
 /* 266 */ { "GIF flip triangles",	 GifAnim, 146, NULL },
 /* 267 */ { "GIF rgb color plates",	 GifAnim, 147, NULL },

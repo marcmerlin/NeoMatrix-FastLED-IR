@@ -82,9 +82,12 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
 
     // No LED strip on rPi, but good to run the code on linux to exercise compiler warnings (and ASAN)
     #ifndef RPI
-        #define STRIP_NUM_LEDS 50
-        CRGB leds[STRIP_NUM_LEDS];
-        #define NEOPIXEL_PIN 13
+	// You can enable this on ArduinoONPC (linux) for debugging LED trip bugs
+	#ifndef ARDUINOONPC
+	    #define STRIP_NUM_LEDS 50
+	    CRGB leds[STRIP_NUM_LEDS];
+	    #define NEOPIXEL_PIN 13
+	#endif
     #endif
 
 #elif mheight == 64
