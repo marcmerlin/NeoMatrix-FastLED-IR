@@ -853,7 +853,7 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
     return repeat;
 }
 
-uint8_t esrbr(uint32_t trance=false) { // eat sleep rave/burn repeat
+uint8_t esrbtr(uint32_t trance=false) { // eat sleep rave/burn repeat
     static uint16_t state;
     static float spd;
     //static bool didclear;
@@ -1635,64 +1635,7 @@ uint8_t bbb(uint32_t unused) {
     return 1;
 }
 
-// This is too jarring on the eyes at night
-#if 0
-uint8_t esrbr_flashin() {
-    #define esrflashperiod 30
-    static uint16_t state = 0;
-    static uint16_t period = esrflashperiod;
-    static uint16_t exit = 0;
-    static bool oldshow = 0;
-    bool show = 0;
-
-    matrix->setFont(&TomThumb);
-    matrix->setTextSize(1);
-    matrix->clear();
-
-    state++;
-    if (!(state % period) || exit) {
-	state = 1;
-	show = 1;
-	matrix->setCursor(7, 6);
-	matrix->setTextColor(matrix->Color(255,0,255));
-	matrix->print("EAT");
-	matrix->setCursor(3, 14);
-	matrix->setTextColor(matrix->Color(255,255,0));
-	matrix->print("SLEEP");
-	matrix->setCursor(5, 22);
-	matrix->setTextColor(matrix->Color(0,255,255));
-	matrix->print("RAVE");
-	matrix->setCursor(0, 30);
-	matrix->setTextColor(matrix->Color(64,255,64));
-	matrix->print("REPEAT");
-    }
-
-    if (exit)
-    {
-	exit++;
-    }
-    else if (show != oldshow) {
-	period = max(period - 1, 1);
-	oldshow = show;
-	if (period == 1) exit=1;
-	//Serial.println(period);
-    }
-    //Serial.println(exit);
-    matrix_show();
-
-    // 100 = 1s
-    if (exit == 300) {
-	state = 0;
-	period = esrflashperiod;
-	exit = 0;
-	oldshow = 0;
-	return 1;
-    }
-    return 0;
-}
-#endif
-
-uint8_t esrbr_fade(uint32_t trance=false) {
+uint8_t esrbtr_flash(uint32_t trance=false) {
     static uint16_t state;
     static uint8_t wheel;
     static float spd;
@@ -3315,8 +3258,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 000 */ { "NULL Demo", NULL, -1, NULL },
 /* 001 */ { "Squares In",  squares, 0, NULL },
 /* 002 */ { "Squares Out", squares, 1, NULL },
-/* 003 */ { "EatSleepRaveBurnRepeat", esrbr, 0, NULL },
-/* 004 */ { "EatSleepRaveBurnRepeat Fade", esrbr_fade, 0, NULL },
+/* 003 */ { "EatSleepRaveBurnRepeat", esrbtr, 0, NULL },
+/* 004 */ { "EatSleepRaveBurnRepeat Flash", esrbtr_flash, 0, NULL },
 /* 005 */ { "TFSF Zoom InOut", tfsf_zoom, 1, NULL },
 /* 006 */ { "TFSF Display", tfsf, -1, NULL },
 /* 007 */ { "With Every Beat...", webwc, -1, NULL },
@@ -3355,8 +3298,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 040 */ { "Aurora Spiro", aurora, 10, NULL },
 /* 041 */ { "Aurora Swirl", aurora, 11, NULL },		// 11 not great on bigger display
 /* 042 */ { "Aurora Wave", aurora, 12, NULL },
-/* 043 */ { "EatSleepTranceRepeat", esrbr, 1, NULL },
-/* 004 */ { "EatSleepTranceRepeat Fade", esrbr_fade, 1, NULL },
+/* 043 */ { "EatSleepTranceRepeat", esrbtr, 1, NULL },
+/* 044 */ { "EatSleepTranceRepeat Flash", esrbtr_flash, 1, NULL },
 /* 045 */ { "TMED  0 Zoom in shapes", tmed,  0, NULL },	// concentric colors and shapes
 /* 046 */ { "TMED  1 Concentric circles", tmed,  1, NULL }, // 5 color windows-like pattern with circles in and out
 /* 047 */ { "TMED  2 Color Starfield", tmed,  2, NULL },	// color worm patterns going out with circles zomming out
