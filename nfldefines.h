@@ -1,8 +1,17 @@
 #ifndef nfldefines_h
 #define nfldefines_h
 
+#ifdef ESP32
+    #ifdef BOARD_HAS_PSRAM
+        // There isn't enough RAM to do Wifi with all the demos I have
+        #pragma message "PSRAM and WIFI enabled"
+        #define WIFI
+    #else
+        #pragma message "PSRAM disabled, so WIFI disabled too"
+    #endif
+#endif
+
 #define LEDMATRIX
-//#define NEOMATRIX
 #define DISABLE_MATRIX_TEST
 #include "neomatrix_config.h"
 
@@ -15,17 +24,28 @@
 #define HAS_FS
 #ifdef ESP8266
     #define mheight 32
+    uint8_t PANELCONFNUM = 0;
+    #pragma message "autoconf found height 32, panelconf 0"
 #elif defined(ESP32)
     #ifdef M64BY64
 	#define mheight 64
+	uint8_t PANELCONFNUM = 1;
+	#pragma message "autoconf found height 64, panelconf 1"
+	// Force PANELCONFNUM to 2 for burning man
     #else
 	#define mheight 96
+	uint8_t PANELCONFNUM = 3;
+	#pragma message "autoconf found height 96, panelconf 3"
     #endif
 #elif defined(ARDUINOONPC)
     #if GFXDISPLAY_M64BY96
 	#define mheight 96
+	uint8_t PANELCONFNUM = 3;
+	#pragma message "autoconf found height 96, panelconf 3"
     #else
+	uint8_t PANELCONFNUM = 4;
 	#define mheight 192
+	#pragma message "autoconf found height 192, panelconf 4"
     #endif
 #else
 #error "Matrix config undefined, please set height"
@@ -71,13 +91,6 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     // 8-bit/DMA Memory Available  :  46728 bytes total,  40976 bytes largest free block
     #ifndef ARDUINOONPC
         #define IR_RECV_PIN 34
-	#ifdef BOARD_HAS_PSRAM
-	    // There isn't enough RAM to do Wifi with all the demos I have
-	    #pragma message "PSRAM and WIFI enabled"
-	    #define WIFI
-	#else
-	    #pragma message "PSRAM disabled, so WIFI disabled too"
-	#endif
     #endif
 
     // No LED strip on rPi, but good to run the code on linux to exercise compiler warnings (and ASAN)

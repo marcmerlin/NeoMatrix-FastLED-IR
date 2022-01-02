@@ -89,14 +89,6 @@ const char *panelconfnames[CONFIGURATIONS] = {
     "SmartMatrix Shirt Dance 64x96 ESP32",
     "RPI-RGB-Panels Shirt Dance 128x192 rPi" };
 
-#if mheight == 192
-uint8_t PANELCONFNUM = 4;
-#elif mheight == 96
-uint8_t PANELCONFNUM = 3;
-#else
-uint8_t PANELCONFNUM = 0;
-#endif
-
 typedef struct demo_entry_ {
     const char *name;
     uint8_t (*func)(uint32_t);
@@ -5478,6 +5470,14 @@ void read_config_index() {
 	// keep track of the last line read (0 based)
 	CFG_LAST_INDEX = index;
 	index++;
+    }
+    if (index == 0) {
+	Serial.flush();
+	Serial.print("\n\n\n**** ERROR: NOTHING READ FROM ");
+	Serial.print(pathname);
+	Serial.println(" ******\n\n");
+	Serial.flush();
+	delay(5000);
     }
 
     #ifdef ARDUINOONPC
