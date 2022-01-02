@@ -3258,19 +3258,19 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 000 */ { "NULL Demo", NULL, -1, NULL },
 /* 001 */ { "Squares In",  squares, 0, NULL },
 /* 002 */ { "Squares Out", squares, 1, NULL },
-/* 003 */ { "EatSleepRaveBurnRepeat", esrbtr, 0, NULL },
+/* 003 */ { "EatSleepTranceRepeat Flash", esrbtr_flash, 1, NULL },
 /* 004 */ { "EatSleepRaveBurnRepeat Flash", esrbtr_flash, 0, NULL },
 /* 005 */ { "TFSF Zoom InOut", tfsf_zoom, 1, NULL },
 /* 006 */ { "TFSF Display", tfsf, -1, NULL },
 /* 007 */ { "With Every Beat...", webwc, -1, NULL },
-/* 008 */ { "Trance Jesus Vinyl", trancejesus, 1, NULL },
-/* 009 */ { "Trance Jesus Do", trancejesus, 0, NULL },
-/* 010 */ { "Trance Because Of Course", becauseofcourse, -1, NULL },
-/* 011 */ { "Trance Country", trancecountry, -1, NULL },
-/* 012 */ { "Trance Techno", trancetechno, -1, NULL },
-/* 013 */ { "Trance RichEDM", trancerichedm, -1, NULL },
-/* 014 */ { "Trance Snob", trancesnobawkward, 1, NULL },
-/* 015 */ { "Trance Awkward", trancesnobawkward, 0, NULL },
+/* 008 */ { "", NULL, -1, NULL },
+/* 009 */ { "", NULL, -1, NULL },
+/* 010 */ { "", NULL, -1, NULL },
+/* 011 */ { "", NULL, -1, NULL },
+/* 012 */ { "", NULL, -1, NULL },
+/* 013 */ { "", NULL, -1, NULL },
+/* 014 */ { "", NULL, -1, NULL },
+/* 015 */ { "", NULL, -1, NULL },
 /* 016 */ { "Bounce Smiley", panOrBounceBitmap, 1, NULL },  // currently only 24x32
 /* 017 */ { "Fireworks", call_fireworks, -1, NULL },
 /* 018 */ { "TwinkleFox", call_twinklefox, -1, NULL },
@@ -3298,8 +3298,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 040 */ { "Aurora Spiro", aurora, 10, NULL },
 /* 041 */ { "Aurora Swirl", aurora, 11, NULL },		// 11 not great on bigger display
 /* 042 */ { "Aurora Wave", aurora, 12, NULL },
-/* 043 */ { "EatSleepTranceRepeat", esrbtr, 1, NULL },
-/* 044 */ { "EatSleepTranceRepeat Flash", esrbtr_flash, 1, NULL },
+/* 043 */ { "", NULL, -1, NULL },
+/* 044 */ { "", NULL, -1, NULL },
 /* 045 */ { "TMED  0 Zoom in shapes", tmed,  0, NULL },	// concentric colors and shapes
 /* 046 */ { "TMED  1 Concentric circles", tmed,  1, NULL }, // 5 color windows-like pattern with circles in and out
 /* 047 */ { "TMED  2 Color Starfield", tmed,  2, NULL },	// color worm patterns going out with circles zomming out
@@ -3335,16 +3335,16 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 077 */ { "", NULL, -1, NULL },
 /* 078 */ { "", NULL, -1, NULL },
 /* 079 */ { "", NULL, -1, NULL },
-/* 080 */ { "", NULL, -1, NULL },
-/* 081 */ { "", NULL, -1, NULL },
-/* 082 */ { "", NULL, -1, NULL },
-/* 083 */ { "", NULL, -1, NULL },
-/* 084 */ { "", NULL, -1, NULL },
-/* 085 */ { "", NULL, -1, NULL },
-/* 086 */ { "", NULL, -1, NULL },
-/* 087 */ { "", NULL, -1, NULL },
-/* 088 */ { "", NULL, -1, NULL },
-/* 089 */ { "", NULL, -1, NULL },
+/* 080 */ { "Trance Jesus Vinyl", trancejesus, 1, NULL },
+/* 081 */ { "Trance Jesus Do", trancejesus, 0, NULL },
+/* 082 */ { "Trance Because Of Course", becauseofcourse, -1, NULL },
+/* 083 */ { "Trance Country", trancecountry, -1, NULL },
+/* 084 */ { "Trance Techno", trancetechno, -1, NULL },
+/* 085 */ { "Trance RichEDM", trancerichedm, -1, NULL },
+/* 086 */ { "Trance Snob", trancesnobawkward, 1, NULL },
+/* 087 */ { "Trance Awkward", trancesnobawkward, 0, NULL },
+/* 088 */ { "EatSleepTranceRepeat", esrbtr, 1, NULL },
+/* 089 */ { "EatSleepRaveBurnRepeat", esrbtr, 0, NULL },
 // Give a fake demo we won't call. We actually call display_text but it takes
 // more arguments, so it can't be used in this struct.and the function called
 // manually is display_text with more arguments
@@ -5521,7 +5521,7 @@ void write_config_index(OmXmlWriter w) {
 
     file.print("#       demo #\n");
     file.print("#             position in sorted file\n");
-    file.print("# :%!sort -k7 (or -k6 to edit and then -k7)\n");
+    file.print("# :5,$!sort -k7 (or -k6 to edit and then -k7)\n");
     file.print("# The last slot is not read by the code, it's only there for sorting the file\n");
 
     for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
@@ -5636,7 +5636,7 @@ void loop() {
 }
 
 void showip() {
-#ifndef ARDUINOONPC
+#ifdef WIFI
     DISPLAYTEXT = WiFi.localIP().toString();
     Serial.print("|I:");
     Serial.println(DISPLAYTEXT);
