@@ -17,6 +17,12 @@
 
 // Compile WeMos D1 R2 & mini, ESP32-dev, or ArduinoOnPC for linux
 
+// on Rpi, this is ignored and it uses a larger size
+#ifdef ESP8266
+#define gif_size 32
+#else
+#define gif_size 64
+#endif
 #include "nfldefines.h"
 #include "Table_Mark_Estes.h"
 #include "PacMan.h"
