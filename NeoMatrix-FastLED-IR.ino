@@ -1140,6 +1140,14 @@ uint8_t trancejesus(uint32_t whichone=false) {
     uint8_t displayall = 14;
     uint8_t resetspd = 24;
     uint8_t l = 0;
+    const char *text[][5] = {
+	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!" },
+	{ "Trance", "Because",	"JESUS",	"has it",   "on vinyl"  },
+    };
+    uint32_t color[][5] = {
+	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF },
+	{ 0xFFFFFF, 0xFF0000,	0xFFFFFF,	0xFF0000,   0xFF0000 },
+    };
 
     if (MATRIX_RESET_DEMO) {
 	MATRIX_RESET_DEMO = false;
@@ -1168,81 +1176,38 @@ uint8_t trancejesus(uint32_t whichone=false) {
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
-	switch (whichone) {
-	    case 0: 
-		matrix->setPassThruColor(0xFFFF00);
-		break; 
-	    case 1: 
-		matrix->setPassThruColor(0xFFFFFF);
-		break; 
-	}  
-	if (mheight >= 192) matrix->setCursor(20, 25);
-	else matrix->setCursor(10, 16);
-	matrix->print("Trance");
+	matrix->setPassThruColor(color[whichone][l]);
+	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?25:16);
+	matrix->print(text[whichone][l]);
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 	firstpass = 1;
-	switch (whichone) {
-	    case 0: 
-		matrix->setPassThruColor(0xFFFFFF);
-		break; 
-	    case 1: 
-		matrix->setPassThruColor(0xFF0000);
-		break; 
-	}  
-	if (mheight >= 192) { matrix->setCursor(14, 65); matrix->print("Because"); }
-	else { matrix->setCursor(8, 32); matrix->print("BECAUSE"); }
+	matrix->setPassThruColor(color[whichone][l]);
+	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?65:32);
+	matrix->print(text[whichone][l]);
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	switch (whichone) {
-	    case 0: 
-		if (mheight >= 192) { matrix->setCursor(12, 105); matrix->print("it's what"); }
-		else { matrix->setCursor(5, 48); matrix->print("IT'S WHAT"); }
-		break; 
-	    case 1: 
-		if (mheight >= 192) { matrix->setCursor(24, 105); matrix->print("Jesus"); }
-		else { matrix->setCursor(20, 48); matrix->print("JESUS"); }
-		break; 
-	}  
+	matrix->setPassThruColor(color[whichone][l]);
+	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?105:48);
+	matrix->print(text[whichone][l]);
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	switch (whichone) {
-	    case 0: 
-		matrix->setPassThruColor(0xFFFFFF);
-		if (mheight >= 192) matrix->setCursor(20, 145);
-		else matrix->setCursor(16, 64);
-		matrix->print("JESUS");
-		break; 
-	    case 1: 
-		matrix->setPassThruColor(0xFF0000);
-		if (mheight >= 192) matrix->setCursor(24, 145);
-		else matrix->setCursor(16, 64);
-		matrix->print("has it");
-		break; 
-	}  
+	matrix->setPassThruColor(color[whichone][l]);
+	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?145:64);
+	matrix->print(text[whichone][l]);
     }
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	switch (whichone) {
-	    case 0: 
-		matrix->setPassThruColor(0xFFFFFF);
-		if (mheight >= 192) { matrix->setCursor(2, 185); matrix->print("would do!"); }
-		else { matrix->setCursor(0, 82); matrix->print("WOULD DO!"); }
-		break; 
-	    case 1: 
-		matrix->setPassThruColor(0xFF0000);
-		if (mheight >= 192) { matrix->setCursor(14, 185); matrix->print("on vinyl"); }
-		else { matrix->setCursor(0, 48); matrix->print("ON VINYL"); }
-		break; 
-	}  
+	matrix->setPassThruColor(color[whichone][l]);
+	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?185:82);
+	matrix->print(text[whichone][l]);
     }
     l++;
 
