@@ -14,11 +14,12 @@ It uses these libraries
 - https://github.com/marcmerlin/SmartMatrix_GFX + https://github.com/pixelmatix/SmartMatrix/ (SmartMatrix backend only)
 - https://github.com/hzeller/rpi-rgb-led-matrix + https://github.com/marcmerlin/FastLED_RPIRGBPanel_GFX + https://github.com/marcmerlin/ArduinoOnPc-FastLED-GFX-LEDMatrix (rPI only)
 - https://github.com/adafruit/Adafruit-GFX-Library
+- https://github.com/distrakt/OmEspHelpers
 
 Hardware Support
 ----------------
-This code was originally written for ESP8266 running a 24x32 Neopixel Matrix, and I eventually moved to ESP32 running
-64x96 SmartMatrix, and later ported the code to Raspberry Pi where it now runs via rpi-rgb-panel at 128x192 via the
+This code was originally written for ESP8266 running a 24x32 Neopixel Matrix, and I later moved to ESP32 running
+64x96 SmartMatrix, and eventually ported the code to Raspberry Pi where it now runs via rpi-rgb-panel at 128x192 via the
 ArduinoOnPC compat layer.  
 While the code is meant to work on all 3 platforms, some time after tag 20200307_last_ESP8266 
 ( https://github.com/marcmerlin/NeoMatrix-FastLED-IR/tree/5d5ce13e24b5d6c08fbcb5a46119bb32f51a1af8 )
