@@ -1129,7 +1129,7 @@ uint8_t trancesnobawkward(uint32_t snob=true) {
 }
 
 // 5 lines
-uint8_t trancejesus(uint32_t whichone=false) {
+uint8_t rotate_text(uint32_t whichone=0) {
     static uint16_t state;
     static float spd;
     static bool didclear;
@@ -1139,15 +1139,63 @@ uint8_t trancejesus(uint32_t whichone=false) {
     uint16_t overlap = 50;
     uint8_t displayall = 14;
     uint8_t resetspd = 24;
-    uint8_t l = 0;
-    const char *text[][5] = {
-	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!" },
-	{ "Trance", "Because",	"JESUS",	"has it",   "on vinyl"  },
+
+    uint8_t numlines[] = { 
+	5,
+	5,
     };
-    uint32_t color[][5] = {
-	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF },
-	{ 0xFFFFFF, 0xFF0000,	0xFFFFFF,	0xFF0000,   0xFF0000 },
+
+    const char *text[][6] = {
+	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },
+	{ "Trance", "Because",	"JESUS",	"has it",   "on vinyl",	    "" },
     };
+
+    uint32_t color[][6] = {
+	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },
+	{ 0xFFFFFF, 0xFF0000,	0xFFFFFF,	0xFF0000,   0xFF0000,	    0 },
+    };
+
+    uint16_t y_offset_192[][6] = { 
+	{ 0,	0,	0,	0,	0,	0 },
+	{ 90,	0,	0,	0,	0,	0 },
+	{ 70,	140,	0,	0,	0,	0 },
+	{ 65,	105,	145,	0,	0,	0 },
+	{ 48,	84,	120,	160,	0,	0 }, // 4
+	{ 25,	65,	105,	145,	185,	0 },
+	{ 30,	60,	90,	120,	130,	180 },
+    };
+
+    uint16_t y_offset_96[][6] = { 
+	{ 0,	0,	0,	0,	0,	0 },
+	{ 48,	0,	0,	0,	0,	0 },
+	{ 30,	60,	0,	0,	0,	0 },
+	{ 32,	48,	64,	0,	0,	0 },
+	{ 20,	41,	60,	82,	0,	0 }, // 4
+	{ 25,	65,	105,	145,	165,	0 },
+	{ 10,	26,	42,	58,	76,	95 },
+    };
+
+    uint16_t y_offset_64[][6] = { 
+	{ 0,	0,	0,	0,	0,	0 },
+	{ 16,	0,	0,	0,	0,	0 },
+	{ 10,	20,	0,	0,	0,	0 },
+	{ 20,	41,	62,	0,	0,	0 },
+	{ 15,	33,	47,	63,	0,	0 }, // 4
+	{ 0,	0,	0,	0,	0,	0 },
+	{ 0,	0,	0,	0,	0,	0 },
+    };
+
+    uint16_t y_offset_32[][6] = { 
+	{ 0,	0,	0,	0,	0,	0 },
+	{ 16,	0,	0,	0,	0,	0 },
+	{ 15,	25,	0,	0,	0,	0 },
+	{ 10,	20,	30,	0,	0,	0 },
+	{ 6,	14,	22,	30,	0,	0 }, // 4
+	{ 0,	0,	0,	0,	0,	0 },
+	{ 0,	0,	0,	0,	0,	0 },
+    };
+
+
 
     if (MATRIX_RESET_DEMO) {
 	MATRIX_RESET_DEMO = false;
@@ -1175,44 +1223,33 @@ uint8_t trancejesus(uint32_t whichone=false) {
 	didclear = 1;
     }
 
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
-	matrix->setPassThruColor(color[whichone][l]);
-	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?25:16);
-	matrix->print(text[whichone][l]);
-    }
-    l++;
+    for (uint8_t l = 0; l < numlines[whichone]; l++) {
+	uint16_t line;
 
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	firstpass = 1;
-	matrix->setPassThruColor(color[whichone][l]);
-	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?65:32);
-	matrix->print(text[whichone][l]);
-    }
-    l++;
+	if      (mheight >= 192) line = y_offset_192[numlines[whichone]][l];
+	else if (mheight >=  96) line =  y_offset_96[numlines[whichone]][l];
+	else if (mheight >=  64) line =  y_offset_64[numlines[whichone]][l];
+	else if (mheight >=  32) line =  y_offset_32[numlines[whichone]][l];
 
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(color[whichone][l]);
-	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?105:48);
-	matrix->print(text[whichone][l]);
+	if (l != numlines[whichone]-1) {
+	    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
+		matrix->setPassThruColor(color[whichone][l]);
+		matrix->setCursor(text_xcenter((char *)text[whichone][l]), line);
+		matrix->print(text[whichone][l]);
+		// Don't show the last line on the first pass.
+		if (l>0) firstpass = 1;
+	    }
+	} else {
+	    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
+		matrix->setPassThruColor(color[whichone][l]);
+		matrix->setCursor(text_xcenter((char *)text[whichone][l]), line);
+		matrix->print(text[whichone][l]);
+	    }
+	}
     }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(color[whichone][l]);
-	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?145:64);
-	matrix->print(text[whichone][l]);
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setPassThruColor(color[whichone][l]);
-	matrix->setCursor(text_xcenter((char *)text[whichone][l]), (mheight >= 192)?185:82);
-	matrix->print(text[whichone][l]);
-    }
-    l++;
 
     matrix->setPassThruColor();
-    if (state++ > (l*duration-l*overlap)/spd) {
+    if (state++ > (numlines[whichone]*(duration-overlap))/spd) {
 	state = 1;
 	spd += spdincr;
 	if (spd > resetspd) {
@@ -3298,8 +3335,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 077 */ { "", NULL, -1, NULL },
 /* 078 */ { "", NULL, -1, NULL },
 /* 079 */ { "", NULL, -1, NULL },
-/* 080 */ { "Trance Jesus Vinyl", trancejesus, 1, NULL },
-/* 081 */ { "Trance Jesus Do", trancejesus, 0, NULL },
+/* 080 */ { "Trance Jesus Do", rotate_text, 0, NULL },
+/* 081 */ { "Trance Jesus Vinyl", rotate_text, 1, NULL },
 /* 082 */ { "Trance Because Of Course", becauseofcourse, -1, NULL },
 /* 083 */ { "Trance Country", trancecountry, -1, NULL },
 /* 084 */ { "Trance Techno", trancetechno, -1, NULL },
