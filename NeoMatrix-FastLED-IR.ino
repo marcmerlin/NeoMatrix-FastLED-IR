@@ -875,7 +875,10 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	6,
 	3,
 	5,
-	5, // 9
+	5,
+	5, // 10
+	3,
+	4,
     };
 
     const char *text[][6] = {
@@ -888,7 +891,10 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ "Trance", "Because",	"I don't love",	"my sister","enough for",   "Country." },
 	{ "Trance", "Because",	"Of Course",	"",	    "",		    "" },
 	{ "Trance", "Because",	"JESUS",	"has it",   "on vinyl",	    "" },
-	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },	// 9
+	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },
+	{ "She said","TRANCE",	"or ME",	"Sometimes","I miss her",   "" },	// 10
+	{ "IT'S",   "TIME",	"TO PLAY",	"",   "",		    "" },
+	{ "TRANCE", "IS MUSIC",	"WITH A",	"SOUL",   "",		    "" },
     };
 
     if (PANELCONFNUM == 2 || PANELCONFNUM == 3) text[0][2] = "BURN";
@@ -903,7 +909,10 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ 0x0000FF, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0xFFFFFF },
 	{ 0xFF0000, 0xFFFFFF,	0xFFFFFF,	0,	    0,		    0 },
 	{ 0xFFFFFF, 0xFF0000,	0xFFFFFF,	0xFF0000,   0xFF0000,	    0 },
-	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },	// 9
+	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },
+	{ 0xFFFFFF, 0xFFFF00,	0x00FF00,	0xFFFFFF,   0x00FFFF,	    0 },	// 10
+	{ 0x00FF00, 0x00FF00,	0x00FF00,	0,	    0,		    0 },
+	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0xFFFF00,   0,		    0 },
     };
 
     uint16_t y_offset_192[][6] = { 
@@ -967,6 +976,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	if (whichone == 2) matrix->setFont(&Century_Schoolbook_L_Bold_20);
 	if (whichone == 3) matrix->setFont(&Century_Schoolbook_L_Bold_20);
 	if (whichone == 6) matrix->setFont(&Century_Schoolbook_L_Bold_20);
+	if (whichone == 10) matrix->setFont(&Century_Schoolbook_L_Bold_20);
     } else if (mheight >= 64)  {
 	//matrix->setFont(FreeMonoBold9pt7b);
 	matrix->setFont(&Century_Schoolbook_L_Bold_8);
@@ -2720,9 +2730,9 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 074 */ { "", NULL, -1, NULL },
 /* 075 */ { "", NULL, -1, NULL },
 /* 076 */ { "", NULL, -1, NULL },
-/* 077 */ { "", NULL, -1, NULL },
-/* 078 */ { "", NULL, -1, NULL },
-/* 079 */ { "", NULL, -1, NULL },
+/* 077 */ { "Trance Soul", rotate_text, 12, NULL },
+/* 078 */ { "Time to Play", rotate_text, 11, NULL },
+/* 079 */ { "Trance Or Me", rotate_text, 10, NULL },
 /* 080 */ { "Trance Jesus Do", rotate_text, 9, NULL },
 /* 081 */ { "Trance Jesus Vinyl", rotate_text, 8, NULL },
 /* 082 */ { "Trance Because Of Course", rotate_text, 7, NULL },
