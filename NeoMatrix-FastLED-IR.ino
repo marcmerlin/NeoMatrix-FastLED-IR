@@ -851,283 +851,8 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
     return repeat;
 }
 
-uint8_t esrbtr(uint32_t trance=false) { // eat sleep rave/burn repeat
-    static uint16_t state;
-    static float spd;
-    //static bool didclear;
-    static bool firstpass;
-    float spdincr = 1.0;
-    uint16_t duration = 100;
-    uint16_t overlap = 50;
-    uint8_t displayall = 16;
-    uint8_t resetspd = 24;
-    uint8_t l = 0;
 
-    if (MATRIX_RESET_DEMO) {
-	MATRIX_RESET_DEMO = false;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-	firstpass = 0;
-    }
-
-    if (! ROTATE_TEXT) spd = displayall+1;
-
-    matrix->setTextSize(1);
-    if (mheight >= 192)  {
-	matrix->setFont(&Century_Schoolbook_L_Bold_26);
-    } else if (mheight >= 64)  {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_12);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
-
-    // without this, we can use fadeall, but it fades too slowly for my opinion
-    // so let's only show 2 at a time
-    //if (! didclear) {
-	matrix->clear();
-	//didclear = 1;
-    //}
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mheight >= 192) matrix->setCursor(30, 48);
-	else if (mheight >= 96) matrix->setCursor(18, 20);
-	else if (mheight >= 64) matrix->setCursor(18, 15);
-	else matrix->setCursor(7, 6);
-
-	matrix->setTextColor(matrix->Color(255,0,0));
-	matrix->print("EAT");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	firstpass = 1;
-	if (mheight >= 192) matrix->setCursor(18, 84);
-	else if (mheight >= 96) matrix->setCursor(10, 41);
-	else if (mheight >= 64) matrix->setCursor(10, 33);
-	else matrix->setCursor(3, 14);
-
-	matrix->setTextColor(matrix->Color(192,192,0));
-	matrix->print("SLEEP");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setTextColor(matrix->Color(0,255,0));
-	if (mheight >= 192) matrix->setCursor(trance?2:22, 120);
-	else if (mheight >= 96) matrix->setCursor(trance?2:14, 60);
-	else if (mheight >= 64) matrix->setCursor(trance?2:14, 47);
-	else matrix->setCursor(trance?0:5, 22);
-	if (PANELCONFNUM == 2 || PANELCONFNUM == 3) matrix->print("BURN");
-	else matrix->print(trance?"TRANCE":"RAVE");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	if (mheight >= 192) matrix->setCursor(2, 160);
-	else if (mheight >= 96) matrix->setCursor(2, 82);
-	else if (mheight >= 64) matrix->setCursor(2, 63);
-	else matrix->setCursor(0, 30);
-
-	matrix->setTextColor(matrix->Color(0,192,192));
-	matrix->print("REPEAT");
-    }
-    l++;
-
-    // 400 - 4x50 = 200
-    if (state++ > (l*duration-l*overlap)/spd) {
-	state = 1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    MATRIX_RESET_DEMO = true;
-	    return 0;
-	}
-    }
-
-    //if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
-
-    matrix_show();
-    return 1;
-}
-
-// 3 lines
-uint8_t becauseofcourse(uint32_t unused) {
-    static uint16_t state;
-    static float spd;
-    static bool didclear;
-    static bool firstpass;
-    float spdincr = 1.2;
-    uint16_t duration = 100;
-    uint16_t overlap = 50;
-    uint8_t displayall = 14;
-    uint8_t resetspd = 24;
-    uint8_t l = 0;
-
-    if (MATRIX_RESET_DEMO) {
-	MATRIX_RESET_DEMO = false;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-	didclear = 0;
-	firstpass = 0;
-    }
-
-    unused = unused;
-    if (! ROTATE_TEXT) spd = displayall+1;
-
-    matrix->setTextSize(1);
-    if (mheight >= 192)  {
-	matrix->setFont(&Century_Schoolbook_L_Bold_22);
-    } else if (mheight >= 64)  {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_8);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
-
-    if (! didclear) {
-	matrix->clear();
-	didclear = 1;
-    }
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
-	matrix->setPassThruColor(0xFF0000);
-	if (mheight >= 192) matrix->setCursor(22, 65);
-	else matrix->setCursor(10, 32);
-	matrix->print("Trance");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	firstpass = 1;
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(14, 105); matrix->print("Because"); }
-	else { matrix->setCursor(8, 48); matrix->print("BECAUSE"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(0, 145); matrix->print("Of Course"); }
-	else { matrix->setCursor(0, 64); matrix->print("OF COURSE"); }
-    }
-    l++;
-
-    matrix->setPassThruColor();
-    if (state++ > (l*duration-l*overlap)/spd) {
-	state = 1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    MATRIX_RESET_DEMO = true;
-	    return 0;
-	}
-    }
-
-    if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
-
-    matrix_show();
-    return 2;
-}
  
-// 4 lines
-uint8_t trancesnobawkward(uint32_t snob=true) {
-    static uint16_t state;
-    static float spd;
-    //static bool didclear;
-    static bool firstpass;
-    float spdincr = 1.0;
-    uint16_t duration = 100;
-    uint16_t overlap = 50;
-    uint8_t displayall = 16;
-    uint8_t resetspd = 24;
-    uint8_t l = 0;
-
-    if (MATRIX_RESET_DEMO) {
-	MATRIX_RESET_DEMO = false;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-	firstpass = 0;
-    }
-
-    if (! ROTATE_TEXT) spd = displayall+1;
-
-    matrix->setTextSize(1);
-    if (mheight >= 192)  {
-	matrix->setFont(&Century_Schoolbook_L_Bold_20);
-    } else if (mheight >= 64)  {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_12);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
-
-    // without this, we can use fadeall, but it fades too slowly for my opinion
-    // so let's only show 2 at a time
-    //if (! didclear) {
-	matrix->clear();
-	//didclear = 1;
-    //}
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mheight >= 192) matrix->setCursor(26, 48);
-	else if (mheight >= 96) matrix->setCursor(18, 20);
-	else matrix->setCursor(7, 6);
-
-	if (snob) matrix->setTextColor(matrix->Color(0xFF, 0xC0, 0xCB));
-	else	  matrix->setTextColor(matrix->Color(0xFF, 0xA5, 0x00));
-	matrix->print("Trance");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	firstpass = 1;
-	matrix->setTextColor(matrix->Color(255, 255, 255));
-	if (mheight >= 192) matrix->setCursor(18, 84);
-	else if (mheight >= 96) matrix->setCursor(10, 41);
-	else matrix->setCursor(3, 14);
-
-	matrix->print("Because");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setTextColor(matrix->Color(255, 255, 255));
-	if (mheight >= 192) matrix->setCursor(0, 120);
-	else if (mheight >= 96) matrix->setCursor(2, 60);
-	else matrix->setCursor(0, 22);
-
-	matrix->print(snob?"I'm a Music":"I'm socially");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setTextColor(matrix->Color(255, 255, 255));
-	if (mheight >= 192) matrix->setCursor(snob?36:10, 160);
-	else if (mheight >= 96) matrix->setCursor(2, 82);
-	else matrix->setCursor(0, 30);
-
-	matrix->print(snob?"snob.":"awkward.");
-    }
-    l++;
-
-    // 400 - 4x50 = 200
-    if (state++ > (l*duration-l*overlap)/spd) {
-	state = 1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    MATRIX_RESET_DEMO = true;
-	    return 0;
-	}
-    }
-
-    //if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
-
-    matrix_show();
-    return 1;
-}
-
 // 5 lines
 uint8_t rotate_text(uint32_t whichone=0) {
     static uint16_t state;
@@ -1141,18 +866,44 @@ uint8_t rotate_text(uint32_t whichone=0) {
     uint8_t resetspd = 24;
 
     uint8_t numlines[] = { 
+	4, // 0
+	4,
+	4,
+	4,
 	5,
+	6, // 5
+	6,
+	3,
 	5,
+	5, // 9
     };
 
     const char *text[][6] = {
-	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },
+	{ "EAT",    "SLEEP",	"RAVE",		"REPEAT",   "",		    "" },	// 0
+	{ "EAT",    "SLEEP",	"TRANCE",	"REPEAT",   "",		    "" },
+	{ "Trance.","Because",	"I'm socially",	"awkward.", "",		    "" },
+	{ "Trance.","Because",	"I'm a Music",	"snob.",    "",		    "" },
+	{ "Trance", "Because",	"Rich said",	"EDM is",   "dead.",	    "" },
+	{ "Trance", "Because",	"I'm not",	"hipster",  "enough for",   "Techno." },// 5
+	{ "Trance", "Because",	"I don't love",	"my sister","enough for",   "Country." },
+	{ "Trance", "Because",	"Of Course",	"",	    "",		    "" },
 	{ "Trance", "Because",	"JESUS",	"has it",   "on vinyl",	    "" },
+	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },	// 9
     };
 
+    if (PANELCONFNUM == 2 || PANELCONFNUM == 3) text[0][2] = "BURN";
+
     uint32_t color[][6] = {
-	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },
+	{ 0xFF0000, 0xB0B000,	0x00FF00,	0x00B0B0,   0,		    0 },	// 0
+	{ 0xFF0000, 0xB0B000,	0x00FF00,	0x00B0B0,   0,		    0 },
+	{ 0xFFA500, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0,		    0 },
+	{ 0xFFC0CB, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0,		    0 },
+	{ 0x00FF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },
+	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0xFFFFFF }, // 5
+	{ 0x0000FF, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0xFFFFFF },
+	{ 0xFF0000, 0xFFFFFF,	0xFFFFFF,	0,	    0,		    0 },
 	{ 0xFFFFFF, 0xFF0000,	0xFFFFFF,	0xFF0000,   0xFF0000,	    0 },
+	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },	// 9
     };
 
     uint16_t y_offset_192[][6] = { 
@@ -1162,7 +913,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ 65,	105,	145,	0,	0,	0 },
 	{ 48,	84,	120,	160,	0,	0 }, // 4
 	{ 25,	65,	105,	145,	185,	0 },
-	{ 30,	60,	90,	120,	130,	180 },
+	{ 30,	60,	90,	120,	150,	180 },
     };
 
     uint16_t y_offset_96[][6] = { 
@@ -1211,9 +962,16 @@ uint8_t rotate_text(uint32_t whichone=0) {
     matrix->setTextSize(1);
     if (mheight >= 192)  {
 	matrix->setFont(&Century_Schoolbook_L_Bold_22);
+	if (whichone == 0) matrix->setFont(&Century_Schoolbook_L_Bold_26);
+	if (whichone == 1) matrix->setFont(&Century_Schoolbook_L_Bold_26);
+	if (whichone == 2) matrix->setFont(&Century_Schoolbook_L_Bold_20);
+	if (whichone == 3) matrix->setFont(&Century_Schoolbook_L_Bold_20);
+	if (whichone == 6) matrix->setFont(&Century_Schoolbook_L_Bold_20);
     } else if (mheight >= 64)  {
 	//matrix->setFont(FreeMonoBold9pt7b);
 	matrix->setFont(&Century_Schoolbook_L_Bold_8);
+	if (whichone == 0) matrix->setFont(&Century_Schoolbook_L_Bold_12);
+	if (whichone == 1) matrix->setFont(&Century_Schoolbook_L_Bold_12);
     } else {
 	matrix->setFont(&TomThumb);
     }
@@ -1265,375 +1023,6 @@ uint8_t rotate_text(uint32_t whichone=0) {
 }
 
 
-uint8_t trancerichedm(uint32_t unused) {
-    static uint16_t state;
-    static float spd;
-    static bool didclear;
-    static bool firstpass;
-    float spdincr = 1.2;
-    uint16_t duration = 100;
-    uint16_t overlap = 50;
-    uint8_t displayall = 14;
-    uint8_t resetspd = 24;
-    uint8_t l = 0;
-
-    if (MATRIX_RESET_DEMO) {
-	MATRIX_RESET_DEMO = false;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-	didclear = 0;
-	firstpass = 0;
-    }
-
-    unused = unused;
-    if (! ROTATE_TEXT) spd = displayall+1;
-
-    matrix->setTextSize(1);
-    if (mheight >= 192)  {
-	matrix->setFont(&Century_Schoolbook_L_Bold_22);
-    } else if (mheight >= 64)  {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_8);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
-
-    if (! didclear) {
-	matrix->clear();
-	didclear = 1;
-    }
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
-	matrix->setPassThruColor(0x00FF00);
-	if (mheight >= 192) matrix->setCursor(20, 25);
-	else matrix->setCursor(10, 16);
-	matrix->print("Trance");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	firstpass = 1;
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(14, 65); matrix->print("Because"); }
-	else { matrix->setCursor(8, 32); matrix->print("BECAUSE"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(5, 105); matrix->print("Rich said"); }
-	else { matrix->setCursor(5, 48); matrix->print("RICH SAID"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) matrix->setCursor(25, 145);
-	else matrix->setCursor(16, 64);
-	matrix->print("EDM is");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(33, 185); matrix->print("dead."); }
-	else { matrix->setCursor(0, 82); matrix->print("DEAD."); }
-    }
-    l++;
-
-    matrix->setPassThruColor();
-    if (state++ > (l*duration-l*overlap)/spd) {
-	state = 1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    MATRIX_RESET_DEMO = true;
-	    return 0;
-	}
-    }
-
-    if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
-
-    matrix_show();
-    return 2;
-}
-
-uint8_t trancecountry(uint32_t unused) {
-    static uint16_t state;
-    static float spd;
-    static bool didclear;
-    static bool firstpass;
-    float spdincr = 1.2;
-    uint16_t duration = 100;
-    uint16_t overlap = 50;
-    uint8_t displayall = 14;
-    uint8_t resetspd = 24;
-    uint8_t l = 0;
-
-    if (MATRIX_RESET_DEMO) {
-	MATRIX_RESET_DEMO = false;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-	didclear = 0;
-	firstpass = 0;
-    }
-
-    unused = unused;
-    if (! ROTATE_TEXT) spd = displayall+1;
-
-    matrix->setTextSize(1);
-    if (mheight >= 192)  {
-	matrix->setFont(&Century_Schoolbook_L_Bold_20);
-    } else if (mheight >= 64)  {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_8);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
-
-    if (! didclear) {
-	matrix->clear();
-	didclear = 1;
-    }
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
-	matrix->setPassThruColor(0x0000FF);
-	if (mheight >= 192) matrix->setCursor(20, 30);
-	else matrix->setCursor(10, 10);
-	matrix->print("Trance");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	firstpass = 1;
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(14, 60); matrix->print("Because"); }
-	else { matrix->setCursor(8, 26); matrix->print("BECAUSE"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(0, 90); matrix->print("I don't love"); }
-	else { matrix->setCursor(0, 42); matrix->print("I DON'T LOVE"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) matrix->setCursor(10, 120);
-	else matrix->setCursor(0, 58);
-	matrix->print("my sister");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(2, 150); matrix->print("enough for"); }
-	else { matrix->setCursor(0, 76); matrix->print("ENOUGH FOR"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(15, 180); matrix->print("Country."); }
-	else { matrix->setCursor(0, 95); matrix->print("COUNTRY."); }
-    }
-    l++;
-
-    matrix->setPassThruColor();
-    if (state++ > (l*duration-l*overlap)/spd) {
-	state = 1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    MATRIX_RESET_DEMO = true;
-	    return 0;
-	}
-    }
-
-    if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
-
-    matrix_show();
-    return 2;
-}
-
-
-uint8_t trancetechno(uint32_t unused) {
-    static uint16_t state;
-    static float spd;
-    static bool didclear;
-    static bool firstpass;
-    float spdincr = 1.2;
-    uint16_t duration = 100;
-    uint16_t overlap = 50;
-    uint8_t displayall = 14;
-    uint8_t resetspd = 24;
-    uint8_t l = 0;
-
-    if (MATRIX_RESET_DEMO) {
-	MATRIX_RESET_DEMO = false;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-	didclear = 0;
-	firstpass = 0;
-    }
-
-    unused = unused;
-    if (! ROTATE_TEXT) spd = displayall+1;
-
-    matrix->setTextSize(1);
-    if (mheight >= 192)  {
-	matrix->setFont(&Century_Schoolbook_L_Bold_20);
-    } else if (mheight >= 64)  {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_8);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
-
-    if (! didclear) {
-	matrix->clear();
-	didclear = 1;
-    }
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
-	matrix->setPassThruColor(0xFFFF00);
-	if (mheight >= 192) matrix->setCursor(20, 30);
-	else matrix->setCursor(10, 10);
-	matrix->print("Trance");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	firstpass = 1;
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(14, 60); matrix->print("Because"); }
-	else { matrix->setCursor(8, 26); matrix->print("BECAUSE"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(20, 90); matrix->print("I'm not"); }
-	else { matrix->setCursor(0, 42); matrix->print("I'M NOT"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(20, 120); matrix->print("hipster"); }
-	else { matrix->setCursor(0, 58); matrix->print("hipster"); } 
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(2, 150); matrix->print("enough for"); }
-	else { matrix->setCursor(0, 76); matrix->print("ENOUGH FOR"); }
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	matrix->setPassThruColor(0xFFFFFF);
-	if (mheight >= 192) { matrix->setCursor(25, 180); matrix->print("Techno."); }
-	else { matrix->setCursor(0, 95); matrix->print("TECHNO."); }
-    }
-    l++;
-
-    matrix->setPassThruColor();
-    if (state++ > (l*duration-l*overlap)/spd) {
-	state = 1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    MATRIX_RESET_DEMO = true;
-	    return 0;
-	}
-    }
-
-    if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
-
-    matrix_show();
-    return 2;
-}
-
-
-uint8_t bbb(uint32_t unused) {
-    static uint16_t state;
-    static float spd;
-    float spdincr = 0.6;
-    uint16_t duration = 100;
-    uint16_t overlap = 50;
-    uint8_t displayall = 18;
-    uint8_t resetspd = 24;
-    uint8_t l = 0;
-
-    if (MATRIX_RESET_DEMO) {
-	MATRIX_RESET_DEMO = false;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-    }
-
-    unused = unused;
-    if (! ROTATE_TEXT) spd = displayall+1;
-
-    matrix->setTextSize(1);
-    if (mw >= 64) {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_16);
-    } else {
-	matrix->setFont(&TomThumb);
-    }
-    matrix->clear();
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(4, 20);
-	} else {
-	    matrix->setCursor(5, 10);
-	}
-	matrix->setTextColor(matrix->Color(255,0,0));
-	matrix->print("BURN");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(6, 41);
-	} else {
-	    matrix->setCursor(5, 20);
-	}
-	matrix->setTextColor(matrix->Color(0,255,0));
-	matrix->print("BABY");
-    }
-    l++;
-
-    if ((state > (l*duration-l*overlap)/spd || state < overlap/spd) || spd > displayall)  {
-	if (mw >= 64) {
-	    matrix->setCursor(4, 62);
-	} else {
-	    matrix->setCursor(5, 30);
-	}
-	matrix->setTextColor(matrix->Color(0,0,255));
-	matrix->print("BURN");
-    }
-    l++;
-
-    // 400 - 4x50 = 200
-    if (state++ > (l*duration-l*overlap)/spd) {
-	state = 1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    MATRIX_RESET_DEMO = true;
-	    return 0;
-	}
-    }
-
-    matrix_show();
-    return 1;
-}
 
 uint8_t esrbtr_flash(uint32_t trance=false) {
     static uint16_t state;
@@ -3253,7 +2642,6 @@ uint16_t demoidx(uint16_t idx) {
 }
 
 
-/* 008 / { "Burn Baby Burn", bbb, -1, NULL }, */
 Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 000 */ { "NULL Demo", NULL, -1, NULL },
 /* 001 */ { "Squares In",  squares, 0, NULL },
@@ -3335,16 +2723,16 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 077 */ { "", NULL, -1, NULL },
 /* 078 */ { "", NULL, -1, NULL },
 /* 079 */ { "", NULL, -1, NULL },
-/* 080 */ { "Trance Jesus Do", rotate_text, 0, NULL },
-/* 081 */ { "Trance Jesus Vinyl", rotate_text, 1, NULL },
-/* 082 */ { "Trance Because Of Course", becauseofcourse, -1, NULL },
-/* 083 */ { "Trance Country", trancecountry, -1, NULL },
-/* 084 */ { "Trance Techno", trancetechno, -1, NULL },
-/* 085 */ { "Trance RichEDM", trancerichedm, -1, NULL },
-/* 086 */ { "Trance Snob", trancesnobawkward, 1, NULL },
-/* 087 */ { "Trance Awkward", trancesnobawkward, 0, NULL },
-/* 088 */ { "EatSleepTranceRepeat", esrbtr, 1, NULL },
-/* 089 */ { "EatSleepRaveBurnRepeat", esrbtr, 0, NULL },
+/* 080 */ { "Trance Jesus Do", rotate_text, 9, NULL },
+/* 081 */ { "Trance Jesus Vinyl", rotate_text, 8, NULL },
+/* 082 */ { "Trance Because Of Course", rotate_text, 7, NULL },
+/* 083 */ { "Trance Country", rotate_text, 6, NULL },
+/* 084 */ { "Trance Techno", rotate_text, 5, NULL },
+/* 085 */ { "Trance RichEDM", rotate_text, 4, NULL },
+/* 086 */ { "Trance Snob", rotate_text, 3, NULL },
+/* 087 */ { "Trance Awkward", rotate_text, 2, NULL },
+/* 088 */ { "EatSleepTranceRepeat", rotate_text, 1, NULL },
+/* 089 */ { "EatSleepRaveBurnRepeat", rotate_text, 0, NULL },
 // Give a fake demo we won't call. We actually call display_text but it takes
 // more arguments, so it can't be used in this struct.and the function called
 // manually is display_text with more arguments
