@@ -893,7 +893,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ "Trance", "Because",	"JESUS",	"has it",   "on vinyl",	    "" },
 	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },
 	{ "She said","TRANCE",	"or ME",	"Sometimes","I miss her",   "" },	// 10
-	{ "IT'S",   "TIME",	"TO PLAY",	"",   "",		    "" },
+	{ "IT'S",   "TIME",	"TO PLAY",	"",	    "",		    "" },
 	{ "TRANCE", "IS MUSIC",	"WITH A",	"SOUL",   "",		    "" },
     };
 
@@ -931,7 +931,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ 30,	60,	0,	0,	0,	0 },
 	{ 32,	48,	64,	0,	0,	0 },
 	{ 20,	41,	60,	82,	0,	0 }, // 4
-	{ 25,	65,	105,	145,	165,	0 },
+	{ 16,	32,	48,	64,	82,	0 },
 	{ 10,	26,	42,	58,	76,	95 },
     };
 
@@ -982,6 +982,8 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	matrix->setFont(&Century_Schoolbook_L_Bold_8);
 	if (whichone == 0) matrix->setFont(&Century_Schoolbook_L_Bold_12);
 	if (whichone == 1) matrix->setFont(&Century_Schoolbook_L_Bold_12);
+	if (whichone == 5) matrix->setFont(&TomThumb);
+	if (whichone == 6) matrix->setFont(&TomThumb);
     } else {
 	matrix->setFont(&TomThumb);
     }
@@ -998,20 +1000,22 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	else if (mheight >=  96) line =  y_offset_96[numlines[whichone]][l];
 	else if (mheight >=  64) line =  y_offset_64[numlines[whichone]][l];
 	else if (mheight >=  32) line =  y_offset_32[numlines[whichone]][l];
+	String textdisp = String(text[whichone][l]);
+	if (mheight <=  96) textdisp.toUpperCase();
 
 	if (l != numlines[whichone]-1) {
 	    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
 		matrix->setPassThruColor(color[whichone][l]);
-		matrix->setCursor(text_xcenter((char *)text[whichone][l]), line);
-		matrix->print(text[whichone][l]);
+		matrix->setCursor(text_xcenter((char *)textdisp.c_str()), line);
+		matrix->print(textdisp);
 		// Don't show the last line on the first pass.
 		if (l>0) firstpass = 1;
 	    }
 	} else {
 	    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
 		matrix->setPassThruColor(color[whichone][l]);
-		matrix->setCursor(text_xcenter((char *)text[whichone][l]), line);
-		matrix->print(text[whichone][l]);
+		matrix->setCursor(text_xcenter((char *)textdisp.c_str()), line);
+		matrix->print(textdisp);
 	    }
 	}
     }
