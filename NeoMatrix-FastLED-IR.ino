@@ -4489,10 +4489,10 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	if (request.query[0][0] == '/') {
 	    if (k>2 && strcmp(request.query[3], "delete") == 0) {
 		Serial.printf("Delete %s\n", request.query[0]);
-		FFat.remove(request.query[0]);
+		FSO.remove(request.query[0]);
 	    } else {
 		Serial.printf("Rename %s to %s\n", request.query[0], request.query[1]);
-		FFat.rename(request.query[0], request.query[1]);
+		FSO.rename(request.query[0], request.query[1]);
 	    }
 	    p->renderHttpResponseHeader("text/html", 200);
 	    w.puts("<meta http-equiv=refresh content=\"0; URL=/FS\" />\n");
@@ -4703,12 +4703,16 @@ void register_FS_page() {
     // This lamba function is re-run every time /FS is called
     p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
-	w.putf("Total space: %d<BR>Free space:  %d<BR><BR>\n", FFat.totalBytes(), FFat.freeBytes());
+	w.putf("Total space: %d", FSO.totalBytes());
+	#ifdef ESP32FATFS
+	w.putf("<BR>Free space:  %d", FFat.freeBytes());
+	#endif
+	w.putf("<BR><BR>\n");
 	w.putf("<FORM METHOD=GET ACTION=/form>\n");
 	w.putf("<INPUT TYPE=submit NAME=REBOOT VALUE=REBOOT\n>");
 	w.putf("</FORM><BR>\n");
 
-	File dir = FFat.open("/");
+	File dir = FSO.open("/");
 	while (File file = dir.openNextFile()) {
 	    if (file.isDirectory()) continue;
 	    w.putf("<FORM METHOD=GET ACTION=/form>\n");
@@ -4731,7 +4735,7 @@ void register_Text_page() {
     // This lamba function is re-run every time /Text is called
     p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
-	File dir = FFat.open("/");
+	File dir = FSO.open("/");
 	while (File file = dir.openNextFile()) {
 	    if (file.isDirectory()) continue;
 	    w.putf("<FORM METHOD=GET ACTION=/form>\n");
@@ -5121,7 +5125,7 @@ void setup() {
 	// Bring wifi up early to allow renaming files if they cause a crash
 	show_free_mem("Before Wifi");
 	setup_wifi();
-	show_free_mem("After Wifi/Before SPIFFS/FFat");
+	show_free_mem("After Wifi/Before SPIFFS/FFat/LittleFS");
 
 	Serial.println("Pause to run wifi before config file parsing ('w' to stay here)");
 	while (i--) {
