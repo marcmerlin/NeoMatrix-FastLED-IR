@@ -1812,9 +1812,9 @@ uint8_t GifAnim(uint32_t idx) {
 /* 052 */   { ROOT  "DJ_Liquid_Soul.gif",	10, 0 , 0, 10, 10, 0, 0,  },
 /* 053 */   { ROOT  "DJ_ATB.gif",		10, 0 , 0, 10, 10, 0, 0,  },
 /* 054 */   { ROOT  "DJ_Solarstone.gif",	10, 0 , 0, 10, 10, 0, 0,  },
+/* 055 */   { ROOT  "DJ_JOC.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 056 */   { ROOT  "DJ_7lions.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
 	#endif
-/* 055 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 056 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 057 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 058 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 059 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
@@ -2849,8 +2849,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 172 */ { "GIF Liquid Soul",	     GifAnim,  52, NULL },
 /* 173 */ { "GIF ATB",		     GifAnim,  53, NULL },
 /* 174 */ { "GIF Solarstone",	     GifAnim,  54, NULL },
-/* 175 */ { "", NULL, -1, NULL },
-/* 176 */ { "", NULL, -1, NULL },
+/* 175 */ { "GIF JOC",		     GifAnim,  55, NULL },
+/* 176 */ { "GIF 7lions",	     GifAnim,  56, NULL },
 /* 177 */ { "", NULL, -1, NULL },
 /* 178 */ { "", NULL, -1, NULL },
 /* 179 */ { "", NULL, -1, NULL }, // mapped to 159
