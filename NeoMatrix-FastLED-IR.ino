@@ -1783,6 +1783,8 @@ uint8_t GifAnim(uint32_t idx) {
 /* 052 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
 /* 053 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
 /* 054 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
+/* 055 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
+/* 056 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
 	#else
 /* 030 */   { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10,128,128 },
 	    { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10,128,128 },
@@ -1814,6 +1816,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 054 */   { ROOT  "DJ_Solarstone.gif",	10, 0 , 0, 10, 10, 0, 0,  },
 /* 055 */   { ROOT  "DJ_JOC.gif",		10, 0 , 0, 10, 10, 0, 0,  },
 /* 056 */   { ROOT  "DJ_7lions.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
+// add fake same gif before #else for new DJs
 	#endif
 /* 057 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 058 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
