@@ -1785,6 +1785,9 @@ uint8_t GifAnim(uint32_t idx) {
 /* 054 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
 /* 055 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
 /* 056 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
+/* 057 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
+/* 058 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
+/* 059 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
 	#else
 /* 030 */   { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10,128,128 },
 	    { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10,128,128 },
@@ -1816,11 +1819,11 @@ uint8_t GifAnim(uint32_t idx) {
 /* 054 */   { ROOT  "DJ_Solarstone.gif",	10, 0 , 0, 10, 10, 0, 0,  },
 /* 055 */   { ROOT  "DJ_JOC.gif",		10, 0 , 0, 10, 10, 0, 0,  },
 /* 056 */   { ROOT  "DJ_7lions.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
+/* 057 */   { ROOT  "DJ_marlo.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 058 */   { ROOT  "DJ_miyuki.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 059 */   { ROOT  "DJ_triode.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
 // add fake same gif before #else for new DJs
 	#endif
-/* 057 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 058 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 059 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 
 // update FIRSTESP32 if you change the index
 /* 060 */   { ROOT  "087_net.gif",		05, 0, 0, 10, YMUL, 0, 0 },
@@ -2061,8 +2064,8 @@ uint8_t GifAnim(uint32_t idx) {
         if (path == NULL) {
 	    Serial.print(">>>> ERROR: NO GIF for index ");
 	    Serial.print(idx);
-	    Serial.println(". Skipping... <<<<");
-	    return 0;
+	    Serial.println(". Putting default one... <<<<");
+	    path = animgif[1].path;
 	}
         matrix->clear();
         // initialize x/y by sending the reset flag
@@ -2854,9 +2857,9 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 174 */ { "GIF Solarstone",	     GifAnim,  54, NULL },
 /* 175 */ { "GIF JOC",		     GifAnim,  55, NULL },
 /* 176 */ { "GIF 7lions",	     GifAnim,  56, NULL },
-/* 177 */ { "", NULL, -1, NULL },
-/* 178 */ { "", NULL, -1, NULL },
-/* 179 */ { "", NULL, -1, NULL }, // mapped to 159
+/* 177 */ { "GIF Marlo",	     GifAnim,  57, NULL },
+/* 178 */ { "GIF Miyuki",	     GifAnim,  58, NULL },
+/* 179 */ { "GIF Triode",	     GifAnim,  59, NULL },
 // GIFs from here are mheight == 96, assigned to 60
 // Other resolution will also be assigned from the same index
 // so that some gif gets displayed, even if it's the wrong one.
