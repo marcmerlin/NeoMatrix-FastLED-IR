@@ -1819,9 +1819,9 @@ uint8_t GifAnim(uint32_t idx) {
 /* 054 */   { ROOT  "DJ_Solarstone.gif",	10, 0 , 0, 10, 10, 0, 0,  },
 /* 055 */   { ROOT  "DJ_JOC.gif",		10, 0 , 0, 10, 10, 0, 0,  },
 /* 056 */   { ROOT  "DJ_7lions.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
-/* 057 */   { ROOT  "DJ_marlo.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 058 */   { ROOT  "DJ_miyuki.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 059 */   { ROOT  "DJ_triode.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
+/* 057 */   { ROOT  "DJ_Marlo.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 058 */   { ROOT  "DJ_Miyuki.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 059 */   { ROOT  "DJ_Triode.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
 // add fake same gif before #else for new DJs
 	#endif
 
