@@ -1,0 +1,20 @@
+Before textdemo collapse:
+Sketch uses 1312178 bytes (66%) of program storage space. Maximum is 1966080 bytes.
+Global variables use 68060 bytes (20%) of dynamic memory, leaving 259620 bytes for local variables. Maximum is 327680 bytes.
+After Demos Init
+Heap/32-bit Memory Available     : 79816 bytes total, 42548 bytes largest free block
+8-bit/malloc/DMA Memory Available: 37268 bytes total, 15456 bytes largest free block
+Total PSRAM used: 17500 bytes total, 4175548 PSRAM bytes free
+
+After textdemo collapse (6KB saved):
+Sketch uses 1306898 bytes (66%) of program storage space. Maximum is 1966080 bytes.
+Global variables use 68012 bytes (20%) of dynamic memory, leaving 259668 bytes for local variables. Maximum is 327680 bytes.
+After Demos Init
+Heap/32-bit Memory Available     : 79860 bytes total, 42548 bytes largest free block
+8-bit/malloc/DMA Memory Available: 37312 bytes total, 15456 bytes largest free block
+Total PSRAM used: 17500 bytes total, 4175548 PSRAM bytes free
+
+
+After switch from FFat to LittleFS (less than 0.5KB saved)
+Sketch uses 1306386 bytes (66%) of program storage space. Maximum is 1966080 bytes.
+Global variables use 67980 bytes (20%) of dynamic memory, leaving 259700 bytes for local variables. Maximum is 327680 bytes.
