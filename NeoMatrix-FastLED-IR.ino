@@ -1768,26 +1768,6 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "BM_TheMan_Blue.gif",	10,-12,-2, 10, 10, 36, 64 },
 	    { ROOT  "BM_TheMan_Red.gif",	10,-12, 0, 10, 10, 36, 64 },
 /* 040 */   { ROOT  "BM_TheMan_Green.gif",	10, 0,  4, 10, 10, 64,104 },
-// give bogus mapping so that we don't get a read error
-/* 041 */   { ROOT  "AnB_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 042 */   { ROOT  "AnB_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 043 */   { ROOT  "AnB_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 044 */   { ROOT  "AnB_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 045 */   { ROOT  "AnB_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 046 */   { ROOT  "AnB_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 047 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 048 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 049 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 050 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 051 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 052 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 053 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 054 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 055 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 056 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 057 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 058 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
-/* 059 */   { ROOT  "anb_color_bands_heart.gif",10, 0 , 0, 10, 10, 64, 64  },
 	#else
 /* 030 */   { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10,128,128 },
 	    { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10,128,128 },
@@ -1800,73 +1780,72 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "BM_TheMan_Blue.gif",	10, 0,  6, 10, 10,128,212 },
 	    { ROOT  "BM_TheMan_Red.gif",	10, 0,  0, 10, 10,128,128 },
 /* 040 */   { ROOT  "BM_TheMan_Green.gif",	10, 0, 10, 10, 10,128,212 },
-// We add DJ only mappings here, in theory we could make versions for 64x96 as
-// we're supposed to for this block, but I'm not going to for now. It's nice to
-// have a section that grows here, separately from non DJ gifs below
-/* 041 */   { ROOT  "DJ_RDR_lgrey.gif",		10, 0 , 0, 10, 10,128,128 },
-/* 042 */   { ROOT  "DJ_Ruben.gif",		10, 0 , 0, 10, 10,128,170 },
-/* 043 */   { ROOT  "DJ_GO_lgrey.gif",		10, 0 , 0, 10, 10,128,117 },
-/* 044 */   { ROOT  "DJ_GO_face.gif",		10, 0 , 0, 10, 10, 0 , 0  },
-/* 045 */   { ROOT  "DJ_Somna.gif",		10, 0 , 0, 10, 10, 0 , 0  },
-/* 046 */   { ROOT  "DJ_Aly_Fila_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
-/* 047 */   { ROOT  "DJ_AvB.gif",	    	10, 0 , 0, 10, 10, 0,  0  },
-/* 048 */   { ROOT  "DJ_AvB_logo_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
-/* 049 */   { ROOT  "DJ_vini_vici.gif",		10, 0 , 0, 10, 10,128,140 },
-/* 050 */   { ROOT  "DJ_Blastoyz.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 051 */   { ROOT  "DJ_Craig_Connelly.gif",	10, 0 , 0, 10, 10, 0, 0,  },
-/* 052 */   { ROOT  "DJ_Liquid_Soul.gif",	10, 0 , 0, 10, 10, 0, 0,  },
-/* 053 */   { ROOT  "DJ_ATB.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 054 */   { ROOT  "DJ_Solarstone.gif",	10, 0 , 0, 10, 10, 0, 0,  },
-/* 055 */   { ROOT  "DJ_JOC.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 056 */   { ROOT  "DJ_7lions.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
-/* 057 */   { ROOT  "DJ_Marlo.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 058 */   { ROOT  "DJ_Miyuki.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 059 */   { ROOT  "DJ_Triode.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
-// add fake same gif before #else for new DJs
 	#endif
+/* 041 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+/* 042 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+/* 043 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+/* 044 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+/* 045 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+/* 046 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+/* 047 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+/* 048 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+/* 049 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
+
 
 // update FIRSTESP32 if you change the index
-/* 060 */   { ROOT  "087_net.gif",		05, 0, 0, 10, YMUL, 0, 0 },
-/* 061 */   { ROOT  "196_colorstar.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 062 */   { ROOT  "200_circlesmoke.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 063 */   { ROOT  "203_waterdrop.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 064 */   { ROOT  "210_circletriangle.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 065 */   { ROOT  "255_photon.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-/* 066 */   { ROOT  "342_spincircle.gif",	20, 0, 0, 10, YMUL, 0, 0 },
-/* 067 */   { ROOT  "401_ghostbusters.gif",	05, 0, 0, 10, YMUL, 0, 0 },
-/* 068 */   { ROOT  "444_hand.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-/* 069 */   { ROOT  "469_infection.gif",	05, 0, 0, 10, YMUL, 0, 0 },
-/* 070 */   { ROOT  "284_comets.gif",		15, 0, 0, 10, YMUL, 0, 0 },
-/* 071 */   { ROOT  "377_batman.gif",		07, 0, 0, 10, YMUL, 0, 0 },
-/* 072 */   { ROOT  "226_flyingfire.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 073 */   { ROOT  "264_expandcircle.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 074 */   { ROOT  "286_greenplasma.gif",	15, 0, 0, 10, YMUL, 0, 0 },
-/* 075 */   { ROOT  "291_circle2sphere.gif",	15, 0, 0, 10, YMUL, 0, 0 },
-/* 076 */   { ROOT  "364_colortoroid.gif",	25, 0, 0, 10, YMUL, 0, 0 },
-/* 077 */   { ROOT  "470_scrollcubestron.gif",	25, 0, 0, 10, YMUL, 0, 0 },
-/* 078 */   { ROOT  "358_spinningpattern.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 079 */   { ROOT  "328_spacetime.gif",	20, 0, 0, 10, YMUL, 0, 0 },
-/* 080 */   { ROOT  "218_circleslices.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 081 */   { ROOT  "heartTunnel.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+/* 050 */   { ROOT  "087_net.gif",		05, 0, 0, 10, YMUL, 0, 0 },
+/* 051 */   { ROOT  "196_colorstar.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 052 */   { ROOT  "200_circlesmoke.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 053 */   { ROOT  "203_waterdrop.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 054 */   { ROOT  "210_circletriangle.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 055 */   { ROOT  "255_photon.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+/* 056 */   { ROOT  "342_spincircle.gif",	20, 0, 0, 10, YMUL, 0, 0 },
+/* 057 */   { ROOT  "401_ghostbusters.gif",	05, 0, 0, 10, YMUL, 0, 0 },
+/* 058 */   { ROOT  "444_hand.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+/* 059 */   { ROOT  "469_infection.gif",	05, 0, 0, 10, YMUL, 0, 0 },
+/* 060 */   { ROOT  "284_comets.gif",		15, 0, 0, 10, YMUL, 0, 0 },
+/* 061 */   { ROOT  "377_batman.gif",		07, 0, 0, 10, YMUL, 0, 0 },
+/* 062 */   { ROOT  "226_flyingfire.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 063 */   { ROOT  "264_expandcircle.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 064 */   { ROOT  "286_greenplasma.gif",	15, 0, 0, 10, YMUL, 0, 0 },
+/* 065 */   { ROOT  "291_circle2sphere.gif",	15, 0, 0, 10, YMUL, 0, 0 },
+/* 066 */   { ROOT  "364_colortoroid.gif",	25, 0, 0, 10, YMUL, 0, 0 },
+/* 067 */   { ROOT  "470_scrollcubestron.gif",	25, 0, 0, 10, YMUL, 0, 0 },
+/* 068 */   { ROOT  "358_spinningpattern.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 069 */   { ROOT  "328_spacetime.gif",	20, 0, 0, 10, YMUL, 0, 0 },
+/* 070 */   { ROOT  "218_circleslices.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 071 */   { ROOT  "heartTunnel.gif",		10, 0, 0, 10, YMUL, 0, 0 },
 // Update LASTESP32 if you add gifs
-/* 082 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 083 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 084 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 085 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 086 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 087 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 088 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 089 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 090 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 091 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 092 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 093 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 094 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 095 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 096 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 097 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 098 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 099 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 072 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 073 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 074 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 075 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 076 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 077 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 078 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 079 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },   // If you extend this, please change LASTESP32IDX
+
+// 128x192 starts here, but DJs are separate and start first, other gives start at 120
+/* 080 */   { ROOT  "DJ_Thrillseekers.gif",     10, 0 , 0, 10, 10, 0, 0,  },
+/* 081 */   { ROOT  "DJ_RDR_lgrey.gif",		10, 0 , 0, 10, 10,128,128 },
+/* 082 */   { ROOT  "DJ_Ruben.gif",		10, 0 , 0, 10, 10,128,170 },
+/* 083 */   { ROOT  "DJ_GO_lgrey.gif",		10, 0 , 0, 10, 10,128,117 },
+/* 084 */   { ROOT  "DJ_GO_face.gif",		10, 0 , 0, 10, 10, 0 , 0  },
+/* 085 */   { ROOT  "DJ_Somna.gif",		10, 0 , 0, 10, 10, 0 , 0  },
+/* 086 */   { ROOT  "DJ_Aly_Fila_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
+/* 087 */   { ROOT  "DJ_AvB.gif",	    	10, 0 , 0, 10, 10, 0,  0  },
+/* 088 */   { ROOT  "DJ_AvB_logo_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
+/* 089 */   { ROOT  "DJ_vini_vici.gif",		10, 0 , 0, 10, 10,128,140 },
+/* 090 */   { ROOT  "DJ_Blastoyz.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 091 */   { ROOT  "DJ_Craig_Connelly.gif",	10, 0 , 0, 10, 10, 0, 0,  },
+/* 092 */   { ROOT  "DJ_Liquid_Soul.gif",	10, 0 , 0, 10, 10, 0, 0,  },
+/* 093 */   { ROOT  "DJ_ATB.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 094 */   { ROOT  "DJ_Solarstone.gif",	10, 0 , 0, 10, 10, 0, 0,  },
+/* 095 */   { ROOT  "DJ_JOC.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 096 */   { ROOT  "DJ_7lions.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
+/* 097 */   { ROOT  "DJ_Marlo.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 098 */   { ROOT  "DJ_Miyuki.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 099 */   { ROOT  "DJ_Triode.gif",		10, 0 , 0, 10, 10, 0, 0,  },
 /* 100 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 101 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 102 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
@@ -1886,7 +1865,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 116 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 117 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 118 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 119 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },   // If you extend this, please change LASTESP32IDX
+/* 119 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 
 /* 120 */   { ROOT  "abstract_colorful.gif",		10, 0, 0, 10, 10, 0, 0 },
 /* 121 */   { ROOT  "Aki5PC6_Running.gif",		10, 0, 0, 10, 10, 0, 0 },
@@ -2017,9 +1996,9 @@ uint8_t GifAnim(uint32_t idx) {
         };
 
     //
-    #define FIRSTESP32 60
-    #define LASTESP32 81
-    #define LASTESP32IDX 119
+    #define FIRSTESP32 50
+    #define LASTESP32 71
+    #define LASTESP32IDX 79
 
     int16_t x, y;
     uint8_t repeat = 1;
@@ -2642,7 +2621,7 @@ uint8_t tmed(uint32_t demo) {
 // ================================================================================
 
 // demo_map.txt contains a logical demo number (0 to 99 for generated, 100-129 for
-// animated gifs on 32h, or shared animated gifs on 64/96/192h, and 160+ for unshared
+// animated gifs on 32h, or shared animated gifs on 64/96/192h, and 150+ for unshared
 // animated gifs in 64/96/192h)
 // however, at runtime the ESP32 can switch from its own resolution demos
 // PANELCONFNUM 0:24x32, 1:64x64 (BM), 2:64x96 (BM), 3:64x96 (Trance), 4:128x192
@@ -2651,14 +2630,14 @@ uint16_t demoidx(uint16_t idx) {
 
     // If the demo# is too high, map to the null demo
     if (PANELCONFNUM == 0 && idx>129) return 0;
-    if (PANELCONFNUM < 4  && idx>219) return 0;
+    if (PANELCONFNUM < 4  && idx>179) return 0;   // LAST6496GIF
 
     // panelconf0 has direct mapping to 100, the others start at 120
     if (PANELCONFNUM == 0) return idx;
     if (PANELCONFNUM < 4) return (idx+20);
-    // 192h demos are 120 to 180 (for 100 to 160) and then jump to 240
-    if (idx < 160) return (idx+20);
-    return (idx+80);
+    // 192h demos are 120 to 180 (for 100 to 140) and then jump to 240
+    if (idx < 150) return (idx+20); // LASTSHAREDGIF+1
+    return (idx+50);
 }
 
 
@@ -2830,101 +2809,103 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 // mheight > 32, shared non animated gifs
 // It is however ok to map them to different filenames depending on the
 // backend as long as they are the same name
-/* 150 */ { "GIF A&B colors balls",  GifAnim,  30, NULL }, // mapped to 130
-/* 151 */ { "GIF A&B Color Bands",   GifAnim,  31, NULL },
-/* 152 */ { "GIF A&B CBands Heart",  GifAnim,  32, NULL },
-/* 153 */ { "GIF A&B Logo lgrey",    GifAnim,  33, NULL },
-/* 154 */ { "GIF A&B Sign lgrey",    GifAnim,  34, NULL },
-/* 155 */ { "GIF BM Lady Fire",	     GifAnim,  35, NULL },
-/* 156 */ { "GIF BM Logo lgrey",     GifAnim,  36, NULL },
-/* 157 */ { "GIF BM Man Scroll",     GifAnim,  37, NULL },
-/* 158 */ { "GIF BM TheMan Blue",    GifAnim,  38, NULL },
-/* 159 */ { "GIF BM TheMan_Green",   GifAnim,  39, NULL },
-/* 160 */ { "GIF BM TheMan Red",     GifAnim,  40, NULL },
-/* 161 */ { "GIF RDR Logo",	     GifAnim,  41, NULL },
-/* 162 */ { "GIF RubenDeRonde",	     GifAnim,  42, NULL },
-/* 163 */ { "GIF Giuseppe Logo",     GifAnim,  43, NULL },
-/* 164 */ { "GIF Giuseppe",	     GifAnim,  44, NULL },
-/* 165 */ { "GIF Somna",	     GifAnim,  45, NULL },
-/* 166 */ { "GIF Aly & Fila",	     GifAnim,  46, NULL },
-/* 167 */ { "GIF Armin",	     GifAnim,  47, NULL },
-/* 168 */ { "GIF Armin Logo",	     GifAnim,  48, NULL },
-/* 169 */ { "GIF Vini Vici",	     GifAnim,  49, NULL },
-/* 170 */ { "GIF Blastoyz",	     GifAnim,  50, NULL },
-/* 171 */ { "GIF Craig Connelly",    GifAnim,  51, NULL },
-/* 172 */ { "GIF Liquid Soul",	     GifAnim,  52, NULL },
-/* 173 */ { "GIF ATB",		     GifAnim,  53, NULL },
-/* 174 */ { "GIF Solarstone",	     GifAnim,  54, NULL },
-/* 175 */ { "GIF JOC",		     GifAnim,  55, NULL },
-/* 176 */ { "GIF 7lions",	     GifAnim,  56, NULL },
-/* 177 */ { "GIF Marlo",	     GifAnim,  57, NULL },
-/* 178 */ { "GIF Miyuki",	     GifAnim,  58, NULL },
-/* 179 */ { "GIF Triode",	     GifAnim,  59, NULL },
-// GIFs from here are mheight == 96, assigned to 60
+/* 150 */ { "GIF A&B colors balls",	 GifAnim,  30, NULL }, // mapped to 130
+/* 151 */ { "GIF A&B Color Bands", 	 GifAnim,  31, NULL },
+/* 152 */ { "GIF A&B CBands Heart",	 GifAnim,  32, NULL },
+/* 153 */ { "GIF A&B Logo lgrey",  	 GifAnim,  33, NULL },
+/* 154 */ { "GIF A&B Sign lgrey",  	 GifAnim,  34, NULL },
+/* 155 */ { "GIF BM Lady Fire",	   	 GifAnim,  35, NULL },
+/* 156 */ { "GIF BM Logo lgrey",   	 GifAnim,  36, NULL },
+/* 157 */ { "GIF BM Man Scroll",   	 GifAnim,  37, NULL },
+/* 158 */ { "GIF BM TheMan Blue",  	 GifAnim,  38, NULL },
+/* 159 */ { "GIF BM TheMan_Green", 	 GifAnim,  39, NULL },
+/* 160 */ { "GIF BM TheMan Red",   	 GifAnim,  40, NULL },
+/* 161 */ { "",			   	 NULL,	   41, NULL }, // mapped to 141
+/* 162 */ { "",			   	 NULL,     42, NULL },
+/* 163 */ { "",			   	 NULL,     43, NULL },
+/* 164 */ { "",			   	 NULL,     44, NULL },
+/* 165 */ { "",			   	 NULL,     45, NULL },
+/* 166 */ { "",			   	 NULL,     46, NULL },
+/* 167 */ { "",			   	 NULL,     47, NULL },
+/* 168 */ { "",			   	 NULL,     48, NULL },
+/* 169 */ { "",			   	 NULL,     49, NULL }, // mapped to 149, LASTSHAREDGIF
+// GIFs from here are mheight == 96, assigned to 80
 // Other resolution will also be assigned from the same index
 // so that some gif gets displayed, even if it's the wrong one.
-/* 180 */ { "GIF net"		,	 GifAnim, 60, NULL }, // mapped to 160
-/* 181 */ { "GIF colorstar"	,	 GifAnim, 61, NULL },
-/* 182 */ { "GIF circlesmoke"	,	 GifAnim, 62, NULL },
-/* 183 */ { "GIF waterdrop"	,	 GifAnim, 63, NULL },
-/* 184 */ { "GIF circletriangle",	 GifAnim, 64, NULL },
-/* 185 */ { "GIF photon"	,	 GifAnim, 65, NULL },
-/* 186 */ { "GIF spincircle"	,	 GifAnim, 66, NULL },
-/* 187 */ { "GIF ghostbusters"	,	 GifAnim, 67, NULL },
-/* 188 */ { "GIF hand"		,	 GifAnim, 68, NULL },
-/* 189 */ { "GIF infection"	,	 GifAnim, 69, NULL },
-/* 190 */ { "GIF comets"	,	 GifAnim, 70, NULL },
-/* 191 */ { "GIF batman"	,	 GifAnim, 71, NULL },
-/* 192 */ { "GIF flyingfire"	,	 GifAnim, 72, NULL },
-/* 193 */ { "GIF expandcircle"	,	 GifAnim, 73, NULL },
-/* 194 */ { "GIF greenplasma"	,	 GifAnim, 74, NULL },
-/* 195 */ { "GIF circle2sphere"	,	 GifAnim, 75, NULL },
-/* 196 */ { "GIF colortoroid"	,	 GifAnim, 76, NULL },
-/* 197 */ { "GIF scrollcubestron",	 GifAnim, 77, NULL },
-/* 198 */ { "GIF spinningpattern",	 GifAnim, 78, NULL },
-/* 199 */ { "GIF spacetime"	,	 GifAnim, 79, NULL },
-/* 200 */ { "GIF circleslices"	,	 GifAnim, 80, NULL },
-/* 201 */ { "GIF heartTunnel"	,	 GifAnim, 81, NULL }, // mapped to 181
-/* 202 */ { "", NULL, -1, NULL },
-/* 203 */ { "", NULL, -1, NULL },
-/* 204 */ { "", NULL, -1, NULL },
-/* 205 */ { "", NULL, -1, NULL },
-/* 206 */ { "", NULL, -1, NULL },
-/* 207 */ { "", NULL, -1, NULL },
-/* 208 */ { "", NULL, -1, NULL },
-/* 209 */ { "", NULL, -1, NULL },
-/* 210 */ { "", NULL, -1, NULL },
-/* 211 */ { "", NULL, -1, NULL },
-/* 212 */ { "", NULL, -1, NULL },
-/* 213 */ { "", NULL, -1, NULL },
-/* 214 */ { "", NULL, -1, NULL },
-/* 215 */ { "", NULL, -1, NULL },
-/* 216 */ { "", NULL, -1, NULL },
-/* 217 */ { "", NULL, -1, NULL },
-/* 218 */ { "", NULL, -1, NULL },
-/* 219 */ { "", NULL, -1, NULL },
-/* 220 */ { "", NULL, -1, NULL },
-/* 221 */ { "", NULL, -1, NULL },
-/* 222 */ { "", NULL, -1, NULL },
-/* 223 */ { "", NULL, -1, NULL },
-/* 224 */ { "", NULL, -1, NULL },
-/* 225 */ { "", NULL, -1, NULL },
-/* 226 */ { "", NULL, -1, NULL },
-/* 227 */ { "", NULL, -1, NULL },
-/* 228 */ { "", NULL, -1, NULL },
-/* 229 */ { "", NULL, -1, NULL },
-/* 230 */ { "", NULL, -1, NULL },
-/* 231 */ { "", NULL, -1, NULL },
-/* 232 */ { "", NULL, -1, NULL },
-/* 233 */ { "", NULL, -1, NULL },
-/* 234 */ { "", NULL, -1, NULL },
-/* 235 */ { "", NULL, -1, NULL },
-/* 236 */ { "", NULL, -1, NULL },
-/* 237 */ { "", NULL, -1, NULL },
-/* 238 */ { "", NULL, -1, NULL },
-/* 239 */ { "", NULL, -1, NULL }, // 119
+/* 170 */ { "GIF net"		,	 GifAnim, 50, NULL }, // mapped to 150
+/* 171 */ { "GIF colorstar"	,	 GifAnim, 51, NULL },
+/* 172 */ { "GIF circlesmoke"	,	 GifAnim, 52, NULL },
+/* 173 */ { "GIF waterdrop"	,	 GifAnim, 53, NULL },
+/* 174 */ { "GIF circletriangle",	 GifAnim, 54, NULL },
+/* 175 */ { "GIF photon"	,	 GifAnim, 55, NULL },
+/* 176 */ { "GIF spincircle"	,	 GifAnim, 56, NULL },
+/* 177 */ { "GIF ghostbusters"	,	 GifAnim, 57, NULL },
+/* 178 */ { "GIF hand"		,	 GifAnim, 58, NULL },
+/* 179 */ { "GIF infection"	,	 GifAnim, 59, NULL },
+/* 180 */ { "GIF comets"	,	 GifAnim, 60, NULL },
+/* 181 */ { "GIF batman"	,	 GifAnim, 61, NULL },
+/* 182 */ { "GIF flyingfire"	,	 GifAnim, 62, NULL },
+/* 183 */ { "GIF expandcircle"	,	 GifAnim, 63, NULL },
+/* 184 */ { "GIF greenplasma"	,	 GifAnim, 64, NULL },
+/* 185 */ { "GIF circle2sphere"	,	 GifAnim, 65, NULL },
+/* 186 */ { "GIF colortoroid"	,	 GifAnim, 66, NULL },
+/* 187 */ { "GIF scrollcubestron",	 GifAnim, 67, NULL },
+/* 188 */ { "GIF spinningpattern",	 GifAnim, 68, NULL },
+/* 189 */ { "GIF spacetime"	,	 GifAnim, 69, NULL },
+/* 190 */ { "GIF circleslices"	,	 GifAnim, 70, NULL },
+/* 191 */ { "GIF heartTunnel"	,	 GifAnim, 71, NULL }, // mapped to 171
+/* 192 */ { "", NULL, -1, NULL },
+/* 193 */ { "", NULL, -1, NULL },
+/* 194 */ { "", NULL, -1, NULL },
+/* 195 */ { "", NULL, -1, NULL },
+/* 196 */ { "", NULL, -1, NULL },
+/* 197 */ { "", NULL, -1, NULL },
+/* 198 */ { "", NULL, -1, NULL },
+/* 199 */ { "", NULL, -1, NULL }, // mapped to 179, LAST6496GIF
+// 64x96 ends here, 128x192 starts below with reserved DJ slots
 
-/* 240 */ { "GIF abstract colorful",	 GifAnim, 120, NULL }, // mapped to 160
+/* 200 */ { "GIF Thrillseekers",	 GifAnim,  80, NULL }, // mapped to 150
+/* 201 */ { "GIF RDR Logo",		 GifAnim,  81, NULL },
+/* 202 */ { "GIF RubenDeRonde",		 GifAnim,  82, NULL },
+/* 203 */ { "GIF Giuseppe Logo",	 GifAnim,  83, NULL },
+/* 204 */ { "GIF Giuseppe",		 GifAnim,  84, NULL },
+/* 205 */ { "GIF Somna",		 GifAnim,  85, NULL },
+/* 206 */ { "GIF Aly & Fila",		 GifAnim,  86, NULL },
+/* 207 */ { "GIF Armin",		 GifAnim,  87, NULL },
+/* 208 */ { "GIF Armin Logo",		 GifAnim,  88, NULL },
+/* 209 */ { "GIF Vini Vici",		 GifAnim,  89, NULL },
+/* 210 */ { "GIF Blastoyz",		 GifAnim,  90, NULL },
+/* 211 */ { "GIF Craig Connelly",	 GifAnim,  91, NULL },
+/* 212 */ { "GIF Liquid Soul",		 GifAnim,  92, NULL },
+/* 213 */ { "GIF ATB",			 GifAnim,  93, NULL },
+/* 214 */ { "GIF Solarstone",		 GifAnim,  94, NULL },
+/* 215 */ { "GIF JOC",			 GifAnim,  95, NULL },
+/* 216 */ { "GIF 7lions",		 GifAnim,  96, NULL },
+/* 217 */ { "GIF Marlo",		 GifAnim,  97, NULL },
+/* 218 */ { "GIF Miyuki",		 GifAnim,  98, NULL },
+/* 219 */ { "GIF Triode",		 GifAnim,  99, NULL },
+/* 220 */ { "",				 NULL,    100, NULL },
+/* 221 */ { "", 			 NULL,    101, NULL },
+/* 222 */ { "", 			 NULL,    102, NULL },
+/* 223 */ { "", 			 NULL,    103, NULL },
+/* 224 */ { "", 			 NULL,    104, NULL },
+/* 225 */ { "", 			 NULL,    105, NULL },
+/* 226 */ { "", 			 NULL,    106, NULL },
+/* 227 */ { "", 			 NULL,    107, NULL },
+/* 228 */ { "", 			 NULL,    108, NULL },
+/* 229 */ { "", 			 NULL,    109, NULL },
+/* 230 */ { "", 			 NULL,    110, NULL },
+/* 231 */ { "", 			 NULL,    111, NULL },
+/* 232 */ { "", 			 NULL,    112, NULL },
+/* 233 */ { "", 			 NULL,    113, NULL },
+/* 234 */ { "", 			 NULL,    114, NULL },
+/* 235 */ { "", 			 NULL,    115, NULL },
+/* 236 */ { "", 			 NULL,    116, NULL },
+/* 237 */ { "", 			 NULL,    117, NULL },
+/* 238 */ { "", 			 NULL,    118, NULL },
+/* 239 */ { "", 			 NULL,    119, NULL }, // 189
+
+/* 240 */ { "GIF abstract colorful",	 GifAnim, 120, NULL }, // mapped to 190
 /* 241 */ { "GIF Aki5PC6 Running",	 GifAnim, 121, NULL },
 /* 242 */ { "GIF dancing lady",		 GifAnim, 122, NULL },
 /* 243 */ { "GIF GirlSexyAnimateddance", GifAnim, 123, NULL },
@@ -3049,7 +3030,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 362 */ { "GIF blue dancer",		 GifAnim, 242, NULL },
 /* 363 */ { "GIF snoopdog dance",	 GifAnim, 243, NULL },
 /* 364 */ { "GIF walking dead",		 GifAnim, 244, NULL },
-/* 365 */ { "GIF street fighter",	 GifAnim, 245, NULL }, // mapped to 285
+/* 365 */ { "GIF street fighter",	 GifAnim, 245, NULL }, // mapped to 315
     // mapping is the index number in demo_map.txt to account for
     // last index in that file is 299, or 379
     // demos for multiple platforms that share the same slot numbers
