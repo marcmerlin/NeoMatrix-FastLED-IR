@@ -72,7 +72,7 @@ using namespace Aiko;
 #ifdef ESP8266
 #define DEMO_ARRAY_SIZE 120
 #else
-#define DEMO_ARRAY_SIZE 380
+#define DEMO_ARRAY_SIZE 480
 #endif
 
 // number of lines read in demo_map.txt
@@ -110,7 +110,7 @@ typedef struct demo_entry_ {
 // Demo_Entry demo_list[] is defined below
 
 // Those are the lines defined in demo_map.txt config
-// 300 lines for 365 in demo_list
+// 400(0-399) lines for 365 in demo_list
 typedef struct mapping_entry_ {
     // reverse mapping to the original demo slot (for demos that are
     // swapped to a different slot)
@@ -148,7 +148,7 @@ bool SHOW_LAST_FPS = false;
 String DISPLAYTEXT="00,00,0100,0,1,Hello World";
 
 // Compute how many GIFs have been defined (called in setup)
-uint8_t GIF_CNT = 0;
+uint16_t GIF_CNT = 0;
 
 // Other fonts possible on http://oleddisplay.squix.ch/#/home
 // https://blog.squix.org/2016/10/font-creator-now-creates-adafruit-gfx-fonts.html
@@ -1781,71 +1781,68 @@ uint8_t GifAnim(uint32_t idx) {
 	    { ROOT  "BM_TheMan_Red.gif",	10, 0,  0, 10, 10,128,128 },
 /* 040 */   { ROOT  "BM_TheMan_Green.gif",	10, 0, 10, 10, 10,128,212 },
 	#endif
-/* 041 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-/* 042 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-/* 043 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-/* 044 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-/* 045 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-/* 046 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-/* 047 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-/* 048 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-/* 049 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  }, 
-
+/* 041 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 042 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 043 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 044 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 045 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 046 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 047 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 048 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 049 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 050 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 051 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 052 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 053 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 054 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 055 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 056 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 057 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 058 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
+/* 059 */   { ROOT  "",				10, 0 , 0, 10, 10, 64, 64  },
 
 // update FIRSTESP32 if you change the index
-/* 050 */   { ROOT  "087_net.gif",		05, 0, 0, 10, YMUL, 0, 0 },
-/* 051 */   { ROOT  "196_colorstar.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 052 */   { ROOT  "200_circlesmoke.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 053 */   { ROOT  "203_waterdrop.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 054 */   { ROOT  "210_circletriangle.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 055 */   { ROOT  "255_photon.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-/* 056 */   { ROOT  "342_spincircle.gif",	20, 0, 0, 10, YMUL, 0, 0 },
-/* 057 */   { ROOT  "401_ghostbusters.gif",	05, 0, 0, 10, YMUL, 0, 0 },
-/* 058 */   { ROOT  "444_hand.gif",		10, 0, 0, 10, YMUL, 0, 0 },
-/* 059 */   { ROOT  "469_infection.gif",	05, 0, 0, 10, YMUL, 0, 0 },
-/* 060 */   { ROOT  "284_comets.gif",		15, 0, 0, 10, YMUL, 0, 0 },
-/* 061 */   { ROOT  "377_batman.gif",		07, 0, 0, 10, YMUL, 0, 0 },
-/* 062 */   { ROOT  "226_flyingfire.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 063 */   { ROOT  "264_expandcircle.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 064 */   { ROOT  "286_greenplasma.gif",	15, 0, 0, 10, YMUL, 0, 0 },
-/* 065 */   { ROOT  "291_circle2sphere.gif",	15, 0, 0, 10, YMUL, 0, 0 },
-/* 066 */   { ROOT  "364_colortoroid.gif",	25, 0, 0, 10, YMUL, 0, 0 },
-/* 067 */   { ROOT  "470_scrollcubestron.gif",	25, 0, 0, 10, YMUL, 0, 0 },
-/* 068 */   { ROOT  "358_spinningpattern.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 069 */   { ROOT  "328_spacetime.gif",	20, 0, 0, 10, YMUL, 0, 0 },
-/* 070 */   { ROOT  "218_circleslices.gif",	10, 0, 0, 10, YMUL, 0, 0 },
-/* 071 */   { ROOT  "heartTunnel.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+/* 060 */   { ROOT  "087_net.gif",		05, 0, 0, 10, YMUL, 0, 0 },
+/* 061 */   { ROOT  "196_colorstar.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 062 */   { ROOT  "200_circlesmoke.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 063 */   { ROOT  "203_waterdrop.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 064 */   { ROOT  "210_circletriangle.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 065 */   { ROOT  "255_photon.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+/* 066 */   { ROOT  "342_spincircle.gif",	20, 0, 0, 10, YMUL, 0, 0 },
+/* 067 */   { ROOT  "401_ghostbusters.gif",	05, 0, 0, 10, YMUL, 0, 0 },
+/* 068 */   { ROOT  "444_hand.gif",		10, 0, 0, 10, YMUL, 0, 0 },
+/* 069 */   { ROOT  "469_infection.gif",	05, 0, 0, 10, YMUL, 0, 0 },
+/* 070 */   { ROOT  "284_comets.gif",		15, 0, 0, 10, YMUL, 0, 0 },
+/* 071 */   { ROOT  "377_batman.gif",		07, 0, 0, 10, YMUL, 0, 0 },
+/* 072 */   { ROOT  "226_flyingfire.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 073 */   { ROOT  "264_expandcircle.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 074 */   { ROOT  "286_greenplasma.gif",	15, 0, 0, 10, YMUL, 0, 0 },
+/* 075 */   { ROOT  "291_circle2sphere.gif",	15, 0, 0, 10, YMUL, 0, 0 },
+/* 076 */   { ROOT  "364_colortoroid.gif",	25, 0, 0, 10, YMUL, 0, 0 },
+/* 077 */   { ROOT  "470_scrollcubestron.gif",	25, 0, 0, 10, YMUL, 0, 0 },
+/* 078 */   { ROOT  "358_spinningpattern.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 079 */   { ROOT  "328_spacetime.gif",	20, 0, 0, 10, YMUL, 0, 0 },
+/* 080 */   { ROOT  "218_circleslices.gif",	10, 0, 0, 10, YMUL, 0, 0 },
+/* 081 */   { ROOT  "heartTunnel.gif",		10, 0, 0, 10, YMUL, 0, 0 },
 // Update LASTESP32 if you add gifs
-/* 072 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 073 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 074 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 075 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 076 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 077 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 078 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 079 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },   // If you extend this, please change LASTESP32IDX
-
-// 128x192 starts here, but DJs are separate and start first, other gives start at 120
-/* 080 */   { ROOT  "DJ_Thrillseekers.gif",     10, 0 , 0, 10, 10, 0, 0,  },
-/* 081 */   { ROOT  "DJ_RDR_lgrey.gif",		10, 0 , 0, 10, 10,128,128 },
-/* 082 */   { ROOT  "DJ_Ruben.gif",		10, 0 , 0, 10, 10,128,170 },
-/* 083 */   { ROOT  "DJ_GO_lgrey.gif",		10, 0 , 0, 10, 10,128,117 },
-/* 084 */   { ROOT  "DJ_GO_face.gif",		10, 0 , 0, 10, 10, 0 , 0  },
-/* 085 */   { ROOT  "DJ_Somna.gif",		10, 0 , 0, 10, 10, 0 , 0  },
-/* 086 */   { ROOT  "DJ_Aly_Fila_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
-/* 087 */   { ROOT  "DJ_AvB.gif",	    	10, 0 , 0, 10, 10, 0,  0  },
-/* 088 */   { ROOT  "DJ_AvB_logo_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
-/* 089 */   { ROOT  "DJ_vini_vici.gif",		10, 0 , 0, 10, 10,128,140 },
-/* 090 */   { ROOT  "DJ_Blastoyz.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 091 */   { ROOT  "DJ_Craig_Connelly.gif",	10, 0 , 0, 10, 10, 0, 0,  },
-/* 092 */   { ROOT  "DJ_Liquid_Soul.gif",	10, 0 , 0, 10, 10, 0, 0,  },
-/* 093 */   { ROOT  "DJ_ATB.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 094 */   { ROOT  "DJ_Solarstone.gif",	10, 0 , 0, 10, 10, 0, 0,  },
-/* 095 */   { ROOT  "DJ_JOC.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 096 */   { ROOT  "DJ_7lions.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
-/* 097 */   { ROOT  "DJ_Marlo.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 098 */   { ROOT  "DJ_Miyuki.gif",		10, 0 , 0, 10, 10, 0, 0,  },
-/* 099 */   { ROOT  "DJ_Triode.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 082 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 083 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 084 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 085 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 086 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 087 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 088 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 089 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 090 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 091 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 092 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 093 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 094 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 095 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 096 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 097 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 098 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 099 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 100 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 101 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 102 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
@@ -1865,8 +1862,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 116 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 117 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 118 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-/* 119 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
-
+/* 119 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },   // If you extend this, please change LASTESP32IDX
 /* 120 */   { ROOT  "abstract_colorful.gif",		10, 0, 0, 10, 10, 0, 0 },
 /* 121 */   { ROOT  "Aki5PC6_Running.gif",		10, 0, 0, 10, 10, 0, 0 },
 /* 122 */   { ROOT  "dancing_lady.gif",			10,-32,0, 15, 15, 0, 0 },
@@ -1993,12 +1989,127 @@ uint8_t GifAnim(uint32_t idx) {
 /* 243 */   { ROOT  "z_XwIB_snoopdog_dance.gif",	10, 0, 0, 10, 10, 0, 0 },
 /* 244 */   { ROOT  "z_Ysrm_walking_dead.gif",		10, 0, 0,  7, 10, 0, 0 },
 /* 245 */   { ROOT  "z_Yv30_street_fighter.gif",	10, 0, 0, 10, 10, 0, 0 },
+/* 246 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 247 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 248 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 249 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 250 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 251 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 252 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 253 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 254 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 255 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 256 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 257 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 258 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 259 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 260 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 261 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 262 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 263 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 264 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 265 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 266 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 267 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 268 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 269 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 270 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 271 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 272 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 273 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 274 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 275 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 276 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 277 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 278 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 279 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 280 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 281 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 282 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 283 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 284 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 285 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 286 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 287 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 288 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 289 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 290 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 291 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 292 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 293 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 294 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 295 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 296 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 297 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 298 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 299 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 300 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 301 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 302 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 303 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 304 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 305 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 306 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 307 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 308 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 309 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 310 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 311 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 312 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 313 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 314 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 315 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 316 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 317 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 318 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 319 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 320 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 321 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 322 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 323 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 324 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 325 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 326 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 327 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 328 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 329 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 330 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 331 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 332 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 333 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 334 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 335 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 336 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 337 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 338 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+/* 339 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
+
+/* 340 */   { ROOT  "DJ_Thrillseekers.gif",	10, 0 , 0, 10, 10, 0, 0  },
+/* 341 */   { ROOT  "DJ_RDR_lgrey.gif",		10, 0 , 0, 10, 10,128,128 },
+/* 342 */   { ROOT  "DJ_Ruben.gif",		10, 0 , 0, 10, 10,128,170 },
+/* 343 */   { ROOT  "DJ_GO_lgrey.gif",		10, 0 , 0, 10, 10,128,117 },
+/* 344 */   { ROOT  "DJ_GO_face.gif",		10, 0 , 0, 10, 10, 0, 0  },
+/* 345 */   { ROOT  "DJ_Somna.gif",		10, 0 , 0, 10, 10, 0, 0  },
+/* 346 */   { ROOT  "DJ_Aly_Fila_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
+/* 347 */   { ROOT  "DJ_AvB.gif",	    	10, 0 , 0, 10, 10, 0, 0  },
+/* 348 */   { ROOT  "DJ_Triode.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
+/* 349 */   { ROOT  "DJ_vini_vici.gif",		10, 0 , 0, 10, 10,128,140 },
+/* 350 */   { ROOT  "DJ_Blastoyz.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 351 */   { ROOT  "DJ_Craig_Connelly.gif",	10, 0 , 0, 10, 10, 0, 0,  },
+/* 352 */   { ROOT  "DJ_Liquid_Soul.gif",	10, 0 , 0, 10, 10, 0, 0,  },
+/* 353 */   { ROOT  "DJ_ATB.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 354 */   { ROOT  "DJ_Solarstone.gif",	10, 0 , 0, 10, 10, 0, 0,  },
+/* 355 */   { ROOT  "DJ_JOC.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 356 */   { ROOT  "DJ_7lions.gif",	        10, 0 , 0, 10, 10, 0, 0,  },
+/* 357 */   { ROOT  "DJ_Marlo.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 358 */   { ROOT  "DJ_Miyuki.gif",		10, 0 , 0, 10, 10, 0, 0,  },
+/* 359 */   { ROOT  "DJ_AvB_logo_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
         };
 
     //
-    #define FIRSTESP32 50
-    #define LASTESP32 71
-    #define LASTESP32IDX 79
+    #define FIRSTESP32 60
+    #define LASTESP32 81
+    #define LASTESP32IDX 119
 
     int16_t x, y;
     uint8_t repeat = 1;
@@ -2621,7 +2732,7 @@ uint8_t tmed(uint32_t demo) {
 // ================================================================================
 
 // demo_map.txt contains a logical demo number (0 to 99 for generated, 100-129 for
-// animated gifs on 32h, or shared animated gifs on 64/96/192h, and 150+ for unshared
+// animated gifs on 32h, or shared animated gifs on 64/96/192h, and 160+ for unshared
 // animated gifs in 64/96/192h)
 // however, at runtime the ESP32 can switch from its own resolution demos
 // PANELCONFNUM 0:24x32, 1:64x64 (BM), 2:64x96 (BM), 3:64x96 (Trance), 4:128x192
@@ -2630,16 +2741,15 @@ uint16_t demoidx(uint16_t idx) {
 
     // If the demo# is too high, map to the null demo
     if (PANELCONFNUM == 0 && idx>129) return 0;
-    if (PANELCONFNUM < 4  && idx>179) return 0;   // LAST6496GIF
+    if (PANELCONFNUM < 4  && idx>219) return 0;
 
     // panelconf0 has direct mapping to 100, the others start at 120
     if (PANELCONFNUM == 0) return idx;
     if (PANELCONFNUM < 4) return (idx+20);
-    // 192h demos are 120 to 180 (for 100 to 140) and then jump to 240
-    if (idx < 150) return (idx+20); // LASTSHAREDGIF+1
-    return (idx+50);
+    // 192h demos are 120 to 180 (for 100 to 160) and then jump to 240
+    if (idx < 160) return (idx+20);
+    return (idx+80);
 }
-
 
 Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 000 */ { "NULL Demo", NULL, -1, NULL },
@@ -2809,103 +2919,101 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 // mheight > 32, shared non animated gifs
 // It is however ok to map them to different filenames depending on the
 // backend as long as they are the same name
-/* 150 */ { "GIF A&B colors balls",	 GifAnim,  30, NULL }, // mapped to 130
-/* 151 */ { "GIF A&B Color Bands", 	 GifAnim,  31, NULL },
-/* 152 */ { "GIF A&B CBands Heart",	 GifAnim,  32, NULL },
-/* 153 */ { "GIF A&B Logo lgrey",  	 GifAnim,  33, NULL },
-/* 154 */ { "GIF A&B Sign lgrey",  	 GifAnim,  34, NULL },
-/* 155 */ { "GIF BM Lady Fire",	   	 GifAnim,  35, NULL },
-/* 156 */ { "GIF BM Logo lgrey",   	 GifAnim,  36, NULL },
-/* 157 */ { "GIF BM Man Scroll",   	 GifAnim,  37, NULL },
-/* 158 */ { "GIF BM TheMan Blue",  	 GifAnim,  38, NULL },
-/* 159 */ { "GIF BM TheMan_Green", 	 GifAnim,  39, NULL },
-/* 160 */ { "GIF BM TheMan Red",   	 GifAnim,  40, NULL },
-/* 161 */ { "",			   	 NULL,	   41, NULL }, // mapped to 141
-/* 162 */ { "",			   	 NULL,     42, NULL },
-/* 163 */ { "",			   	 NULL,     43, NULL },
-/* 164 */ { "",			   	 NULL,     44, NULL },
-/* 165 */ { "",			   	 NULL,     45, NULL },
-/* 166 */ { "",			   	 NULL,     46, NULL },
-/* 167 */ { "",			   	 NULL,     47, NULL },
-/* 168 */ { "",			   	 NULL,     48, NULL },
-/* 169 */ { "",			   	 NULL,     49, NULL }, // mapped to 149, LASTSHAREDGIF
-// GIFs from here are mheight == 96, assigned to 80
+/* 150 */ { "GIF A&B colors balls",  GifAnim,  30, NULL }, // mapped to 130
+/* 151 */ { "GIF A&B Color Bands",   GifAnim,  31, NULL },
+/* 152 */ { "GIF A&B CBands Heart",  GifAnim,  32, NULL },
+/* 153 */ { "GIF A&B Logo lgrey",    GifAnim,  33, NULL },
+/* 154 */ { "GIF A&B Sign lgrey",    GifAnim,  34, NULL },
+/* 155 */ { "GIF BM Lady Fire",	     GifAnim,  35, NULL },
+/* 156 */ { "GIF BM Logo lgrey",     GifAnim,  36, NULL },
+/* 157 */ { "GIF BM Man Scroll",     GifAnim,  37, NULL },
+/* 158 */ { "GIF BM TheMan Blue",    GifAnim,  38, NULL },
+/* 159 */ { "GIF BM TheMan_Green",   GifAnim,  39, NULL },
+/* 160 */ { "GIF BM TheMan Red",     GifAnim,  40, NULL },
+/* 161 */ { "", NULL,  41, NULL },
+/* 162 */ { "", NULL,  42, NULL },
+/* 163 */ { "", NULL,  43, NULL },
+/* 164 */ { "", NULL,  44, NULL },
+/* 165 */ { "", NULL,  45, NULL },
+/* 166 */ { "", NULL,  46, NULL },
+/* 167 */ { "", NULL,  47, NULL },
+/* 168 */ { "", NULL,  48, NULL },
+/* 169 */ { "", NULL,  49, NULL },
+/* 170 */ { "", NULL,  50, NULL },
+/* 171 */ { "", NULL,  51, NULL },
+/* 172 */ { "", NULL,  52, NULL },
+/* 173 */ { "", NULL,  53, NULL },
+/* 174 */ { "", NULL,  54, NULL },
+/* 175 */ { "", NULL,  55, NULL },
+/* 176 */ { "", NULL,  56, NULL },
+/* 177 */ { "", NULL,  57, NULL },
+/* 178 */ { "", NULL,  58, NULL },
+/* 179 */ { "", NULL,  59, NULL },
+// GIFs from here are mheight == 96, assigned to 60
 // Other resolution will also be assigned from the same index
 // so that some gif gets displayed, even if it's the wrong one.
-/* 170 */ { "GIF net"		,	 GifAnim, 50, NULL }, // mapped to 150
-/* 171 */ { "GIF colorstar"	,	 GifAnim, 51, NULL },
-/* 172 */ { "GIF circlesmoke"	,	 GifAnim, 52, NULL },
-/* 173 */ { "GIF waterdrop"	,	 GifAnim, 53, NULL },
-/* 174 */ { "GIF circletriangle",	 GifAnim, 54, NULL },
-/* 175 */ { "GIF photon"	,	 GifAnim, 55, NULL },
-/* 176 */ { "GIF spincircle"	,	 GifAnim, 56, NULL },
-/* 177 */ { "GIF ghostbusters"	,	 GifAnim, 57, NULL },
-/* 178 */ { "GIF hand"		,	 GifAnim, 58, NULL },
-/* 179 */ { "GIF infection"	,	 GifAnim, 59, NULL },
-/* 180 */ { "GIF comets"	,	 GifAnim, 60, NULL },
-/* 181 */ { "GIF batman"	,	 GifAnim, 61, NULL },
-/* 182 */ { "GIF flyingfire"	,	 GifAnim, 62, NULL },
-/* 183 */ { "GIF expandcircle"	,	 GifAnim, 63, NULL },
-/* 184 */ { "GIF greenplasma"	,	 GifAnim, 64, NULL },
-/* 185 */ { "GIF circle2sphere"	,	 GifAnim, 65, NULL },
-/* 186 */ { "GIF colortoroid"	,	 GifAnim, 66, NULL },
-/* 187 */ { "GIF scrollcubestron",	 GifAnim, 67, NULL },
-/* 188 */ { "GIF spinningpattern",	 GifAnim, 68, NULL },
-/* 189 */ { "GIF spacetime"	,	 GifAnim, 69, NULL },
-/* 190 */ { "GIF circleslices"	,	 GifAnim, 70, NULL },
-/* 191 */ { "GIF heartTunnel"	,	 GifAnim, 71, NULL }, // mapped to 171
-/* 192 */ { "", NULL, -1, NULL },
-/* 193 */ { "", NULL, -1, NULL },
-/* 194 */ { "", NULL, -1, NULL },
-/* 195 */ { "", NULL, -1, NULL },
-/* 196 */ { "", NULL, -1, NULL },
-/* 197 */ { "", NULL, -1, NULL },
-/* 198 */ { "", NULL, -1, NULL },
-/* 199 */ { "", NULL, -1, NULL }, // mapped to 179, LAST6496GIF
-// 64x96 ends here, 128x192 starts below with reserved DJ slots
+/* 180 */ { "GIF net"		,	 GifAnim, 60, NULL }, // mapped to 160
+/* 181 */ { "GIF colorstar"	,	 GifAnim, 61, NULL },
+/* 182 */ { "GIF circlesmoke"	,	 GifAnim, 62, NULL },
+/* 183 */ { "GIF waterdrop"	,	 GifAnim, 63, NULL },
+/* 184 */ { "GIF circletriangle",	 GifAnim, 64, NULL },
+/* 185 */ { "GIF photon"	,	 GifAnim, 65, NULL },
+/* 186 */ { "GIF spincircle"	,	 GifAnim, 66, NULL },
+/* 187 */ { "GIF ghostbusters"	,	 GifAnim, 67, NULL },
+/* 188 */ { "GIF hand"		,	 GifAnim, 68, NULL },
+/* 189 */ { "GIF infection"	,	 GifAnim, 69, NULL },
+/* 190 */ { "GIF comets"	,	 GifAnim, 70, NULL },
+/* 191 */ { "GIF batman"	,	 GifAnim, 71, NULL },
+/* 192 */ { "GIF flyingfire"	,	 GifAnim, 72, NULL },
+/* 193 */ { "GIF expandcircle"	,	 GifAnim, 73, NULL },
+/* 194 */ { "GIF greenplasma"	,	 GifAnim, 74, NULL },
+/* 195 */ { "GIF circle2sphere"	,	 GifAnim, 75, NULL },
+/* 196 */ { "GIF colortoroid"	,	 GifAnim, 76, NULL },
+/* 197 */ { "GIF scrollcubestron",	 GifAnim, 77, NULL },
+/* 198 */ { "GIF spinningpattern",	 GifAnim, 78, NULL },
+/* 199 */ { "GIF spacetime"	,	 GifAnim, 79, NULL },
+/* 200 */ { "GIF circleslices"	,	 GifAnim, 80, NULL },
+/* 201 */ { "GIF heartTunnel"	,	 GifAnim, 81, NULL }, // mapped to 181
+/* 202 */ { "", NULL, -1, NULL },
+/* 203 */ { "", NULL, -1, NULL },
+/* 204 */ { "", NULL, -1, NULL },
+/* 205 */ { "", NULL, -1, NULL },
+/* 206 */ { "", NULL, -1, NULL },
+/* 207 */ { "", NULL, -1, NULL },
+/* 208 */ { "", NULL, -1, NULL },
+/* 209 */ { "", NULL, -1, NULL },
+/* 210 */ { "", NULL, -1, NULL },
+/* 211 */ { "", NULL, -1, NULL },
+/* 212 */ { "", NULL, -1, NULL },
+/* 213 */ { "", NULL, -1, NULL },
+/* 214 */ { "", NULL, -1, NULL },
+/* 215 */ { "", NULL, -1, NULL },
+/* 216 */ { "", NULL, -1, NULL },
+/* 217 */ { "", NULL, -1, NULL },
+/* 218 */ { "", NULL, -1, NULL },
+/* 219 */ { "", NULL, -1, NULL },
+/* 220 */ { "", NULL, -1, NULL },
+/* 221 */ { "", NULL, -1, NULL },
+/* 222 */ { "", NULL, -1, NULL },
+/* 223 */ { "", NULL, -1, NULL },
+/* 224 */ { "", NULL, -1, NULL },
+/* 225 */ { "", NULL, -1, NULL },
+/* 226 */ { "", NULL, -1, NULL },
+/* 227 */ { "", NULL, -1, NULL },
+/* 228 */ { "", NULL, -1, NULL },
+/* 229 */ { "", NULL, -1, NULL },
+/* 230 */ { "", NULL, -1, NULL },
+/* 231 */ { "", NULL, -1, NULL },
+/* 232 */ { "", NULL, -1, NULL },
+/* 233 */ { "", NULL, -1, NULL },
+/* 234 */ { "", NULL, -1, NULL },
+/* 235 */ { "", NULL, -1, NULL },
+/* 236 */ { "", NULL, -1, NULL },
+/* 237 */ { "", NULL, -1, NULL },
+/* 238 */ { "", NULL, -1, NULL },
+/* 239 */ { "", NULL, -1, NULL }, // 119
 
-/* 200 */ { "GIF Thrillseekers",	 GifAnim,  80, NULL }, // mapped to 150
-/* 201 */ { "GIF RDR Logo",		 GifAnim,  81, NULL },
-/* 202 */ { "GIF RubenDeRonde",		 GifAnim,  82, NULL },
-/* 203 */ { "GIF Giuseppe Logo",	 GifAnim,  83, NULL },
-/* 204 */ { "GIF Giuseppe",		 GifAnim,  84, NULL },
-/* 205 */ { "GIF Somna",		 GifAnim,  85, NULL },
-/* 206 */ { "GIF Aly & Fila",		 GifAnim,  86, NULL },
-/* 207 */ { "GIF Armin",		 GifAnim,  87, NULL },
-/* 208 */ { "GIF Armin Logo",		 GifAnim,  88, NULL },
-/* 209 */ { "GIF Vini Vici",		 GifAnim,  89, NULL },
-/* 210 */ { "GIF Blastoyz",		 GifAnim,  90, NULL },
-/* 211 */ { "GIF Craig Connelly",	 GifAnim,  91, NULL },
-/* 212 */ { "GIF Liquid Soul",		 GifAnim,  92, NULL },
-/* 213 */ { "GIF ATB",			 GifAnim,  93, NULL },
-/* 214 */ { "GIF Solarstone",		 GifAnim,  94, NULL },
-/* 215 */ { "GIF JOC",			 GifAnim,  95, NULL },
-/* 216 */ { "GIF 7lions",		 GifAnim,  96, NULL },
-/* 217 */ { "GIF Marlo",		 GifAnim,  97, NULL },
-/* 218 */ { "GIF Miyuki",		 GifAnim,  98, NULL },
-/* 219 */ { "GIF Triode",		 GifAnim,  99, NULL },
-/* 220 */ { "",				 NULL,    100, NULL },
-/* 221 */ { "", 			 NULL,    101, NULL },
-/* 222 */ { "", 			 NULL,    102, NULL },
-/* 223 */ { "", 			 NULL,    103, NULL },
-/* 224 */ { "", 			 NULL,    104, NULL },
-/* 225 */ { "", 			 NULL,    105, NULL },
-/* 226 */ { "", 			 NULL,    106, NULL },
-/* 227 */ { "", 			 NULL,    107, NULL },
-/* 228 */ { "", 			 NULL,    108, NULL },
-/* 229 */ { "", 			 NULL,    109, NULL },
-/* 230 */ { "", 			 NULL,    110, NULL },
-/* 231 */ { "", 			 NULL,    111, NULL },
-/* 232 */ { "", 			 NULL,    112, NULL },
-/* 233 */ { "", 			 NULL,    113, NULL },
-/* 234 */ { "", 			 NULL,    114, NULL },
-/* 235 */ { "", 			 NULL,    115, NULL },
-/* 236 */ { "", 			 NULL,    116, NULL },
-/* 237 */ { "", 			 NULL,    117, NULL },
-/* 238 */ { "", 			 NULL,    118, NULL },
-/* 239 */ { "", 			 NULL,    119, NULL }, // 189
-
-/* 240 */ { "GIF abstract colorful",	 GifAnim, 120, NULL }, // mapped to 190
+/* 240 */ { "GIF abstract colorful",	 GifAnim, 120, NULL }, // mapped to 160
 /* 241 */ { "GIF Aki5PC6 Running",	 GifAnim, 121, NULL },
 /* 242 */ { "GIF dancing lady",		 GifAnim, 122, NULL },
 /* 243 */ { "GIF GirlSexyAnimateddance", GifAnim, 123, NULL },
@@ -3030,11 +3138,124 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 362 */ { "GIF blue dancer",		 GifAnim, 242, NULL },
 /* 363 */ { "GIF snoopdog dance",	 GifAnim, 243, NULL },
 /* 364 */ { "GIF walking dead",		 GifAnim, 244, NULL },
-/* 365 */ { "GIF street fighter",	 GifAnim, 245, NULL }, // mapped to 315
+/* 365 */ { "GIF street fighter",	 GifAnim, 245, NULL }, // mapped to 285, auto stored in DEMO_LAST_IDX
+/* 366 */ { "", NULL, 246, NULL },
+/* 367 */ { "", NULL, 247, NULL },
+/* 368 */ { "", NULL, 248, NULL },
+/* 369 */ { "", NULL, 249, NULL },
+/* 370 */ { "", NULL, 250, NULL },
+/* 371 */ { "", NULL, 251, NULL },
+/* 372 */ { "", NULL, 252, NULL },
+/* 373 */ { "", NULL, 253, NULL },
+/* 374 */ { "", NULL, 254, NULL },
+/* 375 */ { "", NULL, 255, NULL },
+/* 376 */ { "", NULL, 256, NULL },
+/* 377 */ { "", NULL, 257, NULL },
+/* 378 */ { "", NULL, 258, NULL },
+/* 379 */ { "", NULL, 259, NULL },
+/* 380 */ { "", NULL, 260, NULL },
+/* 381 */ { "", NULL, 261, NULL },
+/* 382 */ { "", NULL, 262, NULL },
+/* 383 */ { "", NULL, 263, NULL },
+/* 384 */ { "", NULL, 264, NULL },
+/* 385 */ { "", NULL, 265, NULL },
+/* 386 */ { "", NULL, 266, NULL },
+/* 387 */ { "", NULL, 267, NULL },
+/* 388 */ { "", NULL, 268, NULL },
+/* 389 */ { "", NULL, 269, NULL },
+/* 390 */ { "", NULL, 270, NULL },
+/* 391 */ { "", NULL, 271, NULL },
+/* 392 */ { "", NULL, 272, NULL },
+/* 393 */ { "", NULL, 273, NULL },
+/* 394 */ { "", NULL, 274, NULL },
+/* 395 */ { "", NULL, 275, NULL },
+/* 396 */ { "", NULL, 276, NULL },
+/* 397 */ { "", NULL, 277, NULL },
+/* 398 */ { "", NULL, 278, NULL },
+/* 399 */ { "", NULL, 279, NULL },
+/* 400 */ { "", NULL, 280, NULL },
+/* 401 */ { "", NULL, 281, NULL },
+/* 402 */ { "", NULL, 282, NULL },
+/* 403 */ { "", NULL, 283, NULL },
+/* 404 */ { "", NULL, 284, NULL },
+/* 405 */ { "", NULL, 285, NULL },
+/* 406 */ { "", NULL, 286, NULL },
+/* 407 */ { "", NULL, 287, NULL },
+/* 408 */ { "", NULL, 288, NULL },
+/* 409 */ { "", NULL, 289, NULL },
+/* 410 */ { "", NULL, 290, NULL },
+/* 411 */ { "", NULL, 291, NULL },
+/* 412 */ { "", NULL, 292, NULL },
+/* 413 */ { "", NULL, 293, NULL },
+/* 414 */ { "", NULL, 294, NULL },
+/* 415 */ { "", NULL, 295, NULL },
+/* 416 */ { "", NULL, 296, NULL },
+/* 417 */ { "", NULL, 297, NULL },
+/* 418 */ { "", NULL, 298, NULL },
+/* 419 */ { "", NULL, 299, NULL },
+/* 420 */ { "", NULL, 300, NULL },
+/* 421 */ { "", NULL, 301, NULL },
+/* 422 */ { "", NULL, 302, NULL },
+/* 423 */ { "", NULL, 303, NULL },
+/* 424 */ { "", NULL, 304, NULL },
+/* 425 */ { "", NULL, 305, NULL },
+/* 426 */ { "", NULL, 306, NULL },
+/* 427 */ { "", NULL, 307, NULL },
+/* 428 */ { "", NULL, 308, NULL },
+/* 429 */ { "", NULL, 309, NULL },
+/* 430 */ { "", NULL, 310, NULL },
+/* 431 */ { "", NULL, 311, NULL },
+/* 432 */ { "", NULL, 312, NULL },
+/* 433 */ { "", NULL, 313, NULL },
+/* 434 */ { "", NULL, 314, NULL },
+/* 435 */ { "", NULL, 315, NULL },
+/* 436 */ { "", NULL, 316, NULL },
+/* 437 */ { "", NULL, 317, NULL },
+/* 438 */ { "", NULL, 318, NULL },
+/* 439 */ { "", NULL, 319, NULL },
+/* 440 */ { "", NULL, 320, NULL },
+/* 441 */ { "", NULL, 321, NULL },
+/* 442 */ { "", NULL, 322, NULL },
+/* 443 */ { "", NULL, 323, NULL },
+/* 444 */ { "", NULL, 324, NULL },
+/* 445 */ { "", NULL, 325, NULL },
+/* 446 */ { "", NULL, 326, NULL },
+/* 447 */ { "", NULL, 327, NULL },
+/* 448 */ { "", NULL, 328, NULL },
+/* 449 */ { "", NULL, 329, NULL },
+/* 450 */ { "", NULL, 330, NULL },
+/* 451 */ { "", NULL, 331, NULL },
+/* 452 */ { "", NULL, 332, NULL },
+/* 453 */ { "", NULL, 333, NULL },
+/* 454 */ { "", NULL, 334, NULL },
+/* 455 */ { "", NULL, 335, NULL },
+/* 456 */ { "", NULL, 336, NULL },
+/* 457 */ { "", NULL, 337, NULL },
+/* 458 */ { "", NULL, 338, NULL },
+/* 459 */ { "", NULL, 339, NULL },
+/* 460 */ { "GIF Thillseekers",	     GifAnim, 340, NULL },
+/* 461 */ { "GIF RDR Logo",	     GifAnim, 341, NULL },
+/* 462 */ { "GIF RubenDeRonde",	     GifAnim, 342, NULL },
+/* 463 */ { "GIF Giuseppe Logo",     GifAnim, 343, NULL },
+/* 464 */ { "GIF Giuseppe",	     GifAnim, 344, NULL },
+/* 465 */ { "GIF Somna",	     GifAnim, 345, NULL },
+/* 466 */ { "GIF Aly & Fila",	     GifAnim, 346, NULL },
+/* 467 */ { "GIF Armin",	     GifAnim, 347, NULL },
+/* 468 */ { "GIF Triode",	     GifAnim, 348, NULL },
+/* 469 */ { "GIF Vini Vici",	     GifAnim, 349, NULL },
+/* 470 */ { "GIF Blastoyz",	     GifAnim, 350, NULL },
+/* 471 */ { "GIF Craig Connelly",    GifAnim, 351, NULL },
+/* 472 */ { "GIF Liquid Soul",	     GifAnim, 352, NULL },
+/* 473 */ { "GIF ATB",		     GifAnim, 353, NULL },
+/* 474 */ { "GIF Solarstone",	     GifAnim, 354, NULL },
+/* 475 */ { "GIF JOC",		     GifAnim, 355, NULL },
+/* 476 */ { "GIF 7lions",	     GifAnim, 356, NULL },
+/* 477 */ { "GIF Marlo",	     GifAnim, 357, NULL },
+/* 478 */ { "GIF Miyuki",	     GifAnim, 358, NULL },
+/* 479 */ { "GIF Armin Logo",	     GifAnim, 359, NULL }, // mapped to 399, on for earlier demos to work
     // mapping is the index number in demo_map.txt to account for
-    // last index in that file is 299, or 379
     // demos for multiple platforms that share the same slot numbers
-    // If you add elements past 379, please update DEMO_ARRAY_SIZE
+    // If you add elements past 479, please update DEMO_ARRAY_SIZE
 };
 
 void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
@@ -4834,7 +5055,7 @@ void read_config_index() {
 	    delay((uint32_t) 100);
 	    continue;
 	}
-    //#define DEBUG_CFG_READ
+    #define DEBUG_CFG_READ
     #ifdef DEBUG_CFG_READ
 	#ifdef ESP32
 	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,
@@ -4886,7 +5107,7 @@ void read_config_index() {
     #else
     file.close();
     #endif
-    process_config();
+    process_config(true);
 }
 
 #ifdef WIFI
