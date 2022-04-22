@@ -852,8 +852,6 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
 }
 
 
- 
-// 5 lines
 uint8_t rotate_text(uint32_t whichone=0) {
     static uint16_t state;
     static float spd;
@@ -5055,7 +5053,7 @@ void read_config_index() {
 	    delay((uint32_t) 100);
 	    continue;
 	}
-    #define DEBUG_CFG_READ
+    //#define DEBUG_CFG_READ
     #ifdef DEBUG_CFG_READ
 	#ifdef ESP32
 	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,
