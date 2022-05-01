@@ -877,6 +877,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	5, // 10
 	3,
 	4,
+	3,
     };
 
     const char *text[][6] = {
@@ -893,6 +894,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ "She said","TRANCE",	"or ME",	"Sometimes","I miss her",   "" },	// 10
 	{ "IT'S",   "TIME",	"TO PLAY",	"",	    "",		    "" },
 	{ "TRANCE", "IS MUSIC",	"WITH A",	"SOUL",   "",		    "" },
+	{ "I'M A",   "MUSIC",	"LOVER",	"",	    "",		    "" },
     };
 
     if (PANELCONFNUM == 2 || PANELCONFNUM == 3) text[0][2] = "BURN";
@@ -911,6 +913,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ 0xFFFFFF, 0xFFFF00,	0x00FF00,	0xFFFFFF,   0x00FFFF,	    0 },	// 10
 	{ 0x00FF00, 0x00FF00,	0x00FF00,	0,	    0,		    0 },
 	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0xFFFF00,   0,		    0 },
+	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0,	    0,		    0 },
     };
 
     uint16_t y_offset_192[][6] = { 
@@ -2826,7 +2829,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 073 */ { "", NULL, -1, NULL },
 /* 074 */ { "", NULL, -1, NULL },
 /* 075 */ { "", NULL, -1, NULL },
-/* 076 */ { "", NULL, -1, NULL },
+/* 076 */ { "Music Lover", rotate_text, 13, NULL },
 /* 077 */ { "Trance Soul", rotate_text, 12, NULL },
 /* 078 */ { "Time to Play", rotate_text, 11, NULL },
 /* 079 */ { "Trance Or Me", rotate_text, 10, NULL },
