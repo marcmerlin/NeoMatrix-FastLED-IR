@@ -54,11 +54,11 @@ void v4l2fb(bool mirror) {
 
 	    yuv2rgb(y1, u, v, &r, &g, &b);
 	    X = x;
-	    if (mirror) X = mw-X;
+	    if (mirror) X = mw-X-1;
 	    matrix->drawPixel(X, y, (uint32_t) ((r<<16) + (g<<8) + b));
 	    yuv2rgb(y2, u, v, &r, &g, &b);
 	    X = x+1;
-	    if (mirror) X = mw-X;
+	    if (mirror) X = mw-X-1;
 	    matrix->drawPixel(X, y, (uint32_t) ((r<<16) + (g<<8) + b));
 	}
     }
