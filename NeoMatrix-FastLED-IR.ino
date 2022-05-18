@@ -2733,11 +2733,9 @@ uint8_t tmed(uint32_t demo) {
     return 0;
 }
 
-uint8_t call_v4lcapture(uint32_t unused) {
-    unused = unused;
-
+uint8_t call_v4lcapture(uint32_t mirror) {
 #ifdef ARDUINOONPC
-    v4lcapture_loop();
+    v4lcapture_loop(mirror);
 #endif
     return 1;
 }
@@ -2867,8 +2865,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 095 */ { "", NULL, -1, NULL },
 /* 096 */ { "", NULL, -1, NULL },
 /* 097 */ { "", NULL, -1, NULL },
-/* 098 */ { "", NULL, -1, NULL },
-/* 099 */ { "Camera", call_v4lcapture, -1, NULL },
+/* 098 */ { "Camera", call_v4lcapture, 0, NULL },
+/* 099 */ { "Camera Mirror", call_v4lcapture, 1, NULL },
 // Up to here, there is a 1-1 mapping from the ID
 // mheight == 32
 /* 100 */ { "GIF photon"	, GifAnim,  0, NULL }, // mapped to 100

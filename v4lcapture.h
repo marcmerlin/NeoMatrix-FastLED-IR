@@ -33,10 +33,11 @@ void yuv2rgb(uint8_t y, uint8_t u, uint8_t v, uint8_t *r, uint8_t *g, uint8_t *b
 uint16_t capt_offx = (CAPTURE_W - mw)/2;
 uint16_t capt_offy = (CAPTURE_H - mh)/2;
 
-void v4l2fb() {
+void v4l2fb(bool mirror) {
     uint8_t y1, u, v, y2;
     uint8_t r, g, b;
     uint32_t i;
+    uint16_t X;
 
     for (uint16_t y = 0; y<mh; y++) {
 	for (uint16_t x = 0; x<mw; x+=2) {
@@ -52,18 +53,22 @@ void v4l2fb() {
 	    v  = (uint8_t) *(buffer_.start+i+3);
 
 	    yuv2rgb(y1, u, v, &r, &g, &b);
-	    matrix->drawPixel(x, y, (uint32_t) ((r<<16) + (g<<8) + b));
+	    X = x;
+	    if (mirror) X = mw-X;
+	    matrix->drawPixel(X, y, (uint32_t) ((r<<16) + (g<<8) + b));
 	    yuv2rgb(y2, u, v, &r, &g, &b);
-	    matrix->drawPixel(x+1, y, (uint32_t) ((r<<16) + (g<<8) + b));
+	    X = x+1;
+	    if (mirror) X = mw-X;
+	    matrix->drawPixel(X, y, (uint32_t) ((r<<16) + (g<<8) + b));
 	}
     }
 }
 
 
-void v4lcapture_loop()
+void v4lcapture_loop(bool mirror)
 {
     mainloop();
-    v4l2fb();
+    v4l2fb(mirror);
     matrix->show();
 }
 
