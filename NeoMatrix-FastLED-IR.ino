@@ -38,6 +38,10 @@
 #include "AikoEvents_Impl.h"
 using namespace Aiko;
 
+#ifdef ARDUINOONPC
+#include "v4lcapture.h"
+#endif
+
 #ifdef HAS_FS
 // defines FSO
 #include "GifAnimViewer.h"
@@ -66,6 +70,7 @@ using namespace Aiko;
 #define DEMO_NEXT 32767
 #define DEMO_TEXT_THANKYOU 90
 #define DEMO_TEXT_INPUT 91
+#define DEMO_CAMERA 99
 #define DEMO_TEXT_FIRST DEMO_TEXT_THANKYOU
 #define DEMO_TEXT_LAST DEMO_TEXT_INPUT
 
@@ -2728,6 +2733,14 @@ uint8_t tmed(uint32_t demo) {
     return 0;
 }
 
+uint8_t call_v4lcapture(uint32_t unused) {
+    unused = unused;
+
+#ifdef ARDUINOONPC
+    v4lcapture_loop();
+#endif
+    return 1;
+}
 
 
 // ================================================================================
@@ -2855,7 +2868,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 096 */ { "", NULL, -1, NULL },
 /* 097 */ { "", NULL, -1, NULL },
 /* 098 */ { "", NULL, -1, NULL },
-/* 099 */ { "", NULL, -1, NULL },
+/* 099 */ { "Camera", call_v4lcapture, -1, NULL },
 // Up to here, there is a 1-1 mapping from the ID
 // mheight == 32
 /* 100 */ { "GIF photon"	, GifAnim,  0, NULL }, // mapped to 100
@@ -5407,6 +5420,10 @@ void setup() {
     fireworks_setup();
     Serial.println("Init sublime");
     sublime_setup();
+#ifdef ARDUINOONPC
+    Serial.println("Init Camera");
+    v4lcapture_setup();
+#endif
 
     show_free_mem("After Demos Init");
 
