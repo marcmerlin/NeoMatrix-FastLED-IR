@@ -3405,7 +3405,7 @@ void Matrix_Handler() {
 	    if (DISPLAYTEXT.c_str()[0] < 58 && DISPLAYTEXT.c_str()[2] == ',') {
                 // 0123456789012345
 		// XX,YY,LOOP,F,Z,TEXT  (offset of first char, # of times to loop, Font idx, zoom, text (with newlines)
-		uint8_t x, y, loop, fontidx, zoom;
+		uint16_t x, y, loop, fontidx, zoom;
 		String displaystr;
 
 		x =	    atoi(DISPLAYTEXT.c_str()+0);
@@ -4630,7 +4630,6 @@ bool PutFileLine(OmXmlWriter &w, const char *path) {
 }
 
 void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
-
     if (strcmp(request.path, "/form") == 0) {
 	uint8_t k = (int)request.query.size();
 
@@ -4651,6 +4650,33 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	    Serial.println(DISPLAYTEXT);
 	    matrix_change(DEMO_TEXT_INPUT, false, 10);
 	}
+
+	// Changes to config file lines, look like this:
+	// arg 0: 0001 = 1 3 3 3 3 106
+	if (strcmp(request.query[0], "mtext") == 0) {
+	    uint16_t ix = 0;
+	    // k counts arg + value, we only want the number of pairs
+	    uint8_t cnt = k/2;
+	    DISPLAYTEXT="00,00,9999,0,1,";
+
+	    p->renderHttpResponseHeader("text/html", 200);
+	    while (cnt-->0 && (strcmp(request.query[ix], "mtext") == 0) && (strcmp(request.query[ix+1], "") != 0)) {
+		ix++;
+		String newline = String(request.query[ix]) + "\\";
+		DISPLAYTEXT += newline;
+		//Serial.print("String build: ");
+		//Serial.println(DISPLAYTEXT);
+		ix++;
+	    }
+	    Serial.print("|T:");
+	    Serial.println(DISPLAYTEXT);
+	    matrix_change(DEMO_TEXT_INPUT, false, 1);
+	    //w.puts("<meta http-equiv=refresh content=\"6; URL=/Text\" /><BR>\n");
+	    w.puts("Str: ");
+	    w.puts(DISPLAYTEXT.c_str());
+	    w.puts("<br>\n");
+	}
+
 	// Changes to config file lines, look like this:
 	// arg 0: 0001 = 1 3 3 3 3 106
 	if (request.query[0][0] == '0') {
@@ -4721,7 +4747,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 
 	// else show arguments sent (for debugging)
 	for (int ix = 0; ix < k - 1; ix += 2)
-	    w.putf("arg %d: %s = %s\n", ix / 2, request.query[ix], request.query[ix + 1]);
+	    w.putf("arg %d: '%s' = '%s'<br>\n", ix / 2, request.query[ix], request.query[ix + 1]);
 	return;
     }
 
@@ -4860,6 +4886,28 @@ void rebuild_advanced_page() {
 }
 
 
+void register_text_page() {
+    p->beginPage("Text");
+
+    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    {
+	w.puts("Demo Text Input: <FORM METHOD=GET ACTION=/form>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.puts("<INPUT NAME=mtext><BR>");
+	w.putf("<INPUT TYPE=submit NAME=multilinesubmit VALUE=SUBMIT>\n");
+	w.puts("</FORM>");
+    });
+}
+
+
 void register_config_page() {
     p->beginPage("Config");
 
@@ -4989,6 +5037,7 @@ void setup_wifi() {
 	w.putf("Placeholder\n");
     });
     rebuild_advanced_page();
+    register_text_page();
     register_FS_page();
     //register_Text_page();
 
