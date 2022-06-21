@@ -17,8 +17,18 @@
 
 // Compile WeMos D1 R2 & mini, ESP32-dev, or ArduinoOnPC for linux
 
+// Force 24x32 on ESP32 for bright daylight display
+// as a hack, we enable this for non PSRAM boards but
+// a non PSRAM board could also run a framebuffer less
+// setup to drive a rPi
+#ifdef ESP32
+#ifndef BOARD_HAS_PSRAM
+#define M32BY8X3
+#endif
+#endif
+
 // on Rpi, this is ignored and it uses a larger size
-#ifdef ESP8266
+#ifdef M32BY8X3
 #define gif_size 32
 #else
 #define gif_size 64
@@ -451,7 +461,12 @@ void matrix_show() {
 	//ESP.wdtDisable();
     #endif
     #ifdef NEOPIXEL_PIN
-	FastLED[1].showLeds(matrix_brightness);
+	#ifdef ESP8266
+	    FastLED[1].showLeds(matrix_brightness);
+	#else
+	    matrix->show();
+	    //FastLED[1].showLeds(matrix_brightness);
+	#endif
     #else
 	matrix->show();
     #endif
@@ -3455,7 +3470,12 @@ void leds_show() {
 #ifndef FASTLED_NEOMATRIX
     FastLED.show();
 #else
+    #ifdef ESP8266
     FastLED[0].showLeds(led_brightness);
+    #else
+    FastLED.show();
+    //FastLED[0].showLeds(255);
+    #endif
 #endif
 }
 void leds_setcolor(uint16_t i, uint32_t c) {
@@ -5359,9 +5379,9 @@ void setup() {
     Serial.println(STRIP_NUM_LEDS);
 
     #ifndef LINUX_RENDERER_SDL
-	FastLED.addLeds<NEOPIXEL,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
+	FastLED.addLeds<WS2813,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS);
     #else
-        FastLED.addLeds<SDL, STRIP_NUM_LEDS, 1>(leds, STRIP_NUM_LEDS).setCorrection(TypicalLEDStrip);
+        FastLED.addLeds<SDL, STRIP_NUM_LEDS, 1>(leds, STRIP_NUM_LEDS);
 	#pragma message "Enabling test neopixel strip on non RPI ARDUINOONPC"
     #endif
     FastLED.setBrightness(led_brightness);
@@ -5591,7 +5611,9 @@ void setup() {
     while (Serial.available()) Serial.read();
     Serial.println("Send '|' to enable serial commands");
 
-    showip();
+    #if mheight == 192
+        showip();
+    #endif
     #endif
 }
 

@@ -20,6 +20,10 @@
     #endif
 #endif
 
+#ifdef ESP8266
+#define M32BY8X3
+#endif
+
 #define LEDMATRIX
 #define DISABLE_MATRIX_TEST
 #include "neomatrix_config.h"
@@ -31,7 +35,7 @@
 // hardcoding the file back into the code (where it used to be, but I moved
 // it out so that it can be updated by a web server at runtime).
 #define HAS_FS
-#ifdef ESP8266
+#ifdef M32BY8X3
     #define mheight 32
     uint8_t PANELCONFNUM = 0;
     #pragma message "autoconf found height 32, panelconf 0"
@@ -60,6 +64,7 @@
 #error "Matrix config undefined, please set height"
 #endif
 
+
 // How many ms used for each matrix update
 // This is now used to schedule Matrix_Handler every 20ms
 // if possible (50 frames generated per second). 
@@ -71,7 +76,6 @@
 uint8_t led_brightness = 64;
 // matrix_brightness is defined on neomatrix_config.h
 
-uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
 
 #ifdef ESP32
 // Use https://github.com/lbernstone/IR32.git instead of IRRemote
@@ -88,6 +92,7 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
 
 // On ESP32, I have a 64x64 direct matrix (not tiled) with 2 options of drivers.
 #if mheight == 96 || mheight == 192
+    uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     // Using RGBPanel via SmartMatrix
 
     // Memory After GIF init:
@@ -113,16 +118,24 @@ uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     #endif
 
 #elif mheight == 64
+    uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 6;
     // Make the burning man 64x64 brighter by default, we have a big power supply :)
-    DFL_MATRIX_BRIGHTNESS_LEVEL = 6;
     #define IR_RECV_PIN 34
 
 #elif mheight == 32
+    // really 48, but let's make it 50
     #define STRIP_NUM_LEDS 50
     CRGB leds[STRIP_NUM_LEDS];
-    #define NEOPIXEL_PIN D1 // GPIO5
 
-    #define IR_RECV_PIN D4
+    #ifdef ESP8266
+	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
+	#define NEOPIXEL_PIN D1 // GPIO5
+	#define IR_RECV_PIN D4
+    #else
+	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 6;
+        #define IR_RECV_PIN 34
+	#define NEOPIXEL_PIN 13
+    #endif
 #else
     #error "unknown matrix height, no idea what demos to run"
 #endif
