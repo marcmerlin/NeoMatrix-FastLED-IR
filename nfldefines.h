@@ -132,7 +132,7 @@ uint8_t led_brightness = 64;
 	#define NEOPIXEL_PIN D1 // GPIO5
 	#define IR_RECV_PIN D4
     #else
-	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 6;
+	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 7;
         #define IR_RECV_PIN 34
 	#define NEOPIXEL_PIN 13
     #endif
