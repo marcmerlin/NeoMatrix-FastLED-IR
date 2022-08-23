@@ -21,11 +21,11 @@
 // as a hack, we enable this for non PSRAM boards but
 // a non PSRAM board could also run a framebuffer less
 // setup to drive a rPi
-#ifdef ESP32
-#ifndef BOARD_HAS_PSRAM
-#define M32BY8X3
-#endif
-#endif
+//#ifdef ESP32
+//#ifndef BOARD_HAS_PSRAM
+//#define M32BY8X3
+//#endif
+//#endif
 
 // on Rpi, this is ignored and it uses a larger size
 #ifdef M32BY8X3
@@ -2755,10 +2755,25 @@ uint8_t tmed(uint32_t demo) {
 }
 
 uint8_t call_v4lcapture(uint32_t mirror) {
+    static uint32_t state;
+
+    if (MATRIX_RESET_DEMO) {
+	MATRIX_RESET_DEMO = false;
+	state = 0;
+    }
+
 #ifdef ARDUINOONPC
     v4lcapture_loop(mirror);
+    //printf("RPI Video Loop: %d, state %d\n", MATRIX_LOOP, state);
 #endif
-    return 1;
+    if (state++ < 5000) return 1; // ESP32 will command 1 loops if called from next
+    // if called from the menu, it will last 100 loops instead. The ESP32 loops are
+    // empty loops, so the time is estimated
+    MATRIX_RESET_DEMO = true;
+#ifndef ARDUINOONPC
+    Serial.printf("ESP Video Loop: %d\n", MATRIX_LOOP);
+#endif
+    return 0;
 }
 
 
