@@ -3525,9 +3525,10 @@ void change_brightness(int8_t change, bool absolute=false) {
     if (absolute) {
 	brightness = change;
     } else {
-	brightness = constrain(brightness + change, 2, 8);
+	brightness = constrain(brightness + change, 0, 8);
     }
     led_brightness = min((1 << (brightness+1)) - 1, 255);
+    if (! brightness) led_brightness = 0;
 #ifndef FASTLED_NEOMATRIX
     FastLED.setBrightness(led_brightness);
 #endif
@@ -3536,6 +3537,7 @@ void change_brightness(int8_t change, bool absolute=false) {
     uint8_t rgbpanel_brightness = 31+min( (1 << (brightness+2)), 224);
     // neopixels are bright, we tone brightness down
     matrix_brightness = (1 << (brightness-1)) - 1;
+    if (! brightness) matrix_brightness = 0;
 
     Serial.print("Changing brightness ");
     Serial.print(change);
@@ -4861,7 +4863,7 @@ void rebuild_main_page(bool show_summary) {
 
     p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE_TEXT);
     p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
-    p->addSlider(1, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
+    p->addSlider(0, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
     /*
