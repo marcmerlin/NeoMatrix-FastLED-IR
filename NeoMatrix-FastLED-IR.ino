@@ -3537,7 +3537,7 @@ void change_brightness(int8_t change, bool absolute=false) {
     uint8_t rgbpanel_brightness = 31+min( (1 << (brightness+2)), 224);
     // neopixels are bright, we tone brightness down
     matrix_brightness = (1 << (brightness-1)) - 1;
-    if (! brightness) matrix_brightness = 0;
+    if (! brightness) { matrix_brightness = 0; rgbpanel_brightness = 0; }
 
     Serial.print("Changing brightness ");
     Serial.print(change);
