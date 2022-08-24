@@ -4597,7 +4597,6 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	break;
 
     case HTML_BRIGHT:
-	if (!value) break;
 	Serial.print("Brightness change to ");
 	Serial.println(value);
 	change_brightness(value, true);
