@@ -160,7 +160,7 @@ uint16_t MATRIX_DEMO; // this is initialized after MATRIX_STATE is updated in re
 uint32_t LAST_FPS = 0;
 bool SHOW_LAST_FPS = false;
 
-String DISPLAYTEXT="00,00,0100,0,1,Hello World";
+String DISPLAYTEXT="00,00,0100,0,1,Hello\nWorld";
 
 // Compute how many GIFs have been defined (called in setup)
 uint16_t GIF_CNT = 0;
@@ -2799,6 +2799,30 @@ uint8_t thank_you(uint32_t unused) {
     return ret;
 }
 
+uint8_t web_text_input(uint32_t unused) {
+    static uint8_t ret;
+    // If first char is a digit, we assume it's a full string with coordinates
+    // to display a number, prepend '>'
+    if (DISPLAYTEXT.c_str()[0] < 58 && DISPLAYTEXT.c_str()[2] == ',') {
+	// 0123456789012345
+	// XX,YY,LOOP,F,Z,TEXT  (offset of first char, # of times to loop, Font idx, zoom, text (with newlines)
+	uint16_t x, y, loop, fontidx, zoom;
+	String displaystr;
+
+	x =	    atoi(DISPLAYTEXT.c_str()+0);
+	y =	    atoi(DISPLAYTEXT.c_str()+3);
+	loop =	    atoi(DISPLAYTEXT.c_str()+6);
+	fontidx =   atoi(DISPLAYTEXT.c_str()+11);
+	zoom =	    atoi(DISPLAYTEXT.c_str()+13);
+	displaystr= DISPLAYTEXT.substring(15);
+	ret = display_text(displaystr.c_str(), x, y, loop, NULL, fontidx, zoom);
+    } else {
+	ret = display_text(DISPLAYTEXT.c_str(), 0, 0, 40, NULL, 0, 1);
+    }
+
+    return ret;
+}
+
 
 
 
@@ -2918,8 +2942,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 // Give a fake demo we won't call. We actually call display_text but it takes
 // more arguments, so it can't be used in this struct.and the function called
 // manually is display_text with more arguments
-/* 090 */ { "Thank you",	thank_you, -1, NULL },	// DEMO_TEXT_THANKYOU
-/* 091 */ { "Web Text Input",	squares, -1, NULL },	// DEMO_TEXT_INPUT
+/* 090 */ { "Thank you",	thank_you, -1, NULL },		// DEMO_TEXT_THANKYOU
+/* 091 */ { "Web Text Input",	web_text_input, -1, NULL },	// DEMO_TEXT_INPUT
 /* 092 */ { "", NULL, -1, NULL },
 /* 093 */ { "", NULL, -1, NULL },
 /* 094 */ { "", NULL, -1, NULL },
@@ -3449,42 +3473,17 @@ void Matrix_Handler() {
     }
 
 
-    // these demos must be handled separately because the array of function
-    // pointers does not allow passing variable arguments
-    if (MATRIX_DEMO == DEMO_TEXT_INPUT) {
-	    // If first char is a digit, we assume it's a full string with coordinates
-	    // to display a number, prepend '>'
-	    if (DISPLAYTEXT.c_str()[0] < 58 && DISPLAYTEXT.c_str()[2] == ',') {
-                // 0123456789012345
-		// XX,YY,LOOP,F,Z,TEXT  (offset of first char, # of times to loop, Font idx, zoom, text (with newlines)
-		uint16_t x, y, loop, fontidx, zoom;
-		String displaystr;
-
-		x =	    atoi(DISPLAYTEXT.c_str()+0);
-		y =	    atoi(DISPLAYTEXT.c_str()+3);
-		loop =	    atoi(DISPLAYTEXT.c_str()+6);
-		fontidx =   atoi(DISPLAYTEXT.c_str()+11);
-		zoom =	    atoi(DISPLAYTEXT.c_str()+13);
-		displaystr= DISPLAYTEXT.substring(15);
-		ret = display_text(displaystr.c_str(), x, y, loop, NULL, fontidx, zoom);
-	    } else {
-		ret = display_text(DISPLAYTEXT.c_str(), 0, 0, 40, NULL, 0, 1);
-	    }
-	    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
-	    if (ret) goto exit;
-    } else {
-	Demo_Entry demo_entry = demo_list[demoidx(MATRIX_DEMO)];
-	if (! demo_entry.func) {
-	    Serial.print(">>> ERROR: No demo for ");
-	    Serial.println(MATRIX_DEMO);
-	    matrix_change(DEMO_NEXT);
-	    goto exit;
-	}
-
-	ret = demo_entry.func(demo_entry.arg);
-	if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
-	if (ret) goto exit;
+    Demo_Entry demo_entry = demo_list[demoidx(MATRIX_DEMO)];
+    if (! demo_entry.func) {
+	Serial.print(">>> ERROR: No demo for ");
+	Serial.println(MATRIX_DEMO);
+	matrix_change(DEMO_NEXT);
+	goto exit;
     }
+
+    ret = demo_entry.func(demo_entry.arg);
+    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
+    if (ret) goto exit;
 
     MATRIX_RESET_DEMO = true;
     Serial.print("Done with demo ");
