@@ -2777,6 +2777,30 @@ uint8_t call_v4lcapture(uint32_t mirror) {
     return 0;
 }
 
+uint8_t thank_you(uint32_t unused) {
+    static uint8_t ret;
+
+#ifdef M32BY8X3
+    const char str[] = "Thank You :)";
+    ret = scrollText(str, sizeof(str));
+#else
+    ret = display_text("Thank\nYou\nVery\nMuch", 0, 0, 10, NULL, 0, 1);
+    fixdrawRGBBitmap(104, 86, RGB_bmp, 8, 8);
+
+    fixdrawRGBBitmap(110, 82, RGB_bmp, 8, 8);
+    fixdrawRGBBitmap(115, 89, RGB_bmp, 8, 8);
+    fixdrawRGBBitmap(110, 96, RGB_bmp, 8, 8);
+    fixdrawRGBBitmap(104,102, RGB_bmp, 8, 8);
+    fixdrawRGBBitmap( 98, 96, RGB_bmp, 8, 8);
+    fixdrawRGBBitmap( 93, 89, RGB_bmp, 8, 8);
+    fixdrawRGBBitmap( 98, 82, RGB_bmp, 8, 8);
+#endif
+
+    return ret;
+}
+
+
+
 
 // ================================================================================
 
@@ -2894,7 +2918,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 // Give a fake demo we won't call. We actually call display_text but it takes
 // more arguments, so it can't be used in this struct.and the function called
 // manually is display_text with more arguments
-/* 090 */ { "Thank you",	squares, -1, NULL },	// DEMO_TEXT_THANKYOU
+/* 090 */ { "Thank you",	thank_you, -1, NULL },	// DEMO_TEXT_THANKYOU
 /* 091 */ { "Web Text Input",	squares, -1, NULL },	// DEMO_TEXT_INPUT
 /* 092 */ { "", NULL, -1, NULL },
 /* 093 */ { "", NULL, -1, NULL },
@@ -3427,18 +3451,7 @@ void Matrix_Handler() {
 
     // these demos must be handled separately because the array of function
     // pointers does not allow passing variable arguments
-    if (MATRIX_DEMO == DEMO_TEXT_THANKYOU) {
-#ifdef M32BY8X3
-	    const char str[] = "Thank You :)";
-	    ret = scrollText(str, sizeof(str));
-#else
-	    ret = display_text("Thank\nYou\nVery\nMuch", 0, 0, 10, NULL, 0, 1);
-	    fixdrawRGBBitmap(120, 96, RGB_bmp, 8, 8);
-#endif
-	    if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
-	    if (ret) goto exit;
-    } else if (MATRIX_DEMO == DEMO_TEXT_INPUT) {
-	    //ret = scrollText(str, sizeof(str));
+    if (MATRIX_DEMO == DEMO_TEXT_INPUT) {
 	    // If first char is a digit, we assume it's a full string with coordinates
 	    // to display a number, prepend '>'
 	    if (DISPLAYTEXT.c_str()[0] < 58 && DISPLAYTEXT.c_str()[2] == ',') {
