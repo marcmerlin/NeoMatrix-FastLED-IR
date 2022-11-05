@@ -898,6 +898,8 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	3,
 	4,
 	3,
+	3,
+	4, // 15
     };
 
     const char *text[][6] = {
@@ -913,8 +915,10 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },
 	{ "She said","TRANCE",	"or ME",	"Sometimes","I miss her",   "" },	// 10
 	{ "IT'S",   "TIME",	"TO PLAY",	"",	    "",		    "" },
-	{ "TRANCE", "IS MUSIC",	"WITH A",	"SOUL",   "",		    "" },
-	{ "I'M A",   "MUSIC",	"LOVER",	"",	    "",		    "" },
+	{ "TRANCE", "IS MUSIC",	"WITH A",	"SOUL",	    "",		    "" },
+	{ "I'M A",  "MUSIC",	"LOVER",	"",	    "",		    "" },
+	{ "I'm",    "Fucking",	"Famous",	"",	    "",		    "" },
+	{ "Fuck",   "Me",	"I'm",		"Famous",   "",		    "" },	// 15
     };
 
     if (PANELCONFNUM == 2 || PANELCONFNUM == 3) text[0][2] = "BURN";
@@ -934,6 +938,8 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ 0x00FF00, 0x00FF00,	0x00FF00,	0,	    0,		    0 },
 	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0xFFFF00,   0,		    0 },
 	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0,	    0,		    0 },
+	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0,	    0,		    0 },
+	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 },
     };
 
     uint16_t y_offset_192[][6] = { 
@@ -2944,8 +2950,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 // manually is display_text with more arguments
 /* 090 */ { "Thank you",	thank_you, -1, NULL },		// DEMO_TEXT_THANKYOU
 /* 091 */ { "Web Text Input",	web_text_input, -1, NULL },	// DEMO_TEXT_INPUT
-/* 092 */ { "", NULL, -1, NULL },
-/* 093 */ { "", NULL, -1, NULL },
+/* 092 */ { "I'm fucking Famous", rotate_text, 14, NULL },
+/* 093 */ { "Fuck Me I'm Famous", rotate_text, 15, NULL },
 /* 094 */ { "", NULL, -1, NULL },
 /* 095 */ { "", NULL, -1, NULL },
 /* 096 */ { "", NULL, -1, NULL },
