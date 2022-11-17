@@ -2081,7 +2081,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 301 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
 /* 302 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
 /* 303 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
-/* 304 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
+/* 304 */   { ROOT  "DJ_Monique.gif",           10, 0 , 0, 10, 10, 0, 0  },
 /* 305 */   { ROOT  "F_Anna.gif",               10, 0 , 0, 10, 10, 0, 0  },
 /* 306 */   { ROOT  "F_Anna2.gif",              10, 0 , 0, 10, 10, 0, 0  },
 /* 307 */   { ROOT  "F_Rochelle.gif",           10, 0 , 0, 10, 10, 0, 0  },
@@ -3301,8 +3301,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 421 */ { "", NULL, 301, NULL },
 /* 422 */ { "", NULL, 302, NULL },
 /* 423 */ { "", NULL, 303, NULL },
-/* 424 */ { "", NULL, 304, NULL },
 // Demo 345
+/* 424 */ { "GIF Monique",           GifAnim, 304, NULL },
 /* 425 */ { "FIF Anna",              GifAnim, 305, NULL },
 /* 426 */ { "FIF Anna2",             GifAnim, 306, NULL },
 /* 427 */ { "FIF Rochelle",          GifAnim, 307, NULL },
