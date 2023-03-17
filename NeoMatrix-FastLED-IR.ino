@@ -660,7 +660,7 @@ uint8_t tfsf(uint32_t unused) {
     uint8_t idx = 3;
 
     // For bigger screens, use the zoom version in static fully zoomed mode.
-    if (mheight >= 64) return tfsf_zoom(99);
+    if (mheight >= 64) { tfsf_zoom(99); return 255; }
 
     // For smaller displays, flash letters one by one.
     if (MATRIX_RESET_DEMO) {
