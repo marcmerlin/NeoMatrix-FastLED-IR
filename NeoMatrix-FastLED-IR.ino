@@ -95,6 +95,8 @@ uint16_t CFG_LAST_INDEX = 0;
 
 // By default text demos rotate but they can be made to stay still for a picture
 bool ROTATE_TEXT = true;
+// By default DJ images get scrolled a bit to add movement
+bool SCROLL_IMAGE = true;
 
 // show all demos by default,
 bool SHOW_BEST_DEMOS = false;
@@ -2199,15 +2201,20 @@ uint8_t GifAnim(uint32_t idx) {
         if (sav_newgif(path)) return 0;
     }
 
-    if (scrollx || scrolly) {
-	// Get back an x and y to use for offset display
-	panOrBounce(&x, &y, scrollx, scrolly);
-	OFFSETX = animgif[idx].offx + x;
-	OFFSETY = animgif[idx].offy + y;
-	matrix->clear();
-	//Serial.print(x);
-	//Serial.print(" ");
-	//Serial.println(y);
+    if (SCROLL_IMAGE) {
+	if (scrollx || scrolly) {
+	    // Get back an x and y to use for offset display
+	    panOrBounce(&x, &y, scrollx, scrolly);
+	    OFFSETX = animgif[idx].offx + x;
+	    OFFSETY = animgif[idx].offy + y;
+	    matrix->clear();
+	    //Serial.print(x);
+	    //Serial.print(" ");
+	    //Serial.println(y);
+	}
+    } else {
+	OFFSETX = 0;
+	OFFSETY = 0;
     }
     // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
@@ -3757,6 +3764,14 @@ void handle_rpi_serial_cmd() {
 	Serial.println("Switching to stable text for pictures");
 	ROTATE_TEXT = false;
     }
+    if (! strncmp(ttyusbbuf, "|yy", 3)) {
+	Serial.println("Switching to scrolling images");
+	SCROLL_IMAGE = true;
+    }
+    if (! strncmp(ttyusbbuf, "|YY", 3)) {
+	Serial.println("Switching to stable images for pictures");
+	SCROLL_IMAGE = false;
+    }
 }
 #endif
 
@@ -4562,6 +4577,7 @@ void process_config(bool show_summary=false) {
 #define HTML_BRIGHT	    101
 #define HTML_SPEED	    102
 #define HTML_ROTATE_TEXT    103
+#define HTML_SCROLL_IMAGE   104
 #define HTML_BUTPREV	    110
 #define HTML_BUTNEXT	    111
 #define HTML_SHOWIP	    120
@@ -4617,6 +4633,13 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	Serial.println(value);
 	if (value) Serial.println("|zz"); else Serial.println("|ZZ");
 	ROTATE_TEXT = value;
+	break;
+
+    case HTML_SCROLL_IMAGE:
+	Serial.print("Scroll Image on/off: ");
+	Serial.println(value);
+	if (value) Serial.println("|yy"); else Serial.println("|YY");
+	SCROLL_IMAGE = value;
 	break;
 
     case HTML_BRIGHT:
@@ -4884,6 +4907,7 @@ void rebuild_main_page(bool show_summary) {
     }
 
     p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE_TEXT);
+    p->addSlider(0, 1, "Image Scrolling ",   actionProc, SCROLL_IMAGE, HTML_SCROLL_IMAGE);
     p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
     p->addSlider(0, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
