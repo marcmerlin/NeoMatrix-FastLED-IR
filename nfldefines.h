@@ -123,8 +123,8 @@ uint8_t led_brightness = 64;
     #define IR_RECV_PIN 34
 
 #elif mheight == 32
-    // really 48, but let's make it 50
-    #define STRIP_NUM_LEDS 50
+    // old strips were 48, new ones are 60
+    #define STRIP_NUM_LEDS 60
     CRGB leds[STRIP_NUM_LEDS];
 
     #ifdef ESP8266
