@@ -1,6 +1,9 @@
 #ifndef nfldefines_h
 #define nfldefines_h
 
+// old strips were 48, new ones are 60
+#define LED_LENGTH 60
+
 #ifdef ESP32
     // the demo array is too long for smartmatrix to work reliably on
     // ESP32 with PSRAM, and we don't use that output, so turn it off.
@@ -111,7 +114,7 @@ uint8_t led_brightness = 64;
     #ifndef RPI
 	// You can enable this on ArduinoONPC (linux) for debugging LED trip bugs
 	#ifndef ARDUINOONPC
-	    #define STRIP_NUM_LEDS 50
+	    #define STRIP_NUM_LEDS LED_LENGTH
 	    CRGB leds[STRIP_NUM_LEDS];
 	    #define NEOPIXEL_PIN 13
 	#endif
@@ -123,8 +126,7 @@ uint8_t led_brightness = 64;
     #define IR_RECV_PIN 34
 
 #elif mheight == 32
-    // old strips were 48, new ones are 60
-    #define STRIP_NUM_LEDS 60
+    #define STRIP_NUM_LEDS LED_LENGTH
     CRGB leds[STRIP_NUM_LEDS];
 
     #ifdef ESP8266
