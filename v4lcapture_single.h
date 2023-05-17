@@ -47,7 +47,11 @@ struct buffer          buffer_;
 uint16_t CAPTURE_W = 320;
 uint16_t CAPTURE_H = 240;
 
+// If we get any error, record that camera should be ignored
+bool v4lfailed = 0;
+
 static void exit_(int val) {
+    v4lfailed = 1;
 // In production, don't exit when camera is missing
 #ifndef ARDUINOONPC
     exit(val);

@@ -65,18 +65,20 @@ void v4l2fb(bool mirror) {
 }
 
 
-void v4lcapture_loop(bool mirror)
+bool v4lcapture_loop(bool mirror)
 {
+    if (v4lfailed) return 1;
     mainloop();
     v4l2fb(mirror);
     matrix->show();
+    return 0;
 }
 
-
-void v4lcapture_setup()
+bool v4lcapture_setup()
 {
     dev_name = "/dev/video0";
     open_device();
     init_device();
     start_capturing();
+    return v4lfailed;
 }

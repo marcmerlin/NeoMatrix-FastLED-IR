@@ -2778,7 +2778,7 @@ uint8_t call_v4lcapture(uint32_t mirror) {
     }
 
 #ifdef ARDUINOONPC
-    v4lcapture_loop(mirror);
+    if (v4lcapture_loop(mirror)) return 0;
     //printf("RPI Video Loop: %d, state %d\n", MATRIX_LOOP, state);
 #endif
     if (state++ < 5000) return 1; // ESP32 will command 1 loops if called from next
@@ -5421,6 +5421,8 @@ void showip() {
 void setup() {
     Serial.begin(115200);
     Serial.println("Hello World");
+    Serial.println(__DATE__);
+    Serial.println(__TIME__);
 #ifdef ESP8266
     Serial.println("Init ESP8266");
     // Turn off Wifi
@@ -5560,7 +5562,7 @@ void setup() {
     sublime_setup();
 #ifdef ARDUINOONPC
     Serial.println("Init Camera");
-    v4lcapture_setup();
+    if (v4lcapture_setup()) Serial.println("Init Camera FAILED!");
 #endif
 
     show_free_mem("After Demos Init");
