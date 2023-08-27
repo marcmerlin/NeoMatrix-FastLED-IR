@@ -900,8 +900,10 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	3,
 	4,
 	3,
+	5,
 	3,
 	4, // 15
+	4,
     };
 
     const char *text[][6] = {
@@ -919,8 +921,10 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ "IT'S",   "TIME",	"TO PLAY",	"",	    "",		    "" },
 	{ "TRANCE", "IS MUSIC",	"WITH A",	"SOUL",	    "",		    "" },
 	{ "I'M A",  "MUSIC",	"LOVER",	"",	    "",		    "" },
-	{ "I'm",    "Fucking",	"Famous",	"",	    "",		    "" },
-	{ "Fuck",   "Me",	"I'm",		"Famous",   "",		    "" },	// 15
+	{ "Trance", "Because",	"You Don't",	"Need a",   "Microphone",   "" },
+	{ "I'm",    "Fucking",	"Famous",	"",	    "",		    "" },	// 15
+	{ "Fuck",   "Me",	"I'm",		"Famous",   "",		    "" },
+	{ "Say",    "Perhaps",	"To",		"Drugs",    "",		    "" },
     };
 
     if (PANELCONFNUM == 2 || PANELCONFNUM == 3) text[0][2] = "BURN";
@@ -940,7 +944,9 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ 0x00FF00, 0x00FF00,	0x00FF00,	0,	    0,		    0 },
 	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0xFFFF00,   0,		    0 },
 	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0,	    0,		    0 },
-	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0,	    0,		    0 },
+	{ 0xFF0000, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },
+	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0,	    0,		    0 },	// 15
+	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 },
 	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 },
     };
 
@@ -1006,6 +1012,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	if (whichone == 3) matrix->setFont(&Century_Schoolbook_L_Bold_20);
 	if (whichone == 6) matrix->setFont(&Century_Schoolbook_L_Bold_20);
 	if (whichone == 10) matrix->setFont(&Century_Schoolbook_L_Bold_20);
+	if (whichone == 14) matrix->setFont(&Century_Schoolbook_L_Bold_18);
     } else if (mheight >= 64)  {
 	//matrix->setFont(FreeMonoBold9pt7b);
 	matrix->setFont(&Century_Schoolbook_L_Bold_8);
@@ -2938,7 +2945,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 072 */ { "", NULL, -1, NULL },
 /* 073 */ { "", NULL, -1, NULL },
 /* 074 */ { "", NULL, -1, NULL },
-/* 075 */ { "", NULL, -1, NULL },
+/* 075 */ { "Trance Microphone", rotate_text, 14, NULL },
 /* 076 */ { "Music Lover", rotate_text, 13, NULL },
 /* 077 */ { "Trance Soul", rotate_text, 12, NULL },
 /* 078 */ { "Time to Play", rotate_text, 11, NULL },
@@ -2958,9 +2965,9 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 // manually is display_text with more arguments
 /* 090 */ { "Thank you",	thank_you, -1, NULL },		// DEMO_TEXT_THANKYOU
 /* 091 */ { "Web Text Input",	web_text_input, -1, NULL },	// DEMO_TEXT_INPUT
-/* 092 */ { "I'm fucking Famous", rotate_text, 14, NULL },
-/* 093 */ { "Fuck Me I'm Famous", rotate_text, 15, NULL },
-/* 094 */ { "", NULL, -1, NULL },
+/* 092 */ { "I'm fucking Famous", rotate_text, 15, NULL },
+/* 093 */ { "Fuck Me I'm Famous", rotate_text, 16, NULL },
+/* 094 */ { "Perhaps Drugs", rotate_text, 17, NULL },
 /* 095 */ { "", NULL, -1, NULL },
 /* 096 */ { "", NULL, -1, NULL },
 /* 097 */ { "", NULL, -1, NULL },
