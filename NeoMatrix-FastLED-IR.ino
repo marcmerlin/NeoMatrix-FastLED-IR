@@ -261,7 +261,7 @@ StripDemo STRIPDEMO = f_theaterChaseRainbow;
 // Is the current demo linked to a color (false for rainbow demos)
 bool colorDemo = true;
 int32_t demo_color = 0x00FF00; // Green
-int16_t strip_speed = 50;
+uint8_t strip_speed = 50;
 
 
 //----------------------------------------------------------------------------
@@ -2103,8 +2103,8 @@ uint8_t GifAnim(uint32_t idx) {
 /* 313 */   { ROOT  "DJ_Alex_MORPH.gif",	10, 6,  9, 10, 10,140,210  },
 /* 314 */   { ROOT  "DJ_Alpha9.gif",            10, 6,  9, 10, 10,140,210  },
 /* 315 */   { ROOT  "DJ_Alvin.gif",		10, 6,  9, 10, 10,140,210  },
-/* 316 */   { ROOT  "DJ_Aly_Fila_Fadi.gif",	10, 0 , 0, 10, 10,100,192  },
-/* 317 */   { ROOT  "DJ_AlynFila_lgrey.gif",	10, 6,  9, 10, 10,140,210  },
+/* 316 */   { ROOT  "DJ_AlynFila_Fadi.gif",	10, 0 , 0, 10, 10,140,210  },
+/* 317 */   { ROOT  "DJ_AlynFila_lgrey.gif",	10, 6,  9, 10, 10,100,192  },
 /* 318 */   { ROOT  "DJ_Aname.gif",             10, 6,  9, 10, 10,140,210  },
 /* 319 */   { ROOT  "DJ_AndrewRayel.gif",	10, 6,  9, 10, 10,140,210  },
 /* 320 */   { ROOT  "DJ_Astrix.gif",		10, 6,  9, 10, 10,140,210  },
@@ -2117,9 +2117,9 @@ uint8_t GifAnim(uint32_t idx) {
 /* 327 */   { ROOT  "DJ_FactorB.gif",		10, 6,  9, 10, 10,140,210  },
 /* 328 */   { ROOT  "DJ_FerryCorsten.gif",	10, 6,  9, 10, 10,140,210  },
 /* 329 */   { ROOT  "DJ_Ferry_Tayle.gif",       10, 6,  9, 10, 10,140,210  },
-/* 330 */   { ROOT  "DJ_GO_face.gif",		10, 6,  9, 10, 10,140,210  },
-/* 331 */   { ROOT  "DJ_GO_lgrey.gif",		10, 0 , 0, 10, 10,128,117 },
-/* 332 */   { ROOT  "DJ_GarethEmery.gif",	10, 6,  9, 10, 10,140,210  },
+/* 330 */   { ROOT  "DJ_Gareth_Emery.gif",	10, 6,  9, 10, 10,140,210  },
+/* 331 */   { ROOT  "DJ_Giuseppe_Logo.gif",	10, 0 , 0, 10, 10,128,117 },
+/* 332 */   { ROOT  "DJ_Giuseppe.gif",		10, 6,  9, 10, 10,140,210  },
 /* 333 */   { ROOT  "DJ_Haliene.gif",		10, 6,  9, 10, 10,140,210  },
 /* 334 */   { ROOT  "DJ_Ilan_Bluestone.gif",	10, 6,  9, 10, 10,140,210  },
 /* 335 */   { ROOT  "DJ_JOC.gif",		10, 6,  9, 10, 10,140,210  },
