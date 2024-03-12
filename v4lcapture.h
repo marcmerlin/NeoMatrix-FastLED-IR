@@ -5,9 +5,16 @@
 
 void yuv2rgb(uint8_t y, uint8_t u, uint8_t v, uint8_t *r, uint8_t *g, uint8_t *b) {
     int16_t R, G, B;
+// The difference between the 2 is subtle at best.
+#if 0
     R = y				    + 1.370705 * (v-128);
     G = y		- 0.337633 * (u-128)- 0.698001 * (v-128) ;
     B = y		+ 1.732446 * (u-128);
+#else
+    R = y	                    + 1.28033 * (v-128);
+    G = y	- 0.21482 * (u-128) - 0.38059 * (v-128);
+    B = y	+ 2.12798 * (u-128);
+#endif
 
     if (R > 255) R = 255;
     if (G > 255) G = 255;
