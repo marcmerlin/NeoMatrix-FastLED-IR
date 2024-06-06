@@ -2084,7 +2084,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 292 */   { ROOT  "DJ_Alex_MORPH.gif",	10, 6,  9, 10, 10,140,210 },
 /* 293 */   { ROOT  "DJ_Alpha9.gif",            10, 6,  9, 10, 10,140,210 },
 /* 294 */   { ROOT  "DJ_Alvin.gif",		10, 6,  9, 10, 10,140,210 },
-/* 295 */   { ROOT  "DJ_AlynFila_Fadi.gif",	10, 0, 0, 10, 10,140,210 } ,
+/* 295 */   { ROOT  "DJ_AlynFila_Fadi.gif",	10, 0,  0, 10, 10,140,210 } ,
 /* 296 */   { ROOT  "DJ_AlynFila_lgrey.gif",	10, 6,  9, 10, 10,100,192 },
 /* 297 */   { ROOT  "DJ_Aname.gif",             10, 6,  9, 10, 10,140,210 },
 /* 298 */   { ROOT  "DJ_AndrewRayel.gif",	10, 6,  9, 10, 10,140,210 },
