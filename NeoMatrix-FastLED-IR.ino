@@ -2944,9 +2944,9 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 069 */ { "", NULL, -1, NULL },
 /* 070 */ { "", NULL, -1, NULL },
 /* 071 */ { "", NULL, -1, NULL },
-/* 072 */ { "", NULL, -1, NULL },
-/* 073 */ { "", NULL, -1, NULL },
-/* 074 */ { "", NULL, -1, NULL },
+/* 072 */ { "Perhaps Drugs", rotate_text, 17, NULL },
+/* 073 */ { "Fuck Me I'm Famous", rotate_text, 16, NULL },
+/* 074 */ { "I'm fucking Famous", rotate_text, 15, NULL },
 /* 075 */ { "Trance Microphone", rotate_text, 14, NULL },
 /* 076 */ { "Music Lover", rotate_text, 13, NULL },
 /* 077 */ { "Trance Soul", rotate_text, 12, NULL },
@@ -2967,9 +2967,9 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 // manually is display_text with more arguments
 /* 090 */ { "Thank you",	thank_you, -1, NULL },		// DEMO_TEXT_THANKYOU
 /* 091 */ { "Web Text Input",	web_text_input, -1, NULL },	// DEMO_TEXT_INPUT
-/* 092 */ { "I'm fucking Famous", rotate_text, 15, NULL },
-/* 093 */ { "Fuck Me I'm Famous", rotate_text, 16, NULL },
-/* 094 */ { "Perhaps Drugs", rotate_text, 17, NULL },
+/* 092 */ { "", NULL, -1, NULL },
+/* 093 */ { "", NULL, -1, NULL },
+/* 094 */ { "", NULL, -1, NULL },
 /* 095 */ { "", NULL, -1, NULL },
 /* 096 */ { "", NULL, -1, NULL },
 /* 097 */ { "", NULL, -1, NULL },
