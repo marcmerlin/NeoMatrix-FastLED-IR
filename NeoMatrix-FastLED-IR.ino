@@ -2075,7 +2075,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 284 */   { ROOT  "DJ_05.gif",		10, 6,  9, 10, 10,140,210 },
 /* 285 */   { ROOT  "DJ_06.gif",		10, 6,  9, 10, 10,140,210 },
 /* 286 */   { ROOT  "DJ_07.gif",		10, 6,  9, 10, 10,140,210 },
-/* 287 */   { ROOT  "DJ_08.gif",		10, 6,  9, 10, 10,140,210 },
+/* 287 */   { ROOT  "DJ_JES.gif",		10, 6,  9, 10, 10,140,210 },
 
 /* 288 */   { ROOT  "DJ_7lions.gif",	        10, 6,  9, 10, 10,140,210 },
 /* 289 */   { ROOT  "DJ_Above_and_Beyond3.gif",	10, 6,  9, 10, 10,140,210 },
@@ -3303,7 +3303,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 404 */ { "DJ 05",                 GifAnim, 284, NULL },
 /* 405 */ { "DJ 06",                 GifAnim, 285, NULL },
 /* 406 */ { "DJ 07",                 GifAnim, 286, NULL },
-/* 407 */ { "DJ 08",                 GifAnim, 287, NULL },
+/* 407 */ { "DJ JES",                GifAnim, 287, NULL },
 
 /* 408 */ { "GIF 7lions",            GifAnim, 288, NULL },
 /* 409 */ { "GIF Above and Beyond",  GifAnim, 289, NULL },
