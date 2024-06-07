@@ -2121,7 +2121,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 329 */   { ROOT  "DJ_Mark_Sixma.gif",	10, 6,  9, 10, 10,140,210 },
 /* 330 */   { ROOT  "DJ_Markus_Schulz.gif",     10, 6,  9, 10, 10,140,210 },
 /* 331 */   { ROOT  "DJ_Marlo.gif",		10, 6,  9, 10, 10,140,210 },
-/* 332 */   { ROOT  "DJ_MIKE.gif",		10, 6,  9, 10, 10,140,210 },
+/* 332 */   { ROOT  "DJ_MIKE_Push.gif",		10, 6,  9, 10, 10,140,210 },
 /* 333 */   { ROOT  "DJ_Miyuki.gif",		10, 6,  9, 10, 10,140,210 },
 /* 334 */   { ROOT  "DJ_Monique.gif",           10, 6,  9, 10, 10,140,210 },
 /* 335 */   { ROOT  "DJ_Nifra.gif",             10, 6,  9, 10, 10,140,210 },
@@ -2147,7 +2147,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 355 */   { ROOT  "DJ_Vini_Vici.gif",		10, 0 , 0, 10, 10,128,140 },
 /* 356 */   { ROOT  "DJ_WhiteNo1se.gif",	10, 6,  9, 10, 10,140,210 },
 /* 357 */   { ROOT  "DJ_Will_Atkinson.gif",	10, 6,  9, 10, 10,140,210 },
-/* 358 */   { ROOT  "DJ_Yoji_Biomehanika.gif",	10, 6,  9, 10, 10,140,210 },
+/* 358 */   { ROOT  "DJ_Yoji_Biomehanika.gif",	10, 0,  0, 10, 10,128,178 },
 // Leave AvB as last, add below first one
 /* 359 */   { ROOT  "DJ_AvB_logo_lgrey.gif",	10, 0 , 0, 10, 10,100,192 },
         };
@@ -3349,7 +3349,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 449 */ { "GIF Mark Sixma",        GifAnim, 329, NULL },
 /* 450 */ { "GIF Markus Schulz",     GifAnim, 330, NULL }, // demo 370
 /* 451 */ { "GIF Marlo",             GifAnim, 331, NULL },
-/* 452 */ { "GIF MIKE",              GifAnim, 332, NULL },
+/* 452 */ { "GIF MIKE Push",         GifAnim, 332, NULL },
 /* 453 */ { "GIF Miyuki",            GifAnim, 333, NULL },
 /* 454 */ { "GIF Monique",           GifAnim, 334, NULL },
 /* 455 */ { "GIF Nifra",             GifAnim, 335, NULL },
