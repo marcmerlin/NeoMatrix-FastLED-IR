@@ -3053,8 +3053,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 161 */ { "GIF BM Logo lgrey",     GifAnim,  41, NULL },
 /* 162 */ { "GIF BM Man Scroll",     GifAnim,  42, NULL },
 /* 163 */ { "GIF BM TheMan Blue",    GifAnim,  43, NULL },
-/* 164 */ { "GIF BM TheMan_Green",   GifAnim,  44, NULL },
-/* 165 */ { "GIF BM TheMan Red",     GifAnim,  45, NULL },
+/* 164 */ { "GIF BM TheMan_Red",     GifAnim,  44, NULL },
+/* 165 */ { "GIF BM TheMan Green",   GifAnim,  45, NULL },
 /* 166 */ { "", NULL,  46, NULL },
 /* 167 */ { "", NULL,  47, NULL },
 /* 168 */ { "", NULL,  48, NULL },
@@ -4941,7 +4941,7 @@ void rebuild_main_page(bool show_summary) {
 	p->addSelectOption(StripDemoName[i], i);
     }
 
-    p->addSelect("Panel Demo", actionProc, MATRIX_STATE, HTML_DEMOCHOICE);
+    p->addSelect("Panel Demo", actionProc, MATRIX_DEMO, HTML_DEMOCHOICE);
     for (uint16_t i=0; i <= DEMO_LAST_IDX; i++) {
 	uint16_t pos = demo_mapping[i].reverse;
 	//Serial.print(i);
