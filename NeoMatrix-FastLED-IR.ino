@@ -90,6 +90,9 @@ using namespace Aiko;
 #define DEMO_ARRAY_SIZE 480
 #endif
 
+// this is for ESP32 to know it's being controlled by rPi (ignored on rPi)
+bool RpiRemote = false;
+
 // number of lines read in demo_map.txt
 uint16_t CFG_LAST_INDEX = 0;
 
@@ -906,6 +909,9 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	4,
     };
 
+    // TODO later
+    // https://choonwear.com/products/trance-because-1999-unisex-tee
+    // Trance  <- blue, Because <- white, i like to , party like , it's 1999
     const char *text[][6] = {
 	{ "EAT",    "SLEEP",	"RAVE",		"REPEAT",   "",		    "" },	// 0
 	{ "EAT",    "SLEEP",	"TRANCE",	"REPEAT",   "",		    "" },
@@ -2198,9 +2204,15 @@ uint8_t GifAnim(uint32_t idx) {
         scrolly = animgif[idx].scrolly;
 	path = animgif[idx].path;
         if (path == NULL) {
-	    Serial.print(">>>> ERROR: NO GIF for index ");
-	    Serial.print(idx);
-	    Serial.println(". Putting default one... <<<<");
+	    // On some rPi GIFS, the ESP32 mapping (which just does blind display
+	    // since the ESP32 is only used as a remote for rPi), will get an empty
+	    // gif. This is expected, not an error, and we don't need to warn the
+	    // console.
+	    if (! RpiRemote) {
+		Serial.print(">>>> ERROR: NO GIF for index ");
+		Serial.print(idx);
+		Serial.println(". Putting default one... <<<<");
+	    }
 	    path = animgif[1].path;
 	}
         matrix->clear();
@@ -3809,6 +3821,7 @@ void IR_Serial_Handler() {
 	    if (readchar == '|' && !startcmd) {
 		Serial.println("Got remote serial start, now accepting serial commands");
 		startcmd = true;
+		RpiRemote = true;
 	    }
 	    if (! startcmd) { Serial.println("Ignoring input without startcmd |St"); goto endserial; }
 
@@ -3901,8 +3914,6 @@ void IR_Serial_Handler() {
 	    else if (readchar == '=') { Serial.println("Serial => keep demo?"); MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
 	    else if (readchar == '-') { Serial.println("Serial => dim"   );	change_brightness(-1);}
 	    else if (readchar == '+') { Serial.println("Serial => bright");	change_brightness(+1);}
-	    else if (readchar == 'c') { changePanelConf(3, true); }
-	    else if (readchar == 'd') { changePanelConf(4, true); }
 	#ifdef ARDUINOONPC
 	    else if (readchar == 'N') { Serial.println("ESP => next");		send_serial("n");}
 	    else if (readchar == 'P') { Serial.println("ESP => previous");	send_serial("p");}
@@ -3920,7 +3931,10 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); }
 	#else
 	    else if (readchar == 'r') { Serial.println("Reboot"); resetFunc(); }
+	    // This seems the easiest way for the rPI
 	    else if (readchar == 'i') { Serial.println("Serial => showip");     showip();}
+	    else if (readchar == 'c') { changePanelConf(3, true); }
+	    else if (readchar == 'd') { changePanelConf(4, true); }
 	#endif
 	}
     }
