@@ -33,7 +33,14 @@ More generally you can find historical tags here https://github.com/marcmerlin/N
 
 Photos and videos
 -----------------
-https://www.youtube.com/watch?v=tU_wkrrv_4A
+Version 3 with 24x32 LED Matrix: https://www.youtube.com/watch?v=tU_wkrrv_4A
+
+Version 5 with 128x192 RGBPanels: https://www.youtube.com/watch?v=OIXOEYw8r6E
+
+Thanks to OSMhelpers, it generates its own html UI on the fly:
+![thumb1024_420_20220109_LED_Pants_and_Shirt_v5_Join1](https://github.com/user-attachments/assets/5fdd8ae9-a0c7-406e-8249-3464d8feb4c2)
+![thumb1024_421_20220109_LED_Pants_and_Shirt_v5_Join1](https://github.com/user-attachments/assets/fa890fc4-6b8c-4544-9cce-74fbd8ff1bbd)
+
 
 On NeoMatrix Backend (FastLED::NeoMatrix) 24x32, running on ESP8266
 ![dsc09944](https://user-images.githubusercontent.com/1369412/39416207-0b726474-4c00-11e8-9d04-fb0264b12017.jpg)
