@@ -2103,12 +2103,12 @@ uint8_t GifAnim(uint32_t idx) {
 /* 304 */   { ROOT  "DJ_Dave_Dresden.gif",	10, 6,  9, 10, 10,140,210 },
 /* 305 */   { ROOT  "DJ_Daxson.gif",            10, 6,  9, 10, 10,140,210 },
 /* 306 */   { ROOT  "DJ_Emma_Hewitt.gif",	10, 6,  9, 10, 10,140,210 },
-/* 307 */   { ROOT  "DJ_Eric_Prydz.gif",		10, 6,  9, 10, 10,140,210 },
+/* 307 */   { ROOT  "DJ_Eric_Prydz.gif",		10, 6,  9, 10, 10,140,210 }, // 347
 /* 308 */   { ROOT  "DJ_FactorB.gif",		10, 6,  9, 10, 10,140,210 },
 /* 309 */   { ROOT  "DJ_FerryCorsten.gif",	10, 6,  9, 10, 10,140,210 },
 /* 310 */   { ROOT  "DJ_Ferry_Tayle.gif",       10, 6,  9, 10, 10,140,210 },
 /* 311 */   { ROOT  "DJ_Gareth_Emery.gif",	10, 6,  9, 10, 10,140,210 },
-/* 312 */   { ROOT  "DJ_Genix.gif",		10, 0,  0, 10, 10,192,192 },
+/* 312 */   { ROOT  "DJ_Genix.gif",		10, 0,  0, 10, 10,148,210 },
 /* 313 */   { ROOT  "DJ_Giuseppe.gif",		10, 6,  9, 10, 10,140,210 },
 /* 314 */   { ROOT  "DJ_Giuseppe_Logo.gif",	10, 0,  0, 10, 10,128,117 } ,
 /* 315 */   { ROOT  "DJ_Haliene.gif",		10, 6,  9, 10, 10,140,210 },
@@ -2128,7 +2128,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 329 */   { ROOT  "DJ_Miyuki.gif",		10, 6,  9, 10, 10,140,210 },
 /* 330 */   { ROOT  "DJ_Monique.gif",           10, 6,  9, 10, 10,140,210 },
 /* 331 */   { ROOT  "DJ_Nifra.gif",             10, 6,  9, 10, 10,140,210 },
-/* 332 */   { ROOT  "DJ_Nilsix.gif",		10, 6,  9, 10, 10,128,192 },
+/* 332 */   { ROOT  "DJ_Nilsix.gif",		10, -4,  10,  7, 10,128,210 },  // 372 
 /* 333 */   { ROOT  "DJ_Orjan_Nilsen.gif",	10, 6,  9, 10, 10,140,210 },
 /* 334 */   { ROOT  "DJ_Orkidea.gif",		10, 6,  9, 10, 10,140,210 },
 /* 335 */   { ROOT  "DJ_Paul_Oakenfold.gif",	10, 6,  9, 10, 10,140,210 },
