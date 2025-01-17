@@ -1,0 +1,10 @@
+build with arduino-esp32_4MB repurposed not to use PSRAM but use old ESP32 compile suite in
+sauron:~$ l arduino/hardware/espressif/esp32
+lrwxrwxrwx 1 merlin merlin 35 Apr 30  2022 arduino/hardware/espressif/esp32 -> .hide/esp32.betterwifilowmem_201908/
+
+~/arduino/libraries/FastLED.git
+commit 08388047ac3e0ebcaafe71563ae2a55421d70c02 (HEAD -> master, origin/master, origin/HEAD)
+Merge: c38c2ce bbce974
+Author: Mark Kriegsman <1334634+kriegsman@users.noreply.github.com>
+Date:   Sun Apr 10 11:33:30 2022 -0400
+

@@ -2070,7 +2070,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 274 */   { ROOT  "DJ_05.gif",		10, 6,  9, 10, 10,140,210 },
 /* 275 */   { ROOT  "DJ_06.gif",		10, 6,  9, 10, 10,140,210 },
 /* 276 */   { ROOT  "DJ_07.gif",		10, 0,  0, 10, 10,192,192 },
-/* 277 */   { ROOT  "DJ_Maddix.gif",10, 6,  9, 10, 10,140,210 },
+/* 277 */   { ROOT  "DJ_Maddix.gif",10, 6,  9, 10, 10,140,210 }, // 317
 
 
 // dupe all the lines, cut out just the GIF text, sort, and square paste back
