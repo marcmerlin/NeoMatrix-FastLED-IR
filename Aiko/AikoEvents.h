@@ -6,7 +6,7 @@
 #include "Arduino.h"
 #include "AikoCallback.h"
 
-using namespace std;
+//using namespace std;
 
 namespace Aiko {
   
