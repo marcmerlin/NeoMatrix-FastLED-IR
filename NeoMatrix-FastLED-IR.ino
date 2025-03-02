@@ -5457,7 +5457,7 @@ void setup() {
     // this doesn't exist in the ESP8266 IR library, but by using pin D4
     // IR receive happens to make the system LED blink, so it's all good
     //irrecv.blink13(true);
-#elif !defined(ARDUINOONPC)
+#elif defined(IR_RECV_PIN)
     #ifdef ESP32
 	Serial.println("If things hang very soon, make sure you don't have PSRAM enabled on a non PSRAM board");
 	#ifndef ESP32RMTIR

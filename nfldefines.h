@@ -142,6 +142,11 @@ uint8_t led_brightness = 64;
     #error "unknown matrix height, no idea what demos to run"
 #endif
 
+// IR code is incompatible with ESP32 C6 and honeslty I don't need it anymore
+#ifdef ARDUINO_ESP32C6_DEV
+    #undef IR_RECV_PIN
+#endif
+
 // Disable fonts in many sizes
 // Sketch uses 283784 bytes (27%) of program storage space. Maximum is 1044464 bytes.
 // Global variables use 32880 bytes (40%) of dynamic memory, leaving 49040 bytes for local variables. Maximum is 81920 bytes.
