@@ -27,12 +27,14 @@
 //#endif
 //#endif
 
-// on Rpi, this is ignored and it uses a larger size
-#ifdef M32BY8X3
-#define gif_size 32
-#else
-#define gif_size 64
-#endif
+// This sets Arduino Stack Size - comment this line to use default 8K stack size
+//SET_LOOP_TASK_STACK_SIZE(16 * 1024);  // 16KB
+// Change default in ./cores/esp32/main.cpp (was just 1KB short after update to newer core)
+// With new ESP core, set Arduino and Events to run on core 1
+// these do not seem to work (defined too late)
+//#define ARDUINO_LOOP_STACK_SIZE 16384
+//#define CONFIG_ARDUINO_LOOP_STACK_SIZE 16384
+
 #include "nfldefines.h"
 #include "Table_Mark_Estes.h"
 #include "PacMan.h"
@@ -5389,6 +5391,14 @@ void write_config_index(OmXmlWriter w) {
 #endif
 
 void loop() {
+#ifdef ESP32
+    // 8K gives Loop() - Free Stack Space: 1952
+    // Debug exception reason: Stack canary watchpoint triggered (loopTask) 
+    // After changing stack size to 16KB, I hae now 7916KB free
+	EVERY_N_SECONDS(5) {
+      Serial.printf("Loop() - Free Stack Space: %d\n", uxTaskGetStackHighWaterMark(NULL));
+	}
+#endif
     // Run the Aiko event loop, all the magic is in there.
     Events.loop();
     EVERY_N_MILLISECONDS(40) {
@@ -5422,6 +5432,9 @@ void loop() {
 	    serialdev = NULL;
 	}
 	EVERY_N_SECONDS(5) {
+#ifdef ESP32
+      Serial.printf("Loop() - Free Stack Space: %d\n", uxTaskGetStackHighWaterMark(NULL));
+#endif
 	    EVERY_N_SECONDS(30) {
 		if (serialdev && (ttyfd < 0)) printf("Serial closed, (re-)opening\n");
 	    }
@@ -5766,6 +5779,20 @@ void setup() {
         showip();
     #endif
     #endif
+
+    Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+    Serial.println("          SETUP DONE...                   ");
+#ifdef ESP32
+    Serial.printf("Arduino Stack was set to %d bytes\n", getArduinoLoopTaskStackSize());
+    if (getArduinoLoopTaskStackSize() < 9000) Serial.println(">>>> NOT ENOUGH STACK, FIX cores/esp32/main.cpp <<<");
+    Serial.printf("Setup() - Free Stack Space: %d\n", uxTaskGetStackHighWaterMark(NULL));
+    if (uxTaskGetStackHighWaterMark(NULL) < 4000) {
+        Serial.println(">>>> NOT ENOUGH FREE STACK, FIX cores/esp32/main.cpp <<<");   
+        delay(5000);
+    }
+#endif
+
+    Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 }
 
 // vim:sts=4:sw=4
