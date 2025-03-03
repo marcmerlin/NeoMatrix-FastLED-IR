@@ -144,6 +144,8 @@ uint8_t led_brightness = 64;
     #ifdef ARDUINO_ESP32_DEV
 	#pragma message "will enable IR for ESP32"
     #else
+	// New chip is Waveshare ESP32_S3_Zero
+	// Built in 512KB of SRAM and 384KB ROM, onboard 4MB Flash memory and 2MB PSRAM
 	#undef IR_RECV_PIN
     #endif
 #endif

@@ -414,6 +414,52 @@ const uint16_t PROGMEM RGB_bmp[64] = {
 	0x000, 0x00F, 0x000, 0x000, 0x000, 0x000, 0x00F, 0x000,
 	0x000, 0x000, 0x00F, 0x00F, 0x00F, 0x00F, 0x000, 0x000, };
 
+
+void help() {
+    Serial.println();
+    Serial.println("'n' next");
+    Serial.println("'p' previous");
+    Serial.println("'b' Bestof");
+    Serial.println("'a' All Demos");
+    Serial.println("'z' Rotating Text");
+    Serial.println("'Z' Stable Text");
+    Serial.println("'t' text thankyou");
+    Serial.println("'=' keep demo?");
+    Serial.println("'-' dim");
+    Serial.println("'+' bright");
+    Serial.println("'i' showip");
+    Serial.println("'N' Send ESP => next");
+    Serial.println("'P' Send ESP => previous");
+    Serial.println("'F' Send ESP => togglefps");
+    Serial.println("'<' Send ESP => dim");
+    Serial.println("'>' Send ESP => bright");
+    Serial.println("'B' Send ESP => Bestof");
+    Serial.println("'A' Send ESP => All Demos");
+    Serial.println("'_' Send ESP => Keep Demo?");
+    Serial.println("'C' Send ESP => ChangePanel3");
+    Serial.println("'D' Send ESP => ChangePanel4");
+    Serial.println("'R' Send ESP => send next number/char");
+    Serial.println("'r' Send ESP => Reboot");
+    Serial.println("'~' exit");
+    Serial.println("'|' enable serial commands on ESP");
+    Serial.println("'f' !SHOW_LAST_FPS; }");
+    Serial.println("'c' changePanelConf 3");
+    Serial.println("'d' changePanelConf 4");
+    Serial.println("");
+    Serial.println("'|St' send_serial('|'); send_serial('d');");
+    Serial.println("'|D:' 'Got direct mapped demo %d'");
+    Serial.println("'|B:' 'Got brightness %d'");
+    Serial.println("'|I:' DISPLAYTEXT = String('ESP32:");
+    Serial.println("'|T:' 'Got string to display: ');");
+    Serial.println("'|RS' 'Got restart'; exit(0);");
+    Serial.println("'|RB' system('/root/rebootme'");
+    Serial.println("'|zz' 'Switching to rotating text'");
+    Serial.println("'|ZZ' 'Switching to stable text for pictures'");
+    Serial.println("'|yy' 'Switching to scrolling images'");
+    Serial.println("'|YY' 'Switching to stable images for pictures'");
+    Serial.println();
+}
+
 void(* resetFunc) (void) = 0; // jump to 0 to cause a sofware reboot
 
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
@@ -3903,7 +3949,8 @@ void IR_Serial_Handler() {
 		} 
 	    #endif
 	    
-	    if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
+	    if (readchar == 'h') { help();}
+	    else if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
 	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
 	    else if (readchar == 'b') { Serial.println("Serial => Bestof");	changeBestOf(true); }
 	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(false);}
