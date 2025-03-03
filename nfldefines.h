@@ -80,19 +80,6 @@ uint8_t led_brightness = 64;
 // matrix_brightness is defined on neomatrix_config.h
 
 
-#ifdef ESP32
-// Use https://github.com/lbernstone/IR32.git instead of IRRemote
-// 0x4008fd64: invoke_abort at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp32/panic.c line 155
-// 0x4008ff95: abort at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp32/panic.c line 170
-// 0x4008b6f7: xRingbufferReceive at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp_ringbuf/ringbuf.c line 845
-// 0x400f323c: IRRecv::read(char*&, bool) at /home/merlin/Arduino/libraries/IR32/src/IRRecv.cpp line 128
-// 0x400e7689: check_startup_IR_serial() at /home/merlin/arduino/emulation/ArduinoOnPc-FastLED-GFX-LEDMatrix/examples/NeoMatrix-FastLED-IR/NeoMatrix-FastLED-IR.ino line 3287
-// 0x400e805a: setup() at /home/merlin/arduino/emulation/ArduinoOnPc-FastLED-GFX-LEDMatrix/examples/NeoMatrix-FastLED-IR/NeoMatrix-FastLED-IR.ino line 4715
-// 0x400f7e6b: loopTask(void*) at /home/merlin/Arduino/hardware/espressif/esp32/cores/esp32/main.cpp line 14
-// 0x4008bb7d: vPortTaskWrapper at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/freertos/port.c line 143
-//#define ESP32RMTIR
-#endif
-
 // On ESP32, I have a 64x64 direct matrix (not tiled) with 2 options of drivers.
 #if mheight == 96 || mheight == 192
     uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
@@ -142,9 +129,23 @@ uint8_t led_brightness = 64;
     #error "unknown matrix height, no idea what demos to run"
 #endif
 
-// IR code is incompatible with ESP32 C6 and honeslty I don't need it anymore
-#ifdef ARDUINO_ESP32C6_DEV
-    #undef IR_RECV_PIN
+#ifdef ESP32
+// Use https://github.com/lbernstone/IR32.git instead of IRRemote
+// 0x4008fd64: invoke_abort at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp32/panic.c line 155
+// 0x4008ff95: abort at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp32/panic.c line 170
+// 0x4008b6f7: xRingbufferReceive at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/esp_ringbuf/ringbuf.c line 845
+// 0x400f323c: IRRecv::read(char*&, bool) at /home/merlin/Arduino/libraries/IR32/src/IRRecv.cpp line 128
+// 0x400e7689: check_startup_IR_serial() at /home/merlin/arduino/emulation/ArduinoOnPc-FastLED-GFX-LEDMatrix/examples/NeoMatrix-FastLED-IR/NeoMatrix-FastLED-IR.ino line 3287
+// 0x400e805a: setup() at /home/merlin/arduino/emulation/ArduinoOnPc-FastLED-GFX-LEDMatrix/examples/NeoMatrix-FastLED-IR/NeoMatrix-FastLED-IR.ino line 4715
+// 0x400f7e6b: loopTask(void*) at /home/merlin/Arduino/hardware/espressif/esp32/cores/esp32/main.cpp line 14
+// 0x4008bb7d: vPortTaskWrapper at /Users/ficeto/Desktop/ESP32/ESP32/esp-idf-public/components/freertos/port.c line 143
+//#define ESP32RMTIR
+
+    #ifdef ARDUINO_ESP32_DEV
+	#pragma message "will enable IR for ESP32"
+    #else
+	#undef IR_RECV_PIN
+    #endif
 #endif
 
 // Disable fonts in many sizes
