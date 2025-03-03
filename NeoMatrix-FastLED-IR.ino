@@ -5721,6 +5721,11 @@ void setup() {
     }
 
     Serial.println("Matrix Libraries Test done");
+    Serial.println();
+    Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvv");
+    Serial.println(">>> TYPE 'h' for HELP <<<");
+    Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^");
+    Serial.println();
     //font_test();
 
 #ifdef NEOPIXEL_PIN
