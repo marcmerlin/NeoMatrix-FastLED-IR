@@ -1750,30 +1750,30 @@ uint8_t panOrBounceBitmap (uint32_t choice) {
 // TODO, return of all functions should be upgraded to uint16_t
 // to allow gifanim to return a gif count bigger than 255
 uint8_t GifAnim(uint32_t idx) {
-    struct Animgif {
-	const char *path;
-	uint16_t looptime;
-	int8_t offx;
-	int8_t offy;
-	int8_t factx;
-	int8_t facty;
-	uint16_t scrollx;
-	uint16_t scrolly;
+        struct Animgif {
+        const char *path;
+        uint16_t looptime;
+        int8_t offx;
+        int8_t offy;
+        int8_t factx;
+        int8_t facty;
+        uint16_t scrollx;
+        uint16_t scrolly;
     };
 
     #ifdef ARDUINOONPC
-	#if mheight == 192
-	#define ROOT FS_PREFIX "/gifs128x192/"
-	#else
-	#define ROOT FS_PREFIX "/gifs64/"
-	#endif
+      #if mheight == 192
+          #define ROOT FS_PREFIX "/gifs128x192/"
+      #else
+          #define ROOT FS_PREFIX "/gifs64/"
+      #endif
     #else
-	#define ROOT "/gifs64/"
+      #define ROOT "/gifs64/"
     #endif
     #if mheight == 64
-	#define YMUL 10
+      #define YMUL 10
     #else
-	#define YMUL 15
+      #define YMUL 15
     #endif
 
     // force the last index to detect too many initializers
@@ -2233,35 +2233,35 @@ uint8_t GifAnim(uint32_t idx) {
         #ifdef ARDUINOONPC
             // if we are connected to a remote device, let it change patterns for us
             if (ttyfd >= 0 && esp32_connected) GIFLOOPSEC = 1000;
-	#else
+        #else
             GIFLOOPSEC *= 2;
         #endif
-	#ifdef ESP32
-	    if (idx > LASTESP32IDX) {
-		// when using ESP32 to control an rPi, we can get GIF indexes that do
-		// not exist on ESP32. If so, convert them to a locally viewable one.
-		idx = ((idx - LASTESP32IDX -1) % (LASTESP32 - FIRSTESP32)) + FIRSTESP32;
-	    }
-	#endif
+        #ifdef ESP32
+	          if (idx > LASTESP32IDX) {
+                // when using ESP32 to control an rPi, we can get GIF indexes that do
+                // not exist on ESP32. If so, convert them to a locally viewable one.
+                idx = ((idx - LASTESP32IDX -1) % (LASTESP32 - FIRSTESP32)) + FIRSTESP32;
+            }
+        #endif
         OFFSETX = animgif[idx].offx;
         OFFSETY = animgif[idx].offy;
         FACTX =   animgif[idx].factx;
         FACTY =   animgif[idx].facty;
         scrollx = animgif[idx].scrollx;
         scrolly = animgif[idx].scrolly;
-	path = animgif[idx].path;
+        path = animgif[idx].path;
         if (path == NULL) {
-	    // On some rPi GIFS, the ESP32 mapping (which just does blind display
-	    // since the ESP32 is only used as a remote for rPi), will get an empty
-	    // gif. This is expected, not an error, and we don't need to warn the
-	    // console.
-	    if (! RpiRemote) {
-		Serial.print(">>>> ERROR: NO GIF for index ");
-		Serial.print(idx);
-		Serial.println(". Putting default one... <<<<");
-	    }
-	    path = animgif[1].path;
-	}
+            // On some rPi GIFS, the ESP32 mapping (which just does blind display
+            // since the ESP32 is only used as a remote for rPi), will get an empty
+            // gif. This is expected, not an error, and we don't need to warn the
+            // console.
+            if (! RpiRemote) {
+                Serial.print(">>>> ERROR: NO GIF for index ");
+                Serial.print(idx);
+                Serial.println(". Putting default one... <<<<");
+            }
+            path = animgif[1].path;
+        }
         matrix->clear();
         // initialize x/y by sending the reset flag
         panOrBounce(&x, &y, scrollx, scrolly, true);
@@ -2270,19 +2270,19 @@ uint8_t GifAnim(uint32_t idx) {
     }
 
     if (SCROLL_IMAGE) {
-	if (scrollx || scrolly) {
-	    // Get back an x and y to use for offset display
-	    panOrBounce(&x, &y, scrollx, scrolly);
-	    OFFSETX = animgif[idx].offx + x;
-	    OFFSETY = animgif[idx].offy + y;
-	    matrix->clear();
-	    //Serial.print(x);
-	    //Serial.print(" ");
-	    //Serial.println(y);
-	}
+        if (scrollx || scrolly) {
+            // Get back an x and y to use for offset display
+            panOrBounce(&x, &y, scrollx, scrolly);
+            OFFSETX = animgif[idx].offx + x;
+            OFFSETY = animgif[idx].offy + y;
+            matrix->clear();
+            //Serial.print(x);
+            //Serial.print(" ");
+            //Serial.println(y);
+        }
     } else {
-	OFFSETX = 0;
-	OFFSETY = 0;
+        OFFSETX = 0;
+        OFFSETY = 0;
     }
     // sav_loop may or may not run show() depending on whether
     // it's time to decode the next frame. If it did not, wait here to
@@ -2295,8 +2295,8 @@ uint8_t GifAnim(uint32_t idx) {
     ShowMHfps();
 
     EVERY_N_SECONDS(1) {
-	Serial.print(GIFLOOPSEC); Serial.print(" ");
-	if (!GIFLOOPSEC--) { Serial.println(); return 0; };
+        Serial.print(GIFLOOPSEC); Serial.print(" ");
+        if (!GIFLOOPSEC--) { Serial.println(); return 0; };
     }
     return repeat;
 }
