@@ -27,13 +27,15 @@
 //#endif
 //#endif
 
-// This sets Arduino Stack Size - comment this line to use default 8K stack size
-//SET_LOOP_TASK_STACK_SIZE(16 * 1024);  // 16KB
 // Change default in ./cores/esp32/main.cpp (was just 1KB short after update to newer core)
 // With new ESP core, set Arduino and Events to run on core 1
 // these do not seem to work (defined too late)
 //#define ARDUINO_LOOP_STACK_SIZE 16384
 //#define CONFIG_ARDUINO_LOOP_STACK_SIZE 16384
+// This sets Arduino Stack Size - comment this line to use default 8K stack size
+//This should work, but causes the the other code not to compile. Why?
+//SET_LOOP_TASK_STACK_SIZE(1024 * 16);
+
 
 #include "nfldefines.h"
 #include "Table_Mark_Estes.h"
@@ -5538,7 +5540,12 @@ void setup() {
     Serial.println(STRIP_NUM_LEDS);
 
     #ifndef LINUX_RENDERER_SDL
-	FastLED.addLeds<WS2813,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS);
+        FastLED.addLeds<WS2813,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS);
+        #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
+            Serial.println("\nEnabling Dual Neopixel output on 13 and builtin 21\n");
+            // initialize 2 outputs for the same strip (external strip and built in neopixel)
+            FastLED.addLeds<WS2813,21>(leds, STRIP_NUM_LEDS);
+        #endif
     #else
         FastLED.addLeds<SDL, STRIP_NUM_LEDS, 1>(leds, STRIP_NUM_LEDS);
 	#pragma message "Enabling test neopixel strip on non RPI ARDUINOONPC"
@@ -5779,7 +5786,6 @@ void setup() {
         showip();
     #endif
     #endif
-
     Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
     Serial.println("          SETUP DONE...                   ");
 #ifdef ESP32

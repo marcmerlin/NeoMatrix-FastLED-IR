@@ -104,6 +104,9 @@ uint8_t led_brightness = 64;
 	    #define STRIP_NUM_LEDS LED_LENGTH
 	    CRGB leds[STRIP_NUM_LEDS];
 	    #define NEOPIXEL_PIN 13
+	    #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
+		// Check NeoMatrix-FastLED-IR.ino setup
+	    #endif
 	#endif
     #endif
 
