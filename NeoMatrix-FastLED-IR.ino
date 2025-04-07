@@ -369,7 +369,7 @@ uint8_t strip_speed = 50;
     void openttyUSB(const char ** devname) {
 	static bool firstconnection = true;
 	// static because the name is sent back to the caller
-	static const char *dev[] = { "/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2" };
+	static const char *dev[] = { "/dev/ttyUSB0", "/dev/ttyACM0", "/dev/ttyUSB1",  "/dev/ttyACM1", "/dev/ttyUSB2", "/dev/ttyACM2"};
 	int devidx = 0;
 
 	while (devidx<3 && (ttyfd = open((*devname = dev[devidx]), O_RDWR | O_NOCTTY | O_SYNC)) < 0 && ++devidx) {
