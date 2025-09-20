@@ -3,10 +3,17 @@ ARCH := $(shell uname -m)
 
 all: flash monitor
 
+# python3 /home/merlin/.arduino15/packages/esp32/tools/esptool_py/4.6/esptool.py --chip esp32s3 --port /dev/ttyACM0 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 0x0 /tmp/arduino_build_268639/NeoMatrix-FastLED-IR.ino.bootloader.bin 0x8000 /tmp/arduino_build_268639/NeoMatrix-FastLED-IR.ino.partitions.bin 0xe000 /home/merlin/.arduino15/packages/esp32/hardware/esp32/3.0.7/tools/partitions/boot_app0.bin 0x10000 /tmp/arduino_build_268639/NeoMatrix-FastLED-IR.ino.bin 
+# /esptool  --chip esp32s3 --port /dev/ttyACM0 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 0x0 *.ino.bootloader.bin 0x8000 *.ino.partitions.bin 0x10000 *.ino.bin
 flash: ready killscreen
-	# python3 /home/merlin/.arduino15/packages/esp32/tools/esptool_py/4.6/esptool.py --chip esp32s3 --port /dev/ttyACM0 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 0x0 /tmp/arduino_build_268639/NeoMatrix-FastLED-IR.ino.bootloader.bin 0x8000 /tmp/arduino_build_268639/NeoMatrix-FastLED-IR.ino.partitions.bin 0xe000 /home/merlin/.arduino15/packages/esp32/hardware/esp32/3.0.7/tools/partitions/boot_app0.bin 0x10000 /tmp/arduino_build_268639/NeoMatrix-FastLED-IR.ino.bin 
-	# /esptool  --chip esp32s3 --port /dev/ttyACM0 --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 0x0 *.ino.bootloader.bin 0x8000 *.ino.partitions.bin 0x10000 *.ino.bin
-	./esptool --chip esp32s3 --port $(PORT) --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 0x10000 $$(ls *.ino.bin)
+	./esptool --chip esp32s3 --port $(PORT) --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 0x0 $$(ls *.ino.bootloader.bin) 0x8000 $$(ls *.ino.partitions.bin) 0x10000 $$(ls *.ino.bin)
+
+	sleep 1 # time for port to come back
+	ls -l $(PORT)
+
+ffat: ready killscreen
+	./esptool --chip esp32s3 --port $(PORT) --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 2166784 $$(ls *.fatfs.bin)
+
 
 	sleep 1 # time for port to come back
 	ls -l $(PORT)
