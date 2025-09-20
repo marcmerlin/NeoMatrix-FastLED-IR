@@ -5697,14 +5697,6 @@ void setup() {
     change_brightness( 0 );
     matrix->setTextWrap(false);
 
-
-    Serial.println("Matrix Test");
-    // init first matrix demo
-    matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
-    // more bright
-    //matrix->fillScreen(matrix->Color(0xFF, 0xFF, 0xFF));
-    matrix_show();
-
 #ifdef NEOPIXEL_PIN
     leds[5] = CRGB::Black;
     leds[6] = CRGB::Red;
@@ -5715,6 +5707,13 @@ void setup() {
 
 // Disable debug grey screen to prevent reboot on weak batteries
 #if 0
+    Serial.println("Matrix Test");
+    // init first matrix demo
+    matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
+    // more bright
+    //matrix->fillScreen(matrix->Color(0xFF, 0xFF, 0xFF));
+    matrix_show();
+
     i = 100;
     Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
     while (i--) {
