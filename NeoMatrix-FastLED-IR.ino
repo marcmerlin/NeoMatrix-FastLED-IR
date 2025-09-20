@@ -5574,8 +5574,8 @@ void setup() {
     leds_show();
 #endif // NEOPIXEL_PIN
 
-    uint32_t i = 100;
     #ifdef WIFI
+    uint32_t i = 100;
 	// Bring wifi up early to allow renaming files if they cause a crash
 	show_free_mem("Before Wifi");
 	setup_wifi();
@@ -5583,12 +5583,12 @@ void setup() {
 
 	Serial.println("Pause to run wifi before config file parsing ('w' to stay here)");
 	while (i--) {
-	    if (check_startup_IR_serial() == 2) {
-		Serial.println("Will pause on debug screen");
-		i = 6000;
-	    }
-	    s.tick();
-	    delay((uint32_t) 10);
+    if (check_startup_IR_serial() == 2) {
+        Serial.println("Will pause to set wifi setup");
+        i = 6000;
+    }
+    s.tick();
+    delay((uint32_t) 10);
 	}
     #endif
 
@@ -5696,27 +5696,14 @@ void setup() {
     // Set brightness as appropriate for backend by sending a null change from the default
     change_brightness( 0 );
     matrix->setTextWrap(false);
-    Serial.println("Matrix Test");
 
+
+    Serial.println("Matrix Test");
     // init first matrix demo
     matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
     // more bright
     //matrix->fillScreen(matrix->Color(0xFF, 0xFF, 0xFF));
     matrix_show();
-    #ifdef NEOPIXEL_PIN
-    i = 100;
-    #else
-    i = 200;
-    #endif
-    Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
-    while (i--) {
-	if (check_startup_IR_serial()) {
-	    Serial.println("Will pause on debug screen");
-	    i = 60000;
-	}
-	delay((uint32_t) 10);
-    }
-    Serial.println("Done with debug grey screen, display stats");
 
 #ifdef NEOPIXEL_PIN
     leds[5] = CRGB::Black;
@@ -5726,18 +5713,33 @@ void setup() {
     leds_show();
 #endif // NEOPIXEL_PIN
 
+// Disable debug grey screen to prevent reboot on weak batteries
+#if 0
+    i = 100;
+    Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
+    while (i--) {
+      if (check_startup_IR_serial()) {
+          Serial.println("Will pause on debug screen");
+          i = 60000;
+      }
+	    delay((uint32_t) 10);
+    }
+    Serial.println("Done with debug grey screen, display stats");
+
     display_stats();
     #ifdef NEOPIXEL_PIN
     delay((uint32_t) 1000);
     #else
     delay((uint32_t) 2000);
     #endif
+#endif
+
     if (DEMO_CNT == 0) {
-	// Allow web server to run, create/save rename files to make sure demos exist
-	Serial.println("No demos, cannot proceed. Starting web server to fix if possible, reboot when fixed");
-	#ifdef WIFI
-	while (1) s.tick();
-	#endif
+      // Allow web server to run, create/save rename files to make sure demos exist
+      Serial.println("No demos, cannot proceed. Starting web server to fix if possible, reboot when fixed");
+      #ifdef WIFI
+      while (1) s.tick();
+      #endif
     }
 
     Serial.println("Matrix Libraries Test done");
