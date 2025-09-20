@@ -1,7 +1,6 @@
 build
 wifi_secrets.h
 NeoMatrix-FastLED-IR
-Makefile
 serialtest/test
 
 .vscode/.build
