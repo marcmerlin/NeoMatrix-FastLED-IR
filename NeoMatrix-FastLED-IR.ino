@@ -2910,6 +2910,50 @@ uint8_t web_text_input(uint32_t unused) {
 }
 
 
+// Matrix_Handler want us to complete 100 times (returning 0)
+uint8_t grey_test(uint32_t unused) {
+    static uint16_t state;
+
+    matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
+    matrix_show();
+
+    if (MATRIX_RESET_DEMO) {
+      MATRIX_RESET_DEMO = false;
+      state = 0;
+    }
+
+    // we will be called 100 time of returning 0 and for each of those
+    // times 2 run 100 times before returning 0, so that's 10k calls
+    // yes, this is long, its mean to be for pixel/panel debugging
+    if (state++ < 100) return 1;
+
+    // if we ran enough times, increase loop count
+    state = 0;
+    return 0;
+}
+
+
+// Matrix_Handler want us to complete 100 times (returning 0)
+uint8_t white_test(uint32_t unused) {
+    static uint16_t state;
+
+    matrix->fillScreen(matrix->Color(0xFF, 0xFF, 0xFF));
+    matrix_show();
+
+    if (MATRIX_RESET_DEMO) {
+      MATRIX_RESET_DEMO = false;
+      state = 0;
+    }
+
+    // we will be called 100 time of returning 0 and for each of those
+    // times 2 run 100 times before returning 0, so that's 10k calls
+    // yes, this is long, its mean to be for pixel/panel debugging
+    if (state++ < 100) return 1;
+
+    // if we ran enough times, increase loop count
+    state = 0;
+    return 0;
+}
 
 
 // ================================================================================
@@ -3034,8 +3078,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 093 */ { "", NULL, -1, NULL },
 /* 094 */ { "", NULL, -1, NULL },
 /* 095 */ { "", NULL, -1, NULL },
-/* 096 */ { "", NULL, -1, NULL },
-/* 097 */ { "", NULL, -1, NULL },
+/* 096 */ { "Grey Test", grey_test, -1, NULL },
+/* 097 */ { "White Test", white_test, -1, NULL },
 /* 098 */ { "Camera", call_v4lcapture, 0, NULL },
 /* 099 */ { "Camera Mirror", call_v4lcapture, 1, NULL },
 // Up to here, there is a 1-1 mapping from the ID
@@ -3570,7 +3614,9 @@ void Matrix_Handler() {
     }
 
     ret = demo_entry.func(demo_entry.arg);
+    // on first run, say how many times to run loop
     if (MATRIX_LOOP == -1) MATRIX_LOOP = ret;
+    // return 0 to end one loop of the demo
     if (ret) goto exit;
 
     MATRIX_RESET_DEMO = true;
@@ -3580,7 +3626,6 @@ void Matrix_Handler() {
     Serial.println(MATRIX_LOOP);
     if (--MATRIX_LOOP > 0) return;
     matrix_change(DEMO_NEXT);
-    return;
 
     exit:
     return;

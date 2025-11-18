@@ -34,7 +34,7 @@ restart: killscreen
 
 
 killscreen:
-	pkill -f -9 'scree[n] .*$(PORT)' || :
+	pkill -f -9 '[Ss][Cc][Rr][Ee][Ee][Nn] .*$(PORT)' || :
 
 ready:
 	#dpkg -l python3-serial | grep -q python3 || apt-get install python3-serial
