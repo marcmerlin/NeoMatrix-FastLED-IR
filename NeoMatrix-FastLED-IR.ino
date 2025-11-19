@@ -960,8 +960,40 @@ uint8_t rotate_text(uint32_t whichone=0) {
     };
 
     // TODO later
-    // https://choonwear.com/products/trance-because-1999-unisex-tee
+    // https://choonwear.com/search?q=trance&options%5Bprefix%5D=last
     // Trance  <- blue, Because <- white, i like to , party like , it's 1999
+    // 
+    // I love you but I've chosen trance
+    //
+    // Trance
+    // Because
+    // it gives
+    // me aural
+    // pleasure
+    //
+    // Trance
+    // Because
+    // I can't
+    // dance
+    //
+    // Techno
+    // idDead
+    // ViveLa
+    // Trance!
+    //
+    // Techno
+    // Because
+    // I don't have
+    // time for
+    // a Trance
+    // Breakdown
+    //
+    // Trance 
+    // Because 
+    // I'm not pretty
+    // enough to
+    // be in a
+    // boy band
     const char *text[][6] = {
 	{ "EAT",    "SLEEP",	"RAVE",		"REPEAT",   "",		    "" },	// 0
 	{ "EAT",    "SLEEP",	"TRANCE",	"REPEAT",   "",		    "" },
@@ -2110,17 +2142,17 @@ uint8_t GifAnim(uint32_t idx) {
 /* 264 */   { ROOT  "FIF5.gif"                , 10, 6,  9, 10, 10,140,210 },
 /* 265 */   { ROOT  "FIF6.gif"                , 10, 6,  9, 10, 10,140,210 },
 /* 266 */   { ROOT  "FIF7.gif"                , 10, 6,  9, 10, 10,140,210 },
-/* 267 */   { ROOT  "FIF8.gif"                , 10, 6,  9, 10, 10,140,210 },
+/* 267 */   { ROOT  "F_AmandaVanderHeyden.gif", 10, 6,  9, 10, 10,140,210 },
 /* 268 */   { ROOT  "F_Thorgodofbass.gif"     , 10, 6,  9, 10, 10,140,210 },
-/* 269 */   { ROOT  "F_AmandaVanderHeyden.gif", 10, 6,  9, 10, 10,140,210 },
-/* 270 */   { ROOT  "DJ_01.gif",		10, 6,  9, 10, 10,140,210 },
-/* 271 */   { ROOT  "DJ_02.gif",		10, 6,  9, 10, 10,140,210 },
-/* 272 */   { ROOT  "DJ_03.gif",		10, 6,  9, 10, 10,140,210 },
-/* 273 */   { ROOT  "DJ_04.gif",		10, 6,  9, 10, 10,140,210 },
-/* 274 */   { ROOT  "DJ_05.gif",		10, 6,  9, 10, 10,140,210 },
-/* 275 */   { ROOT  "DJ_06.gif",		10, 6,  9, 10, 10,140,210 },
-/* 276 */   { ROOT  "DJ_07.gif",		10, 0,  0, 10, 10,192,192 },
-/* 277 */   { ROOT  "DJ_Maddix.gif",10, 6,  9, 10, 10,140,210 }, // 317
+/* 269 */   { ROOT  "DJ_Billy_Gillies.gif"    , 10, 6,  9, 10, 10,140,210 },
+/* 270 */   { ROOT  "DJ_Chicane.gif"          ,	10, 6,  9, 10, 10,140,210 },
+/* 271 */   { ROOT  "DJ_David_Forbes.gif"     ,	10, 6,  9, 10, 10,140,210 },
+/* 272 */   { ROOT  "DJ_Lostly.gif"           ,	10, 6,  9, 10, 10,140,210 },
+/* 273 */   { ROOT  "DJ_Mauro_Picotto.gif"    ,	10, 6,  9, 10, 10,140,210 },
+/* 274 */   { ROOT  "DJ_Roman_Messer.gif"     ,	10, 6,  9, 10, 10,140,210 },
+/* 275 */   { ROOT  "DJ_Tiesto.gif"           ,	10, 6,  9, 10, 10,140,210 },
+/* 276 */   { ROOT  "DJ_Trancewax.gif"        ,	10, 0,  0, 10, 10,128,210 },
+/* 277 */   { ROOT  "DJ_Maddix.gif"           , 10, 6,  9, 10, 10,140,210 }, // 317
 
 
 // dupe all the lines, cut out just the GIF text, sort, and square paste back
@@ -3388,16 +3420,16 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 384 */ { "FIF 5",		             GifAnim, 264, NULL },
 /* 385 */ { "FIF 6",                 GifAnim, 265, NULL },
 /* 386 */ { "FIF 7",                 GifAnim, 266, NULL },
-/* 387 */ { "FIF 8",                 GifAnim, 267, NULL },
+/* 387 */ { "FIF AmandaVH",          GifAnim, 267, NULL },
 /* 388 */ { "FIF Thorgodofbass",     GifAnim, 268, NULL },
-/* 389 */ { "FIF AmandaVH",          GifAnim, 269, NULL },
-/* 390 */ { "DJ 01",                 GifAnim, 270, NULL },
-/* 391 */ { "DJ 02",                 GifAnim, 271, NULL },
-/* 392 */ { "DJ 03",                 GifAnim, 272, NULL },
-/* 393 */ { "DJ 04",                 GifAnim, 273, NULL },
-/* 394 */ { "DJ 05",                 GifAnim, 274, NULL },
-/* 395 */ { "DJ 06",                 GifAnim, 275, NULL },
-/* 396 */ { "DJ 07",                 GifAnim, 276, NULL },
+/* 389 */ { "Billy Gillies",         GifAnim, 269, NULL },
+/* 390 */ { "Chicane",               GifAnim, 270, NULL },
+/* 391 */ { "David Forbes",          GifAnim, 271, NULL },
+/* 392 */ { "Lostly",                GifAnim, 272, NULL },
+/* 393 */ { "Mauro Picotto",         GifAnim, 273, NULL },
+/* 394 */ { "Roman Messer",          GifAnim, 274, NULL },
+/* 395 */ { "Tiesto",                GifAnim, 275, NULL },
+/* 396 */ { "Trancewax",             GifAnim, 276, NULL },
 /* 397 */ { "GIF Maddix",            GifAnim, 277, NULL },
 
 // dupe all the lines, cut out just the GIF text, sort, and square paste back
@@ -5750,6 +5782,9 @@ void setup() {
     leds_show();
 #endif // NEOPIXEL_PIN
 
+    // Reset to black if an earlier init left colors that could drain a low
+    // wattage input (9 to 12V)
+    matrix->fillScreen(matrix->Color(0, 0, 0));
 // Disable debug grey screen to prevent reboot on weak batteries
 #if 0
     Serial.println("Matrix Test");
