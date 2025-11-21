@@ -1928,6 +1928,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 080 */   { ROOT  "218_circleslices.gif",	10, 0, 0, 10, YMUL, 0, 0 },
 /* 081 */   { ROOT  "heartTunnel.gif",		10, 0, 0, 10, YMUL, 0, 0 },
 // Update LASTESP32 if you add gifs
+// FIXME/TODO why all those empty slots? Dual 64/128 sized gifs?
 /* 082 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 083 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 084 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
@@ -1966,7 +1967,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 117 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 118 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },
 /* 119 */   { NULL, 0, 0 , 0, 0 , 0, 0 , 0  },   // If you extend this, please change LASTESP32IDX
-/* 120 */   { ROOT  "abstract_colorful.gif",		10, 0, 0, 10, 10, 0, 0 },
+/* 120 */   { ROOT  "abstract_colorful.gif",		10, 0, 0, 10, 10, 0, 0 }, // 160
 /* 121 */   { ROOT  "Aki5PC6_Running.gif",		10, 0, 0, 10, 10, 0, 0 },
 /* 122 */   { ROOT  "dancing_lady.gif",			10,-32,0, 15, 15, 0, 0 },
 /* 123 */   { ROOT  "GirlSexyAnimateddance.gif",	10,-32,0, 15, 15, 0, 0 },
@@ -1981,7 +1982,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 132 */   { ROOT  "z_2Htr_caniche.gif",		10, 0, 0,  7, 10, 0, 0 },
 /* 133 */   { ROOT  "z_2mue_yingyang.gif",		10, 0,-52,10, 15, 0, 0 },
 /* 134 */   { ROOT  "z_2QeW_color_stars_flash.gif",	10, 0, 0,  7, 10, 0, 0 },
-/* 135 */   { ROOT  "z_2unv_dancing_pink_back.gif",	10,10, 0, 10, 10, 0, 0 },
+/* 135 */   { ROOT  "z_2unv_dancing_pink_back.gif",	10,10, 0, 12, 10, 0, 0 },
 /* 136 */   { ROOT  "z_2vCo_triangle_merge.gif",	10, 0, 0,  7, 10, 0, 0 },
 /* 137 */   { ROOT  "z_2zFo_green_hal9000.gif",		10,-32,0, 10, 10, 0, 0 },
 /* 138 */   { ROOT  "z_37Ec_bird_dance.gif",		10, 0, 0,  8, 10, 0, 0 },
@@ -2096,9 +2097,9 @@ uint8_t GifAnim(uint32_t idx) {
 /* 247 */   { ROOT  "Dreamstate2.gif",			10, 0, 0, 10, 10, 0, 0  },
 /* 248 */   { ROOT  "Dreamstate3.gif",			10, 0, 0, 10, 10,128,140},
 /* 249 */   { ROOT  "Dreamstate4.gif",			10, 0, 0, 10, 10,128,154},
-/* 250 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
-/* 251 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
-/* 252 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
+/* 250 */   { ROOT  "100trance.gif",			  10, 0, 0, 10, 10,128, 59},
+/* 251 */   { ROOT  "TranceMicrophone.gif", 10, 0, 0, 10, 10,128,179},
+/* 252 */   { ROOT  "TR_Trance.gif",			  10, 0, 0, 10, 10,128,148},
 /* 253 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
 /* 254 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
 /* 255 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
@@ -3373,10 +3374,10 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 367 */ { "Dreamstate 2",		 GifAnim, 247, NULL },
 /* 368 */ { "Dreamstate 3",		 GifAnim, 248, NULL },
 /* 369 */ { "Dreamstate 4",		 GifAnim, 249, NULL }, 
-// mapped to 289, auto stored in DEMO_LAST_IDX
-/* 370 */ { "", NULL, 250, NULL },
-/* 371 */ { "", NULL, 251, NULL },
-/* 372 */ { "", NULL, 252, NULL },
+/* 370 */ { "100% Trance", GifAnim, 250, NULL },
+/* 371 */ { "Trance no Microphone", GifAnim, 251, NULL },
+/* 372 */ { "TR Trance", GifAnim, 252, NULL },
+// mapped to 293, auto stored in DEMO_LAST_IDX
 /* 373 */ { "", NULL, 253, NULL },
 /* 374 */ { "", NULL, 254, NULL },
 /* 375 */ { "", NULL, 255, NULL },
