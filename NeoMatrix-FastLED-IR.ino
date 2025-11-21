@@ -3057,7 +3057,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 071 */ { "Trance Or Me", rotate_text, 18, NULL },
 /* 072 */ { "Love you Trance", rotate_text, 17, NULL },
 /* 073 */ { "Techno Viva Trance", rotate_text, 16, NULL },
-/* 073 */ { "Techno Trance Breakdown", rotate_text, 15, NULL },
+/* 074 */ { "Techno Trance Breakdown", rotate_text, 15, NULL },
 /* 075 */ { "Trance Can't Dance", rotate_text, 14, NULL },
 /* 076 */ { "Trance Aural Pleasure", rotate_text, 13, NULL },
 /* 077 */ { "Trance 1999", rotate_text, 12, NULL },
