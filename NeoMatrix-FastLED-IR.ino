@@ -1058,7 +1058,7 @@ uint8_t rotate_text(uint32_t whichone=0) {
           uint8_t length = strlen(text[whichone][l]);
           maxstr = max(length, maxstr);
       }
-      printf("Got %d lines for %d. Max length: %d\n", numlines, whichone, maxstr);
+      //printf("Got %d lines for %d. Max length: %d\n", numlines, whichone, maxstr);
 
     }
 
@@ -1074,11 +1074,10 @@ uint8_t rotate_text(uint32_t whichone=0) {
       else if (maxstr > 5) matrix->setFont(&Century_Schoolbook_L_Bold_26);
     } else if (mheight >= 64)  {
       //matrix->setFont(FreeMonoBold9pt7b);
-      matrix->setFont(&Century_Schoolbook_L_Bold_8);
-      if (whichone == 0) matrix->setFont(&Century_Schoolbook_L_Bold_12);
-      if (whichone == 1) matrix->setFont(&Century_Schoolbook_L_Bold_12);
-      if (whichone == 5) matrix->setFont(&TomThumb);
-      if (whichone == 6) matrix->setFont(&TomThumb);
+      matrix->setFont(&Century_Schoolbook_L_Bold_14);
+      if (maxstr > 9) matrix->setFont(&TomThumb);
+      else if (maxstr > 7) matrix->setFont(&Century_Schoolbook_L_Bold_8);
+      else if (maxstr > 5) matrix->setFont(&Century_Schoolbook_L_Bold_10);
     } else {
       matrix->setFont(&TomThumb);
     }
