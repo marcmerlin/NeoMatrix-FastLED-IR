@@ -2100,7 +2100,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 250 */   { ROOT  "100trance.gif",			  10, 0, 0, 10, 10,128, 59},
 /* 251 */   { ROOT  "TranceMicrophone.gif", 10, 0, 0, 10, 10,128,179},
 /* 252 */   { ROOT  "TR_Trance.gif",			  10, 0, 0, 10, 10,128,148},
-/* 253 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
+/* 253 */   { ROOT  "Tiesto_Trance.gif",			  10, 6, 9, 10, 10,140,210 },
 /* 254 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
 /* 255 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
 /* 256 */   { NULL, 10, 0 , 0, 10, 10, 0, 0  },
@@ -3377,8 +3377,8 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 370 */ { "100% Trance", GifAnim, 250, NULL },
 /* 371 */ { "Trance no Microphone", GifAnim, 251, NULL },
 /* 372 */ { "TR Trance", GifAnim, 252, NULL },
+/* 373 */ { "Tiesto Trance", GifAnim, 253, NULL },
 // mapped to 293, auto stored in DEMO_LAST_IDX
-/* 373 */ { "", NULL, 253, NULL },
 /* 374 */ { "", NULL, 254, NULL },
 /* 375 */ { "", NULL, 255, NULL },
 /* 376 */ { "", NULL, 256, NULL },
