@@ -1,1 +1,5 @@
-build with main arduino for ESP32-S3-Zero
+build with main arduino for Waveshare ESP32-S3-Zero
+CDC on boot, firmware on boot, DFU on boot: disabled
+core debug info
+split no ota 2MB/2MB FAT
+
