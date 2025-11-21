@@ -938,62 +938,8 @@ uint8_t rotate_text(uint32_t whichone=0) {
     uint8_t displayall = 14;
     uint8_t resetspd = 24;
 
-    uint8_t numlines[] = { 
-	4, // 0
-	4,
-	4,
-	4,
-	5,
-	6, // 5
-	6,
-	3,
-	5,
-	5,
-	5, // 10
-	3,
-	4,
-	3,
-	5,
-	3,
-	4, // 15
-	4,
-    };
-
-    // TODO later
     // https://choonwear.com/search?q=trance&options%5Bprefix%5D=last
-    // Trance  <- blue, Because <- white, i like to , party like , it's 1999
     // 
-    // I love you but I've chosen trance
-    //
-    // Trance
-    // Because
-    // it gives
-    // me aural
-    // pleasure
-    //
-    // Trance
-    // Because
-    // I can't
-    // dance
-    //
-    // Techno
-    // idDead
-    // ViveLa
-    // Trance!
-    //
-    // Techno
-    // Because
-    // I don't have
-    // time for
-    // a Trance
-    // Breakdown
-    //
-    // Trance 
-    // Because 
-    // I'm not pretty
-    // enough to
-    // be in a
-    // boy band
     const char *text[][6] = {
 	{ "EAT",    "SLEEP",	"RAVE",		"REPEAT",   "",		    "" },	// 0
 	{ "EAT",    "SLEEP",	"TRANCE",	"REPEAT",   "",		    "" },
@@ -1001,41 +947,56 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ "Trance.","Because",	"I'm a Music",	"snob.",    "",		    "" },
 	{ "Trance", "Because",	"Rich said",	"EDM is",   "dead.",	    "" },
 	{ "Trance", "Because",	"I'm not",	"hipster",  "enough for",   "Techno." },// 5
+	{ "Trance", "Because",	"I'm not pretty",	"enough to",  "be in a", "boy band." },
 	{ "Trance", "Because",	"I don't love",	"my sister","enough for",   "Country." },
 	{ "Trance", "Because",	"Of Course",	"",	    "",		    "" },
 	{ "Trance", "Because",	"JESUS",	"has it",   "on vinyl",	    "" },
-	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },
-	{ "She said","TRANCE",	"or ME",	"Sometimes","I miss her",   "" },	// 10
-	{ "IT'S",   "TIME",	"TO PLAY",	"",	    "",		    "" },
-	{ "TRANCE", "IS MUSIC",	"WITH A",	"SOUL",	    "",		    "" },
-	{ "I'M A",  "MUSIC",	"LOVER",	"",	    "",		    "" },
+	{ "Trance", "Because",	"It's what",	"JESUS",    "would do!",    "" },	// 10
 	{ "Trance", "Because",	"You Don't",	"Need a",   "Microphone",   "" },
-	{ "I'm",    "Fucking",	"Famous",	"",	    "",		    "" },	// 15
+	{ "Trance", "Because",	"I like to",	"party like", "it's 1999",   "" },
+	{ "Trance", "Because",	"it gives",	"me aural", "pleasure",   "" },
+	{ "Trance", "Because",	"I can't",	"dance.", "",   "" },
+	{ "Techno", "Because",	"I don't have",	"time for", "a Trance",   "breakdown." }, // 15
+	{ "Techno", "isDead",	"ViveLa",	"Trance!", "", "" },
+	{ "I","Love",	"You",	"But I've","Chosen",  "Trance" },
+	{ "She said","TRANCE",	"or ME",	"Sometimes","I miss her",   "" },
+	{ "IT'S",   "TIME",	"TO PLAY",	"",	    "",		    "" },
+	{ "TRANCE", "IS MUSIC",	"WITH A",	"SOUL",	    "",		    "" }, // 20
+	{ "I'M A",  "MUSIC",	"LOVER",	"",	    "",		    "" },
+	{ "I'm",    "Fucking",	"Famous",	"",	    "",		    "" },	
 	{ "Fuck",   "Me",	"I'm",		"Famous",   "",		    "" },
-	{ "Say",    "Perhaps",	"To",		"Drugs",    "",		    "" },
+	{ "Say",    "Perhaps",	"To",		"Drugs",    "",		    "" }, //24
     };
 
     if (PANELCONFNUM == 2 || PANELCONFNUM == 3) text[0][2] = "BURN";
 
+    // https://www.w3schools.com/colors/colors_picker.asp
     uint32_t color[][6] = {
 	{ 0xFF0000, 0xB0B000,	0x00FF00,	0x00B0B0,   0,		    0 },	// 0
 	{ 0xFF0000, 0xB0B000,	0x00FF00,	0x00B0B0,   0,		    0 },
-	{ 0xFFA500, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0,		    0 },
+	{ 0xFF3300, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0,		    0 }, // awkward
 	{ 0xFFC0CB, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0,		    0 },
 	{ 0x00FF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },
-	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0xFFFFFF }, // 5
+	{ 0x00FF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0xFFFFFF }, // 5 hipster techno
+	{ 0xFF00FF, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0xFFFFFF }, // boy band
 	{ 0x0000FF, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0xFFFFFF },
 	{ 0xFF0000, 0xFFFFFF,	0xFFFFFF,	0,	    0,		    0 },
 	{ 0xFFFFFF, 0xFF0000,	0xFFFFFF,	0xFF0000,   0xFF0000,	    0 },
-	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },
-	{ 0xFFFFFF, 0xFFFF00,	0x00FF00,	0xFFFFFF,   0x00FFFF,	    0 },	// 10
-	{ 0x00FF00, 0x00FF00,	0x00FF00,	0,	    0,		    0 },
-	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0xFFFF00,   0,		    0 },
-	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0,	    0,		    0 },
-	{ 0xFF0000, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 },
-	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0,	    0,		    0 },	// 15
-	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 },
-	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 },
+	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 }, // 10 jesus
+	{ 0xFF0000, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 }, // microphone
+	{ 0x9900EE, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 }, // 1999
+	{ 0xFFFF00, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0 }, // aural
+	{ 0xCC00CC, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,          0,	    0 }, // dance
+	{ 0x669999, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,	    0xFFFFFF }, // 15 techno breakdown
+	{ 0xFFFFFF, 0xFFFFFF,	0xFFFFFF,	0xFFFFFF,          0,	    0 }, // techno isdead
+	{ 0xFFFFFF, 0x00FF00,	0xFFFFFF,	0xFFFFFF,   0xFFFFFF,     0xFFFFFF,},	// chosen trance
+	{ 0xFFFFFF, 0xFFFF00,	0x00FF00,	0xFFFFFF,   0x00FFFF,	    0 },	// miss her
+	{ 0x00FF00, 0x00FF00,	0x00FF00,	0,	    0,		    0 }, // play
+	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0xFFFF00,   0,		    0 }, // 20 soul
+	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0,	    0,		    0 }, // lover
+	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0,	    0,		    0 },	// I Famous
+	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 }, // FMIF
+	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 }, // 24 Perhaps
     };
 
     uint16_t y_offset_192[][6] = { 
@@ -1079,79 +1040,90 @@ uint8_t rotate_text(uint32_t whichone=0) {
     };
 
 
+    static uint8_t numlines = 0;
+    static uint8_t maxstr = 0;
 
     if (MATRIX_RESET_DEMO) {
-	MATRIX_RESET_DEMO = false;
-	matrix->clear();
-	state = 1;
-	spd = 1.0;
-	didclear = 0;
-	firstpass = 0;
+      MATRIX_RESET_DEMO = false;
+      matrix->clear();
+      state = 1;
+      spd = 1.0;
+      didclear = 0;
+      firstpass = 0;
+
+      maxstr = 0;
+      numlines = 0;
+      for (uint8_t l = 0; l < 6; l++) {
+          if (color[whichone][l]) numlines = l+1;
+          uint8_t length = strlen(text[whichone][l]);
+          maxstr = max(length, maxstr);
+      }
+      printf("Got %d lines for %d. Max length: %d\n", numlines, whichone, maxstr);
+
     }
 
     if (! ROTATE_TEXT) spd = displayall+1;
 
     matrix->setTextSize(1);
     if (mheight >= 192)  {
-	matrix->setFont(&Century_Schoolbook_L_Bold_22);
-	if (whichone == 0) matrix->setFont(&Century_Schoolbook_L_Bold_26);
-	if (whichone == 1) matrix->setFont(&Century_Schoolbook_L_Bold_26);
-	if (whichone == 2) matrix->setFont(&Century_Schoolbook_L_Bold_20);
-	if (whichone == 3) matrix->setFont(&Century_Schoolbook_L_Bold_20);
-	if (whichone == 6) matrix->setFont(&Century_Schoolbook_L_Bold_20);
-	if (whichone == 10) matrix->setFont(&Century_Schoolbook_L_Bold_20);
-	if (whichone == 14) matrix->setFont(&Century_Schoolbook_L_Bold_18);
+      matrix->setFont(&Century_Schoolbook_L_Bold_28);
+      if (maxstr > 12) matrix->setFont(&Century_Schoolbook_L_Bold_16);
+      else if (maxstr > 9) matrix->setFont(&Century_Schoolbook_L_Bold_18);
+      else if (maxstr > 8) matrix->setFont(&Century_Schoolbook_L_Bold_20);
+      else if (maxstr > 7) matrix->setFont(&Century_Schoolbook_L_Bold_22);
+      else if (maxstr > 5) matrix->setFont(&Century_Schoolbook_L_Bold_26);
     } else if (mheight >= 64)  {
-	//matrix->setFont(FreeMonoBold9pt7b);
-	matrix->setFont(&Century_Schoolbook_L_Bold_8);
-	if (whichone == 0) matrix->setFont(&Century_Schoolbook_L_Bold_12);
-	if (whichone == 1) matrix->setFont(&Century_Schoolbook_L_Bold_12);
-	if (whichone == 5) matrix->setFont(&TomThumb);
-	if (whichone == 6) matrix->setFont(&TomThumb);
+      //matrix->setFont(FreeMonoBold9pt7b);
+      matrix->setFont(&Century_Schoolbook_L_Bold_8);
+      if (whichone == 0) matrix->setFont(&Century_Schoolbook_L_Bold_12);
+      if (whichone == 1) matrix->setFont(&Century_Schoolbook_L_Bold_12);
+      if (whichone == 5) matrix->setFont(&TomThumb);
+      if (whichone == 6) matrix->setFont(&TomThumb);
     } else {
-	matrix->setFont(&TomThumb);
+      matrix->setFont(&TomThumb);
     }
 
     if (! didclear) {
-	matrix->clear();
-	didclear = 1;
+      matrix->clear();
+      didclear = 1;
     }
 
-    for (uint8_t l = 0; l < numlines[whichone]; l++) {
-	uint16_t line;
+    for (uint8_t l = 0; l < numlines; l++) {
+      uint16_t line;
 
-	if      (mheight >= 192) line = y_offset_192[numlines[whichone]][l];
-	else if (mheight >=  96) line =  y_offset_96[numlines[whichone]][l];
-	else if (mheight >=  64) line =  y_offset_64[numlines[whichone]][l];
-	else if (mheight >=  32) line =  y_offset_32[numlines[whichone]][l];
-	String textdisp = String(text[whichone][l]);
-	if (mheight <=  96) textdisp.toUpperCase();
+      if      (mheight >= 192) line = y_offset_192[numlines][l];
+      else if (mheight >=  96) line =  y_offset_96[numlines][l];
+      else if (mheight >=  64) line =  y_offset_64[numlines][l];
+      else if (mheight >=  32) line =  y_offset_32[numlines][l];
+      // printf("Got %d  %d out of %d\n", whichone, l, numlines);
+      String textdisp = String(text[whichone][l]);
+      if (mheight <=  96) textdisp.toUpperCase();
 
-	if (l != numlines[whichone]-1) {
-	    if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
-		matrix->setPassThruColor(color[whichone][l]);
-		matrix->setCursor(text_xcenter((char *)textdisp.c_str()), line);
-		matrix->print(textdisp);
-		// Don't show the last line on the first pass.
-		if (l>0) firstpass = 1;
-	    }
-	} else {
-	    if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-		matrix->setPassThruColor(color[whichone][l]);
-		matrix->setCursor(text_xcenter((char *)textdisp.c_str()), line);
-		matrix->print(textdisp);
-	    }
-	}
+      if (l != numlines-1) {
+        if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
+            matrix->setPassThruColor(color[whichone][l]);
+            matrix->setCursor(text_xcenter((char *)textdisp.c_str()), line);
+            matrix->print(textdisp);
+            // Don't show the last line on the first pass.
+            if (l>0) firstpass = 1;
+        }
+      } else {
+        if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
+            matrix->setPassThruColor(color[whichone][l]);
+            matrix->setCursor(text_xcenter((char *)textdisp.c_str()), line);
+            matrix->print(textdisp);
+        }
+      }
     }
 
     matrix->setPassThruColor();
-    if (state++ > (numlines[whichone]*(duration-overlap))/spd) {
-	state = 1;
-	spd += spdincr;
-	if (spd > resetspd) {
-	    MATRIX_RESET_DEMO = true;
-	    return 0;
-	}
+    if (state++ > (numlines*(duration-overlap))/spd) {
+      state = 1;
+      spd += spdincr;
+      if (spd > resetspd) {
+          MATRIX_RESET_DEMO = true;
+          return 0;
+      }
     }
 
     if (spd < displayall) fadeToBlackBy( matrixleds, NUMMATRIX, 20*map(spd, 1, 24, 1, 4));
@@ -3076,26 +3048,26 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 062 */ { "", NULL, -1, NULL },
 /* 063 */ { "", NULL, -1, NULL },
 /* 064 */ { "", NULL, -1, NULL },
-/* 065 */ { "", NULL, -1, NULL },
-/* 066 */ { "", NULL, -1, NULL },
-/* 067 */ { "", NULL, -1, NULL },
-/* 068 */ { "", NULL, -1, NULL },
-/* 069 */ { "", NULL, -1, NULL },
-/* 070 */ { "", NULL, -1, NULL },
-/* 071 */ { "", NULL, -1, NULL },
-/* 072 */ { "Perhaps Drugs", rotate_text, 17, NULL },
-/* 073 */ { "Fuck Me I'm Famous", rotate_text, 16, NULL },
-/* 074 */ { "I'm fucking Famous", rotate_text, 15, NULL },
-/* 075 */ { "Trance Microphone", rotate_text, 14, NULL },
-/* 076 */ { "Music Lover", rotate_text, 13, NULL },
-/* 077 */ { "Trance Soul", rotate_text, 12, NULL },
-/* 078 */ { "Time to Play", rotate_text, 11, NULL },
-/* 079 */ { "Trance Or Me", rotate_text, 10, NULL },
-/* 080 */ { "Trance Jesus Do", rotate_text, 9, NULL },
-/* 081 */ { "Trance Jesus Vinyl", rotate_text, 8, NULL },
-/* 082 */ { "Trance Because Of Course", rotate_text, 7, NULL },
-/* 083 */ { "Trance Country", rotate_text, 6, NULL },
-/* 084 */ { "Trance Techno", rotate_text, 5, NULL },
+/* 065 */ { "Perhaps Drugs", rotate_text, 24, NULL },
+/* 066 */ { "Fuck Me I'm Famous", rotate_text, 23, NULL },
+/* 067 */ { "I'm fucking Famous", rotate_text, 22, NULL },
+/* 068 */ { "Music Lover", rotate_text, 21, NULL },
+/* 069 */ { "Trance Soul", rotate_text, 20, NULL },
+/* 070 */ { "Time to Play", rotate_text, 19, NULL },
+/* 071 */ { "Trance Or Me", rotate_text, 18, NULL },
+/* 072 */ { "Love you Trance", rotate_text, 17, NULL },
+/* 073 */ { "Techno Viva Trance", rotate_text, 16, NULL },
+/* 073 */ { "Techno Trance Breakdown", rotate_text, 15, NULL },
+/* 075 */ { "Trance Can't Dance", rotate_text, 14, NULL },
+/* 076 */ { "Trance Aural Pleasure", rotate_text, 13, NULL },
+/* 077 */ { "Trance 1999", rotate_text, 12, NULL },
+/* 078 */ { "Trance Microphone", rotate_text, 11, NULL }, 
+/* 079 */ { "Trance Jesus Do", rotate_text, 10, NULL },
+/* 080 */ { "Trance Jesus Vinyl", rotate_text, 9, NULL },
+/* 081 */ { "Trance Because Of Course", rotate_text, 8, NULL },
+/* 082 */ { "Trance Country", rotate_text, 7, NULL },
+/* 083 */ { "Trance Boy Band", rotate_text, 6, NULL },
+/* 084 */ { "Trance Hipster Techno", rotate_text, 5, NULL },
 /* 085 */ { "Trance RichEDM", rotate_text, 4, NULL },
 /* 086 */ { "Trance Snob", rotate_text, 3, NULL },
 /* 087 */ { "Trance Awkward", rotate_text, 2, NULL },
