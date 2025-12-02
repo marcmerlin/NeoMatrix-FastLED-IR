@@ -43,7 +43,7 @@
     uint8_t PANELCONFNUM = 0;
     #pragma message "autoconf found height 32, panelconf 0"
 #elif defined(ESP32)
-    #ifdef M64BY64
+    #if defined(M64BY64) || defined(GFXDISPLAY_M64BY64_multi4)
 	#define mheight 64
 	uint8_t PANELCONFNUM = 1;
 	#pragma message "autoconf found height 64, panelconf 1"
@@ -54,7 +54,12 @@
 	#pragma message "autoconf found height 96, panelconf 3"
     #endif
 #elif defined(ARDUINOONPC)
-    #if GFXDISPLAY_M64BY96
+    #if defined(M64BY64) || defined(GFXDISPLAY_M64BY64_multi4)
+	#define mheight 64
+	uint8_t PANELCONFNUM = 1;
+	#pragma message "autoconf found height 64, panelconf 1"
+	// Force PANELCONFNUM to 2 for burning man
+    #elif GFXDISPLAY_M64BY96
 	#define mheight 96
 	uint8_t PANELCONFNUM = 3;
 	#pragma message "autoconf found height 96, panelconf 3"
@@ -113,7 +118,9 @@ uint8_t led_brightness = 64;
 #elif mheight == 64
     uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 6;
     // Make the burning man 64x64 brighter by default, we have a big power supply :)
-    #define IR_RECV_PIN 34
+    #ifndef ARDUINOONPC
+        #define IR_RECV_PIN 34
+    #endif
 
 #elif mheight == 32
     #define STRIP_NUM_LEDS LED_LENGTH
