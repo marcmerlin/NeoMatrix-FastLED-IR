@@ -3011,7 +3011,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 025 */ { "Pac Man", call_pacman, -1, NULL },		// currently only designed for 24x32
 /* 026 */ { "Plasma", plasma, -1, NULL },
 /* 027 */ { "Fire", call_fire, -1, NULL },
-/* 028 */ { "Safety Third", DoublescrollText, 1, NULL },    // adjusts
+/* 028 */ { "Safety Third", DoublescrollText, 2, NULL },    // adjusts
 /* 029 */ { "ScrollBigtext", scrollBigtext, -1, NULL },     // code of scrolling code
 /* 030 */ { "Aurora Attract", aurora,  0, NULL },
 /* 031 */ { "Aurora Bounce", aurora,  1, NULL },
