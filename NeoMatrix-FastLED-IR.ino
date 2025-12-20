@@ -16,6 +16,8 @@
 // other 32bit CPUs.
 
 // Compile WeMos D1 R2 & mini, ESP32-dev, or ArduinoOnPC for linux
+// Now using Waveshare ESP32-S3-Zero for smaller chip with built in neopixel
+// use 2MB/2MB CDG and JTAG, CDC on boot enabled.
 
 // Force 24x32 on ESP32 for bright daylight display
 // as a hack, we enable this for non PSRAM boards but
