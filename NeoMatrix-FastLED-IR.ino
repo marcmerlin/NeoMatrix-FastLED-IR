@@ -5457,7 +5457,12 @@ void loop() {
     EVERY_N_MILLISECONDS(40) {
 	gHue++;  // slowly cycle the "base color" through the rainbow
     }
+// FIXME, why this kludge on this one display? Aiko is supposed to not call to often
+#ifdef GFXDISPLAY_M64BY64_multi4
+    delay((uint32_t) 15);
+#else
     delay((uint32_t) 1);
+#endif
 
     // Do not put loop code after the code block below as it can return in the middle.
 
@@ -5485,9 +5490,6 @@ void loop() {
 	    serialdev = NULL;
 	}
 	EVERY_N_SECONDS(5) {
-#ifdef ESP32
-      Serial.printf("Loop() - Free Stack Space: %d\n", uxTaskGetStackHighWaterMark(NULL));
-#endif
 	    EVERY_N_SECONDS(30) {
 		if (serialdev && (ttyfd < 0)) printf("Serial closed, (re-)opening\n");
 	    }
