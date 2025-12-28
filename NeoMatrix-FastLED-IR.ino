@@ -107,19 +107,20 @@ bool ROTATE_TEXT = true;
 // By default DJ images get scrolled a bit to add movement
 bool SCROLL_IMAGE = true;
 
-// show all demos by default,
-bool SHOW_BEST_DEMOS = false;
+// show all demos by default, 1 and 2 are to kinds of bestof
+uint8_t SHOW_DEMO_SUBSET = 0;
 
 bool MATRIX_RESET_DEMO = true;
 
 // Different panel configurations: 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
-#define CONFIGURATIONS 5
+#define CONFIGURATIONS 6
 const char *panelconfnames[CONFIGURATIONS] = {
     "Neopixel Shirt 24x32 ESP8266",
     "Burning Man Neopixel Panel 64x64 ESP32",
     "SmartMatrix Shirt BM 64x96 ESP32",
     "SmartMatrix Shirt Dance 64x96 ESP32",
-    "RPI-RGB-Panels Shirt Dance 128x192 rPi" };
+    "RPI-RGB-Panels Shirt Dance 128x192 rPi",
+    "Shirt Dance 128x192 rPi BestOf Groups" };
 
 typedef struct demo_entry_ {
     const char *name;
@@ -142,7 +143,7 @@ typedef struct mapping_entry_ {
     // swapped to a different slot)
     // get filled with dmap which is the the one colum before last in demo_map.txt
     uint16_t mapping;
-    // 1: enabled, 2: bestof enabled only, 3: both
+    // 1: enabled, 2: bestof1, 4: bestof2. 3, 5, or 7 possible
     uint8_t enabled[CONFIGURATIONS];
     // allow reversing a demo to its original index (each demo points to its new
     // slot and that new slot as an index back with .reverse)
@@ -374,7 +375,7 @@ uint8_t strip_speed = 50;
 	static const char *dev[] = { "/dev/ttyUSB0", "/dev/ttyACM0", "/dev/ttyUSB1",  "/dev/ttyACM1", "/dev/ttyUSB2", "/dev/ttyACM2"};
 	int devidx = 0;
 
-	while (devidx<3 && (ttyfd = open((*devname = dev[devidx]), O_RDWR | O_NOCTTY | O_SYNC)) < 0 && ++devidx) {
+	while (devidx<6 && (ttyfd = open((*devname = dev[devidx]), O_RDWR | O_NOCTTY | O_SYNC)) < 0 && ++devidx) {
 	    struct stat stbuf;
 	    // warn for permission denied but not for no such file or directory
 	    if (!stat(*devname, &stbuf)) printf("Error opening %s: %s\n", *devname, strerror(errno));
@@ -387,9 +388,9 @@ uint8_t strip_speed = 50;
 	    // empty input buffer of possible garbage
 	    while (read(ttyfd, &s, 1)) {}
 	    esp32_connected = true;
-	    printf("Opened %s telling ESP32 to switch to PANELCONFNUM 4\n", *devname);
 	    // Assume we just connected to an ESP32, which starts in its PANELCONFNUM 3 (ESP32 mode)
 	    // and switch it to PANELCONFNUM 4 (rPI with longer menus).
+	    printf("Opened %s telling ESP32 to switch to PANELCONFNUM 4\n", *devname);
 	    delay(10);
 	    send_serial("|");
 	    delay(10);
@@ -423,34 +424,28 @@ const uint16_t PROGMEM RGB_bmp[64] = {
 
 void help() {
     Serial.println();
-    Serial.println("'n' next");
-    Serial.println("'p' previous");
-    Serial.println("'b' Bestof");
-    Serial.println("'a' All Demos");
+    Serial.println("esp32/linux");
+    Serial.println("'n/N' next");
+    Serial.println("'p/P' previous");
+    Serial.println("'b/B' Bestof1");
+    Serial.println("'y/Y' Bestof2");
+    Serial.println("'a/A' All Demos");
+    Serial.println("'c/C' changePanelConf 3");
+    Serial.println("'d/D' changePanelConf 4");
+    Serial.println("'e/E' changePanelConf 5 (special demos)");
+    Serial.println("'-/<' dim");
+    Serial.println("'+/>' bright");
+    Serial.println("'=/_' keep demo?");
     Serial.println("'z' Rotating Text");
     Serial.println("'Z' Stable Text");
     Serial.println("'t' text thankyou");
-    Serial.println("'=' keep demo?");
-    Serial.println("'-' dim");
-    Serial.println("'+' bright");
     Serial.println("'i' showip");
-    Serial.println("'N' Send ESP => next");
-    Serial.println("'P' Send ESP => previous");
     Serial.println("'F' Send ESP => togglefps");
-    Serial.println("'<' Send ESP => dim");
-    Serial.println("'>' Send ESP => bright");
-    Serial.println("'B' Send ESP => Bestof");
-    Serial.println("'A' Send ESP => All Demos");
-    Serial.println("'_' Send ESP => Keep Demo?");
-    Serial.println("'C' Send ESP => ChangePanel3");
-    Serial.println("'D' Send ESP => ChangePanel4");
     Serial.println("'R' Send ESP => send next number/char");
     Serial.println("'r' Send ESP => Reboot");
     Serial.println("'~' exit");
     Serial.println("'|' enable serial commands on ESP");
     Serial.println("'f' !SHOW_LAST_FPS; }");
-    Serial.println("'c' changePanelConf 3");
-    Serial.println("'d' changePanelConf 4");
     Serial.println("");
     Serial.println("'|St' send_serial('|'); send_serial('d');");
     Serial.println("'|D:' 'Got direct mapped demo %d'");
@@ -1809,8 +1804,8 @@ uint8_t GifAnim(uint32_t idx) {
 /* 018 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
 /* 019 */   { NULL, 0, 0, 0, 0, 0, 0, 0 },
 	#elif mheight <= 96
-/* 000 */   { ROOT  "215_fallingcube.gif",		15, 0, 0, 10, YMUL, 0, 0 },
-	    { ROOT  "257_colormesh_wave.gif",		20, 0, 0, 10, YMUL, 0, 0 },
+/* 000 */   { ROOT  "215_fallingcube.gif",		15, 0, 0, 10, YMUL, 0, 0 }, // 100
+	    { ROOT  "257_colormesh_wave.gif",		20, 0, 0, 10, YMUL, 0, 0 }, 
 	    { ROOT  "271_mj.gif",			15,-14,3, 15, YMUL, 0, 0 },
 	    { ROOT  "193_redplasma.gif",		10, 0, 0, 10, YMUL, 0, 0 },
 	    { ROOT  "208_pulpfictiondance.gif",		25, 0, 0, 10, YMUL, 0, 0 },
@@ -2968,7 +2963,7 @@ uint8_t white_test(uint32_t unused) {
 // animated gifs on 32h, or shared animated gifs on 64/96/192h, and 160+ for unshared
 // animated gifs in 64/96/192h)
 // however, at runtime the ESP32 can switch from its own resolution demos
-// PANELCONFNUM 0:24x32, 1:64x64 (BM), 2:64x96 (BM), 3:64x96 (Trance), 4:128x192
+// PANELCONFNUM 0:24x32, 1:64x64 (BM), 2:64x96 (BM), 3:64x96 (Trance), 4:128x192, 5: 128x192 alternate demos
 uint16_t demoidx(uint16_t idx) {
     if (idx<100) return idx;
 
@@ -3266,7 +3261,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 257 */ { "GIF green hal9000",	 GifAnim, 137, NULL },
 /* 258 */ { "GIF bird dance",		 GifAnim, 138, NULL },
 /* 259 */ { "GIF concentric lights",	 GifAnim, 139, NULL },
-/* 260 */ { "GIF spiral pentagon dance", GifAnim, 140, NULL },
+/* 260 */ { "GIF spiral pentagon dance", GifAnim, 140, NULL }, // 180
 /* 261 */ { "GIF double stargate",	 GifAnim, 141, NULL },
 /* 262 */ { "GIF RGB smirout",		 GifAnim, 142, NULL },
 /* 263 */ { "GIF fractal zoom",		 GifAnim, 143, NULL },
@@ -3286,7 +3281,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 277 */ { "GIF green zoomout lasers",	 GifAnim, 157, NULL },
 /* 278 */ { "GIF BW spiral out",	 GifAnim, 158, NULL },
 /* 279 */ { "GIF starship shooting",	 GifAnim, 159, NULL },
-/* 280 */ { "GIF blue smoke out",	 GifAnim, 160, NULL },
+/* 280 */ { "GIF blue smoke out",	 GifAnim, 160, NULL }, // mapped to 200
 /* 281 */ { "GIF red jacket dancer",	 GifAnim, 161, NULL },
 /* 282 */ { "GIF white grey smoke",	 GifAnim, 162, NULL },
 /* 283 */ { "GIF flowers spinout",	 GifAnim, 163, NULL },
@@ -3306,7 +3301,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 297 */ { "GIF flower petals",	 GifAnim, 177, NULL },
 /* 298 */ { "GIF eatme",		 GifAnim, 178, NULL },
 /* 299 */ { "GIF sparkling spiralin",	 GifAnim, 179, NULL },
-/* 300 */ { "GIF spingout RGB",		 GifAnim, 180, NULL },
+/* 300 */ { "GIF spingout RGB",		 GifAnim, 180, NULL }, // 220
 /* 301 */ { "GIF green cube mobius",	 GifAnim, 181, NULL },
 /* 302 */ { "GIF 3D green wheel ridge",	 GifAnim, 182, NULL },
 /* 303 */ { "GIF colorspiral zoomout",	 GifAnim, 183, NULL },
@@ -3326,7 +3321,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 317 */ { "GIF pink flaming circle",	 GifAnim, 197, NULL },
 /* 318 */ { "GIF center moving spiral",	 GifAnim, 198, NULL },
 /* 319 */ { "GIF hypnotoad",		 GifAnim, 199, NULL },
-/* 320 */ { "GIF pizza zoomin",		 GifAnim, 200, NULL },
+/* 320 */ { "GIF pizza zoomin",		 GifAnim, 200, NULL }, // mapped to 240
 /* 321 */ { "GIF RGB spiralin",		 GifAnim, 201, NULL },
 /* 322 */ { "GIF bluebee zoomin",	 GifAnim, 202, NULL },
 /* 323 */ { "GIF green neutron star",	 GifAnim, 203, NULL },
@@ -3346,7 +3341,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 337 */ { "GIF color marble",		 GifAnim, 217, NULL },
 /* 338 */ { "GIF passionfruit zoomout",	 GifAnim, 218, NULL },
 /* 339 */ { "GIF I am drugs",		 GifAnim, 219, NULL },
-/* 340 */ { "GIF smileys spinout",	 GifAnim, 220, NULL },
+/* 340 */ { "GIF smileys spinout",	 GifAnim, 220, NULL }, // mapped to 260
 /* 341 */ { "GIF flyin cavern",		 GifAnim, 221, NULL },
 /* 342 */ { "GIF mario mushroom dance",	 GifAnim, 222, NULL },
 /* 343 */ { "GIF baby pig fall",	 GifAnim, 223, NULL },
@@ -3366,7 +3361,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 357 */ { "GIF bluelady smoke",	 GifAnim, 237, NULL },
 /* 358 */ { "GIF sailor moon",		 GifAnim, 238, NULL },
 /* 359 */ { "GIF inca spiralin",	 GifAnim, 239, NULL },
-/* 360 */ { "GIF eye",			 GifAnim, 240, NULL },
+/* 360 */ { "GIF eye",			 GifAnim, 240, NULL }, // mapped to 280
 /* 361 */ { "GIF blue shark dance",	 GifAnim, 241, NULL },
 /* 362 */ { "GIF blue dancer",		 GifAnim, 242, NULL },
 /* 363 */ { "GIF snoopdog dance",	 GifAnim, 243, NULL },
@@ -3529,6 +3524,11 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 	    Serial.print(MATRIX_STATE);
 	    MATRIX_DEMO = MATRIX_STATE;
 	} else {
+#ifdef NEOPIXEL_PIN
+            // On ESP32, we cannot output a very long line or it will crash the buffer 
+            // of rPi reading it and not able to parse super long lines
+            uint8_t demos_tried = 0;
+#endif
 	    do {
 		// Otherwise prev/next go to the next demo
 		if (demo==DEMO_PREV) if (MATRIX_STATE-- == 0) MATRIX_STATE = DEMO_LAST_IDX;
@@ -3542,9 +3542,12 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 		MATRIX_STATE = (MATRIX_STATE % (DEMO_LAST_IDX+1));
 		Serial.print(MATRIX_STATE);
 		MATRIX_DEMO = demo_mapping[MATRIX_STATE].mapping;
-		if (SHOW_BEST_DEMOS) {
-		    Serial.print(" (bestof mode) ");
+		if (SHOW_DEMO_SUBSET == 1) {
+		    Serial.print(" (bestof1 mode) ");
 		    if (demo_mapping[MATRIX_STATE].enabled[PANELCONFNUM] & 2) break;
+		} else if (SHOW_DEMO_SUBSET == 2) {
+		    Serial.print(" (bestof2 mode) ");
+		    if (demo_mapping[MATRIX_STATE].enabled[PANELCONFNUM] & 4) break;
 		} else {
 		    Serial.print(" (full mode) ");
 		    if (demo_mapping[MATRIX_STATE].enabled[PANELCONFNUM] & 1) break;
@@ -3552,6 +3555,12 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 		// If we're here for a demo # that doesn't exist, looping will not change
 		// the demo number, so force a change.
 		if (demo != DEMO_PREV && demo != DEMO_NEXT) MATRIX_STATE++;
+#ifdef NEOPIXEL_PIN
+                if (demos_tried++ == 10) {
+                    demos_tried = 1;
+                    Serial.println("");
+                }
+#endif
 	    } while (1);
 	}
 	Serial.print(", mapped to matrix demo ");
@@ -3816,12 +3825,12 @@ uint8_t check_startup_IR_serial() {
     return 0;
 }
 
-void changeBestOf(bool bestof) {
-    SHOW_BEST_DEMOS = bestof;
+void changeBestOf(uint8_t bestof) {
+    SHOW_DEMO_SUBSET = bestof;
     rebuild_advanced_page();
 }
 
-void changePanelConf(uint8_t conf, bool ) {
+void changePanelConf(uint8_t conf ) {
     Serial.print("ChangePanel to conf ");
     Serial.println(panelconfnames[conf]);
     PANELCONFNUM = conf;
@@ -4004,11 +4013,13 @@ void IR_Serial_Handler() {
 		} 
 	    #endif
 	    
+            // TODO: do we really need different letters for ESP and arduinoonpc? 
 	    if (readchar == 'h') { help();}
 	    else if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
 	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
-	    else if (readchar == 'b') { Serial.println("Serial => Bestof");	changeBestOf(true); }
-	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(false);}
+	    else if (readchar == 'y') { Serial.println("Serial => Bestof2");	changeBestOf(2); }
+	    else if (readchar == 'b') { Serial.println("Serial => Bestof1");	changeBestOf(1); }
+	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(0);}
 	    else if (readchar == 'z') { Serial.println("Serial => Rotating Text"); ROTATE_TEXT = true; }
 	    else if (readchar == 'Z') { Serial.println("Serial => Stable Text");   ROTATE_TEXT = false;}
 	    else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU);}
@@ -4022,11 +4033,13 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("f"); SHOW_LAST_FPS = !SHOW_LAST_FPS;}
 	    else if (readchar == '<') { Serial.println("ESP => dim"   );        send_serial("-"); change_brightness(-1);}
 	    else if (readchar == '>') { Serial.println("ESP => bright");        send_serial("+"); change_brightness(+1);}
-	    else if (readchar == 'B') { Serial.println("ESP => Bestof");	send_serial("B"); changeBestOf(true); }
-	    else if (readchar == 'A') { Serial.println("ESP => All Demos");	send_serial("b"); changeBestOf(false);}
+	    else if (readchar == 'Y') { Serial.println("ESP => Bestof2");	send_serial("y"); changeBestOf(2); }
+	    else if (readchar == 'B') { Serial.println("ESP => Bestof1");	send_serial("b"); changeBestOf(1); }
+	    else if (readchar == 'A') { Serial.println("ESP => All Demos");	send_serial("a"); changeBestOf(0); }
 	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("=");}
-	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  send_serial("c");}
-	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  send_serial("d");}
+	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  changePanelConf(3); send_serial("c");}
+	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  changePanelConf(4); send_serial("d");}
+	    else if (readchar == 'E') { Serial.println("ESP => ChangePanel5");  changePanelConf(5); send_serial("e");}
 	    else if (readchar == 'R') { Serial.println("ESP => send next number/char");  remotesend = true;}
 	    // Don't use a character that can be easily received by ESP32
 	    else if (readchar == '~') { Serial.println("exit");			exit(0);}
@@ -4035,8 +4048,9 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'r') { Serial.println("Reboot"); resetFunc(); }
 	    // This seems the easiest way for the rPI
 	    else if (readchar == 'i') { Serial.println("Serial => showip");     showip();}
-	    else if (readchar == 'c') { changePanelConf(3, true); }
-	    else if (readchar == 'd') { changePanelConf(4, true); }
+	    else if (readchar == 'c') { changePanelConf(3); }
+	    else if (readchar == 'd') { changePanelConf(4); }
+	    else if (readchar == 'e') { changePanelConf(5); }
 	#endif
 	}
     }
@@ -4065,7 +4079,7 @@ void IR_Serial_Handler() {
 	switch (result) {
 	case IR_RGBZONE_BRIGHT:
 	case IR_RGBZONE_BRIGHT2:
-	    if (is_change(true)) { Serial.println("Got IR: Bright, Only show best demos"); changeBestOf(true); return; }
+	    if (is_change(true)) { Serial.println("Got IR: Bright, Only show best demos"); changeBestOf(1); return; }
 	    change_brightness(+1);
 	    Serial.println("Got IR: Bright");
 	    return;
@@ -4075,7 +4089,7 @@ void IR_Serial_Handler() {
 	    if (is_change(true)) {
 		Serial.println("Got IR: Dim, show all demos again and Hang on this demo");
 		MATRIX_LOOP = 9999;
-		changeBestOf(false);
+		changeBestOf(0);
 		return;
 	    }
 
@@ -4098,7 +4112,7 @@ void IR_Serial_Handler() {
 	    if (is_change()) { matrix_change(DEMO_PREV); return; }
 	    Serial.println("Got IR: Power, show all demos again and Hang on this demo");
 	    MATRIX_LOOP = 9999;
-	    changeBestOf(false);
+	    changeBestOf(0);
 	    return;
 
 	case IR_RGBZONE_RED:
@@ -4750,7 +4764,7 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	break;
 
     case HTML_BESTOF:
-	Serial.print("Bestof on/off: ");
+	Serial.print("Bestof 0-2: ");
 	Serial.println(value);
 	changeBestOf(value);
 	break;
@@ -4791,7 +4805,7 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	}
 	Serial.print(": ");
 	Serial.println(panelconfnames[value]);
-	changePanelConf(value, true);
+	changePanelConf(value);
 	break;
 
     case HTML_STRIPCHOICE:
@@ -4868,8 +4882,6 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	    matrix_change(DEMO_TEXT_INPUT, false, 10);
 	}
 
-	// Changes to config file lines, look like this:
-	// arg 0: 0001 = 1 3 3 3 3 106
 	if (strcmp(request.query[0], "mtext") == 0) {
 	    uint16_t ix = 0;
 	    // k counts arg + value, we only want the number of pairs
@@ -4895,7 +4907,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	}
 
 	// Changes to config file lines, look like this:
-	// arg 0: 0001 = 1 3 3 3 3 106
+	// arg 0: 0001 = 1 3 3 3 3 3 106
 	if (request.query[0][0] == '0') {
 	    uint16_t ix = 0;
 	    // k counts arg + value, we only want the number of pairs
@@ -4906,18 +4918,19 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 		// This is a perfect example of how you should never scan untrusted
 		// input, but honestly if specially crafted input causes a crash, I
 		// don't care :)
-		int d32, d64, d96bm, d96, d192;
+		int d32, d64, d96bm, d96, d192, d192b;
 		int index, dmap;
 		index = atoi(request.query[ix]);
-		if (6 == sscanf(request.query[++ix], "%d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &dmap)) {
+		if (7 == sscanf(request.query[++ix], "%d %d %d %d %d %d %d\n", &d32, &d64, &d96bm, &d96, &d192, &d192b, &dmap)) {
 		    // Serial.printf("0:%s, 1:%s\n", request.query[0], request.query[1]);
-		    w.putf("Got demo_list update for index %d: %d %d %d %d %d, mapped to %d<BR>\n", index, d32, d64, d96bm, d96, d192, dmap);
+		    w.putf("Got demo_list update for index %d: %d %d %d %d %d %d, mapped to %d<BR>\n", index, d32, d64, d96bm, d96, d192, &d192b, dmap);
 		    demo_mapping[index].mapping = dmap;
 		    demo_mapping[index].enabled[0] = d32;
 		    demo_mapping[index].enabled[1] = d64;
 		    demo_mapping[index].enabled[2] = d96bm;
 		    demo_mapping[index].enabled[3] = d96;
 		    demo_mapping[index].enabled[4] = d192;
+		    demo_mapping[index].enabled[5] = d192b;
 		    demo_mapping[dmap].reverse = index;
 		    
 		} else { 
@@ -5029,13 +5042,17 @@ void rebuild_main_page(bool show_summary) {
 	});
     }
     p->addSelect("Demo Mode", actionProc, PANELCONFNUM, HTML_DEMOLIST_CHOICE);
-    for (uint16_t i=0; i <= 4; i++) {
+    for (uint16_t i=0; i <= 5; i++) {
 	p->addSelectOption(panelconfnames[i], i);
     }
 
     p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE_TEXT);
     p->addSlider(0, 1, "Image Scrolling ",   actionProc, SCROLL_IMAGE, HTML_SCROLL_IMAGE);
-    p->addSlider(0, 1, "Enable BestOf Only?", actionProc, SHOW_BEST_DEMOS, HTML_BESTOF);
+    if (PANELCONFNUM == 5) {
+        p->addSlider(0, 2, "Dance/Drg/Tshirt", actionProc, SHOW_DEMO_SUBSET, HTML_BESTOF);
+    } else {
+        p->addSlider(0, 2, "Enable BestOf 1 or 2", actionProc, SHOW_DEMO_SUBSET, HTML_BESTOF);
+    }
     p->addSlider(0, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
     p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
@@ -5087,7 +5104,7 @@ void rebuild_main_page(bool show_summary) {
 void rebuild_advanced_page() {
     p->beginPage("Advanced");
 
-    if (PANELCONFNUM == 4) {
+    if (PANELCONFNUM > 3) {
 	p->addButton("Show RPI IP", actionProc, HTML_SHOWIP);
 	p->addButton("Restart RPI", actionProc, HTML_RESTARTPI);
 	p->addButton("Reboot RPI", actionProc,  HTML_REBOOTPI);
@@ -5134,7 +5151,7 @@ void register_config_page() {
     {
 	//bool readingfile = true;
 	char lineidx[5];
-	char mapstr[14]; // "1 1 1 1 1 053" + NULL
+	char mapstr[16]; // "1 1 1 1 1 0 053" + NULL
 	uint8_t display_cnt = 0;
 
 	w.putf("<FORM METHOD=GET ACTION=/form>\n");
@@ -5149,12 +5166,13 @@ void register_config_page() {
 	for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) {
 	    uint16_t targetidx = demo_mapping[index].mapping;
 	    snprintf(lineidx, 5, "%04d", index);
-	    snprintf(mapstr, 14, "%d %d %d %d %d %03d", 
+	    snprintf(mapstr, 16, "%d %d %d %d %d %d %03d", 
 		demo_mapping[index].enabled[0],
 		demo_mapping[index].enabled[1],
 		demo_mapping[index].enabled[2],
 		demo_mapping[index].enabled[3],
 		demo_mapping[index].enabled[4],
+		demo_mapping[index].enabled[5],
 		demo_mapping[index].mapping );
 	    w.putf("%s: <INPUT NAME=%s SIZE=10 VALUE=\"%s\"> ", 
 		   lineidx, lineidx, mapstr);
@@ -5269,10 +5287,14 @@ void setup_wifi() {
 void read_config_index() {
     uint16_t index = 0;
     // Demo enabled for 24x32, 64x64 (BM), 64x96 (BM), 64x96 (Trance), 128x192
-    // 1: enables, 3 enables demo and adds to BestOf selection
-    int d32, d64, d96bm, d96, d192;
+    // 1: enables, 3 enables demo and adds to BestOf1 selection, 5 enable + BestOf2
+    int d32, d64, d96bm, d96, d192, d192b;
     int dmap;
     char pathname[] = FS_PREFIX "/demo_map.txt";
+    // have we read the firstline yet?
+    bool secondline = false;
+    // does the config file support the new 6 demo configs (instead of 5)?
+    bool newformat = true;
 
     CFG_LAST_INDEX = 0;
 
@@ -5291,7 +5313,10 @@ void read_config_index() {
     char line[160];
 
     while ( fgets(line, 160, file) != NULL) {
-	scanret = sscanf(line, "%d %d %d %d %d %d", &d32, &d64, &d96bm, &d96, &d192, &dmap);
+	scanret = sscanf(line, "%d %d %d %d %d %d %d", &d32, &d64, &d96bm, &d96, &d192, &d192b, &dmap);
+        // Serial.print(dmap);
+        // Serial.print(" -> ");
+        // Serial.println(line);
     #else
     File file;
 
@@ -5302,13 +5327,14 @@ void read_config_index() {
     #endif
 					    ) ) Serial.println("Error opening demo_map.txt");
     while (file.available()) {
-	// 1 0 0 0 0 012
 	String line = file.readStringUntil('\n');
-	// input looks like this
+	// input looked like this
 	// 1 3 3 3 3 106 001 the last column is line number, used for resorting the file
-	scanret = sscanf(line.c_str(), "%d %d %d %d %d %d", &d32, &d64, &d96bm, &d96, &d192, &dmap);
+        // new format with d192b (2nd bestof)
+	// 1 3 3 3 3 0 106 001 the last column is line number, used for resorting the file
+	scanret = sscanf(line.c_str(), "%d %d %d %d %d %d %d", &d32, &d64, &d96bm, &d96, &d192, &d192b, &dmap);
     #endif // ARDUINOONPC
-	if (line[0] == '#' || scanret != 6) {
+	if (line[0] == '#' || scanret != 7) {
 	    Serial.print("Skipping ");
 	    Serial.print(line);
 	    #ifndef ARDUINOONPC
@@ -5316,6 +5342,18 @@ void read_config_index() {
 	    #endif
 	    continue;
 	}
+        if (!secondline && dmap != 0) {
+            secondline = true;
+            // old format is 0 0 0 0 1 291 001. If we read 0001 it means we're missing the d192b column
+            if (dmap == 1) {
+                newformat = false;
+                Serial.println(">>> Warning: demo_map.txt is old format that is missing d192b");
+            }
+        }
+        if (! newformat) {
+            dmap = d192b;
+            d192b = 0;
+        }
 	// We use dmap, the original mapping defined in the config file
 	// it is only mapped to a real demo in demo_list[] at runtime
 	demo_mapping[index].mapping = dmap;
@@ -5324,6 +5362,7 @@ void read_config_index() {
 	demo_mapping[index].enabled[2] = d96bm;
 	demo_mapping[index].enabled[3] = d96;
 	demo_mapping[index].enabled[4] = d192;
+	demo_mapping[index].enabled[5] = d192b;
 	if (demo_list[demoidx(dmap)].name == NULL && (d32+d64+d96bm+d96+d192)) {
 	    Serial.print("Error ");
 	    Serial.print(index++);
@@ -5337,10 +5376,10 @@ void read_config_index() {
     //#define DEBUG_CFG_READ
     #ifdef DEBUG_CFG_READ
 	#ifdef ESP32
-	    Serial.printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,
+	    Serial.printf("%3d: %d, %d, %d, %d, %d , %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192, d192b,
 			  dmap, demoidx(dmap), demo_mapping[index].enabled[PANELCONFNUM]);
 	#elif ARDUINOONPC
-	           printf("%3d: %d, %d, %d, %d, %d -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192,
+	           printf("%3d: %d, %d, %d, %d, %d, %d  -> %3d/%3d (ena:%d) => ", index, d32,  d64,  d96bm,  d96,  d192, d192b,
 			  dmap, demoidx(dmap), demo_mapping[index].enabled[PANELCONFNUM]);
 	#else
 	    Serial.print(index);
@@ -5413,25 +5452,27 @@ void write_config_index(OmXmlWriter w) {
     // See https://github.com/espressif/arduino-esp32/blob/master/libraries/FFat/examples/FFat_Test/FFat_Test.ino
     // file is a Stream, https://www.arduino.cc/reference/en/language/functions/communication/stream/
     File file;
-    char mapstr[19]; // "1 1 1 1 1 053 001\n" + NULL
+    char mapstr[21]; // "1 1 1 1 1 1 053 001\n" + NULL
 
     if (! (file = FSO.open(pathname, FILE_WRITE)) ) {
 	Serial.println("Error creating demo_map.txt");
 	w.putf("Error creating demo_map.txt, go to FS tab and restore the previous file<BR>");
     }
 
-    file.print("#       demo #\n");
-    file.print("#             position in sorted file\n");
-    file.print("# :5,$!sort -k7 (or -k6 to edit and then -k7)\n");
-    file.print("# The last slot is not read by the code, it's only there for sorting the file\n");
+    file.print("# last number is ignored by code but used for sorting\n");
+    file.print("# :6,$!sort -k8 (or -k7 to edit and then -k8)\n");
+    file.print("# col6: dance / drg / tshirt           \n");
+    file.print("#           demo #                     \n");
+    file.print("#               position in sorted file\n");
 
     for (uint16_t index = 0; index <= CFG_LAST_INDEX; index++) { 
-	snprintf(mapstr, 19, "%d %d %d %d %d %03d %03d\n", 
+	snprintf(mapstr, 21, "%d %d %d %d %d %d %03d %03d\n", 
 	    demo_mapping[index].enabled[0],
 	    demo_mapping[index].enabled[1],
 	    demo_mapping[index].enabled[2],
 	    demo_mapping[index].enabled[3],
 	    demo_mapping[index].enabled[4],
+	    demo_mapping[index].enabled[5],
 	    demo_mapping[index].mapping, index );
 	if (! file.print(mapstr)) {
 	    Serial.printf("Couldn't write line %03d: %s<BR>\n", index, mapstr);

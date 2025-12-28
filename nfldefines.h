@@ -7,18 +7,18 @@
 #ifdef ESP32
     // the demo array is too long for smartmatrix to work reliably on
     // ESP32 with PSRAM, and we don't use that output, so turn it off.
+    #pragma message "Framebuffer only mode, Disabling SmartMatrix output"
     #define FRAMEBUFFER
+    // Now we really use ESP32 as wifi bridge no matter what
+    #define WIFI
     #ifdef BOARD_HAS_PSRAM
-        // There isn't enough RAM to do Wifi with all the demos I have
         #pragma message "PSRAM and WIFI enabled"
-	#pragma message "Disabling SmartMatrix output"
-        #define WIFI
     #else
 	#if 0
 	    #pragma message "PSRAM disabled, so WIFI disabled too"
 	#else
-	    #pragma message "WIFI without PSRAM, disabling SmartMatrix output"
-	    #define WIFI
+	    // There isn't enough RAM to do Wifi with all the demos I have
+	    #pragma message "WIFI without PSRAM, disabled SmartMatrix output"
 	#endif
     #endif
 #endif
