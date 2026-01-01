@@ -98,9 +98,6 @@ uint8_t led_brightness = 64;
     // after SmartMatrix::GFX zero copy change.
     // Heap/32-bit Memory Available: 132476 bytes total,  85748 bytes largest free block
     // 8-bit/DMA Memory Available  :  46728 bytes total,  40976 bytes largest free block
-    #ifndef ARDUINOONPC
-        #define IR_RECV_PIN 34
-    #endif
 
     // No LED strip on rPi, but good to run the code on linux to exercise compiler warnings (and ASAN)
     #ifndef RPI
@@ -118,9 +115,6 @@ uint8_t led_brightness = 64;
 #elif mheight == 64
     uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 6;
     // Make the burning man 64x64 brighter by default, we have a big power supply :)
-    #ifndef ARDUINOONPC
-        #define IR_RECV_PIN 34
-    #endif
 
 #elif mheight == 32
     #define STRIP_NUM_LEDS LED_LENGTH
@@ -155,13 +149,14 @@ uint8_t led_brightness = 64;
 	// this does not work with new ESP32 core
 	#ifndef ARDUINO_RUNNING_CORE
 	    #pragma message "will enable IR for ESP32"
-	#else
-	    #undef IR_RECV_PIN
+	    #define IR_RECV_PIN 34
 	#endif
     #else
 	// New chip is Waveshare ESP32_S3_Zero
 	// Built in 512KB of SRAM and 384KB ROM, onboard 4MB Flash memory and 2MB PSRAM
-	#undef IR_RECV_PIN
+	// We don't use IR anymore, and the current RMT global space code is not even
+	// safe anymore.
+	//#undef IR_RECV_PIN
     #endif
 #endif
 

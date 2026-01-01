@@ -17,7 +17,7 @@
 
 // Compile WeMos D1 R2 & mini, ESP32-dev, or ArduinoOnPC for linux
 // Now using Waveshare ESP32-S3-Zero for smaller chip with built in neopixel
-// use 2MB/2MB CDG and JTAG, CDC on boot enabled.
+// use 2MB/2MB CDG and JTAG, CDC on boot enabled, upload mode hardware CDC
 
 // Force 24x32 on ESP32 for bright daylight display
 // as a hack, we enable this for non PSRAM boards but
@@ -66,8 +66,8 @@ using namespace Aiko;
 #ifdef WIFI
     #include "wifi_secrets.h"
     #include <OmEspHelpers.h>
-    OmWebServer s;
-    OmWebPages *p = NULL;
+    OmWebServer *WebServer = NULL;
+    OmWebPages *WebPages = NULL;
     // Every time things change like the current demo, brightness,
     // bestof, etc, rebuild the page show to the user.
     // Unfortunately this does not force a page reload.
@@ -211,6 +211,12 @@ uint32_t waitmillis = 0;
 // using IRremote's examples/IRrecvDemo
 #include "IRcodes.h"
 
+// WARNING: Google says this is not safe to do at global space because
+// it starts an RMT Interrupt Handler. 
+// Enabling hardware interrupts inside a global constructor is "illegal" in
+// embedded programming because the OS (FreeRTOS) isn't fully running yet, and
+// safety structures aren't ready.
+// 
 #ifdef IR_RECV_PIN
     #ifdef ESP8266
     #include <IRremoteESP8266.h>
@@ -4868,14 +4874,14 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	    Serial.printf("FORM arg %d of %d: %s = %s\n", ix / 2, k/2, request.query[ix], request.query[ix + 1]);
 
 	if (strcmp(request.query[0], "REBOOT") == 0) { 
-	    p->renderHttpResponseHeader("text/html", 200);
+	    WebPages->renderHttpResponseHeader("text/html", 200);
 	    w.puts("<meta http-equiv=refresh content=\"1; URL=/FS\" />\n");
 	    delay(1000);
 	    resetFunc();
 	}
 	
 	if (strcmp(request.query[0], "text") == 0) {
-	    p->renderHttpResponseHeader("text/plain", 200);
+	    WebPages->renderHttpResponseHeader("text/plain", 200);
 	    DISPLAYTEXT = request.query[1];
 	    Serial.print("|T:");
 	    Serial.println(DISPLAYTEXT);
@@ -4888,7 +4894,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	    uint8_t cnt = k/2;
 	    DISPLAYTEXT="00,00,9999,0,1,";
 
-	    p->renderHttpResponseHeader("text/html", 200);
+	    WebPages->renderHttpResponseHeader("text/html", 200);
 	    while (cnt-->0 && (strcmp(request.query[ix], "mtext") == 0) && (strcmp(request.query[ix+1], "") != 0)) {
 		ix++;
 		String newline = String(request.query[ix]) + "\\";
@@ -4913,7 +4919,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	    // k counts arg + value, we only want the number of pairs
 	    k = k/2;
 
-	    p->renderHttpResponseHeader("text/html", 200);
+	    WebPages->renderHttpResponseHeader("text/html", 200);
 	    while (k-->0 && (request.query[ix][0] == '0')) {
 		// This is a perfect example of how you should never scan untrusted
 		// input, but honestly if specially crafted input causes a crash, I
@@ -4950,7 +4956,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 	}
 
 	if (strcmp(request.query[1], "SAVE") == 0) {
-	    p->renderHttpResponseHeader("text/html", 200);
+	    WebPages->renderHttpResponseHeader("text/html", 200);
 	    w.putf("<meta http-equiv=refresh content=\"4; URL=/Config\" />\n");
 	    write_config_index(w);
 	    return;
@@ -4970,7 +4976,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 		Serial.printf("Rename %s to %s\n", request.query[0], request.query[1]);
 		FSO.rename(request.query[0], request.query[1]);
 	    }
-	    p->renderHttpResponseHeader("text/html", 200);
+	    WebPages->renderHttpResponseHeader("text/html", 200);
 	    w.puts("<meta http-equiv=refresh content=\"0; URL=/FS\" />\n");
 	    return;
 	}
@@ -4984,7 +4990,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
     // else assume the path is a filename to read on the FS
     // this is also not safe, it allows jumping outside the root path with "../foo"
     // but on ESP32, there is nowhere to go, so who cares?
-    p->renderHttpResponseHeader("text/plain", 200);
+    WebPages->renderHttpResponseHeader("text/plain", 200);
     while (PutFileLine(w, request.path)) { w.putf("\n"); };
 }
 
@@ -5004,17 +5010,17 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   // FIXME, clear some wifi stuff if connection worked to the client
     Serial.println("Too many failures setting up Wifi client, swicthing to Wifi AP mode");
     ap = true;
-    s.clearWifis();
+    WebServer->clearWifis();
     WiFi.disconnect();
-    s.setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+    WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
     failure_cnt = 0;
 
   }
 }
 
-// Apparently I can't send a method s.tick to Aiko handler, so I need this glue function
+// Apparently I can't send a method WebServer->tick to Aiko handler, so I need this glue function
 void wifi_html_tick() {
-    s.tick();
+    WebServer->tick();
 }
 
 void rebuild_main_page(bool show_summary) {
@@ -5024,9 +5030,9 @@ void rebuild_main_page(bool show_summary) {
     // First time around, process_config is run by read_config_index;
     if (count > 1) process_config(show_summary);
 
-    p->beginPage("Main");
+    WebPages->beginPage("Main");
 
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	// Keep track of how many times the web page is rebuilt
 	w.puts("Version: ");
@@ -5034,34 +5040,34 @@ void rebuild_main_page(bool show_summary) {
 	w.puts("<BR>\n");
     });
     if (PANELCONFNUM == 4) {
-	p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+	WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
 	{
 	    w.puts("RPI IP: ");
 	    w.puts(Remote_IP.toString().c_str());
 	    w.puts("<BR>\n");
 	});
     }
-    p->addSelect("Demo Mode", actionProc, PANELCONFNUM, HTML_DEMOLIST_CHOICE);
+    WebPages->addSelect("Demo Mode", actionProc, PANELCONFNUM, HTML_DEMOLIST_CHOICE);
     for (uint16_t i=0; i <= 5; i++) {
-	p->addSelectOption(panelconfnames[i], i);
+	WebPages->addSelectOption(panelconfnames[i], i);
     }
 
-    p->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE_TEXT);
-    p->addSlider(0, 1, "Image Scrolling ",   actionProc, SCROLL_IMAGE, HTML_SCROLL_IMAGE);
+    WebPages->addSlider(0, 1, "Text Demos Rotate",   actionProc, ROTATE_TEXT, HTML_ROTATE_TEXT);
+    WebPages->addSlider(0, 1, "Image Scrolling ",   actionProc, SCROLL_IMAGE, HTML_SCROLL_IMAGE);
     if (PANELCONFNUM == 5) {
-        p->addSlider(0, 2, "Dance/Drg/Tshirt", actionProc, SHOW_DEMO_SUBSET, HTML_BESTOF);
+        WebPages->addSlider(0, 2, "Dance/Drg/Tshirt", actionProc, SHOW_DEMO_SUBSET, HTML_BESTOF);
     } else {
-        p->addSlider(0, 2, "Enable BestOf 1 or 2", actionProc, SHOW_DEMO_SUBSET, HTML_BESTOF);
+        WebPages->addSlider(0, 2, "Enable BestOf 1 or 2", actionProc, SHOW_DEMO_SUBSET, HTML_BESTOF);
     }
-    p->addSlider(0, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
-    p->addSlider("Speed",      actionProc, 50, HTML_SPEED);
+    WebPages->addSlider(0, 8, "Brightness", actionProc, DFL_MATRIX_BRIGHTNESS_LEVEL, HTML_BRIGHT);
+    WebPages->addSlider("Speed",      actionProc, 50, HTML_SPEED);
 
     /*
 	 A button sends a value "1" when pressed (in the web page),
 	 and zero when released.
     */
-    p->addButton("prev", actionProc, HTML_BUTPREV);
-    p->addButton("next", actionProc, HTML_BUTNEXT);
+    WebPages->addButton("prev", actionProc, HTML_BUTPREV);
+    WebPages->addButton("next", actionProc, HTML_BUTNEXT);
 
     /*
 	 A select control shown as a dropdown on desktop browsers,
@@ -5069,12 +5075,12 @@ void rebuild_main_page(bool show_summary) {
 	 You can add any number of options, and specify
 	 the value of each.
     */
-    p->addSelect("Strip Demo", actionProc, STRIPDEMO, HTML_STRIPCHOICE);
+    WebPages->addSelect("Strip Demo", actionProc, STRIPDEMO, HTML_STRIPCHOICE);
     for (uint8_t i=1; i <= StripDemoCnt; i++) {
-	p->addSelectOption(StripDemoName[i], i);
+	WebPages->addSelectOption(StripDemoName[i], i);
     }
 
-    p->addSelect("Panel Demo", actionProc, MATRIX_DEMO, HTML_DEMOCHOICE);
+    WebPages->addSelect("Panel Demo", actionProc, MATRIX_DEMO, HTML_DEMOCHOICE);
     for (uint16_t i=0; i <= DEMO_LAST_IDX; i++) {
 	uint16_t pos = demo_mapping[i].reverse;
 	//Serial.print(i);
@@ -5088,43 +5094,43 @@ void rebuild_main_page(bool show_summary) {
 	char *option = (char *) mallocordie("wifi addselectoption", strlen (demo_list[demoidx(i)].name) + 13);
 	sprintf(option, "%03d->%03d/%1d: ", i, pos, demo_mapping[pos].enabled[PANELCONFNUM]);
 	strcpy(option+12, demo_list[demoidx(i)].name);
-	p->addSelectOption(option, i);
+	WebPages->addSelectOption(option, i);
 	demo_list[demoidx(i)].menu_str = option;
     }
 
     // Catches random non registered URLs
-    p->addUrlHandler(wildcardProc);
+    WebPages->addUrlHandler(wildcardProc);
 
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	w.puts("Demo Text Input: <FORM METHOD=GET ACTION=/form><INPUT NAME=text></FORM>");
     });
 }
 
 void rebuild_advanced_page() {
-    p->beginPage("Advanced");
+    WebPages->beginPage("Advanced");
 
     if (PANELCONFNUM > 3) {
-	p->addButton("Show RPI IP", actionProc, HTML_SHOWIP);
-	p->addButton("Restart RPI", actionProc, HTML_RESTARTPI);
-	p->addButton("Reboot RPI", actionProc,  HTML_REBOOTPI);
+	WebPages->addButton("Show RPI IP", actionProc, HTML_SHOWIP);
+	WebPages->addButton("Restart RPI", actionProc, HTML_RESTARTPI);
+	WebPages->addButton("Reboot RPI", actionProc,  HTML_REBOOTPI);
     }
 
-    // p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    // WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     // {
     //	w.beginElement("a", "href", "/demo_map.txt");
     //	w.addContent("Demo Map");
     //	w.endElement(); // a
     // });
     // This replaces the above
-    p->addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
+    WebPages->addButtonWithLink("Demo Map", "/demo_map.txt", NULL, 0);
 }
 
 
 void register_text_page() {
-    p->beginPage("Text");
+    WebPages->beginPage("Text");
 
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	w.puts("Demo Text Input: <FORM METHOD=GET ACTION=/form>");
 	w.puts("<INPUT NAME=mtext><BR>");
@@ -5144,10 +5150,10 @@ void register_text_page() {
 
 
 void register_config_page() {
-    p->beginPage("Config");
+    WebPages->beginPage("Config");
 
     // This lamba function is re-run every time /Config is called
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	//bool readingfile = true;
 	char lineidx[5];
@@ -5202,10 +5208,10 @@ void register_config_page() {
 }
 
 void register_FS_page() {
-    p->beginPage("FS");
+    WebPages->beginPage("FS");
 
     // This lamba function is re-run every time /FS is called
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	w.putf("Total space: %d", FSO.totalBytes());
 	#ifdef ESP32FATFS
@@ -5234,10 +5240,10 @@ void register_FS_page() {
 
 
 void register_Text_page() {
-    p->beginPage("Text");
+    WebPages->beginPage("Text");
 
     // This lamba function is re-run every time /Text is called
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	File dir = FSO.open("/");
 	while (File file = dir.openNextFile()) {
@@ -5259,16 +5265,17 @@ void register_Text_page() {
 void setup_wifi() {
     Serial.println("Configuring access point...");
 
-    s.setStatusCallback(connectionStatus);
-    s.addWifi(WIFI_SSID, WIFI_PASSWORD);
+    WebServer = new OmWebServer();
+    WebServer->setStatusCallback(connectionStatus);
+    WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
 
-    p = new OmWebPages();
-    p->setBuildDateAndTime(__DATE__, __TIME__);
+    WebPages = new OmWebPages();
+    WebPages->setBuildDateAndTime(__DATE__, __TIME__);
 
     // To get the ordering we want, we start with a dummy page
     // that gets replaced with the full page later.
-    p->beginPage("Main");
-    p->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
+    WebPages->beginPage("Main");
+    WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	w.putf("Placeholder\n");
     });
@@ -5277,7 +5284,7 @@ void setup_wifi() {
     register_FS_page();
     //register_Text_page();
 
-    s.setHandler(*p);
+    WebServer->setHandler(*WebPages);
 
     // Make sure that aiko calls the HTML handler at 10Hz
     Events.addHandler(wifi_html_tick, 100);
@@ -5489,7 +5496,7 @@ void loop() {
     // 8K gives Loop() - Free Stack Space: 1952
     // Debug exception reason: Stack canary watchpoint triggered (loopTask) 
     // After changing stack size to 16KB, I hae now 7916KB free
-	EVERY_N_SECONDS(5) {
+	EVERY_N_SECONDS(60) {
       Serial.printf("Loop() - Free Stack Space: %d\n", uxTaskGetStackHighWaterMark(NULL));
 	}
 #endif
@@ -5614,6 +5621,10 @@ void setup() {
     // IR receive happens to make the system LED blink, so it's all good
     //irrecv.blink13(true);
 #elif defined(IR_RECV_PIN)
+    Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
+    Serial.println("| Legacy IR code enabled, but it's not global space safe with RMT.            |");
+    Serial.println("| Consider rewriting to setup()-time init if the code is still desired/needed |");
+    Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
     #ifdef ESP32
 	Serial.println("If things hang very soon, make sure you don't have PSRAM enabled on a non PSRAM board");
 	#ifndef ESP32RMTIR
@@ -5677,12 +5688,12 @@ void setup() {
 
 	Serial.println("Pause to run wifi before config file parsing ('w' to stay here)");
 	while (i--) {
-    if (check_startup_IR_serial() == 2) {
-        Serial.println("Will pause to set wifi setup");
-        i = 6000;
-    }
-    s.tick();
-    delay((uint32_t) 10);
+            if (check_startup_IR_serial() == 2) {
+                Serial.println("Will pause to set wifi setup");
+                i = 6000;
+            }
+            WebServer->tick();
+            delay((uint32_t) 10);
 	}
     #endif
 
@@ -5834,7 +5845,7 @@ void setup() {
       // Allow web server to run, create/save rename files to make sure demos exist
       Serial.println("No demos, cannot proceed. Starting web server to fix if possible, reboot when fixed");
       #ifdef WIFI
-      while (1) s.tick();
+      while (1) WebServer->tick();
       #endif
     }
 
