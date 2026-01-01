@@ -968,7 +968,8 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ "I'M A",  "MUSIC",	"LOVER",	"",	    "",		    "" },
 	{ "I'm",    "Fucking",	"Famous",	"",	    "",		    "" },	
 	{ "Fuck",   "Me",	"I'm",		"Famous",   "",		    "" },
-	{ "Say",    "Perhaps",	"To",		"Drugs",    "",		    "" }, //24
+	{ "Say",    "Perhaps",	"To",		"Drugs",    "",		    "" }, 
+	{ "Make",   "Trance",	"Great",	"Again",    "",		    "" }, //25
     };
 
     if (PANELCONFNUM == 2 || PANELCONFNUM == 3) text[0][2] = "BURN";
@@ -999,7 +1000,8 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ 0xFFFF00, 0xFFFF00,	0xFFFF00,	0,	    0,		    0 }, // lover
 	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0,	    0,		    0 },	// I Famous
 	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 }, // FMIF
-	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 }, // 24 Perhaps
+	{ 0xFFC0CB, 0xFFC0CB,	0xFFC0CB,	0xFFC0CB,   0,		    0 }, // Perhaps
+	{ 0xFFFFFF, 0xCC33FF,	0xCC6699,	0xFFFF00,   0,		    0 }, // 25 Great Again
     };
 
     uint16_t y_offset_192[][6] = { 
@@ -3050,7 +3052,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 061 */ { "", NULL, -1, NULL },
 /* 062 */ { "", NULL, -1, NULL },
 /* 063 */ { "", NULL, -1, NULL },
-/* 064 */ { "", NULL, -1, NULL },
+/* 064 */ { "Trance Great", rotate_text, 25, NULL },
 /* 065 */ { "Perhaps Drugs", rotate_text, 24, NULL },
 /* 066 */ { "Fuck Me I'm Famous", rotate_text, 23, NULL },
 /* 067 */ { "I'm fucking Famous", rotate_text, 22, NULL },
