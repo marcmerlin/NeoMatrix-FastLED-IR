@@ -5649,6 +5649,9 @@ void setup() {
         FastLED.addLeds<WS2813,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS);
         #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
             Serial.println("Detected Waveshare ESP32 S3 Zero: Trying to disable builtin control of pin 21\n");
+            // This did not seem to work afterall and I had to edit 
+            // .arduino15/packages/esp32/hardware/esp32/3.3.5/variants/waveshare_esp32_s3_zero/pins_arduino.h
+            // to kill LED_BUILTIN / 
             // This kills any RMT driver the Core might have attached during boot.
             pinMode(21, INPUT); 
             delay(10); 
