@@ -17,7 +17,7 @@
 
 // Compile WeMos D1 R2 & mini, ESP32-dev, or ArduinoOnPC for linux
 // Now using Waveshare ESP32-S3-Zero for smaller chip with built in neopixel
-// use 2MB/2MB CDG and JTAG, CDC on boot enabled, upload mode hardware CDC
+// use 2MB/2MB CDG and JTAG, CDC on boot enabled (allows Serial console), upload mode hardware CDC
 
 // Force 24x32 on ESP32 for bright daylight display
 // as a hack, we enable this for non PSRAM boards but
@@ -37,7 +37,6 @@
 // This sets Arduino Stack Size - comment this line to use default 8K stack size
 //This should work, but causes the the other code not to compile. Why?
 //SET_LOOP_TASK_STACK_SIZE(1024 * 16);
-
 
 #include "nfldefines.h"
 #include "Table_Mark_Estes.h"
@@ -5649,7 +5648,16 @@ void setup() {
     #ifndef LINUX_RENDERER_SDL
         FastLED.addLeds<WS2813,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS);
         #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
-            Serial.println("\nEnabling Dual Neopixel output on 13 and builtin 21\n");
+            Serial.println("Detected Waveshare ESP32 S3 Zero: Trying to disable builtin control of pin 21\n");
+            // This kills any RMT driver the Core might have attached during boot.
+            pinMode(21, INPUT); 
+            delay(10); 
+            // Explicitly force it LOW (clean slate)
+            pinMode(21, OUTPUT);
+            digitalWrite(21, LOW);
+            delay(10);
+            #pragma message "Building on ESP32 S3 Waveshare Zero, enabling dual Neopixel output"
+            Serial.println("Detected Waveshare ESP32 S3 Zero: Enabling Dual Neopixel output on 13 and builtin 21\n");
             // initialize 2 outputs for the same strip (external strip and built in neopixel)
             FastLED.addLeds<WS2813,21>(leds, STRIP_NUM_LEDS);
         #endif
@@ -5774,7 +5782,6 @@ void setup() {
     leds_show();
 #endif // NEOPIXEL_PIN
 
-    Serial.println("Enabling IRin");
 #ifdef IR_RECV_PIN
     #ifndef ESP32RMTIR
 	irrecv.enableIRIn(); // Start the receiver
@@ -5783,6 +5790,8 @@ void setup() {
     #endif
     Serial.print("Enabled IRin on pin ");
     Serial.println(IR_RECV_PIN);
+#else
+    Serial.println("IR Disabled");
 #endif
 
     GifAnim(65535); // Compute how many GIFs are defined
