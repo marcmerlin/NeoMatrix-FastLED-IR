@@ -422,23 +422,17 @@ uint8_t strip_speed = 50;
 	    // empty input buffer of possible garbage
 	    while (read(ttyfd, &s, 1)) {}
 	    esp32_connected = true;
-	    // Assume we just connected to an ESP32, which starts in its PANELCONFNUM 3 (ESP32 mode)
-	    // and switch it to PANELCONFNUM 4 (rPI with longer menus).
-	    printf("Opened %s telling ESP32 to switch to PANELCONFNUM 4\n", *devname);
-	    delay(10);
-	    send_serial("|");
-	    delay(10);
-	    send_serial("d");
-	    delay(10);
 	    if (firstconnection) {
 		// First time code starts, tell ESP32 to trigger the IP screen.
-		send_serial("i");
+                // not anymore, this is moved at detection of incoming |St after
+                // ESP32 finishes setup.
+		// send_serial("i");
 		firstconnection = false;
                 // on first connection, we resend the IP 3 times
                 rpi_send_ip_cnt = 3;
 	    } else {
 		// on USB reconnect, feed the local IP to ESP32 but don't cause ESP32 to tell us to switch to the IP screen
-                // Bug: due to the code starting early in boot, it can be before IP is received.
+                // this is probably not really needed or helping, but leaving just in case.
                 rPi_send_IP_to_ESP32();
 	    }
 	}
@@ -3899,12 +3893,13 @@ void handle_rpi_serial_cmd() {
     char numbuf[4];
 
     if (! strncmp(ttyusbbuf, "|St", 3)) {
-	Serial.println("Got ESP start, enable ESP serial input");
+	Serial.println("Got ESP32 start, send start, panelconf4, and showip");
 	delay(10);
 	send_serial("|");
 	delay(10);
 	send_serial("d");
-	// When we receive St, ESP32 will auto-run showip()
+	delay(10);
+	send_serial("i");
     }
     if (! strncmp(ttyusbbuf, "|D:", 3)) {
 	int num;
@@ -5071,8 +5066,7 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   Serial.printf("%s: connectionStatus for '%s' is now '%s' fail cnt: %d\n", __func__, ssid, what, failure_cnt);
 
   if (!ap and failure_cnt > 2) {
-  // FIXME, clear some wifi stuff if connection worked to the client
-    Serial.println("Too many failures setting up Wifi client, swicthing to Wifi AP mode");
+    Serial.println("Too many failures setting up Wifi client, switching to Wifi AP mode");
     ap = true;
     WebServer->clearWifis();
     WiFi.disconnect();
@@ -5972,7 +5966,6 @@ void setup() {
 
     //Events.addHandler(ShowMHfps, 1000);
 
-    Serial.println("|Starting loop");
     // After init is done, show fps (can be turned on and off with 'f').
     //#ifdef ESP32
     //SHOW_LAST_FPS = true;
@@ -5980,11 +5973,8 @@ void setup() {
     #ifndef ARDUINOONPC
     while (Serial.available()) Serial.read();
     Serial.println("Send '|' to enable serial commands");
+    #endif
 
-    #if mheight == 192
-        showip();
-    #endif
-    #endif
     Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
     Serial.println("          SETUP DONE...                   ");
 #ifdef ESP32
@@ -5998,6 +5988,9 @@ void setup() {
 #endif
 
     Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+
+    // When ESP32 sends |St..., RPI eventually receives this on serial 
+    Serial.println("|Starting loop");
 }
 
 // vim:sts=4:sw=4
