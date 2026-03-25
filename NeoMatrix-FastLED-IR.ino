@@ -385,18 +385,19 @@ uint8_t strip_speed = 50;
      ( (((val) >> 24) & 0x000000FF) | (((val) >>  8) & 0x0000FF00) | \
        (((val) <<  8) & 0x00FF0000) | (((val) << 24) & 0xFF000000) )
 
-    char rPI_IP[20];
-    char rPI_IPn[11];
+    char rPI_IP[20];  // string
+
+    // Populates rPI_IP for display, but returns number to send to ESP32
     char *get_rPI_IP() {
-	    FILE *fp;
-	    //fp = popen("hostname -I", "r");
-	    fp = popen("cat /root/IP", "r");
-	    fgets(rPI_IP, 19, fp);
-	    uint32_t addr = Swap4Bytes(inet_addr(rPI_IP));
-	    snprintf(rPI_IPn, 11, "%ud", addr);
-	    //Serial.println(IP);
-	    //Serial.println(addr, HEX);
-	    return rPI_IPn;
+        static char rPI_IPn[11]; // IP address in number to send 
+        FILE *fp;
+        //fp = popen("hostname -I", "r");
+        fp = popen("cat /root/IP", "r");
+        fgets(rPI_IP, 19, fp);
+        uint32_t addr = Swap4Bytes(inet_addr(rPI_IP));
+        snprintf(rPI_IPn, 11, "%ud", addr);
+        printf("Read /root/IP as %s and Converted to IP %8x\n", rPI_IP, addr); 
+        return rPI_IPn;
     }
     void rPi_send_IP_to_ESP32() {
         send_serial(get_rPI_IP());
@@ -3929,7 +3930,7 @@ void handle_rpi_serial_cmd() {
 	change_brightness(num, true);
     }
     if (! strncmp(ttyusbbuf, "|I:", 3)) {
-	send_serial(get_rPI_IP());
+        rPi_send_IP_to_ESP32();
 	DISPLAYTEXT = String("ESP32:\n") + String(ttyusbbuf+3) + "\nlocal:\n" + String(rPI_IP);
 	Serial.print("Got IP from ");
 	Serial.print(DISPLAYTEXT);
@@ -4095,7 +4096,7 @@ void IR_Serial_Handler() {
             // We may wonder, why do we need all these alternate letters on Rpi, can't we just read 'n' and resent to ESP32?
             // the answer is No, because on rPi, do you want to advance the rPi demo ('n') or the ESP32 demo ('N')?
 	#ifdef ARDUINOONPC
-	    else if (readchar == 's') { Serial.println("Send rPi IP to ESP32"); send_serial(get_rPI_IP()); }
+	    else if (readchar == 's') { Serial.println("Send rPi IP to ESP32"); rPi_send_IP_to_ESP32(); }
 	    else if (readchar == '<') { Serial.println("ESP => dim"   );        send_serial("-"); change_brightness(-1);}
 	    else if (readchar == '>') { Serial.println("ESP => bright");        send_serial("+"); change_brightness(+1);}
 	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("f"); SHOW_LAST_FPS = !SHOW_LAST_FPS;}
