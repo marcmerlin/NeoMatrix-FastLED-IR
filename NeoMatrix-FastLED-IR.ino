@@ -309,6 +309,8 @@ uint8_t strip_speed = 50;
     #define RPISERIALINPUTSIZE 10240
     char ttyusbbuf[RPISERIALINPUTSIZE];
     bool esp32_connected = false;
+    // IP may not be found or stable right away, so we try 3 times after reconnection to ESP32
+    uint8_t rpi_send_ip_cnt = 0;
 
     #include <errno.h>
     #include <fcntl.h>
@@ -321,24 +323,6 @@ uint8_t strip_speed = 50;
     // inet_addr
     #include <netinet/in.h>
     #include <arpa/inet.h>
-    
-    #define Swap4Bytes(val) \
-     ( (((val) >> 24) & 0x000000FF) | (((val) >>  8) & 0x0000FF00) | \
-       (((val) <<  8) & 0x00FF0000) | (((val) << 24) & 0xFF000000) )
-
-    char rPI_IP[20];
-    char rPI_IPn[11];
-    char *get_rPI_IP() {
-	    FILE *fp;
-	    //fp = popen("hostname -I", "r");
-	    fp = popen("cat /root/IP", "r");
-	    fgets(rPI_IP, 19, fp);
-	    uint32_t addr = Swap4Bytes(inet_addr(rPI_IP));
-	    snprintf(rPI_IPn, 11, "%ud", addr);
-	    //Serial.println(IP);
-	    //Serial.println(addr, HEX);
-	    return rPI_IPn;
-    }
 
     // if we're not talking to anything, ttyfd will be reset to -1
     // however >=0 does not mean there is anything transmitting
@@ -397,6 +381,28 @@ uint8_t strip_speed = 50;
 	return 0;
     }
 
+    #define Swap4Bytes(val) \
+     ( (((val) >> 24) & 0x000000FF) | (((val) >>  8) & 0x0000FF00) | \
+       (((val) <<  8) & 0x00FF0000) | (((val) << 24) & 0xFF000000) )
+
+    char rPI_IP[20];
+    char rPI_IPn[11];
+    char *get_rPI_IP() {
+	    FILE *fp;
+	    //fp = popen("hostname -I", "r");
+	    fp = popen("cat /root/IP", "r");
+	    fgets(rPI_IP, 19, fp);
+	    uint32_t addr = Swap4Bytes(inet_addr(rPI_IP));
+	    snprintf(rPI_IPn, 11, "%ud", addr);
+	    //Serial.println(IP);
+	    //Serial.println(addr, HEX);
+	    return rPI_IPn;
+    }
+    void rPi_send_IP_to_ESP32() {
+        send_serial(get_rPI_IP());
+    }
+
+
     void openttyUSB(const char ** devname) {
 	static bool firstconnection = true;
 	// static because the name is sent back to the caller
@@ -428,13 +434,16 @@ uint8_t strip_speed = 50;
 		// First time code starts, tell ESP32 to trigger the IP screen.
 		send_serial("i");
 		firstconnection = false;
+                // on first connection, we resend the IP 3 times
+                rpi_send_ip_cnt = 3;
 	    } else {
 		// on USB reconnect, feed the local IP to ESP32 but don't cause ESP32 to tell us to switch to the IP screen
-		send_serial(get_rPI_IP());
+                // Bug: due to the code starting early in boot, it can be before IP is received.
+                rPi_send_IP_to_ESP32();
 	    }
 	}
     }
-
+    
 #endif // ARDUINOONPC
 
 
@@ -479,6 +488,7 @@ void help() {
     Serial.println("'t' text thankyou");
     Serial.println("");
     Serial.println("From rPi to ESP32 only, send a missing command to ESP32 for rPi with R+i");
+    Serial.println("'s' Send rPi IP to ESP32");
     Serial.println("'r' reboot");
     Serial.println("'i' showip");
     Serial.println("");
@@ -4012,18 +4022,21 @@ void IR_Serial_Handler() {
 	    while ((readchar >= '0') && (readchar <= '9')) {
 		new_pattern = 10 * new_pattern + (readchar - '0');
 		readchar = 0;
-		#ifdef WIFI
-		if (new_pattern > DEMO_LAST_IDX) {
-		    Remote_IP = IPAddress(
-			(new_pattern & 0xFF000000) / 0x1000000,
-			(new_pattern & 0x00FF0000) / 0x10000,
-			(new_pattern & 0x0000FF00) / 0x100,
-			(new_pattern & 0x000000FF) / 1
-		    );
-		}
-		#endif
 		if (Serial.available()) readchar = Serial.read();
 	    }
+            #ifdef WIFI
+            if (new_pattern > DEMO_LAST_IDX) {
+                // this is sent by rPi_send_IP_to_ESP32
+                Remote_IP = IPAddress(
+                    (new_pattern & 0xFF000000) / 0x1000000,
+                    (new_pattern & 0x00FF0000) / 0x10000,
+                    (new_pattern & 0x0000FF00) / 0x100,
+                    (new_pattern & 0x000000FF) / 1
+                );
+                Serial.print("ESP32 received Rpi IP: ");
+                Serial.println(Remote_IP.toString().c_str());
+            }
+            #endif
 
 	    if (new_pattern > DEMO_LAST_IDX) new_pattern = 0;
 	    if (new_pattern) {
@@ -4076,6 +4089,7 @@ void IR_Serial_Handler() {
             // We may wonder, why do we need all these alternate letters on Rpi, can't we just read 'n' and resent to ESP32?
             // the answer is No, because on rPi, do you want to advance the rPi demo ('n') or the ESP32 demo ('N')?
 	#ifdef ARDUINOONPC
+	    else if (readchar == 's') { Serial.println("Send rPi IP to ESP32"); send_serial(get_rPI_IP()); }
 	    else if (readchar == '<') { Serial.println("ESP => dim"   );        send_serial("-"); change_brightness(-1);}
 	    else if (readchar == '>') { Serial.println("ESP => bright");        send_serial("+"); change_brightness(+1);}
 	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("f"); SHOW_LAST_FPS = !SHOW_LAST_FPS;}
@@ -5594,6 +5608,13 @@ void loop() {
 	    }
 	    if (ttyfd < 0) openttyUSB(&serialdev);
 	}
+	EVERY_N_SECONDS(10) {
+            if (rpi_send_ip_cnt) {
+                rpi_send_ip_cnt--;
+                rPi_send_IP_to_ESP32();
+            }
+	}
+
 
 	//Serial.print((millis() - last_esp32_ping));
 	//Serial.print(" ");
@@ -5630,6 +5651,7 @@ void loop() {
 		    if (! esp32_connected) {
 			esp32_connected = true;
 			Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>> ESP32 ping received, going to long timeouts");
+                        rPi_send_IP_to_ESP32();
 		    }
 		//}
 		handle_rpi_serial_cmd();
@@ -5648,6 +5670,8 @@ void loop() {
     #endif
 }
 
+// rPi_send_IP_to_ESP32 is also used to communicate IP back to ESP32 without
+// ESP32 calling showip
 void showip() {
 #ifdef WIFI
     DISPLAYTEXT = WiFi.localIP().toString();
@@ -5656,6 +5680,7 @@ void showip() {
     matrix_change(DEMO_TEXT_INPUT, false, 3);
 #endif
 }
+
 
 void setup() {
     Serial.begin(115200);
