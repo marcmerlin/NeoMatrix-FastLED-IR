@@ -402,6 +402,21 @@ uint8_t strip_speed = 50;
         send_serial(get_rPI_IP());
     }
 
+    // When do we want to run this?
+    // #1: when ESP32 reboots and sends |St
+    // #2: when rPI reboots or restarts '~'
+    // at power boot, it means got can run. We don't want to squelch that as the rPI
+    // could reboot and get a new IP while rPI is running
+    void send_esp32_init() {
+
+        Serial.println("send start, panelconf4, and showip");
+        delay(10);
+        send_serial("|");
+        delay(10);
+        send_serial("d");
+        delay(10);
+        send_serial("i");
+    }
 
     void openttyUSB(const char ** devname) {
 	static bool firstconnection = true;
@@ -424,11 +439,11 @@ uint8_t strip_speed = 50;
 	    esp32_connected = true;
 	    if (firstconnection) {
 		// First time code starts, tell ESP32 to trigger the IP screen.
-                // not anymore, this is moved at detection of incoming |St after
-                // ESP32 finishes setup.
-		// send_serial("i");
+                send_esp32_init();
 		firstconnection = false;
-                // on first connection, we resend the IP 3 times
+                // on first connection, we resend the IP 3 times, this is useful
+                // for the html status page that displays that IP on the connected phone
+                // in case the sendip displayed IP is null or wrong
                 rpi_send_ip_cnt = 3;
 	    } else {
 		// on USB reconnect, feed the local IP to ESP32 but don't cause ESP32 to tell us to switch to the IP screen
@@ -3889,17 +3904,13 @@ void changePanelConf(uint8_t conf ) {
 }
 
 #ifdef ARDUINOONPC
+
 void handle_rpi_serial_cmd() {
     char numbuf[4];
 
     if (! strncmp(ttyusbbuf, "|St", 3)) {
-	Serial.println("Got ESP32 start, send start, panelconf4, and showip");
-	delay(10);
-	send_serial("|");
-	delay(10);
-	send_serial("d");
-	delay(10);
-	send_serial("i");
+	Serial.println("Got ESP32 start");
+        send_esp32_init();
     }
     if (! strncmp(ttyusbbuf, "|D:", 3)) {
 	int num;
