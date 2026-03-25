@@ -1,0 +1,4 @@
+https://github.com/espressif/arduino-esp32/issues?q=is%3Aissue%20state%3Aopen%20marcmerlin%20label%3A%22Status%3A%20Community%20help%20needed%22
+
+comment out arduino-esp32/variants/waveshare_esp32_s3_zero/pins_arduino.h
+ static const uint8_t LED_BUILTIN = SOC_GPIO_PIN_COUNT + WS_RGB; 

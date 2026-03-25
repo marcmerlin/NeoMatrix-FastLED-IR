@@ -1,0 +1,65 @@
+=========== Before Setup Start ===========
+Chip Info:
+------------------------------------------
+  Model             : ESP32-S3
+  Package           : 0
+  Revision          : 0.01
+  Cores             : 2
+  CPU Frequency     : 240 MHz
+  XTAL Frequency    : 4o
+  Embedded PSRAM    : No
+  2.4GHz WiFi       : Yes
+  Classic BT        : No
+  BT Low Energy     : Yes
+  IEEE 802.15.4     : No
+------------------------------------------
+INTERNAL Memory Info:
+------------------------------------------
+  Total Size        :   323420 B ( 315.8 KB)
+  Free Bytes        :   276612 B ( 270.1 KB)
+  Allocated Bytes   :    42496 B (  41.5 KB)
+  Minimum Free Bytes:   271216 B ( 264.9 KB)
+  Largest Free Block:   229364 B ( 224.0 KB)
+------------------------------------------
+Flash Info:
+------------------------------------------
+  Chip Size         :  4194304 B (4 MB)
+  Block Size        :    65536 B (  64.0 KB)
+  Sector Size       :     4096 B (   4.0 KB)
+  Page Size         :      256 B (   0.2 KB)
+  Bus Speed         : 80 MHz
+  Flash Frequency   : 80 MHz (source: 80 MHz, divider: 1)
+  Bus Mode          : QIO
+------------------------------------------
+Partitions Info:
+------------------------------------------
+                nvs : addr: 0x00009000, size:    20.0 KB, type: DATA, subtype: NVS
+            otadata : addr: 0x0000E000, size:     8.0 KB, type: DATA, subtype: OTA
+               app0 : addr: 0x00010000, size:  2048.0 KB, type:  APP, subtype: OTA_0
+               ffat : addr: 0x00210000, size:  1920.0 KB, type: DATA, subtype: FAT
+           coredump : addr: 0x003F0000, size:    64.0 KB, type: DATA, subtype: COREDUMP
+------------------------------------------
+Software Info:
+------------------------------------------
+  Compile Date/Time : Jan  1 2026 15:58:25
+  Compile Host OS   : linux
+  ESP-IDF Version   : v5.5.1-931-g9bb7aa84fe
+  Arduino Version   : 3.3.5
+------------------------------------------
+Board Info:
+------------------------------------------
+  Arduino Board     : WAVESHARE_ESP32_S3_ZERO
+  Arduino Variant   : waveshare_esp32_s3_zero
+  Arduino FQBN      : esp32:esp32:waveshare_esp32_s3_zero:PSRAM=disabled,FlashMode=qio,LoopCore=1,EventsCore=1,USBMode=hwcdc,CDCOnBoot=default,MSCOnBoot=default,DFUOnBoot=default,UploadMode=default,PartitionScheme=noota_ffat,CPUFreq=240,UploadSpeed=921600,DebugLevel=debug,EraseFlash=none
+============ Before Setup End ============
+[  6350][I][esp32-hal-periman.c:141] perimanSetPinBus(): Pin 19 already has type USB_DM (45) with bus 0x3fca3d64
+[  6350][I][esp32-hal-periman.c:141] perimanSetPinBus(): Pin 20 already has type USB_DP (46) with bus 0x3fca3d64
+Hello World
+Jan  1 2026
+15:58:54
+
+Enabling Neopixels strip (if any) and Configured Display.
+Using FastLED on pin 13 to drive LEDs: 60
+Detected Waveshare ESP32 S3 Zero: Enabling Dual Neopixel output on 13 and builtin 21
+
+
