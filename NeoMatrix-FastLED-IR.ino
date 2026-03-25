@@ -386,6 +386,7 @@ uint8_t strip_speed = 50;
        (((val) <<  8) & 0x00FF0000) | (((val) << 24) & 0xFF000000) )
 
     char rPI_IP[20];  // string
+    uint32_t rPI_IP_addr;
 
     // Populates rPI_IP for display, but returns number to send to ESP32
     char *get_rPI_IP() {
@@ -394,13 +395,22 @@ uint8_t strip_speed = 50;
         //fp = popen("hostname -I", "r");
         fp = popen("cat /root/IP", "r");
         fgets(rPI_IP, 19, fp);
-        uint32_t addr = Swap4Bytes(inet_addr(rPI_IP));
-        snprintf(rPI_IPn, 11, "%ud", addr);
-        printf("Read /root/IP as %s and Converted to IP %8x\n", rPI_IP, addr); 
+        rPI_IP_addr = Swap4Bytes(inet_addr(rPI_IP));
+        snprintf(rPI_IPn, 11, "%ud", rPI_IP_addr);
+        printf("Read /root/IP as %s and Converted to IP %8x\n", rPI_IP, rPI_IP_addr); 
         return rPI_IPn;
     }
     void rPi_send_IP_to_ESP32() {
+        static uint32_t addr = 0;
+        
         send_serial(get_rPI_IP());
+        if (rPI_IP_addr && rPI_IP_addr != 0xffffffff && rPI_IP_addr != addr) {
+            printf("Read new IP %8x to replace %8x, trigger sendip\n", rPI_IP_addr, addr); 
+            addr = rPI_IP_addr;
+            send_serial("i");
+        } else {
+            printf("Sent same IP %8x\n", rPI_IP_addr); 
+        }
     }
 
     // When do we want to run this?
@@ -410,13 +420,15 @@ uint8_t strip_speed = 50;
     // could reboot and get a new IP while rPI is running
     void send_esp32_init() {
 
-        Serial.println("send start, panelconf4, and showip");
+        Serial.println("send start, panelconf4");
         delay(10);
         send_serial("|");
         delay(10);
         send_serial("d");
-        delay(10);
-        send_serial("i");
+        // Problem is we can't send IP now because DHCP may not have succeeded on rPi yet.
+        // Instead we rely on rPi_send_IP_to_ESP32 to trigger this once we detect good IP.
+        //delay(10);
+        //send_serial("i");
     }
 
     void openttyUSB(const char ** devname) {
@@ -447,8 +459,9 @@ uint8_t strip_speed = 50;
                 // in case the sendip displayed IP is null or wrong
                 rpi_send_ip_cnt = 3;
 	    } else {
-		// on USB reconnect, feed the local IP to ESP32 but don't cause ESP32 to tell us to switch to the IP screen
-                // this is probably not really needed or helping, but leaving just in case.
+                // on USB reconnect, feed the local IP to ESP32 but don't cause
+                // ESP32 to tell us to switch to the IP screen. This is probably
+                // not really needed or helping, but leaving just in case.
                 rPi_send_IP_to_ESP32();
 	    }
 	}
