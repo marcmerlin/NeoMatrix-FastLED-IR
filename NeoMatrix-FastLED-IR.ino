@@ -5569,11 +5569,11 @@ void loop() {
     // Device #1 is ESP32 or teensy or similar, and handles the IR and the neopixels
     // Dev1 receives commands via IR and its web server.
     // Dev1 in turn outputs some special codes on serial like '|D: 76' to say 'demo 76'
-    // Dev2 is a rPi which has every single output pin used to drive 3 panels in parallel.
+    // Dev2 is a rPi which has every single IO pin used to drive 3 panels in parallel.
     // It however can receive serial via its USB ports (FTDI). It reads those '|D: 76'
     // commands and uses them to generate the output in sync with what dev#1 did.
     // Why all this madness? Because an rPi can run 3 to 12 times more RGBPanel pixels than
-    // an ESP32 or teensy with SmartMatrix.
+    // an ESP32 or teensy with SmartMatrix thanks to its 3 parallel outputs
     #ifdef ARDUINOONPC
 	static const char *serialdev = "";
 	static char *ptr = ttyusbbuf;

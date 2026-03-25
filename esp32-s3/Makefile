@@ -10,13 +10,13 @@ flash: ready killscreen
 
 	sleep 1 # time for port to come back
 	ls -l $(PORT)
+	echo "make monitor"
 
 ffat: ready killscreen
 	./esptool --chip esp32s3 --port $(PORT) --baud 921600 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 2166784 $$(ls *.fatfs.bin)
-
-
 	sleep 1 # time for port to come back
 	ls -l $(PORT)
+	echo "make monitor"
 
 monitor: ready killscreen
 	screen -S screen $(PORT) 115200
@@ -24,8 +24,10 @@ monitor: ready killscreen
 copy:	
 	cp /tmp/arduino_build_*/*.bin .
 
-push: copy
-	rsync -av -SH -P --delete --delete-after --force . root@rpi3a2:/root/esp32/
+push:
+	echo "export $$HOST=hostname make push"
+	rsync -av -SH -P --delete --delete-after --force . root@${HOST}:/root/NeoMatrix-FastLED-IR/esp32-s3/
+
 
 restart: killscreen
 	./esptool.py --chip esp32 --port $(PORT) --baud 460800 --before default_reset --after hard_reset chip_id 
