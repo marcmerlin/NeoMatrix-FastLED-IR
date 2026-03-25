@@ -59,8 +59,8 @@ How do ESP32 and Rpi communicate?
 - You can emulate commands from ESP32 to Pi from Pi STDIN with |CMD (see ''h'elp)
 - You can send Pi to ESP32 commands that do not have a Pi mapping (arguably I could
   remove some lesser used ones) by sending direct 'R'+'i' or other letter
-- So how do you get Rpi to force ESP32 trigger its IP screen 'Ri'
 
+Have a look for 'magic happens here' below for a bit more rationale on the dual CPU system
 */
 
 
