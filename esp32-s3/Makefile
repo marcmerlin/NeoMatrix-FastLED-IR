@@ -25,7 +25,7 @@ copy:
 	cp /tmp/arduino_build_*/*.bin .
 
 push:
-	echo "export $$HOST=hostname make push"
+	echo "export $$HOST=hostname make push, but do you want this? git will also sync"
 	rsync -av -SH -P --delete --delete-after --force . root@${HOST}:/root/NeoMatrix-FastLED-IR/esp32-s3/
 
 
