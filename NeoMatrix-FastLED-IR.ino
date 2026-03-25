@@ -5703,7 +5703,7 @@ void loop() {
 // ESP32 calling showip
 void showip() {
 #ifdef WIFI
-    DISPLAYTEXT = WiFi.localIP().toString();
+    DISPLAYTEXT = (WiFi.getMode() == WIFI_AP) ? WiFi.softAPIP().toString() : WiFi.localIP().toString();
     Serial.print("|I:");
     Serial.println(DISPLAYTEXT);
     matrix_change(DEMO_TEXT_INPUT, false, 3);
