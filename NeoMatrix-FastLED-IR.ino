@@ -306,6 +306,9 @@ uint8_t strip_speed = 50;
 
 // look for 'magic happens here' below
 #ifdef ARDUINOONPC
+    // Allows disconnecting from ESP32 aand ignoring D:xx pattern changes
+    bool ignore_serial_pattern_change = 0;
+
     #define RPISERIALINPUTSIZE 10240
     char ttyusbbuf[RPISERIALINPUTSIZE];
     bool esp32_connected = false;
@@ -511,6 +514,7 @@ void help() {
     Serial.println("'t' text thankyou");
     Serial.println("");
     Serial.println("From rPi to ESP32 only, send a missing command to ESP32 for rPi with R+i");
+    Serial.println("'@ toggle ignoring direct ESP32 pattern changes");
     Serial.println("'s' Send rPi IP to ESP32");
     Serial.println("'r' reboot");
     Serial.println("'i' showip");
@@ -3932,7 +3936,12 @@ void handle_rpi_serial_cmd() {
 	numbuf[3] = 0;
 	num = atoi(numbuf);
 	printf("Got direct mapped demo %d\n", num);
-	matrix_change(num, true);
+        if (! ignore_serial_pattern_change) {
+            matrix_change(num, true);
+        } else { 
+            Serial.print("IGNORING CHANGE to "); 
+            Serial.println(num); 
+        }
     }
     if (! strncmp(ttyusbbuf, "|B:", 3)) {
 	int num;
@@ -4070,7 +4079,7 @@ void IR_Serial_Handler() {
 		    remotesend = false;
 		} else
 		#endif
-		    matrix_change(new_pattern, true);
+                matrix_change(new_pattern, true);
 	    } else {
 		if (readchar != '\n') {
 		    Serial.print("Got serial char '");
@@ -4130,6 +4139,7 @@ void IR_Serial_Handler() {
             // 'r' and 'i' are examples of re-using the same letter because they have no funtion locally on rPi
 	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); }
 	    else if (readchar == 'i') { Serial.println("ESP => ShowIP");	send_serial("i"); }
+	    else if (readchar == '@') { Serial.println("Toogle RPI Ignore Demo Change"); ignore_serial_pattern_change = !ignore_serial_pattern_change ;}
 	    // Don't use a character that can be easily received by ESP32
 	    else if (readchar == '~') { Serial.println("exit");			exit(0);}
 	#else
