@@ -101,6 +101,107 @@ using namespace Aiko;
 
     // Allows a connected device via serial to feed a remote IP as a 32bit number
     IPAddress Remote_IP = IPAddress(0, 0, 0, 0);
+
+    #include <ArduinoOTA.h>
+
+    #include <WiFi.h>
+    // 1. Create a class that splits the stream to both Hardware Serial and a WiFi Server
+    class SerialSplitter : public Stream {
+    private:
+      HardwareSerial* hw;
+      WiFiServer* server;
+      WiFiClient client;
+      bool serverStarted = false; 
+    
+    public:
+      // Default to port 23 (Telnet)
+      SerialSplitter(HardwareSerial& hardwareSerial, uint16_t port = 23) {
+        hw = &hardwareSerial;
+        server = new WiFiServer(port);
+      }
+    
+      void begin(unsigned long baud) {
+        hw->begin(baud);
+      }
+    
+      void handle() {
+        if (WiFi.status() != WL_CONNECTED) {
+            return; 
+        }
+    
+        if (!serverStarted) {
+            server->begin();
+            serverStarted = true;
+        }
+    
+        if (server->hasClient()) {
+          if (!client || !client.connected()) {
+            if (client) client.stop();
+            client = server->available();
+            client.println("\n--- Connected to ESP32 Serial Splitter ---");
+          } else {
+            WiFiClient reject = server->available();
+            reject.stop(); 
+          }
+        }
+      }
+    
+      // --- STREAM/PRINT OUTPUT OVERRIDES ---
+      
+      size_t write(uint8_t c) override {
+        size_t n = hw->write(c);         
+        if (client && client.connected()) {
+          client.write(c);               
+        }
+        return n;
+      }
+    
+      size_t write(const uint8_t *buffer, size_t size) override {
+        size_t n = hw->write(buffer, size);
+        if (client && client.connected()) {
+          client.write(buffer, size);
+        }
+        return n;
+      }
+    
+      // --- STREAM INPUT OVERRIDES (UPDATED FOR TWO-WAY COMMS) ---
+    
+      int available() override { 
+        // Return the total number of bytes waiting from BOTH sources
+        int total = hw->available();
+        if (client && client.connected()) {
+          total += client.available();
+        }
+        return total;
+      }
+    
+      int read() override { 
+        // If there is network data, read that first
+        if (client && client.connected() && client.available()) {
+          return client.read();
+        }
+        // Otherwise, read from physical USB
+        return hw->read(); 
+      }
+    
+      int peek() override { 
+        if (client && client.connected() && client.available()) {
+          return client.peek();
+        }
+        return hw->peek(); 
+      }
+    
+      void flush() override { 
+        hw->flush(); 
+        if(client) client.flush(); 
+      }
+    };
+
+    // 2. Instantiate our splitter, hooking it into the real 'Serial' on port 23
+    SerialSplitter Splitter(Serial, 23);
+
+    // 3. THE HIJACK: Replace the word "Serial" with our Splitter for the rest of this file
+    #define Serial Splitter
 #endif
 
 #define DEMO_PREV -32768
@@ -5593,6 +5694,10 @@ void loop() {
 	EVERY_N_SECONDS(60) {
       Serial.printf("Loop() - Free Stack Space: %d\n", uxTaskGetStackHighWaterMark(NULL));
 	}
+    #ifdef WIFI
+        ArduinoOTA.handle();
+        Splitter.handle(); 
+    #endif
 #endif
     // Run the Aiko event loop, all the magic is in there.
     Events.loop();
@@ -5812,6 +5917,12 @@ void setup() {
             WebServer->tick();
             delay((uint32_t) 10);
 	}
+
+	Serial.println("Setup ArduinoOTA. Remote Wifi Updates Supported!");
+        ArduinoOTA.setHostname("Marc NFL");
+        ArduinoOTA.begin();
+
+        Serial.println("OTA Ready");
     #endif
 
 #ifdef NEOPIXEL_PIN
@@ -6013,13 +6124,17 @@ void setup() {
     Serial.println("vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv");
     Serial.println("          SETUP DONE...                   ");
 #ifdef ESP32
-    Serial.printf("Arduino Stack was set to %d bytes\n", getArduinoLoopTaskStackSize());
-    if (getArduinoLoopTaskStackSize() < 9000) Serial.println(">>>> NOT ENOUGH STACK, FIX cores/esp32/main.cpp <<<");
-    Serial.printf("Setup() - Free Stack Space: %d\n", uxTaskGetStackHighWaterMark(NULL));
-    if (uxTaskGetStackHighWaterMark(NULL) < 4000) {
-        Serial.println(">>>> NOT ENOUGH FREE STACK, FIX cores/esp32/main.cpp <<<");   
-        delay(5000);
-    }
+    #if ARDUINO > 10811
+        Serial.printf("Arduino Stack was set to %d bytes\n", getArduinoLoopTaskStackSize());
+        if (getArduinoLoopTaskStackSize() < 9000) Serial.println(">>>> NOT ENOUGH STACK, FIX cores/esp32/main.cpp <<<");
+        Serial.printf("Setup() - Free Stack Space: %d\n", uxTaskGetStackHighWaterMark(NULL));
+        if (uxTaskGetStackHighWaterMark(NULL) < 4000) {
+            Serial.println(">>>> NOT ENOUGH FREE STACK, FIX cores/esp32/main.cpp <<<");   
+            delay(5000);
+        }
+    #else
+        #error "does not seem to build with less than 1.8.12"
+    #endif
 #endif
 
     Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
