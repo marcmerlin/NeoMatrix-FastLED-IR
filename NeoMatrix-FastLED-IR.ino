@@ -106,46 +106,50 @@ using namespace Aiko;
 
     #include <WiFi.h>
     // 1. Create a class that splits the stream to both Hardware Serial and a WiFi Server
-    class SerialSplitter : public Stream {
+    template <typename T>
+    class GenericSerialSplitter : public Stream {
     private:
-      HardwareSerial* hw;
+      T* hw;
       WiFiServer* server;
       WiFiClient client;
       bool serverStarted = false; 
-    
+
     public:
       // Default to port 23 (Telnet)
-      SerialSplitter(HardwareSerial& hardwareSerial, uint16_t port = 23) {
+      GenericSerialSplitter(T& hardwareSerial, uint16_t port = 23) {
         hw = &hardwareSerial;
         server = new WiFiServer(port);
       }
-    
+
+      // Pass the initialization through to the underlying serial interface
       void begin(unsigned long baud) {
         hw->begin(baud);
       }
-    
+
       void handle() {
         if (WiFi.status() != WL_CONNECTED) {
             return; 
         }
-    
+
         if (!serverStarted) {
             server->begin();
             serverStarted = true;
         }
-    
+
         if (server->hasClient()) {
           if (!client || !client.connected()) {
             if (client) client.stop();
-            client = server->available();
+            // Fixed Core 3.x deprecation: converted available() to accept()
+            client = server->accept(); 
             client.println("\n--- Connected to ESP32 Serial Splitter ---");
           } else {
-            WiFiClient reject = server->available();
+            // Fixed Core 3.x deprecation: converted available() to accept()
+            WiFiClient reject = server->accept();
             reject.stop(); 
           }
         }
       }
-    
+
       // --- STREAM/PRINT OUTPUT OVERRIDES ---
       
       size_t write(uint8_t c) override {
@@ -155,7 +159,7 @@ using namespace Aiko;
         }
         return n;
       }
-    
+
       size_t write(const uint8_t *buffer, size_t size) override {
         size_t n = hw->write(buffer, size);
         if (client && client.connected()) {
@@ -163,42 +167,40 @@ using namespace Aiko;
         }
         return n;
       }
-    
-      // --- STREAM INPUT OVERRIDES (UPDATED FOR TWO-WAY COMMS) ---
-    
+
+      // --- STREAM INPUT OVERRIDES (TWO-WAY COMMS) ---
+
       int available() override { 
-        // Return the total number of bytes waiting from BOTH sources
         int total = hw->available();
         if (client && client.connected()) {
           total += client.available();
         }
         return total;
       }
-    
+
       int read() override { 
-        // If there is network data, read that first
         if (client && client.connected() && client.available()) {
           return client.read();
         }
-        // Otherwise, read from physical USB
         return hw->read(); 
       }
-    
+
       int peek() override { 
         if (client && client.connected() && client.available()) {
           return client.peek();
         }
         return hw->peek(); 
       }
-    
+
       void flush() override { 
         hw->flush(); 
-        if(client) client.flush(); 
+        // Fixed Core 3.x deprecation: converted flush() to clear()
+        if(client) client.clear(); 
       }
     };
 
-    // 2. Instantiate our splitter, hooking it into the real 'Serial' on port 23
-    SerialSplitter Splitter(Serial, 23);
+    // 2. Instantiate our splitter using decltype(Serial) to automatically match the architecture
+    GenericSerialSplitter<decltype(Serial)> Splitter(Serial, 23);
 
     // 3. THE HIJACK: Replace the word "Serial" with our Splitter for the rest of this file
     #define Serial Splitter
@@ -5460,6 +5462,8 @@ void register_Text_page() {
 void setup_wifi() {
     Serial.println("Configuring access point...");
 
+    // Start as a client for home network, if that fails, connectionStatus() will take
+    // the next step
     WebServer = new OmWebServer();
     WebServer->setStatusCallback(connectionStatus);
     WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
@@ -5901,7 +5905,9 @@ void setup() {
     leds_show();
 #endif // NEOPIXEL_PIN
 
+
     #ifdef WIFI
+
     uint32_t i = 100;
 	// Bring wifi up early to allow renaming files if they cause a crash
 	show_free_mem("Before Wifi");
