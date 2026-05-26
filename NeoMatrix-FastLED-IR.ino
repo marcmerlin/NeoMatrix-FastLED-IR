@@ -89,6 +89,8 @@ using namespace Aiko;
 #endif
 
 #ifdef WIFI
+    #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
+              
     #include "wifi_secrets.h"
     #include <OmEspHelpers.h>
     OmWebServer *WebServer = NULL;
@@ -5204,13 +5206,20 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   Serial.printf("%s: connectionStatus for '%s' is now '%s' fail cnt: %d\n", __func__, ssid, what, failure_cnt);
 
   if (!ap and failure_cnt > 2) {
-    Serial.println("Too many failures setting up Wifi client, switching to Wifi AP mode");
-    ap = true;
-    WebServer->clearWifis();
-    WiFi.disconnect();
-    WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+    if (digitalRead(WAVESHARE_CLIENT_PIN)) {
+        Serial.println("Too many failures setting up Wifi client to " WIFI_AP_SSID ", switching to client mode for " WIFI_SSID);
+        ap = true;
+        WebServer->clearWifis();
+        WiFi.disconnect();
+        WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
+    } else { 
+        Serial.println("Too many failures setting up Wifi client to " WIFI_SSID ", switching to Wifi AP mode to " WIFI_AP_SSID);
+        ap = true;
+        WebServer->clearWifis();
+        WiFi.disconnect();
+        WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+    }
     failure_cnt = 0;
-
   }
 }
 
@@ -5460,13 +5469,18 @@ void register_Text_page() {
 
 
 void setup_wifi() {
-    Serial.println("Configuring access point...");
-
-    // Start as a client for home network, if that fails, connectionStatus() will take
-    // the next step
     WebServer = new OmWebServer();
     WebServer->setStatusCallback(connectionStatus);
-    WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
+    
+    if (digitalRead(WAVESHARE_CLIENT_PIN)) {
+        Serial.println(">>>>>>>>>>>>>> Configured for Wifi client mode, will try to connect to " WIFI_AP_SSID);
+        WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+    } else { 
+        // Start as a client for home network, if that fails, connectionStatus() will take
+        // the next step
+        Serial.println(">>>>>>>>>>>>>> Configured for Wifi AP mode, will try to connect to " WIFI_SSID);
+        WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
+    }
 
     WebPages = new OmWebPages();
     WebPages->setBuildDateAndTime(__DATE__, __TIME__);
@@ -5907,6 +5921,12 @@ void setup() {
 
 
     #ifdef WIFI
+
+        #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
+            pinMode(WAVESHARE_CLIENT_PIN, INPUT_PULLDOWN);  // top left, client/slave mode
+            pinMode(8, OUTPUT); // used as voltage source for wiring easiness
+            digitalWrite(8, HIGH);
+        #endif
 
     uint32_t i = 100;
 	// Bring wifi up early to allow renaming files if they cause a crash
