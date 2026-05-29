@@ -90,6 +90,7 @@ using namespace Aiko;
 
 #ifdef WIFI
     #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
+    bool WAVESHARE_WIFI_CLIENT_MODE = false;
               
     #include "wifi_secrets.h"
     #include <OmEspHelpers.h>
@@ -5203,21 +5204,23 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   else if (failure) { what = "failure"; failure_cnt++; }
   else if (success) { what = "success"; failure_cnt = 0; }
 
-  Serial.printf("%s: connectionStatus for '%s' is now '%s' fail cnt: %d\n", __func__, ssid, what, failure_cnt);
+  Serial.printf("Wifi client enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d\n", WAVESHARE_WIFI_CLIENT_MODE, __func__, ssid, what, failure_cnt);
 
-  if (!ap and failure_cnt > 2) {
-    if (digitalRead(WAVESHARE_CLIENT_PIN)) {
-        Serial.println("Too many failures setting up Wifi client to " WIFI_AP_SSID ", switching to client mode for " WIFI_SSID);
+  if (!ap and failure_cnt > 0) {
+    if (WAVESHARE_WIFI_CLIENT_MODE and failure_cnt > 10) {
+        Serial.println("Client mode: Too many failures setting up Wifi client to " WIFI_AP_SSID " with" WIFI_AP_PASSWORD ", switching to " WIFI_SSID);
         ap = true;
         WebServer->clearWifis();
         WiFi.disconnect();
         WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
-    } else { 
+    } else if (! WAVESHARE_WIFI_CLIENT_MODE) { 
         Serial.println("Too many failures setting up Wifi client to " WIFI_SSID ", switching to Wifi AP mode to " WIFI_AP_SSID);
         ap = true;
         WebServer->clearWifis();
         WiFi.disconnect();
         WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+        // allow 8 wifi clients, 2 rPis, 2nd ESP32, phone to connect, laptop to debug
+        WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, 8); 
     }
     failure_cnt = 0;
   }
@@ -5475,11 +5478,13 @@ void setup_wifi() {
     if (digitalRead(WAVESHARE_CLIENT_PIN)) {
         Serial.println(">>>>>>>>>>>>>> Configured for Wifi client mode, will try to connect to " WIFI_AP_SSID);
         WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+        WAVESHARE_WIFI_CLIENT_MODE = true;
     } else { 
         // Start as a client for home network, if that fails, connectionStatus() will take
         // the next step
         Serial.println(">>>>>>>>>>>>>> Configured for Wifi AP mode, will try to connect to " WIFI_SSID);
         WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
+        WAVESHARE_WIFI_CLIENT_MODE = false;
     }
 
     WebPages = new OmWebPages();
