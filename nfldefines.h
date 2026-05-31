@@ -91,7 +91,6 @@ uint8_t led_brightness = 64;
 
 // On ESP32, I have a 64x64 direct matrix (not tiled) with 2 options of drivers.
 #if mheight == 96 || mheight == 192
-    uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     // Using RGBPanel via SmartMatrix
 
     // Memory After GIF init:
@@ -105,6 +104,7 @@ uint8_t led_brightness = 64;
 
     // No LED strip on rPi, but good to run the code on linux to exercise compiler warnings (and ASAN)
     #ifndef RPI
+	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
 	// You can enable this on ArduinoONPC (linux) for debugging LED trip bugs
 	#ifndef ARDUINOONPC
 	    #define STRIP_NUM_LEDS LED_LENGTH
@@ -114,6 +114,11 @@ uint8_t led_brightness = 64;
 		// Check NeoMatrix-FastLED-IR.ino setup
 	    #endif
 	#endif
+    #elif defined(GFXDISPLAY_M128BY192ABCPWM)
+	// PWM panels are brighter. Start lower down
+	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 4;
+    #else
+	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     #endif
 
 #elif mheight == 12

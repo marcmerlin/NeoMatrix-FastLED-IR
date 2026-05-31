@@ -1,3 +1,8 @@
+// TODO:
+// Event: client disconnected from access point
+// Event: client connected to access point
+// resend IP
+// 
 // By Marc MERLIN <marc_soft@merlins.org>
 // License: Apache v2.0
 //
@@ -104,6 +109,9 @@ using namespace Aiko;
 
     // Allows a connected device via serial to feed a remote IP as a 32bit number
     IPAddress Remote_IP = IPAddress(0, 0, 0, 0);
+    // Allows a slave ESP32 to send its IP to be notified of pattern changes
+    IPAddress Slave_IP = IPAddress(0, 0, 0, 0);
+
 
     #include <ArduinoOTA.h>
 
@@ -129,12 +137,26 @@ using namespace Aiko;
         hw->begin(baud);
       }
 
+      void restart() {
+        Serial.println("Inside SerialSplitter.restart()");
+        if (serverStarted) {
+            server->end();
+            serverStarted = false;
+            Serial.println("SerialSplitter.restart(): end Splitter");
+        }
+        if (client) {
+            client.stop();
+            Serial.println("SerialSplitter.restart(): stop client");
+        }
+      }
+
       void handle() {
-        if (WiFi.status() != WL_CONNECTED) {
+        if (WiFi.status() != WL_CONNECTED && WiFi.getMode() != WIFI_AP && WiFi.getMode() != WIFI_AP_STA) {
             return; 
         }
 
         if (!serverStarted) {
+            Serial.println("SerialSplitter: (re)start");
             server->begin();
             serverStarted = true;
         }
@@ -207,6 +229,41 @@ using namespace Aiko;
 
     // 3. THE HIJACK: Replace the word "Serial" with our Splitter for the rest of this file
     #define Serial Splitter
+
+    bool slave_ip_sent = false;
+
+    void send_slave_ip_to_master() {
+    // Only execute if this ESP32 is running as the client/slave
+    if (WAVESHARE_WIFI_CLIENT_MODE && WiFi.status() == WL_CONNECTED && !slave_ip_sent) {
+        WiFiClient client;
+        // Master AP IP address per your requirements
+        IPAddress masterIP(192, 168, 4, 1); 
+        
+        if (client.connect(masterIP, 23)) {
+            IPAddress myIP = WiFi.localIP();
+            
+            // Hack: Set the "3rd bit" (value 32, 0x20) to 1. 
+            // This turns 192 (11000000) into 224 (11100000).
+            myIP[0] = myIP[0] | 0x20; 
+            
+            // Pack it into a uint32_t exactly as the receiver's math expects
+            uint32_t ipNum = ((uint32_t)myIP[0] << 24) | 
+                             ((uint32_t)myIP[1] << 16) | 
+                             ((uint32_t)myIP[2] << 8)  | 
+                              (uint32_t)myIP[3];
+                              
+            // Send the ASCII representation of the 32-bit integer
+            client.println(ipNum);
+            client.flush(); 
+            delay(100);
+            client.stop();
+            slave_ip_sent = true;
+            Serial.println("Successfully sent Slave IP to Master");
+        } else {
+            Serial.println("Master Telnet not ready, will retry...");
+        }
+    }
+}
 #endif
 
 #define DEMO_PREV -32768
@@ -3770,6 +3827,20 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 	Serial.println(buf);
 	Serial.flush();
 
+        #ifdef WIFI
+            if (Slave_IP != IPAddress(0, 0, 0, 0)) {
+                WiFiClient slaveClient;
+                if (slaveClient.connect(Slave_IP, 23)) {
+                    // Send the raw ASCII pattern number. The slave's IR_Serial_Handler 
+                    // loop will pick it up as digits and load it into new_pattern
+                    slaveClient.print(MATRIX_DEMO);
+                    slaveClient.flush();
+                    delay(50);
+                    slaveClient.stop();
+                }
+            }
+        #endif
+
         // We changed the current demo, update the selection in the big dropdown
         rebuild_main_page();
     #endif
@@ -4118,13 +4189,16 @@ void IR_Serial_Handler() {
 	readchar = Serial.read();
 	if (readchar) {
 
-	    // Have ESP32 ignore serial input until it gets the remote start command
 	    if (readchar == '|' && !startcmd) {
-		Serial.println("Got remote serial start, now accepting serial commands");
+		Serial.println("Got remote serial start from rPi");
 		startcmd = true;
 		RpiRemote = true;
 	    }
-	    if (! startcmd) { Serial.println("Ignoring input without startcmd |St"); goto endserial; }
+            // I think this was a protection against crap sent from the
+            // console, but at the same time it prevents the slave ESP32
+            // from sending its IP. I'm going to try disabling this.
+            // arduino serial console sends 'bytes lar...' which causes reboot
+	    //if (! startcmd) { Serial.println("Ignoring input without startcmd |St"); goto endserial; }
 
 	    #ifdef ARDUINOONPC
 		// Allow feeding rPi commands that would normally be received over ttyUSB*
@@ -4161,15 +4235,26 @@ void IR_Serial_Handler() {
 	    }
             #ifdef WIFI
             if (new_pattern > DEMO_LAST_IDX) {
-                // this is sent by rPi_send_IP_to_ESP32
-                Remote_IP = IPAddress(
-                    (new_pattern & 0xFF000000) / 0x1000000,
-                    (new_pattern & 0x00FF0000) / 0x10000,
-                    (new_pattern & 0x0000FF00) / 0x100,
-                    (new_pattern & 0x000000FF) / 1
-                );
-                Serial.print("ESP32 received Rpi IP: ");
-                Serial.println(Remote_IP.toString().c_str());
+                // this is sent by rPi_send_IP_to_ESP32 or send_slave_ip_to_master
+                uint8_t octet1 = (new_pattern & 0xFF000000) / 0x1000000;
+                uint8_t octet2 = (new_pattern & 0x00FF0000) / 0x10000;
+                uint8_t octet3 = (new_pattern & 0x0000FF00) / 0x100;
+                uint8_t octet4 = (new_pattern & 0x000000FF) / 1;
+
+                // Check if the 3rd bit (0x20) is set, typical of our 224 hack
+                if ((octet1 & 0x20) == 0x20 && octet1 >= 224) { 
+                    // Clear the 3rd bit to revert back to 192.x.x.x
+                    octet1 &= ~0x20; 
+                    Slave_IP = IPAddress(octet1, octet2, octet3, octet4);
+                    
+                    Serial.print("ESP32 Master received Slave IP: ");
+                    Serial.println(Slave_IP.toString().c_str());
+                } else {
+                    // If the bit isn't set, it's the standard rPi IP
+                    Remote_IP = IPAddress(octet1, octet2, octet3, octet4);
+                    Serial.print("ESP32 received Rpi IP: ");
+                    Serial.println(Remote_IP.toString().c_str());
+                }
             }
             #endif
 
@@ -4187,7 +4272,7 @@ void IR_Serial_Handler() {
 		#endif
                 matrix_change(new_pattern, true);
 	    } else {
-		if (readchar != '\n') {
+		if (readchar != '\n' && readchar != '\r') {
 		    Serial.print("Got serial char '");
 		    Serial.print(readchar);
 		    Serial.println("'");
@@ -4250,7 +4335,7 @@ void IR_Serial_Handler() {
 	    else if (readchar == '~') { Serial.println("exit");			exit(0);}
 	#else
             // Any of these can be sent from rPI console by sending R + x, like Ri
-	    else if (readchar == 'r') { Serial.println("Reboot"); resetFunc(); }
+	    else if (readchar == 'r') { if (startcmd) { Serial.println("Reboot"); resetFunc(); } else { Serial.println("Ignoring Reboot before receiving |St");  }  }
 	    // After RPI gets serial from ESP, it sends 'i' once.
 	    else if (readchar == 'i') { Serial.println("Serial => showip");     showip();}
 	    else if (readchar == 'x') { changePanelConf(2); }
@@ -5199,12 +5284,26 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   static uint8_t failure_cnt = 0;
   static bool ap = false;
   const char *what = "?";
+  extern bool slave_ip_sent; 
 
   if (trying)       { what = "trying"; }
-  else if (failure) { what = "failure"; failure_cnt++; }
-  else if (success) { what = "success"; failure_cnt = 0; }
+  else if (failure) { 
+      what = "failure"; 
+      failure_cnt++; 
+      slave_ip_sent = false; // Reset so the slave retries if WiFi drops
+  } else if (success) { 
+      what = "success"; 
+      failure_cnt = 0; 
+      Splitter.restart();
+  }
 
   Serial.printf("Wifi client enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d\n", WAVESHARE_WIFI_CLIENT_MODE, __func__, ssid, what, failure_cnt);
+
+    // Moved to loop()
+    //   if (WAVESHARE_WIFI_CLIENT_MODE && success) {
+    //     Serial.println("ESP32 Client mode, sending IP to master");
+    //     send_slave_ip_to_master();
+    //   }
 
   if (!ap and failure_cnt > 0) {
     if (WAVESHARE_WIFI_CLIENT_MODE and failure_cnt > 10) {
@@ -5221,6 +5320,9 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
         WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
         // allow 8 wifi clients, 2 rPis, 2nd ESP32, phone to connect, laptop to debug
         WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, 8); 
+
+        // AP is up! Restart Splitter so it binds to the new AP interface (192.168.4.1)
+        Splitter.restart();
     }
     failure_cnt = 0;
   }
@@ -5720,6 +5822,9 @@ void loop() {
     #ifdef WIFI
         ArduinoOTA.handle();
         Splitter.handle(); 
+        EVERY_N_SECONDS(3) {
+            send_slave_ip_to_master();
+        }
     #endif
 #endif
     // Run the Aiko event loop, all the magic is in there.
