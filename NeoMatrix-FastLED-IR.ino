@@ -1,18 +1,15 @@
-// TODO:
-// Event: client disconnected from access point
-// Event: client connected to access point
-// resend IP
-// 
 // By Marc MERLIN <marc_soft@merlins.org>
 // License: Apache v2.0
 //
 // Portions of demo code from Adafruit_NeoPixel/examples/strandtest apparently
 // licensed under LGPLv3 as per the top level license file in there.
 
+// This code used to be controlled with an IR remote before Wifi was added later (Wifi takes
+// a lot of RAM and eventually did not fit on ESP32 without PSRAM if SmartMatrix was used)
+// As of 2026, no idea if the IR code still works, although it should. Original comment below:
 // Neopixel + IR is hard because the neopixel libs disable interrups while IR is trying to
 // receive, and bad things happen :(
 // https://github.com/z3t0/Arduino-IRremote/issues/314
-//
 // leds.show takes 1 to 3ms during which IR cannot run and codes get dropped, but it's more
 // a problem if you constantly update for pixel animations and in that case the IR ISR gets
 // almost no chance to run.
@@ -20,20 +17,18 @@
 // on chips that are capable of it. This allows IR + Neopixel to work on Teensy v3.1 and most
 // other 32bit CPUs.
 
-// Compile WeMos D1 R2 & mini, ESP32-dev, or ArduinoOnPC for linux
+// Compile on ESP8266 WeMos D1 R2 & mini (obsolete), ESP32-dev, or ArduinoOnPC for linux
 // Now using Waveshare ESP32-S3-Zero for smaller chip with built in neopixel
 // use 2MB/2MB CDG and JTAG, CDC on boot enabled (allows Serial console), upload mode hardware CDC
 
-// Force 24x32 on ESP32 for bright daylight display
-// as a hack, we enable this for non PSRAM boards but
-// a non PSRAM board could also run a framebuffer less
-// setup to drive a rPi
+// Force 24x32 on ESP32 for bright daylight display (obsolete display)
 //#ifdef ESP32
-//#ifndef BOARD_HAS_PSRAM
 //#define M32BY8X3
 //#endif
-//#endif
 
+// Somehow this code plus the new ESP32 core I don't control makes the chip run out of stack
+// which creates horrible unexplainable crashes. Also, I have not managed to modify the stack
+// size from within my code without changing the core library
 // Change default in ./cores/esp32/main.cpp (was just 1KB short after update to newer core)
 // With new ESP core, set Arduino and Events to run on core 1
 // these do not seem to work (defined too late)
@@ -96,6 +91,7 @@ using namespace Aiko;
 #ifdef WIFI
     #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
     bool WAVESHARE_WIFI_CLIENT_MODE = false;
+    uint32_t send_slave_ip_to_master_tries = 0;
               
     #include "wifi_secrets.h"
     #include <OmEspHelpers.h>
@@ -233,37 +229,39 @@ using namespace Aiko;
     bool slave_ip_sent = false;
 
     void send_slave_ip_to_master() {
-    // Only execute if this ESP32 is running as the client/slave
-    if (WAVESHARE_WIFI_CLIENT_MODE && WiFi.status() == WL_CONNECTED && !slave_ip_sent) {
-        WiFiClient client;
-        // Master AP IP address per your requirements
-        IPAddress masterIP(192, 168, 4, 1); 
-        
-        if (client.connect(masterIP, 23)) {
-            IPAddress myIP = WiFi.localIP();
+        if (send_slave_ip_to_master_tries > 10) return;
+        // Only execute if this ESP32 is running as the client/slave
+        if (WAVESHARE_WIFI_CLIENT_MODE && WiFi.status() == WL_CONNECTED && !slave_ip_sent) {
+            WiFiClient client;
+            // Master AP IP address per your requirements
+            IPAddress masterIP(192, 168, 4, 1); 
             
-            // Hack: Set the "3rd bit" (value 32, 0x20) to 1. 
-            // This turns 192 (11000000) into 224 (11100000).
-            myIP[0] = myIP[0] | 0x20; 
-            
-            // Pack it into a uint32_t exactly as the receiver's math expects
-            uint32_t ipNum = ((uint32_t)myIP[0] << 24) | 
-                             ((uint32_t)myIP[1] << 16) | 
-                             ((uint32_t)myIP[2] << 8)  | 
-                              (uint32_t)myIP[3];
-                              
-            // Send the ASCII representation of the 32-bit integer
-            client.println(ipNum);
-            client.flush(); 
-            delay(100);
-            client.stop();
-            slave_ip_sent = true;
-            Serial.println("Successfully sent Slave IP to Master");
-        } else {
-            Serial.println("Master Telnet not ready, will retry...");
+            if (client.connect(masterIP, 23)) {
+                IPAddress myIP = WiFi.localIP();
+                
+                // Hack: Set the "3rd bit" (value 32, 0x20) to 1. 
+                // This turns 192 (11000000) into 224 (11100000).
+                myIP[0] = myIP[0] | 0x20; 
+                
+                // Pack it into a uint32_t exactly as the receiver's math expects
+                uint32_t ipNum = ((uint32_t)myIP[0] << 24) | 
+                                 ((uint32_t)myIP[1] << 16) | 
+                                 ((uint32_t)myIP[2] << 8)  | 
+                                  (uint32_t)myIP[3];
+                                  
+                // Send the ASCII representation of the 32-bit integer
+                client.println(ipNum);
+                client.flush(); 
+                delay(100);
+                client.stop();
+                slave_ip_sent = true;
+                Serial.println("Successfully sent Slave IP to Master");
+            } else {
+                Serial.print("Master Telnet not ready, will retry... ");
+                Serial.println(send_slave_ip_to_master_tries++);
+            }
         }
     }
-}
 #endif
 
 #define DEMO_PREV -32768
@@ -5294,6 +5292,7 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   } else if (success) { 
       what = "success"; 
       failure_cnt = 0; 
+      send_slave_ip_to_master_tries = 0;
       Splitter.restart();
   }
 
@@ -5306,25 +5305,26 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
     //   }
 
   if (!ap and failure_cnt > 0) {
-    if (WAVESHARE_WIFI_CLIENT_MODE and failure_cnt > 10) {
-        Serial.println("Client mode: Too many failures setting up Wifi client to " WIFI_AP_SSID " with" WIFI_AP_PASSWORD ", switching to " WIFI_SSID);
-        ap = true;
-        WebServer->clearWifis();
-        WiFi.disconnect();
-        WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
-    } else if (! WAVESHARE_WIFI_CLIENT_MODE) { 
-        Serial.println("Too many failures setting up Wifi client to " WIFI_SSID ", switching to Wifi AP mode to " WIFI_AP_SSID);
-        ap = true;
-        WebServer->clearWifis();
-        WiFi.disconnect();
-        WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
-        // allow 8 wifi clients, 2 rPis, 2nd ESP32, phone to connect, laptop to debug
-        WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, 8); 
+      if (WAVESHARE_WIFI_CLIENT_MODE and failure_cnt > 3) {
+          Serial.println("Client mode: Too many failures setting up Wifi client to " WIFI_AP_SSID " with" WIFI_AP_PASSWORD ", switching to " WIFI_SSID);
+          ap = true;
+          WebServer->clearWifis();
+          WiFi.disconnect();
+          WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
+          failure_cnt = 0;
+      } else if (! WAVESHARE_WIFI_CLIENT_MODE) { 
+          Serial.println("Too many failures setting up Wifi client to " WIFI_SSID ", switching to Wifi AP mode to " WIFI_AP_SSID);
+          ap = true;
+          WebServer->clearWifis();
+          WiFi.disconnect();
+          WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+          // allow 8 wifi clients, 2 rPis, 2nd ESP32, phone to connect, laptop to debug
+          WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, 8); 
 
-        // AP is up! Restart Splitter so it binds to the new AP interface (192.168.4.1)
-        Splitter.restart();
-    }
-    failure_cnt = 0;
+          // AP is up! Restart Splitter so it binds to the new AP interface (192.168.4.1)
+          Splitter.restart();
+          failure_cnt = 0;
+      }
   }
 }
 
@@ -5822,7 +5822,7 @@ void loop() {
     #ifdef WIFI
         ArduinoOTA.handle();
         Splitter.handle(); 
-        EVERY_N_SECONDS(3) {
+        EVERY_N_SECONDS(5) {
             send_slave_ip_to_master();
         }
     #endif

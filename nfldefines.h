@@ -1,8 +1,8 @@
 #ifndef nfldefines_h
 #define nfldefines_h
 
-// old strips were 48, new ones are 60
-#define LED_LENGTH 60
+// old old strips were 48, previous ones are 60, new ones are 70
+#define LED_LENGTH 70
 
 #ifdef ESP32
     // the demo array is too long for smartmatrix to work reliably on
