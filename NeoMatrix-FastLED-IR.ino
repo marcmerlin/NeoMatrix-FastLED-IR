@@ -2277,7 +2277,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 140 */   { ROOT  "z_3Mel_spiral_pentagon_dance.gif",	10,-32,0, 10, 10, 0, 0 },
 /* 141 */   { ROOT  "z_3Qqj_double_stargate.gif",	10,-20,-16,9, 12, 0, 0 },
 /* 142 */   { ROOT  "z_3Wfu_RGB_smirout.gif",		10,-32,0, 10, 10, 0, 0 },
-/* 143 */   { ROOT  "z_3wQM_fractal_zoom.gif",		10,-24,0,  8, 10, 0, 0 },
+/* 143 */   { ROOT  "z_WSK_inca_spiralin.gif",		10,-32,0, 10, 10, 0, 0 },
 /* 144 */   { ROOT  "z_3zO_pacman.gif",			40,-12,0,  8, 10, 0, 0 },
 /* 145 */   { ROOT  "z_47Vg_purple_hair_spiralout.gif",	10,-32,0, 10, 10, 0, 0 },
 /* 146 */   { ROOT  "z_4P4a_flip_triangles.gif",	10,-20,0,  8, 10, 0, 0 },
@@ -2373,7 +2373,7 @@ uint8_t GifAnim(uint32_t idx) {
 /* 236 */   { ROOT  "z_VRfm_fly_purple_gates.gif",	10,-32,0, 10, 10, 0, 0 },
 /* 237 */   { ROOT  "z_WGkW_bluelady_smoke.gif",	10, 0, 0, 10, 10, 0, 0 },
 /* 238 */   { ROOT  "z_WMDv_sailor_moon.gif",		10,-20,0,  9, 10, 0, 0 },
-/* 239 */   { ROOT  "z_WSK_inca_spiralin.gif",		10,-32,0, 10, 10, 0, 0 },
+/* 239 */   { ROOT  "z_2zGr_sailor_moon2.gif",		10, 0, 0,  8, 10, 0, 0 },
 /* 240 */   { ROOT  "z_WUUT_eye.gif",			10,-32,0, 10, 10, 0, 0 },
 /* 241 */   { ROOT  "z_XiPu_blue_shark_dance.gif",	10,-32,0, 10, 10, 0, 0 },
 /* 242 */   { ROOT  "z_XqyP_blue_dancer.gif",		10,-32,0, 10, 10, 0, 0 },
@@ -2398,11 +2398,11 @@ uint8_t GifAnim(uint32_t idx) {
 /* 261 */   { ROOT  "F_Anna2.gif"             , 10, 6,  9, 10, 10,140,210 },
 /* 262 */   { ROOT  "F_Anna3.gif"             , 10, 6,  9, 10, 10,140,210 },
 /* 263 */   { ROOT  "F_Anna4.gif"             , 10, 6,  9, 10, 10,140,210 },
-/* 264 */   { ROOT  "FIF5.gif"                , 10, 6,  9, 10, 10,140,210 },
-/* 265 */   { ROOT  "FIF6.gif"                , 10, 6,  9, 10, 10,140,210 },
+/* 264 */   { ROOT  "F_AmandaVanderHeyden.gif", 10, 6,  9, 10, 10,140,210 },
+/* 265 */   { ROOT  "F_Thorgodofbass.gif"     , 10, 6,  9, 10, 10,140,210 },
 /* 266 */   { ROOT  "FIF7.gif"                , 10, 6,  9, 10, 10,140,210 },
-/* 267 */   { ROOT  "F_AmandaVanderHeyden.gif", 10, 6,  9, 10, 10,140,210 },
-/* 268 */   { ROOT  "F_Thorgodofbass.gif"     , 10, 6,  9, 10, 10,140,210 },
+/* 267 */   { ROOT  "FIF8.gif"                , 10, 6,  9, 10, 10,140,210 },
+/* 268 */   { ROOT  "DJ_Superstrings.gif"     , 10, 6,  9, 10, 10,140,210 },
 /* 269 */   { ROOT  "DJ_Billy_Gillies.gif"    , 10, 6,  9, 10, 10,140,210 },
 /* 270 */   { ROOT  "DJ_Chicane.gif"          ,	10, 6,  9, 10, 10,140,210 },
 /* 271 */   { ROOT  "DJ_David_Forbes.gif"     ,	10, 6,  9, 10, 10,140,210 },
@@ -3554,7 +3554,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 260 */ { "GIF spiral pentagon dance", GifAnim, 140, NULL }, // 180
 /* 261 */ { "GIF double stargate",	 GifAnim, 141, NULL },
 /* 262 */ { "GIF RGB smirout",		 GifAnim, 142, NULL },
-/* 263 */ { "GIF fractal zoom",		 GifAnim, 143, NULL },
+/* 263 */ { "GIF inca spiralin",	 GifAnim, 143, NULL }, // change
 /* 264 */ { "GIF pacman",		 GifAnim, 144, NULL },
 /* 265 */ { "GIF purple hair spiralout", GifAnim, 145, NULL },
 /* 266 */ { "GIF flip triangles",	 GifAnim, 146, NULL },
@@ -3650,7 +3650,7 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 356 */ { "GIF fly purple gates",	 GifAnim, 236, NULL },
 /* 357 */ { "GIF bluelady smoke",	 GifAnim, 237, NULL },
 /* 358 */ { "GIF sailor moon",		 GifAnim, 238, NULL },
-/* 359 */ { "GIF inca spiralin",	 GifAnim, 239, NULL },
+/* 359 */ { "GIF sailor moon2",          GifAnim, 239, NULL },
 /* 360 */ { "GIF eye",			 GifAnim, 240, NULL }, // mapped to 280
 /* 361 */ { "GIF blue shark dance",	 GifAnim, 241, NULL },
 /* 362 */ { "GIF blue dancer",		 GifAnim, 242, NULL },
@@ -3676,11 +3676,11 @@ Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 381 */ { "FIF Anna2",             GifAnim, 261, NULL },
 /* 382 */ { "FIF Anna3",             GifAnim, 262, NULL },
 /* 383 */ { "FIF Anna4",             GifAnim, 263, NULL },
-/* 384 */ { "FIF 5",		             GifAnim, 264, NULL },
-/* 385 */ { "FIF 6",                 GifAnim, 265, NULL },
+/* 384 */ { "FIF AmandaVH",          GifAnim, 264, NULL },
+/* 385 */ { "FIF Thorgodofbass",     GifAnim, 265, NULL },
 /* 386 */ { "FIF 7",                 GifAnim, 266, NULL },
-/* 387 */ { "FIF AmandaVH",          GifAnim, 267, NULL },
-/* 388 */ { "FIF Thorgodofbass",     GifAnim, 268, NULL },
+/* 387 */ { "FIF 8",                 GifAnim, 267, NULL },
+/* 388 */ { "Superstrings",          GifAnim, 268, NULL },
 /* 389 */ { "Billy Gillies",         GifAnim, 269, NULL },
 /* 390 */ { "Chicane",               GifAnim, 270, NULL },
 /* 391 */ { "David Forbes",          GifAnim, 271, NULL },
@@ -6023,10 +6023,10 @@ void showip() {
 
 void setup() {
     Serial.begin(115200);
-    masterBootToken = esp_random(); // Generate unique session token for Master
     Serial.println("Hello World");
     Serial.println(__DATE__);
     Serial.println(__TIME__);
+
 #ifdef ESP8266
     Serial.println("Init ESP8266");
     // Turn off Wifi
@@ -6109,6 +6109,7 @@ void setup() {
 
 
     #ifdef WIFI
+        masterBootToken = esp_random();
 
         #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
             pinMode(WAVESHARE_CLIENT_PIN, INPUT_PULLDOWN);  // top left, client/slave mode
