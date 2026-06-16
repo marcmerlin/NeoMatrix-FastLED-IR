@@ -201,21 +201,21 @@ using namespace Aiko;
 
       int available() override { 
         int total = hw->available();
-        if (client && client.connected()) {
+        if (client) {
           total += client.available();
         }
         return total;
       }
 
       int read() override { 
-        if (client && client.connected() && client.available()) {
+        if (client && client.available()) {
           return client.read();
         }
         return hw->read(); 
       }
 
       int peek() override { 
-        if (client && client.connected() && client.available()) {
+        if (client && client.available()) {
           return client.peek();
         }
         return hw->peek(); 
@@ -3871,7 +3871,8 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
                     // loop will pick it up as digits and load it into new_pattern
                     slaveClient.print(MATRIX_DEMO);
                     slaveClient.flush();
-                    delay(50);
+                    // Give enough time for the full data to go through before we tear down the connection
+                    delay(200);
                     slaveClient.stop();
                 }
             }
