@@ -3271,8 +3271,6 @@ uint16_t demoidx(uint16_t idx) {
 
 Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 000 */ { "NULL Demo", NULL, -1, NULL },
-/* 001 */ { "Squares In",  squares, 0, NULL },
-/* 002 */ { "Squares Out", squares, 1, NULL },
 /* 003 */ { "EatSleepTranceRepeat Flash", esrbtr_flash, 1, NULL },
 /* 004 */ { "EatSleepRaveBurnRepeat Flash", esrbtr_flash, 0, NULL },
 /* 005 */ { "TFSF Zoom InOut", tfsf_zoom, 1, NULL },
@@ -4286,7 +4284,7 @@ void IR_Serial_Handler() {
 		if (Serial.available()) readchar = Serial.read();
 	    }
             #ifdef WIFI
-            if (new_pattern > DEMO_LAST_IDX) {
+            if (new_pattern > 9999) {
                 // this is sent by rPi_send_IP_to_ESP32 or send_slave_ip_to_master
                 uint8_t octet1 = (new_pattern & 0xFF000000) / 0x1000000;
                 uint8_t octet2 = (new_pattern & 0x00FF0000) / 0x10000;
@@ -5067,6 +5065,7 @@ void process_config(bool show_summary=false) {
 #define HTML_SHOWIP	    120
 #define HTML_RESTARTPI	    121
 #define HTML_REBOOTPI	    122
+#define HTML_REBOOTESP32    123
 #define HTML_STRIPCHOICE    130
 #define HTML_DEMOCHOICE	    131
 
@@ -5104,6 +5103,12 @@ void actionProc(const char *pageName, const char *parameterName, int value, int 
 	if (!value) break;
 	Serial.println("Reboot PI pressed");
 	Serial.println("|RB");
+	break;
+
+    case HTML_REBOOTESP32:
+	if (!value) break;
+	Serial.println("Reboot ESP32 pressed");
+	resetFunc();
 	break;
 
     case HTML_BESTOF:
@@ -5485,10 +5490,11 @@ void rebuild_main_page(bool show_summary) {
 void rebuild_advanced_page() {
     WebPages->beginPage("Advanced");
 
+    WebPages->addButton("Reboot ESP32", actionProc, HTML_REBOOTESP32);
     if (PANELCONFNUM > 3) {
-	WebPages->addButton("Show RPI IP", actionProc, HTML_SHOWIP);
-	WebPages->addButton("Restart RPI", actionProc, HTML_RESTARTPI);
-	WebPages->addButton("Reboot RPI", actionProc,  HTML_REBOOTPI);
+	WebPages->addButton("Show RPI IP",  actionProc, HTML_SHOWIP);
+	WebPages->addButton("Restart RPI",  actionProc, HTML_RESTARTPI);
+	WebPages->addButton("Reboot RPI",   actionProc, HTML_REBOOTPI);
     }
 
     // WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
