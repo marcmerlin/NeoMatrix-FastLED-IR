@@ -205,7 +205,7 @@ using namespace Aiko;
                      udp.endPacket();
                      Serial.printf(">>>>>>>>>>>>>>> Master: Sent beacon %u to %s:%d", masterBootToken, broadcastIP.toString().c_str(), UDP_DISCOVERY_PORT);
                      if (Slave_IP != IPAddress(0, 0, 0, 0)) {
-                         Serial.printf("Current known Slave IP: %s\r\n", Slave_IP.toString().c_str());
+                         Serial.printf(" (current known Slave IP: %s)\r\n", Slave_IP.toString().c_str());
 
                      } else {
                         Serial.println(" (slave IP unknown)");
