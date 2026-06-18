@@ -203,7 +203,13 @@ using namespace Aiko;
                  if (udp.beginPacket(broadcastIP, UDP_DISCOVERY_PORT)) {
                      udp.write((uint8_t*)&masterBootToken, sizeof(masterBootToken));
                      udp.endPacket();
-                     Serial.printf(">>>>>>>>>>>>>>> Master: Sent beacon %u to %s:%d\r\n", masterBootToken, broadcastIP.toString().c_str(), UDP_DISCOVERY_PORT);
+                     Serial.printf(">>>>>>>>>>>>>>> Master: Sent beacon %u to %s:%d", masterBootToken, broadcastIP.toString().c_str(), UDP_DISCOVERY_PORT);
+                     if (Slave_IP != IPAddress(0, 0, 0, 0)) {
+                         Serial.printf("Current known Slave IP: %s\r\n", Slave_IP.toString().c_str());
+
+                     } else {
+                        Serial.println(" (slave IP unknown)");
+                     }
                  } else {
                      Serial.println(">>>>>>>>>>>>>> Master: Failed to initiate UDP beacon packet");
                  }
