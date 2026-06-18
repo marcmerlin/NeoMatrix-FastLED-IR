@@ -309,15 +309,14 @@ using namespace Aiko;
             serverStarted = true;
         }
 
-#if 0
-        // UDP remains disabled for now per user request.
+        // Enabling this in the past caused it to eat UDP broadcast from the master
+        // hopefully UDP_COOLDOWN_MS will fix this and allow enabling safely
         if (!udpStarted) {
             Serial.println("SerialSplitter: (re)start UDP");
             if (udpServer.begin(udpPort)) {
                 udpStarted = true;
             }
         }
-#endif
 
         if (server->hasClient()) {
           if (!client || !client.connected()) {
@@ -3978,7 +3977,7 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 
         #ifdef WIFI
             if (Slave_IP != IPAddress(0, 0, 0, 0)) {
-                #define MS_TCP_UPDATES
+                //#define MS_TCP_UPDATES
                 #ifdef MS_TCP_UPDATES
                     WiFiClient slaveClient;
                     if (slaveClient.connect(Slave_IP, 23)) {
@@ -3986,7 +3985,7 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
                         // Send the raw ASCII pattern number. The slave's IR_Serial_Handler 
                         // loop will pick it up as digits and load it into new_pattern
                         slaveClient.print(MATRIX_DEMO);
-                        slaveClient.flush();
+                        slaveClient.clear();
                         // Give enough time for the full data to go through before we tear down the connection
                         delay(300);
                         slaveClient.stop();
@@ -4454,9 +4453,11 @@ void IR_Serial_Handler() {
 		    send_serial((const char *) str);
 		    goto endserial;
 		} 
+
 	    #endif
 	    
-	    if (readchar == 'h') { help();}
+            if (readchar && !startcmd) { Serial.printf("Ignoring %c before receiving |St\r\n", readchar);  }
+	    else if (readchar == 'h') { help();}
 	    else if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
 	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
 	    else if (readchar == 'y') { Serial.println("Serial => Bestof2");	changeBestOf(2); }
@@ -4499,7 +4500,7 @@ void IR_Serial_Handler() {
 	    else if (readchar == '~') { Serial.println("exit");			exit(0);}
 	#else
             // Any of these can be sent from rPI console by sending R + x, like Ri
-	    else if (readchar == 'r') { if (startcmd) { Serial.println("Reboot"); resetFunc(); } else { Serial.println("Ignoring Reboot before receiving |St");  }  }
+	    else if (readchar == 'r') { Serial.println("Reboot"); resetFunc(); }
 	    // After RPI gets serial from ESP, it sends 'i' once.
 	    else if (readchar == 'i') { Serial.println("Serial => showip");     showip();}
 	    else if (readchar == 'x') { changePanelConf(2); }
