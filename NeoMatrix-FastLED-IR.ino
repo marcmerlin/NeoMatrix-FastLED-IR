@@ -3373,6 +3373,8 @@ uint16_t demoidx(uint16_t idx) {
 
 Demo_Entry demo_list[DEMO_ARRAY_SIZE] = {
 /* 000 */ { "NULL Demo", NULL, -1, NULL },
+/* 001 */ { "Squares In",  squares, 0, NULL },
+/* 002 */ { "Squares Out", squares, 1, NULL },
 /* 003 */ { "EatSleepTranceRepeat Flash", esrbtr_flash, 1, NULL },
 /* 004 */ { "EatSleepRaveBurnRepeat Flash", esrbtr_flash, 0, NULL },
 /* 005 */ { "TFSF Zoom InOut", tfsf_zoom, 1, NULL },
