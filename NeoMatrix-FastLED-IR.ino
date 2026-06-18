@@ -163,30 +163,32 @@ using namespace Aiko;
         
         // (uint32_t)Master_IP != 0 mathematically guarantees we never 
         // suffer a TCP lockup trying to connect to an uninitialized IP object.
-        if (WIFI_CLIENT_MODE && WiFi.status() == WL_CONNECTED && !slave_ip_sent && ((uint32_t)Master_IP != 0)) {
-            WiFiClient client;
+        if (WIFI_CLIENT_MODE && WiFi.status() == WL_CONNECTED && !slave_ip_sent) {
+            if ((uint32_t)Master_IP != 0) {
+                WiFiClient client;
 
-            // Increased timeout to 1500ms to account for Master blocking interrupts to draw pixels
-            if (client.connect(Master_IP, 23, 1500)) {
-                IPAddress myIP = WiFi.localIP();
-                
-                myIP[0] = myIP[0] | 0x20; 
-                
-                uint32_t ipNum = ((uint32_t)myIP[0] << 24) | 
-                                 ((uint32_t)myIP[1] << 16) | 
-                                 ((uint32_t)myIP[2] << 8)  | 
-                                  (uint32_t)myIP[3];
-                                  
-                client.println(ipNum);
-                client.clear(); 
-                delay(500);
-                client.stop();
-                slave_ip_sent = true;
-                Serial.printf("Successfully sent Slave IP to Master at %s\r\n", Master_IP.toString().c_str());
-            } else {
-                Serial.print("Failed to send slave IP to Master, will retry... ");
-                Serial.println(send_slave_ip_to_master_tries);
-                send_slave_ip_to_master_tries+=1;
+                // Increased timeout to 1500ms to account for Master blocking interrupts to draw pixels
+                if (client.connect(Master_IP, 23, 1500)) {
+                    IPAddress myIP = WiFi.localIP();
+                    
+                    myIP[0] = myIP[0] | 0x20; 
+                    
+                    uint32_t ipNum = ((uint32_t)myIP[0] << 24) | 
+                                     ((uint32_t)myIP[1] << 16) | 
+                                     ((uint32_t)myIP[2] << 8)  | 
+                                      (uint32_t)myIP[3];
+                                      
+                    client.println(ipNum);
+                    client.clear(); 
+                    delay(500);
+                    client.stop();
+                    slave_ip_sent = true;
+                    Serial.printf("Successfully sent Slave IP to Master at %s\r\n", Master_IP.toString().c_str());
+                } else {
+                    Serial.print("Cannot send slave IP to Master (unknown IP), will retry... ");
+                    Serial.println(send_slave_ip_to_master_tries);
+                    send_slave_ip_to_master_tries+=1;
+                }
             }
         }
     }
@@ -201,7 +203,7 @@ using namespace Aiko;
                  if (udp.beginPacket(broadcastIP, UDP_DISCOVERY_PORT)) {
                      udp.write((uint8_t*)&masterBootToken, sizeof(masterBootToken));
                      udp.endPacket();
-                     //Serial.printf("Master: Sent beacon %u to %s:%d\r\n", masterBootToken, broadcastIP.toString().c_str(), UDP_DISCOVERY_PORT);
+                     Serial.printf("Master: Sent beacon %u to %s:%d\r\n", masterBootToken, broadcastIP.toString().c_str(), UDP_DISCOVERY_PORT);
                  } else {
                      Serial.println("Master: Failed to initiate UDP beacon packet");
                  }
@@ -225,7 +227,7 @@ using namespace Aiko;
                 if (!udpActive) {
                     udp.begin(UDP_DISCOVERY_PORT);
                     udpActive = true;
-                    Serial.printf("Slave Discovery reliably bound to port %d\r\n", UDP_DISCOVERY_PORT);
+                    Serial.printf(">>>>>>>>>>>>>  Slave Discovery reliably bound to port %d\r\n", UDP_DISCOVERY_PORT);
                 }
 
                 packetSize = udp.parsePacket();
@@ -235,15 +237,16 @@ using namespace Aiko;
                     IPAddress senderIP = udp.remoteIP();
                     
                     if (senderIP != Master_IP || receivedToken != lastMasterBootToken) {
-                        Serial.printf("Master Found! IP: %s, Token: %u\r\n", senderIP.toString().c_str(), receivedToken);
+                        Serial.printf(">>>>>>>>>>>>>> Master Found! IP: %s, Token: %u\r\n", senderIP.toString().c_str(), receivedToken);
                         Master_IP = senderIP;
                         lastMasterBootToken = receivedToken;
                         slave_ip_sent = false; 
                         send_slave_ip_to_master_tries = 0; 
                     } else if (!slave_ip_sent) {
                         // Master is still here, but we haven't successfully sent our IP yet. 
-                        // Keep our retry counter alive!
+                        // Keep our retry counter alive! Not sure when or if this runs.
                         send_slave_ip_to_master_tries = 0;
+                        Serial.printf(">>>>>>>>>>>>>> Need to send IP to Master %s\r\n", senderIP.toString().c_str());
                     }
                 }
             }
