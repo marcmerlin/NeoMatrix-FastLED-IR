@@ -203,9 +203,9 @@ using namespace Aiko;
                  if (udp.beginPacket(broadcastIP, UDP_DISCOVERY_PORT)) {
                      udp.write((uint8_t*)&masterBootToken, sizeof(masterBootToken));
                      udp.endPacket();
-                     Serial.printf("Master: Sent beacon %u to %s:%d\r\n", masterBootToken, broadcastIP.toString().c_str(), UDP_DISCOVERY_PORT);
+                     Serial.printf(">>>>>>>>>>>>>>> Master: Sent beacon %u to %s:%d\r\n", masterBootToken, broadcastIP.toString().c_str(), UDP_DISCOVERY_PORT);
                  } else {
-                     Serial.println("Master: Failed to initiate UDP beacon packet");
+                     Serial.println(">>>>>>>>>>>>>> Master: Failed to initiate UDP beacon packet");
                  }
              }
          }
@@ -4415,7 +4415,7 @@ void IR_Serial_Handler() {
                     octet1 &= ~0x20; 
                     Slave_IP = IPAddress(octet1, octet2, octet3, octet4);
                     
-                    Serial.print("ESP32 Master received Slave IP: ");
+                    Serial.print(">>>>>>>>>>>>>>>> ESP32 Master received Slave IP: ");
                     Serial.println(Slave_IP.toString().c_str());
                 } else {
                     // If the bit isn't set, it's the standard rPi IP
