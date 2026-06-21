@@ -5491,7 +5491,7 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
 
   Serial.printf("Wifi client enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d\n\r", WIFI_CLIENT_MODE, __func__, ssid, what, failure_cnt);
 
-  if (!ap and failure_cnt > 0) {
+  if (!ap and failure_cnt > 2) {
       if (WIFI_CLIENT_MODE and failure_cnt > 1) {
           Serial.println("Client mode: Too many failures setting up Wifi client to " WIFI_AP_SSID " with " WIFI_AP_PASSWORD ", switching to " WIFI_SSID);
           ap = true;
