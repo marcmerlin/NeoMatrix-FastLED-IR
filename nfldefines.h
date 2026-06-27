@@ -114,9 +114,10 @@ uint8_t led_brightness = 64;
 		// Check NeoMatrix-FastLED-IR.ino setup
 	    #endif
 	#endif
-    #elif defined(GFXDISPLAY_M128BY192ABCPWM)
-	// PWM panels are brighter. Start lower down
-	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 4;
+// This does not work because ESP32 sends brightness at init time
+//    #elif defined(GFXDISPLAY_M128BY192ABCPWM)
+//	// PWM panels are brighter. Start lower down
+//	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 4;
     #else
 	uint8_t DFL_MATRIX_BRIGHTNESS_LEVEL = 5;
     #endif
