@@ -171,16 +171,22 @@ using namespace Aiko;
                 if (client.connect(Master_IP, 23, 1500)) {
                     IPAddress myIP = WiFi.localIP();
                     
-                    myIP[0] = myIP[0] | 0x20; 
                     
                     uint32_t ipNum = ((uint32_t)myIP[0] << 24) | 
                                      ((uint32_t)myIP[1] << 16) | 
                                      ((uint32_t)myIP[2] << 8)  | 
                                       (uint32_t)myIP[3];
                                       
-                    client.println(ipNum);
+                    uint64_t payload = (uint64_t)ipNum | 0x100000000ULL;
+                    String payloadStr = "";
+                    uint64_t temp = payload;
+                    while(temp > 0) {
+                        payloadStr = (char)('0' + (temp % 10)) + payloadStr;
+                        temp /= 10;
+                    }
+                    client.println(payloadStr);
                     client.clear(); 
-                    delay(500);
+                    delay(1000);
                     client.stop();
                     slave_ip_sent = true;
                     Serial.printf("Successfully sent Slave IP to Master at %s\r\n", Master_IP.toString().c_str());
@@ -4309,7 +4315,7 @@ void handle_rpi_serial_cmd() {
 	Serial.print(DISPLAYTEXT);
 	Serial.print("|T:");
 	Serial.println(DISPLAYTEXT);
-	matrix_change(DEMO_TEXT_INPUT, false, 20);
+	matrix_change(DEMO_TEXT_INPUT, false, 100);
     }
     // Allow ESP32 to send string to rPi
     if (! strncmp(ttyusbbuf, "|T:", 3)) {
@@ -4345,7 +4351,7 @@ void handle_rpi_serial_cmd() {
 #endif
 
 void IR_Serial_Handler() {
-    uint32_t new_pattern = 0;
+    uint64_t new_pattern = 0;
     char readchar = 0;
     static bool remotesend = false;
     static bool startcmd = false;
@@ -4408,15 +4414,17 @@ void IR_Serial_Handler() {
 		if (Serial.available()) readchar = Serial.read();
 	    }
             #ifdef WIFI
-            if (new_pattern > 9999) {
+            // ignore ESP> [146477][D][NetworkClient.cpp
+            // IP has at least 4 bytes
+            if (new_pattern > 16777216) {
                 // this is sent by rPi_send_IP_to_ESP32 or send_slave_ip_to_master
-                uint8_t octet1 = (new_pattern & 0xFF000000) / 0x1000000;
-                uint8_t octet2 = (new_pattern & 0x00FF0000) / 0x10000;
-                uint8_t octet3 = (new_pattern & 0x0000FF00) / 0x100;
-                uint8_t octet4 = (new_pattern & 0x000000FF) / 1;
+                uint32_t ip_part = (uint32_t)(new_pattern & 0xFFFFFFFF);
+                uint8_t octet1 = (ip_part & 0xFF000000) / 0x1000000;
+                uint8_t octet2 = (ip_part & 0x00FF0000) / 0x10000;
+                uint8_t octet3 = (ip_part & 0x0000FF00) / 0x100;
+                uint8_t octet4 = (ip_part & 0x000000FF) / 1;
 
-                // Check if the 3rd bit (0x20) is set, typical of our 224 hack
-                if ((octet1 & 0x20) == 0x20 && octet1 >= 224) { 
+                if (new_pattern >= 0x100000000ULL) {
                     // Clear the 3rd bit to revert back to 192.x.x.x
                     octet1 &= ~0x20; 
                     Slave_IP = IPAddress(octet1, octet2, octet3, octet4);
@@ -6149,7 +6157,7 @@ void showip() {
     DISPLAYTEXT = (WiFi.getMode() == WIFI_AP) ? WiFi.softAPIP().toString() : WiFi.localIP().toString();
     Serial.print("|I:");
     Serial.println(DISPLAYTEXT);
-    matrix_change(DEMO_TEXT_INPUT, false, 3);
+    matrix_change(DEMO_TEXT_INPUT, false, 8);
 #endif
 }
 
