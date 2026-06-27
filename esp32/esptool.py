@@ -19,6 +19,7 @@
 from __future__ import division, print_function
 
 import argparse
+import ast
 import base64
 import binascii
 import copy
@@ -710,7 +711,7 @@ class ESPLoader(object):
         if len(digest_frame) != 16:
             raise FatalError('Expected digest, got: %s' % hexify(digest_frame))
         expected_digest = hexify(digest_frame).upper()
-        digest = hashlib.md5(data).hexdigest().upper()
+        digest = hashlib.md5(data, usedforsecurity=False).hexdigest().upper()
         if digest != expected_digest:
             raise FatalError('Digest mismatch: expected %s, got %s' % (expected_digest, digest))
         return data
@@ -2136,7 +2137,7 @@ def write_flash(esp, args):
             print('WARNING: File %s is empty' % argfile.name)
             continue
         image = _update_image_flash_params(esp, address, args, image)
-        calcmd5 = hashlib.md5(image).hexdigest()
+        calcmd5 = hashlib.md5(image, usedforsecurity=False).hexdigest()
         uncsize = len(image)
         if args.compress:
             uncimage = image
@@ -2178,7 +2179,7 @@ def write_flash(esp, args):
             if res != calcmd5:
                 print('File  md5: %s' % calcmd5)
                 print('Flash md5: %s' % res)
-                print('MD5 of 0xFF is %s' % (hashlib.md5(b'\xFF' * uncsize).hexdigest()))
+                print('MD5 of 0xFF is %s' % (hashlib.md5(b'\xFF' * uncsize, usedforsecurity=False).hexdigest()))
                 raise FatalError("MD5 of file does not match data in flash!")
             else:
                 print('Hash of data verified.')
@@ -2346,7 +2347,7 @@ def verify_flash(esp, args):
         print('Verifying 0x%x (%d) bytes @ 0x%08x in flash against %s...' % (image_size, image_size, address, argfile.name))
         # Try digest first, only read if there are differences.
         digest = esp.flash_md5sum(address, image_size)
-        expected_digest = hashlib.md5(image).hexdigest()
+        expected_digest = hashlib.md5(image, usedforsecurity=False).hexdigest()
         if digest == expected_digest:
             print('-- verify OK (digest matched)')
             continue
@@ -2619,7 +2620,7 @@ def main(custom_commandline=None):
         parser.print_help()
         sys.exit(1)
 
-    operation_func = globals()[args.operation]
+    operation_func = getattr(sys.modules[__name__], args.operation)
 
     if PYTHON2:
         # This function is depreciated in Python3
@@ -2845,7 +2846,7 @@ class AddrFilenamePairAction(argparse.Action):
 
 
 # Binary stub code (see flasher_stub dir for source & details)
-ESP8266ROM.STUB_CODE = eval(zlib.decompress(base64.b64decode(b"""
+ESP8266ROM.STUB_CODE = ast.literal_eval(zlib.decompress(base64.b64decode(b"""
 eNrNPXt/00a2X8WSQ0iCoRpJ1iMNxXaCeRS2ATYBdtNtpJEE5ZZuYvzbUJZ+96vzmhnJDoG+7v0j1CNpZs6c9zlzZvrf68v6/fL67qC8fvK+yE7eq+DkfRBM2n/Uyfumgb/5HB51/7L2r6nvfHd/+qDtF7d/JXx6\
 p32ruVHfoc8yp1vTftnkMMuEvqQXp70J1Prfyh2poT8DkO7ORDP0oLadJmuXc/I+1zd4HUUgv9pprzsDxw7UZkCGpIOJXkOGKzvY6iBosO3A2hIjqxCsFw6AQCPTO4dG7TRyg/jYeQOdVWmHLoKTRQ85mQHhZCk/\
 D9t/aqehQmcI7YBRBk5DNWYRe+3jnAEKXFCBWEXlQBc40AWdl5rmMvOosYMi1eWBIHBYDxsye6mFRi3hs8xpFLbxAntNDpDdJ6NH+J/ga/zP+/uGax7yrzJ+wL+0vsW/VDtPHXKjynL89do8awepZOK8ha9G5p48\
@@ -2914,7 +2915,7 @@ U2cNKzsn/ax0/5ad3jna7glLt2KI6s46rd7V0ao3Nx4gc+1n4F6jaxudGwmLXjqnN6ZWay4IV73v+5eG
 aP38iVb3avJ1bf3J9uJTsnPl35fKbfJFOFp+wbr7kDdXaIEe5KoHiephUXXGG7qNG26jM2znYNu+23jmNjoEedfTND04i15b99p1tEZK1F8oxX+2Fvi9WuL3apHfq2V+rxa6qv2FfyqwyTQjgSlKHp01HbOkxWYL\
 ZcFY47yGkTR1+f8YY3Wl19nrdZ3kKA3bkDP79X8BZBZfEg==\
 """)))
-ESP32ROM.STUB_CODE = eval(zlib.decompress(base64.b64decode(b"""
+ESP32ROM.STUB_CODE = ast.literal_eval(zlib.decompress(base64.b64decode(b"""
 eNqNWnt31LgV/yqOYfJaskeyPbZEz0IS6BBg2xIoIdDp2bFlOyFbcoDOQjgL/ezVfVnyzNDtHxNkPa/u43cf4vedZXez3LmbNDvzm94k/k9xH1oKW+XR/Eb5ptX+s/W/fn7jVEKdxsyX/i+01O2zExrFmfX/M1PD\
 foomyE8roUBFrehnhKJu6ocd7WTgzIbayvepbDh7D9bEVG2tkZe+pR35c3e+PPu4Tj9uA5vrTG7iv4tkV22+iVKHRGoX6NSlp6QONHdtxDO3cqa1dGboQCLOvnyfe8NPh7ZRYbUDofb3aQP5KbpHJO4toSZLYQjo\
 fuAbU7iJCTfpahqtp8L982NiUS+syo9gWxh65edBb3OeAk0vQdSeIDeFGRlvCqLLgdvp4bn/1BPfn0ciVtyGa01hh9PQGWQFfJvSijYbDR5fjiR9gvxc8qbm+CRlUTt1t4CNjm26wmhD/6JeIrlqRUnxw6qI18oc\
