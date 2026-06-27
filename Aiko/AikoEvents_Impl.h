@@ -98,6 +98,7 @@ namespace Aiko {
         else {
           removeHandler(handler);
           free(handler);
+          handler = NULL;
         }
       }
     }
