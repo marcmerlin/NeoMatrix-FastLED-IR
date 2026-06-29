@@ -98,6 +98,8 @@ using namespace Aiko;
 
     #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
     bool WIFI_CLIENT_MODE = false;
+    // is the wifi client/slave connecting to the home test debug network?
+    bool WIFI_CLIENT_TESTING;
     volatile uint32_t send_slave_ip_to_master_tries = 0;
     volatile bool wifi_network_stable = false;
     volatile uint32_t lastMasterBootToken = 0;   // Tracked by Slave to detect Master restarts
@@ -189,7 +191,7 @@ using namespace Aiko;
                     delay(1000);
                     client.stop();
                     slave_ip_sent = true;
-                    Serial.printf("Successfully sent Slave IP to Master at %s\r\n", Master_IP.toString().c_str());
+                    Serial.printf("Successfully sent Slave IP %s to Master at %s\r\n", payloadStr, Master_IP.toString().c_str());
                 } else {
                     Serial.print("Cannot send slave IP to Master (unknown IP), will retry... ");
                     Serial.println(send_slave_ip_to_master_tries);
@@ -5505,15 +5507,23 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
   Serial.printf("Wifi client enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d\n\r", WIFI_CLIENT_MODE, __func__, ssid, what, failure_cnt);
 
   if (!ap and failure_cnt > 2) {
-      if (WIFI_CLIENT_MODE and failure_cnt > 1) {
-          Serial.println("Client mode: Too many failures setting up Wifi client to " WIFI_AP_SSID " with " WIFI_AP_PASSWORD ", switching to " WIFI_SSID);
-          ap = true;
+      // For the wifi slave, allow switching forever between AP and home test network until one works
+      if (WIFI_CLIENT_MODE and failure_cnt > 3) {
           WebServer->clearWifis();
           WiFi.disconnect();
-          WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
           failure_cnt = 0;
+          if (!WIFI_CLIENT_TESTING) {
+              Serial.println(">>>>>>>>>>>>>>>>>>>> Client/Slave mode: Too many failures with AP " WIFI_AP_SSID ", switching to " WIFI_SSID);
+              WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
+              WIFI_CLIENT_TESTING = true;
+          } else {
+              Serial.println(">>>>>>>>>>>>>>>>>>>> Client/Slave mode: Too many failures with test network " WIFI_SSID ", switching to AP " WIFI_AP_SSID);
+              WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+              WIFI_CLIENT_TESTING = false;
+
+          }
       } else if (! WIFI_CLIENT_MODE) { 
-          Serial.println("Too many failures setting up Wifi client to " WIFI_SSID ", switching to Wifi AP mode to " WIFI_AP_SSID);
+          Serial.println(">>>>>>>>>>>>>>>>>>>> Too many failures setting up Wifi client to " WIFI_SSID ", switching to Wifi AP mode to " WIFI_AP_SSID);
           ap = true;
           WebServer->clearWifis();
           WiFi.disconnect();
@@ -5799,8 +5809,10 @@ void setup_wifi() {
         WIFI_CLIENT_MODE = false;
     #endif
 
+    // Are we using the fallback testing network (by default we use the AP made by the master)
     if (WIFI_CLIENT_MODE) {
-        Serial.println(">>>>>>>>>>>>>> Wifi Configured for Wifi client mode, will try to connect to " WIFI_AP_SSID);
+        WIFI_CLIENT_TESTING = false;
+        Serial.println(">>>>>>>>>>>>>> Wifi slave mode, will try to connect to AP " WIFI_AP_SSID);
         WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD);
     } else { 
         // Start as a client for home network, if that fails, connectionStatus() will take
