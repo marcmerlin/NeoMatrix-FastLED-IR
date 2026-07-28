@@ -97,9 +97,9 @@ using namespace Aiko;
 
 
     #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
-    bool WIFI_CLIENT_MODE = false;
+    bool WIFI_SLAVE_MODE = false;
     // is the wifi client/slave connecting to the home test debug network?
-    bool WIFI_CLIENT_TESTING;
+    bool WIFI_CLIENT_TESTING_NETWORK;
     volatile uint32_t send_slave_ip_to_master_tries = 0;
     volatile bool wifi_network_stable = false;
     volatile uint32_t lastMasterBootToken = 0;   // Tracked by Slave to detect Master restarts
@@ -165,7 +165,7 @@ using namespace Aiko;
         
         // (uint32_t)Master_IP != 0 mathematically guarantees we never 
         // suffer a TCP lockup trying to connect to an uninitialized IP object.
-        if (WIFI_CLIENT_MODE && WiFi.status() == WL_CONNECTED && !slave_ip_sent) {
+        if (WIFI_SLAVE_MODE && WiFi.status() == WL_CONNECTED && !slave_ip_sent) {
             if ((uint32_t)Master_IP != 0) {
                 WiFiClient client;
 
@@ -202,7 +202,7 @@ using namespace Aiko;
     }
 
     void broadcast_master_presence() {
-         if (!WIFI_CLIENT_MODE) {
+         if (!WIFI_SLAVE_MODE) {
              if (WiFi.status() == WL_CONNECTED || WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA) {
                  bool isAP = (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA);
                  
@@ -226,7 +226,7 @@ using namespace Aiko;
     }
 
     void listen_for_master_broadcast() {
-        if (WIFI_CLIENT_MODE) {
+        if (WIFI_SLAVE_MODE) {
             int packetSize;
 
             #ifdef WIFI_SNIFFER
@@ -425,7 +425,7 @@ using namespace Aiko;
 // Prepend Master/Slave or nothing to some debug messages
 void MS_Print() {
 #ifdef WIFI
-    if (WIFI_CLIENT_MODE) Serial.print("Slave ");
+    if (WIFI_SLAVE_MODE) Serial.print("Slave ");
     else Serial.print("Master ");
 #else
     Serial.print("> ");
@@ -3995,28 +3995,32 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 	Serial.flush();
 
         #ifdef WIFI
-            if (Slave_IP != IPAddress(0, 0, 0, 0)) {
-                //#define MS_TCP_UPDATES
-                #ifdef MS_TCP_UPDATES
-                    WiFiClient slaveClient;
-                    if (slaveClient.connect(Slave_IP, 23)) {
-                        Serial.printf("Sending %d to %s via TCP\n\r", MATRIX_DEMO, Slave_IP.toString().c_str());
-                        // Send the raw ASCII pattern number. The slave's IR_Serial_Handler 
-                        // loop will pick it up as digits and load it into new_pattern
-                        slaveClient.print(MATRIX_DEMO);
-                        slaveClient.clear();
-                        // Give enough time for the full data to go through before we tear down the connection
-                        delay(300);
-                        slaveClient.stop();
-                    }
-                #else
-                    NetworkUDP udpMaster;
-                    if (udpMaster.beginPacket(Slave_IP, 23)) {
-                        Serial.printf("Sending %d to %s via UDP\n\r", MATRIX_DEMO, Slave_IP.toString().c_str());
-                        udpMaster.println(MATRIX_DEMO); // Send the pattern digits with a newline delimiter
-                        udpMaster.endPacket();
-                    }
-                #endif
+            if (!WIFI_SLAVE_MODE) {
+                if (Slave_IP != IPAddress(0, 0, 0, 0)) {
+                    //#define MS_TCP_UPDATES
+                    #ifdef MS_TCP_UPDATES
+                        WiFiClient slaveClient;
+                        if (slaveClient.connect(Slave_IP, 23)) {
+                            Serial.printf("Sending %d to %s via TCP\n\r", MATRIX_DEMO, Slave_IP.toString().c_str());
+                            // Send the raw ASCII pattern number. The slave's IR_Serial_Handler 
+                            // loop will pick it up as digits and load it into new_pattern
+                            slaveClient.print(MATRIX_DEMO);
+                            slaveClient.clear();
+                            // Give enough time for the full data to go through before we tear down the connection
+                            delay(300);
+                            slaveClient.stop();
+                        }
+                    #else
+                        NetworkUDP udpMaster;
+                        if (udpMaster.beginPacket(Slave_IP, 23)) {
+                            Serial.printf("Sending %d to %s via UDP\n\r", MATRIX_DEMO, Slave_IP.toString().c_str());
+                            udpMaster.println(MATRIX_DEMO); // Send the pattern digits with a newline delimiter
+                            udpMaster.endPacket();
+                        }
+                    #endif
+                } else {
+                    Serial.printf("Wifi Master, but slave unkmown, so cannot send pattern change\n\r");
+                }
             }
         #endif
 
@@ -5502,27 +5506,30 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
       lastMasterBootToken = 0;    // Forces a fresh sync check via UDP stream
       wifi_network_stable = true;
       Splitter.restart();
+      // Send a second |St to rPi in case rPi was rebooted via switch which causes a serial dropoff
+      // long enough that the first |Starting loop is never received
+      Serial.println("|Started wifi"); // Send a second |St to rPi in case rPi rebooted via switch
   }
 
-  Serial.printf("Wifi client enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d\n\r", WIFI_CLIENT_MODE, __func__, ssid, what, failure_cnt);
+  Serial.printf("Wifi slave mode enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d\n\r", WIFI_SLAVE_MODE, __func__, ssid, what, failure_cnt);
 
   if (!ap and failure_cnt > 2) {
       // For the wifi slave, allow switching forever between AP and home test network until one works
-      if (WIFI_CLIENT_MODE and failure_cnt > 3) {
+      if (WIFI_SLAVE_MODE and failure_cnt > 3) {
           WebServer->clearWifis();
           WiFi.disconnect();
           failure_cnt = 0;
-          if (!WIFI_CLIENT_TESTING) {
+          if (!WIFI_CLIENT_TESTING_NETWORK) {
               Serial.println(">>>>>>>>>>>>>>>>>>>> Client/Slave mode: Too many failures with AP " WIFI_AP_SSID ", switching to " WIFI_SSID);
               WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
-              WIFI_CLIENT_TESTING = true;
+              WIFI_CLIENT_TESTING_NETWORK = true;
           } else {
               Serial.println(">>>>>>>>>>>>>>>>>>>> Client/Slave mode: Too many failures with test network " WIFI_SSID ", switching to AP " WIFI_AP_SSID);
               WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD);
-              WIFI_CLIENT_TESTING = false;
+              WIFI_CLIENT_TESTING_NETWORK = false;
 
           }
-      } else if (! WIFI_CLIENT_MODE) { 
+      } else if (! WIFI_SLAVE_MODE) { 
           Serial.println(">>>>>>>>>>>>>>>>>>>> Too many failures setting up Wifi client to " WIFI_SSID ", switching to Wifi AP mode to " WIFI_AP_SSID);
           ap = true;
           WebServer->clearWifis();
@@ -5555,12 +5562,12 @@ void rebuild_main_page(bool show_summary) {
     WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	// Keep track of how many times the web page is rebuilt
-        if (WIFI_CLIENT_MODE) w.puts("Slave ");
+        if (WIFI_SLAVE_MODE) w.puts("Slave ");
         else w.puts("Master ");
 	w.puts("Version: ");
 	w.puts(String(count).c_str());
 	w.puts("<BR>\n");
-        if (WIFI_CLIENT_MODE) {
+        if (WIFI_SLAVE_MODE) {
             w.puts("Master IP: ");
             w.puts(Master_IP.toString().c_str());
             w.puts("<BR>\n");
@@ -5799,19 +5806,19 @@ void setup_wifi() {
     #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
     if (digitalRead(WAVESHARE_CLIENT_PIN)) {
         Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi client mode");
-        WIFI_CLIENT_MODE = true;
+        WIFI_SLAVE_MODE = true;
     } else { 
         Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi AP mode");
-        WIFI_CLIENT_MODE = false;
+        WIFI_SLAVE_MODE = false;
     }
     #else
         Serial.println(">>>>>>>>>>>>>> Other Wifi Default to Wifi AP mode");
-        WIFI_CLIENT_MODE = false;
+        WIFI_SLAVE_MODE = false;
     #endif
 
     // Are we using the fallback testing network (by default we use the AP made by the master)
-    if (WIFI_CLIENT_MODE) {
-        WIFI_CLIENT_TESTING = false;
+    if (WIFI_SLAVE_MODE) {
+        WIFI_CLIENT_TESTING_NETWORK = false;
         Serial.println(">>>>>>>>>>>>>> Wifi slave mode, will try to connect to AP " WIFI_AP_SSID);
         WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD);
     } else { 
