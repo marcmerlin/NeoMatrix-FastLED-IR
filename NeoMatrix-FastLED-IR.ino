@@ -5508,8 +5508,6 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
       lastMasterBootToken = 0;    // Forces a fresh sync check via UDP stream
       wifi_network_stable = true;
       Splitter.restart();
-      // Send a second |St to rPi in case rPi was rebooted via switch which causes a serial dropoff
-      // long enough that the first |Starting loop is never received
       Serial.printf("|Started wifi, slave mode enabled? %d\n\r", WIFI_SLAVE_MODE); // Send a second |St to rPi in case rPi rebooted via switch
   }
 
@@ -6524,7 +6522,7 @@ void setup() {
     // When ESP32 sends |St..., RPI eventually receives this on serial 
     // Serial.println("|Starting loop");
     // Do not start sync now, only start after Wifi is setup on ESP32 and success sends |Start
-    Serial.println("|Starting loop");
+    Serial.println("Starting loop");
 }
 
 // vim:sts=4:sw=4
