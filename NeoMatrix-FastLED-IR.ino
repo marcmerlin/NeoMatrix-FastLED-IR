@@ -5508,7 +5508,7 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
       Splitter.restart();
       // Send a second |St to rPi in case rPi was rebooted via switch which causes a serial dropoff
       // long enough that the first |Starting loop is never received
-      Serial.println("|Started wifi"); // Send a second |St to rPi in case rPi rebooted via switch
+      Serial.printf("|Started wifi, slave mode enabled? %d\n\r", WIFI_SLAVE_MODE); // Send a second |St to rPi in case rPi rebooted via switch
   }
 
   Serial.printf("Wifi slave mode enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d\n\r", WIFI_SLAVE_MODE, __func__, ssid, what, failure_cnt);
