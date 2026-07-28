@@ -4019,7 +4019,7 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
                         }
                     #endif
                 } else {
-                    Serial.printf("Wifi Master, but slave unkmown, so cannot send pattern change\n\r");
+                    Serial.printf("Wifi Master, but slave unkmown, so cannot send pattern change (slaveIP should be null and is %s)\n\r", Slave_IP.toString().c_str());
                 }
             }
         #endif
