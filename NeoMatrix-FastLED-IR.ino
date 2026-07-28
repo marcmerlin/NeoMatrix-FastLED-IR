@@ -6522,6 +6522,8 @@ void setup() {
     Serial.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
 
     // When ESP32 sends |St..., RPI eventually receives this on serial 
+    // Serial.println("|Starting loop");
+    // Do not start sync now, only start after Wifi is setup on ESP32 and success sends |Start
     Serial.println("|Starting loop");
 }
 
