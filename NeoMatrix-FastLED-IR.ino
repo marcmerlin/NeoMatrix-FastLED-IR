@@ -124,8 +124,10 @@ using namespace Aiko;
     // Allows a connected device via serial to feed a remote IP as a 32bit number
     IPAddress RPI_IP = IPAddress(0, 0, 0, 0);
     // Allows a slave ESP32 to send its IP to be notified of pattern changes
-    IPAddress Slave_IP = IPAddress(0, 0, 0, 0);
-
+     IPAddress Slave_IP = IPAddress(0, 0, 0, 0);
+    #define MAX_SLAVES 5
+    IPAddress Slave_IPs[MAX_SLAVES] = { IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0) };
+    uint8_t slave_ip_count = 0;
 
     #include <ArduinoOTA.h>
 
@@ -213,11 +215,14 @@ using namespace Aiko;
                      udp.endPacket();
                      EVERY_N_SECONDS(60) {
                         Serial.printf(">>>>>>>>>>>>>>> Master: Sent beacon %u to %s:%d", masterBootToken, broadcastIP.toString().c_str(), UDP_DISCOVERY_PORT);
-                        if (Slave_IP != IPAddress(0, 0, 0, 0)) {
-                            Serial.printf(" (current known Slave IP: %s)\r\n", Slave_IP.toString().c_str());
-
+                        if (slave_ip_count > 0) {
+                            Serial.print(" (current known Slave IPs: ");
+                            for(uint8_t i = 0; i < slave_ip_count; i++) {
+                                Serial.print(Slave_IPs[i].toString().c_str());
+                                if(i < slave_ip_count - 1) Serial.print(", ");
+                            }
                         } else {
-                           Serial.println(" (slave IP unknown)");
+                           Serial.println(" (slave IPs unknown)");
                         }
                     }
                  } else {
@@ -3998,12 +4003,13 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 
         #ifdef WIFI
             if (!WIFI_SLAVE_MODE) {
-                if (Slave_IP != IPAddress(0, 0, 0, 0)) {
+                if (slave_ip_count > 0) {
                     //#define MS_TCP_UPDATES
                     #ifdef MS_TCP_UPDATES
+                        uint8_t last_idx = slave_ip_count - 1;
                         WiFiClient slaveClient;
-                        if (slaveClient.connect(Slave_IP, 23)) {
-                            Serial.printf("Sending %d to %s via TCP\n\r", MATRIX_DEMO, Slave_IP.toString().c_str());
+                        if (slaveClient.connect(Slave_IPs[last_idx], 23, 200)) {
+                            Serial.printf("Sending %d to %s via TCP\n\r", MATRIX_DEMO, Slave_IPs[last_idx].toString().c_str());
                             // Send the raw ASCII pattern number. The slave's IR_Serial_Handler 
                             // loop will pick it up as digits and load it into new_pattern
                             slaveClient.print(MATRIX_DEMO);
@@ -4014,14 +4020,16 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
                         }
                     #else
                         NetworkUDP udpMaster;
-                        if (udpMaster.beginPacket(Slave_IP, 23)) {
-                            Serial.printf("Sending %d to %s via UDP\n\r", MATRIX_DEMO, Slave_IP.toString().c_str());
-                            udpMaster.println(MATRIX_DEMO); // Send the pattern digits with a newline delimiter
-                            udpMaster.endPacket();
+                        for (uint8_t i = 0; i < slave_ip_count; i++) {
+                            if (udpMaster.beginPacket(Slave_IPs[i], 23)) {
+                                Serial.printf("Sending %d to %s via UDP\n\r", MATRIX_DEMO, Slave_IPs[i].toString().c_str());
+                                udpMaster.println(MATRIX_DEMO); // Send the pattern digits with a newline delimiter
+                                udpMaster.endPacket();
+                            }
                         }
                     #endif
                 } else {
-                    Serial.printf("Wifi Master, but slave unkmown, so cannot send pattern change (slaveIP should be null and is %s)\n\r", Slave_IP.toString().c_str());
+                    Serial.printf("Wifi Master, but slave unknown, so cannot send pattern change\n\r");
                 }
             }
         #endif
@@ -4440,10 +4448,30 @@ void IR_Serial_Handler() {
                 if (new_pattern >= 0x100000000ULL) {
                     // Clear the 3rd bit to revert back to 192.x.x.x
                     octet1 &= ~0x20; 
-                    Slave_IP = IPAddress(octet1, octet2, octet3, octet4);
+                    IPAddress incoming_ip(octet1, octet2, octet3, octet4);
                     
-                    Serial.print(">>>>>>>>>>>>>>>> ESP32 Master received Slave IP: ");
-                    Serial.println(Slave_IP.toString().c_str());
+                    bool known = false;
+                    for (uint8_t i = 0; i < slave_ip_count; i++) {
+                        if (Slave_IPs[i] == incoming_ip) {
+                            known = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!known) {
+                        if (slave_ip_count < MAX_SLAVES) {
+                            Slave_IPs[slave_ip_count++] = incoming_ip;
+                        } else {
+                            // Shift array left to enforce FIFO limit, dropping oldest IP
+                            for (uint8_t i = 1; i < MAX_SLAVES; i++) {
+                                Slave_IPs[i - 1] = Slave_IPs[i];
+                            }
+                            Slave_IPs[MAX_SLAVES - 1] = incoming_ip;
+                        }
+                        Serial.print(">>>>>>>>>>>>>>>> ESP32 Master received and stored new Slave IP: ");
+                        Serial.println(incoming_ip.toString().c_str());
+                    }
+
                 } else {
                     // If the bit isn't set, it's the standard rPi IP
                     RPI_IP = IPAddress(octet1, octet2, octet3, octet4);
@@ -5572,8 +5600,14 @@ void rebuild_main_page(bool show_summary) {
             w.puts(Master_IP.toString().c_str());
             w.puts("<BR>\n");
         } else {
-            w.puts("Slave IP: ");
-            w.puts(Slave_IP.toString().c_str());
+            w.puts("Slave IPs: ");
+            if (slave_ip_count == 0) {
+                w.puts("None");
+            } else {
+                for(uint8_t i = 0; i < slave_ip_count; i++) {
+                    w.puts(Slave_IPs[i].toString().c_str());
+                }
+            }
             w.puts("<BR>\n");
         }
         // We assume smaller panelconfs are ESP32 only, so no RPI connected
