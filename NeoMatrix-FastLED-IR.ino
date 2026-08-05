@@ -5605,7 +5605,11 @@ void rebuild_main_page(bool show_summary) {
                 w.puts("None");
             } else {
                 for(uint8_t i = 0; i < slave_ip_count; i++) {
+                    w.puts("<a href=http://");
                     w.puts(Slave_IPs[i].toString().c_str());
+                    w.puts("/`>");
+                    w.puts(Slave_IPs[i].toString().c_str());
+                    w.puts("</a> ");
                 }
             }
             w.puts("<BR>\n");
@@ -6159,7 +6163,7 @@ void loop() {
 	//Serial.println(esp32_connected);
 	// If nothing is received after 20 seconds, it can be that the USB connection
 	// died while staying up, or the ESP32 crashed
-	if (((ttyfd < 0) || (millis() - last_esp32_ping) > 20000) && 
+	if (((ttyfd < 0) || (millis() - last_esp32_ping) > 60000) && 
 	    esp32_connected) {
 	    esp32_connected = false;
 	    Serial.println(">>>>>>>>>>>>>>>>>>>>>>>>>> ESP32 ping timeout, going to local timeouts");
