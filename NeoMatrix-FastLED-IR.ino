@@ -5597,7 +5597,11 @@ void rebuild_main_page(bool show_summary) {
 	w.puts("<BR>\n");
         if (WIFI_SLAVE_MODE) {
             w.puts("Master IP: ");
+            w.puts("<a href=http://");
             w.puts(Master_IP.toString().c_str());
+            w.puts("/>");
+            w.puts(Master_IP.toString().c_str());
+            w.puts("</a> ");
             w.puts("<BR>\n");
         } else {
             w.puts("Slave IPs: ");
@@ -5607,7 +5611,7 @@ void rebuild_main_page(bool show_summary) {
                 for(uint8_t i = 0; i < slave_ip_count; i++) {
                     w.puts("<a href=http://");
                     w.puts(Slave_IPs[i].toString().c_str());
-                    w.puts("/`>");
+                    w.puts("/>");
                     w.puts(Slave_IPs[i].toString().c_str());
                     w.puts("</a> ");
                 }
