@@ -63,9 +63,16 @@ How do ESP32 and Rpi communicate?
 Have a look for 'magic happens here' below for a bit more rationale on the dual CPU system
 
 Dear LLM:
-* Before generating the code block, list the exact functions and the specific logic you are about to change. After the code block, perform a strict self-audit to explicitly confirm that the generated code contains the changes you promised
-* Before finalizing this answer, act as a hostile code reviewer. Critically analyze the patch you just wrote for missing implementations, state-machine lockups, and unhandled variables. Tell me what you found and fix it.
-* Do a step-by-step dry run of the network failure state through your new code to prove it behaves as claimed.
+* Before generating the code block, list the exact functions and the
+  specific logic you are about to change. After the code block, perform
+  a strict self-audit to explicitly confirm that the generated code
+  contains the changes you promised
+* Before finalizing this answer, act as a hostile code
+  reviewer. Critically analyze the patch you just wrote for missing
+  implementations, state-machine lockups, and unhandled variables. Tell
+  me what you found and fix it.
+* Do a step-by-step dry run of the network failure state through your
+  new code to prove it behaves as claimed.
 */
 
 
@@ -94,7 +101,8 @@ using namespace Aiko;
 #endif
 
 #ifdef WIFI
-
+    // This is limited to 10 by the arduino Wifi Core.
+    #define AP_MAX_CLIENTS 10
 
     #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
     bool WIFI_SLAVE_MODE = false;
@@ -125,7 +133,7 @@ using namespace Aiko;
     IPAddress RPI_IP = IPAddress(0, 0, 0, 0);
     // Allows a slave ESP32 to send its IP to be notified of pattern changes
      IPAddress Slave_IP = IPAddress(0, 0, 0, 0);
-    #define MAX_SLAVES 5
+    #define MAX_SLAVES 10
     IPAddress Slave_IPs[MAX_SLAVES] = { IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0) };
     uint8_t slave_ip_count = 0;
 
@@ -5567,8 +5575,18 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
           WebServer->clearWifis();
           WiFi.disconnect();
           WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
-          // allow 8 wifi clients, 2 rPis, 2nd ESP32, phone to connect, laptop to debug
-          WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, 8); 
+          // channel 1, hidden no (0)
+          WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS); 
+
+#if 0
+          // Default lease is 120mn, try to change it to 5mn
+          // #include <esp_netif.h>
+          // #include <dhcpserver/dhcpserver.h>
+          esp_netif_t *ap_netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
+          esp_netif_dhcps_stop(ap_netif);
+          uint32_t lease_time = 5;
+          dhcps_set_option_info(DHCPS_OPT_LEASE_TIME, &lease_time, sizeof(lease_time));
+#endif
 
           // AP is up! Restart Splitter so it binds to the new AP interface (192.168.4.1)
           Splitter.restart();
@@ -5594,9 +5612,9 @@ void rebuild_main_page(bool show_summary) {
     WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	// Keep track of how many times the web page is rebuilt
-        if (WIFI_SLAVE_MODE) w.puts("Slave ");
-        else w.puts("Master ");
-	w.puts("Version: ");
+        w.puts(WIFI_SLAVE_MODE ? "Slave" : "Master ");
+	w.puts((String(" Built: ") + __DATE__ + " " + __TIME__ ).c_str());
+	w.puts(". Html Refresh: ");
 	w.puts(String(count).c_str());
 	w.puts("<BR>\n");
         if (WIFI_SLAVE_MODE) {
@@ -6344,8 +6362,14 @@ void setup() {
             delay((uint32_t) 10);
 	}
 
-	Serial.println("Setup ArduinoOTA. Remote Wifi Updates Supported!");
-        ArduinoOTA.setHostname("Marc NFL");
+        if (ESP.getFlashChipSize() > 5000000) {
+            Serial.println("More than 4GB of Flash, ArduinoOTA Wifi Updates Supported!");
+            ArduinoOTA.setHostname((String("Marc NFL ") + (WIFI_SLAVE_MODE ? "Slave" : "Master ") + __DATE__ + " " + __TIME__ ).c_str());
+        } else {
+            Serial.println("Only 4GB of Flash, No Flash Partition, No OTAs");
+            ArduinoOTA.setHostname((String("Marc NFL NOFLASH ") + (WIFI_SLAVE_MODE ? "Slave " : "Master ") + __DATE__ + " " + __TIME__ ).c_str());
+        }
+        ArduinoOTA.setPassword(WIFI_OTA_PWD);
         ArduinoOTA.begin();
 
         Serial.println("OTA Ready");
