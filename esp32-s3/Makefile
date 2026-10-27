@@ -22,7 +22,7 @@ monitor: ready killscreen
 	screen -S screen $(PORT) 115200
 
 copy:	
-	cp /tmp/arduino_build_*/*.bin .
+	cp /tmp/arduino_build_*/NeoMatrix-FastLED-IR*.bin .
 
 push:
 	echo "export $$HOST=hostname make push, but do you want this? git will also sync"
