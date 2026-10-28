@@ -103,6 +103,8 @@ using namespace Aiko;
 #ifdef WIFI
     // This is limited to 10 by the arduino Wifi Core.
     #define AP_MAX_CLIENTS 10
+    // May make things more stable but costs more power
+    // #define WIFINOSLEEP
 
     #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
     bool WIFI_SLAVE_MODE = false;
@@ -140,6 +142,8 @@ using namespace Aiko;
     #include <ArduinoOTA.h>
 
     #include <WiFi.h>
+    #include <esp_wifi.h> // esp_wifi_get_ps
+
 
     // this may stop udp packets from being processed, turn off when not debugging
     // #define WIFI_SNIFFER
@@ -171,6 +175,7 @@ using namespace Aiko;
     volatile bool slave_ip_sent = false;
 
     void send_slave_ip_to_master() {
+        if (!wifi_network_stable) return;
         if (send_slave_ip_to_master_tries > 15) return;
         
         // (uint32_t)Master_IP != 0 mathematically guarantees we never 
@@ -198,7 +203,7 @@ using namespace Aiko;
                     }
                     client.println(payloadStr);
                     client.clear(); 
-                    delay(1000);
+                    delay(50);
                     client.stop();
                     slave_ip_sent = true;
                     Serial.printf("Successfully sent Slave IP %s to Master at %s\r\n", payloadStr, Master_IP.toString().c_str());
@@ -233,14 +238,22 @@ using namespace Aiko;
                            Serial.println(" (slave IPs unknown)");
                         }
                     }
-                 } else {
-                     Serial.println(">>>>>>>>>>>>>> Master: Failed to initiate UDP beacon packet");
+                 }
+
+                 // 2. The robust Unicast Rescue (Required for rebooted slaves)
+                 // This guarantees delivery via 802.11 MAC ACKs, ignoring broadcast drops.
+                 for (uint8_t i = 0; i < slave_ip_count; i++) {
+                     if (udp.beginPacket(Slave_IPs[i], UDP_DISCOVERY_PORT)) {
+                         udp.write((uint8_t*)&masterBootToken, sizeof(masterBootToken));
+                         udp.endPacket();
+                     }
                  }
              }
          }
     }
 
     void listen_for_master_broadcast() {
+        if (!wifi_network_stable) return;
         if (WIFI_SLAVE_MODE) {
             int packetSize;
 
@@ -268,6 +281,7 @@ using namespace Aiko;
                     if (senderIP != Master_IP || receivedToken != lastMasterBootToken) {
                         Serial.printf(">>>>>>>>>>>>>> Master Found! IP: %s, Token: %u\r\n", senderIP.toString().c_str(), receivedToken);
                         Master_IP = senderIP;
+                        rebuild_main_page();
                         lastMasterBootToken = receivedToken;
                         slave_ip_sent = false; 
                         send_slave_ip_to_master_tries = 0; 
@@ -331,7 +345,7 @@ using namespace Aiko;
       }
 
       void handle() {
-        if (WiFi.status() != WL_CONNECTED && WiFi.getMode() != WIFI_AP && WiFi.getMode() != WIFI_AP_STA) {
+        if ((!wifi_network_stable ||WiFi.status() != WL_CONNECTED) && WiFi.getMode() != WIFI_AP && WiFi.getMode() != WIFI_AP_STA) {
             return; 
         }
 
@@ -1679,11 +1693,11 @@ uint8_t display_text(const char *text, int16_t x, int16_t y, uint16_t loopcnt = 
 		    Serial.println(h);
 
 		    if (w > MATRIX_WIDTH) {
-			Serial.print("Too wide, will try a smaller font: ");
+			//Serial.print("Too wide, will try a smaller font: ");
 			continue;
 		    }
 		    if (h > MATRIX_HEIGHT) {
-			Serial.print("Too tall, will try a smaller font: ");
+			//Serial.print("Too tall, will try a smaller font: ");
 			continue;
 		    }
 		    break;
@@ -5550,8 +5564,18 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
       Splitter.restart();
       Serial.printf("|Started wifi, slave mode enabled? %d\n\r", WIFI_SLAVE_MODE); // Send a second |St to rPi in case rPi rebooted via switch
   }
+  // Disable WiFi power save to prevent LwIP from dropping broadcasts between DTIM windows 
+  // May add around 200mW of power
+#ifdef WIFINOSLEEP
+  WiFi.setSleep(false);
+  // do it both ways
+  esp_wifi_set_ps(WIFI_PS_NONE);
+#endif
+  wifi_ps_type_t ps_type = WIFI_PS_MAX_MODEM;
+  esp_wifi_get_ps(&ps_type);
 
-  Serial.printf("Wifi slave mode enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d\n\r", WIFI_SLAVE_MODE, __func__, ssid, what, failure_cnt);
+  // 0 = WIFI_PS_NONE (disabled), 1 = WIFI_PS_MIN_MODEM, 2 = WIFI_PS_MAX_MODEM
+  Serial.printf("Wifi slave mode enabled: %d, %s: connectionStatus for '%s' is now '%s' fail cnt: %d, power save: %d\n\r", WIFI_SLAVE_MODE, __func__, ssid, what, failure_cnt, ps_type);
 
   if (!ap and failure_cnt > 2) {
       // For the wifi slave, allow switching forever between AP and home test network until one works
@@ -5873,6 +5897,7 @@ void setup_wifi() {
         WIFI_SLAVE_MODE = true;
     } else { 
         Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi AP mode");
+        Serial.println(">>>>>>>>>>>>>> AP/Slave may not work on some APs unless you configure proxy ARP on the AP");
         WIFI_SLAVE_MODE = false;
     }
     #else
@@ -6116,14 +6141,27 @@ void write_config_index(OmXmlWriter w) {
 
 void loop() {
 #ifdef ESP32
-    // 8K gives Loop() - Free Stack Space: 1952
-    // Debug exception reason: Stack canary watchpoint triggered (loopTask) 
-    // After changing stack size to 16KB, I hae now 7916KB free
-	EVERY_N_SECONDS(60) {
-          MS_Print(); Serial.printf("Loop() - Free Stack Space: %d", uxTaskGetStackHighWaterMark(NULL));
-          show_free_mem("");
-	}
+    EVERY_N_SECONDS(60) {
+      show_free_mem("");
+    }
     #ifdef WIFI
+        EVERY_N_SECONDS(60) {
+          wifi_ps_type_t ps_type = WIFI_PS_MAX_MODEM;
+          esp_wifi_get_ps(&ps_type);
+          MS_Print();
+          // 8K gives Loop() - Free Stack Space: 1952
+          // Debug exception reason: Stack canary watchpoint triggered (loopTask) 
+          // After changing stack size to 16KB, I hae now 7916KB free
+          // 0 = WIFI_PS_NONE (disabled), 1 = WIFI_PS_MIN_MODEM, 2 = WIFI_PS_MAX_MODEM
+          Serial.printf("Loop() - Stack: %d, BSSID: %s, Ch: %d, RSSI: %d, PS: %d \r\n",
+              uxTaskGetStackHighWaterMark(NULL), WiFi.BSSIDstr().c_str(),
+              WiFi.channel(), WiFi.RSSI(), ps_type);
+          // Keep Master's LwIP ARP entry for this Slave from expiring (ARP_MAXAGE = 300s)
+          if (WIFI_SLAVE_MODE && wifi_network_stable && (uint32_t)Master_IP != 0) {
+              slave_ip_sent = false;
+              send_slave_ip_to_master_tries = 0;
+          }
+        }
         ArduinoOTA.handle();
         Splitter.handle(); 
         listen_for_master_broadcast(); // Slave reads this continuously
@@ -6542,6 +6580,12 @@ void setup() {
     colorWipe(0x0000FF00, 10);
     Serial.println("Neopixel strip init done");
     Events.addHandler(Neopixel_Anim_Handler, 20);
+
+      #ifdef WIFI
+        // Make the master look different
+        if (!WIFI_SLAVE_MODE) STRIPDEMO = f_rainbow;
+      #endif
+
 #endif // NEOPIXEL_PIN
 
     // Check IR every 20ms or so (cooperative multitasking)
@@ -6576,10 +6620,10 @@ void setup() {
 #ifdef ESP32
     #if ARDUINO > 10811
         Serial.printf("Arduino Stack was set to %d bytes\r\n", getArduinoLoopTaskStackSize());
-        if (getArduinoLoopTaskStackSize() < 9000) Serial.println(">>>> NOT ENOUGH STACK, FIX cores/esp32/main.cpp <<<");
+        if (getArduinoLoopTaskStackSize() < 9000) Serial.println(">>>> NOT ENOUGH STACK, fix cores/esp32/main.cpp to have '#define ARDUINO_LOOP_STACK_SIZE 16384' or make sure source tree has build_opt.h with '-DARDUINO_LOOP_STACK_SIZE=16384' <<<");
         Serial.printf("Setup() - Free Stack Space: %d\r\n", uxTaskGetStackHighWaterMark(NULL));
         if (uxTaskGetStackHighWaterMark(NULL) < 4000) {
-            Serial.println(">>>> NOT ENOUGH FREE STACK, FIX cores/esp32/main.cpp <<<");   
+            Serial.println(">>>> NOT ENOUGH STACK, fix cores/esp32/main.cpp to have '#define ARDUINO_LOOP_STACK_SIZE 16384' or make sure source tree has build_opt.h with '-DARDUINO_LOOP_STACK_SIZE=16384' <<<");
             delay(5000);
         }
     #else
