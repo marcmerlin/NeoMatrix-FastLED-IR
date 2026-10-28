@@ -182,10 +182,9 @@ using namespace Aiko;
         // suffer a TCP lockup trying to connect to an uninitialized IP object.
         if (WIFI_SLAVE_MODE && WiFi.status() == WL_CONNECTED && !slave_ip_sent) {
             if ((uint32_t)Master_IP != 0) {
-                WiFiClient client;
+                NetworkUDP checkinUdp; // Use a local, transient UDP socket
 
-                // Increased timeout to 1500ms to account for Master blocking interrupts to draw pixels
-                if (client.connect(Master_IP, 23, 1500)) {
+                if (checkinUdp.beginPacket(Master_IP, 23)) {
                     IPAddress myIP = WiFi.localIP();
                     
                     
@@ -201,12 +200,10 @@ using namespace Aiko;
                         payloadStr = (char)('0' + (temp % 10)) + payloadStr;
                         temp /= 10;
                     }
-                    client.println(payloadStr);
-                    client.clear(); 
-                    delay(50);
-                    client.stop();
+                    checkinUdp.println(payloadStr);
+                    checkinUdp.endPacket();
                     slave_ip_sent = true;
-                    Serial.printf("Successfully sent Slave IP %s to Master at %s\r\n", payloadStr, Master_IP.toString().c_str());
+                    Serial.printf("Successfully sent Slave IP %s to Master at %s via UDP\r\n", payloadStr, Master_IP.toString().c_str());
                 } else {
                     Serial.print("Cannot send slave IP to Master (unknown IP), will retry... ");
                     Serial.println(send_slave_ip_to_master_tries);
@@ -234,6 +231,7 @@ using namespace Aiko;
                                 Serial.print(Slave_IPs[i].toString().c_str());
                                 if(i < slave_ip_count - 1) Serial.print(", ");
                             }
+                            Serial.println();
                         } else {
                            Serial.println(" (slave IPs unknown)");
                         }
@@ -1676,13 +1674,16 @@ uint8_t display_text(const char *text, int16_t x, int16_t y, uint16_t loopcnt = 
 
 		    matrix->setFont(f);
 		    matrix->getTextBounds((char *) "X", 0, 0, &bx, &by, &w, &fontheight);
+#ifdef DEBUG_FONT_SPACING
 		    Serial.print("Font Size: ");
 		    Serial.print(fibx);
 		    Serial.print(", height: ");
 		    Serial.print(fontheight);
 		    Serial.print(" -> ");
+#endif
 
 		    matrix->getTextBounds((char *) text, 0, fontheight, &bx, &by, &w, &h);
+#ifdef DEBUG_FONT_SPACING
 		    Serial.print("Square: ");
 		    Serial.print(bx);
 		    Serial.print(", ");
@@ -1691,6 +1692,7 @@ uint8_t display_text(const char *text, int16_t x, int16_t y, uint16_t loopcnt = 
 		    Serial.print(w);
 		    Serial.print(", ");
 		    Serial.println(h);
+#endif
 
 		    if (w > MATRIX_WIDTH) {
 			//Serial.print("Too wide, will try a smaller font: ");
@@ -6583,7 +6585,10 @@ void setup() {
 
       #ifdef WIFI
         // Make the master look different
-        if (!WIFI_SLAVE_MODE) STRIPDEMO = f_rainbow;
+        if (!WIFI_SLAVE_MODE) {
+            Serial.println(">>>>>>> Detected Master, Changing Neopixel to Rainbow");
+            STRIPDEMO = f_rainbowCycle;   
+        }
       #endif
 
 #endif // NEOPIXEL_PIN
