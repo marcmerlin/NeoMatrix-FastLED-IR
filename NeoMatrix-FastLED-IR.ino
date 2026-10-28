@@ -71,8 +71,9 @@ Dear LLM:
   reviewer. Critically analyze the patch you just wrote for missing
   implementations, state-machine lockups, and unhandled variables. Tell
   me what you found and fix it.
-* Do a step-by-step dry run of the network failure state through your
-  new code to prove it behaves as claimed.
+* If and only if my instructions directly ask you to modify the
+  networking/wifi code, Do a step-by-step dry run of the network failure
+  state through your new code to prove it behaves as claimed.
 */
 
 
@@ -1153,7 +1154,7 @@ uint8_t tfsf(uint32_t unused) {
     uint8_t idx = 3;
 
     // For bigger screens, use the zoom version in static fully zoomed mode.
-    if (mheight >= 64) { tfsf_zoom(99); return 255; }
+    if (mh >= 64) { tfsf_zoom(99); return 255; }
 
     // For smaller displays, flash letters one by one.
     if (MATRIX_RESET_DEMO) {
@@ -1259,7 +1260,7 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
 	repeat = 4;
 	if (zoom_type == 99) { size = 18; repeat = 10; };
     }
-    if (mheight >= 192) matrix->setTextSize(2);
+    if (mh >= 128) matrix->setTextSize(2);
 
     if (--delayframe) {
 	// reset how long a frame is shown before we switch to the next one
@@ -1282,12 +1283,12 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
 	    matrix->setPassThruColor(0xD7E1EB);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x77818B);
-	    matrix->setCursor(20-size+offset, (mh>=128?64:20)+size*1.5);
+	    matrix->setCursor(20-size+offset, (mh>=192?64:(mh>=128?32:20))+size*1.5);
 	    matrix->print("TF");
 	    matrix->setPassThruColor(0x05C1FF);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x00618F);
-	    matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:52)+size*1.5);
+	    matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=192?128:(mh>=128?96:50))+size*1.5);
 	    matrix->print("SF");
 	} else {
 	    if (letters[l] == 'T') offset = -2 * size/15;
@@ -1319,12 +1320,12 @@ uint8_t tfsf_zoom(uint32_t zoom_type) {
 	    matrix->setPassThruColor(0xD7E1EB);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x77818B);
-	    matrix->setCursor(20-size+offset, (mh>=128?64:20)+size*1.5);
+	    matrix->setCursor(20-size+offset, (mh>=192?64:(mh>=128?32:20))+size*1.5);
 	    matrix->print("TF");
 	    matrix->setPassThruColor(0x05C1FF);
 	    // Something less bright for pictures
 	    if (zoom_type == 99) matrix->setPassThruColor(0x00618F);
-	    matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=128?128:50)+size*1.5);
+	    matrix->setCursor((mh>=128?50:24)-size+offset, (mh>=192?128:(mh>=128?96:50))+size*1.5);
 	    matrix->print("SF");
 	} else {
 	    if (letters[l] == 'T') offset = -2 * size/15;
@@ -1449,6 +1450,8 @@ uint8_t rotate_text(uint32_t whichone=0) {
 	{ 30,	60,	90,	120,	150,	180 },
     };
 
+    static uint16_t y_offset_128[7][6];
+
     uint16_t y_offset_96[][6] = { 
 	{ 0,	0,	0,	0,	0,	0 },
 	{ 48,	0,	0,	0,	0,	0 },
@@ -1483,6 +1486,16 @@ uint8_t rotate_text(uint32_t whichone=0) {
     static uint8_t numlines = 0;
     static uint8_t maxstr = 0;
 
+    // only populate the array once since it's static
+    if (! y_offset_128[5][5]) {
+        for (uint8_t i = 0; i < 7; i++) {
+            for (uint8_t j = 0; j < 6; j++) {
+                y_offset_128[i][j] = y_offset_192[i][j] * 2 / 3;
+            }
+        }
+    }
+
+
     if (MATRIX_RESET_DEMO) {
       MATRIX_RESET_DEMO = false;
       matrix->clear();
@@ -1505,14 +1518,21 @@ uint8_t rotate_text(uint32_t whichone=0) {
     if (! ROTATE_TEXT) spd = displayall+1;
 
     matrix->setTextSize(1);
-    if (mheight >= 192)  {
+    if (mh >= 192)  {
       matrix->setFont(&Century_Schoolbook_L_Bold_28);
       if (maxstr > 12) matrix->setFont(&Century_Schoolbook_L_Bold_16);
       else if (maxstr > 9) matrix->setFont(&Century_Schoolbook_L_Bold_18);
       else if (maxstr > 8) matrix->setFont(&Century_Schoolbook_L_Bold_20);
       else if (maxstr > 7) matrix->setFont(&Century_Schoolbook_L_Bold_22);
       else if (maxstr > 5) matrix->setFont(&Century_Schoolbook_L_Bold_26);
-    } else if (mheight >= 64)  {
+    } else if (mh >= 128)  {
+      matrix->setFont(&Century_Schoolbook_L_Bold_26);
+      if (maxstr > 12) matrix->setFont(&Century_Schoolbook_L_Bold_14);
+      else if (maxstr > 9) matrix->setFont(&Century_Schoolbook_L_Bold_16);
+      else if (maxstr > 8) matrix->setFont(&Century_Schoolbook_L_Bold_18);
+      else if (maxstr > 7) matrix->setFont(&Century_Schoolbook_L_Bold_20);
+      else if (maxstr > 5) matrix->setFont(&Century_Schoolbook_L_Bold_24);
+    } else if (mh >= 64)  {
       //matrix->setFont(FreeMonoBold9pt7b);
       matrix->setFont(&Century_Schoolbook_L_Bold_14);
       if (maxstr > 9) matrix->setFont(&TomThumb);
@@ -1530,15 +1550,16 @@ uint8_t rotate_text(uint32_t whichone=0) {
     for (uint8_t l = 0; l < numlines; l++) {
       uint16_t line;
 
-      if      (mheight >= 192) line = y_offset_192[numlines][l];
-      else if (mheight >=  96) line =  y_offset_96[numlines][l];
-      else if (mheight >=  64) line =  y_offset_64[numlines][l];
-      else if (mheight >=  32) line =  y_offset_32[numlines][l];
+      if      (mh >= 192) line = y_offset_192[numlines][l];
+      else if (mh >= 128) line = y_offset_128[numlines][l];
+      else if (mh >=  96) line =  y_offset_96[numlines][l];
+      else if (mh >=  64) line =  y_offset_64[numlines][l];
+      else if (mh >=  32) line =  y_offset_32[numlines][l];
       // these values are not correct, but will compile without error
       else  line =  y_offset_32[numlines][l];
       // printf("Got %d  %d out of %d\n", whichone, l, numlines);
       String textdisp = String(text[whichone][l]);
-      if (mheight <=  96) textdisp.toUpperCase();
+      if (mh <=  96) textdisp.toUpperCase();
 
       if (l != numlines-1) {
         if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall) {
@@ -1594,9 +1615,9 @@ uint8_t esrbtr_flash(uint32_t trance=false) {
 
     if (state == 1) {
 	//wheel+=20;
-	if (mheight >= 192)  {
+	if (mh >= 128)  {
 	    matrix->setFont(&Century_Schoolbook_L_Bold_26);
-	} else if (mheight >= 64)  {
+	} else if (mh >= 64)  {
 	    //matrix->setFont(FreeMonoBold9pt7b);
 	    matrix->setFont(&Century_Schoolbook_L_Bold_12);
 	} else {
@@ -1605,31 +1626,35 @@ uint8_t esrbtr_flash(uint32_t trance=false) {
 	matrix->setTextSize(1);
 	matrix->clear();
 
-	if (mheight >= 192) matrix->setCursor(30, 48);
-	else if (mheight >= 96) matrix->setCursor(18, 20);
-	else if (mheight >= 64) matrix->setCursor(18, 15);
+	if (mh >= 192) matrix->setCursor(30, 48);
+	else if (mh >=128) matrix->setCursor(30, 32);
+	else if (mh >= 96) matrix->setCursor(18, 20);
+	else if (mh >= 64) matrix->setCursor(18, 15);
 	else matrix->setCursor(7, 6);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
 	matrix->print("EAT");
 
-	if (mheight >= 192) matrix->setCursor(18, 84);
-	else if (mheight >= 96) matrix->setCursor(10, 41);
-	else if (mheight >= 64) matrix->setCursor(10, 33);
+	if (mh >= 192) matrix->setCursor(18, 84);
+	else if (mh >=128) matrix->setCursor(18, 56);
+	else if (mh >= 96) matrix->setCursor(10, 41);
+	else if (mh >= 64) matrix->setCursor(10, 33);
 	else matrix->setCursor(3, 14);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
 	matrix->print("SLEEP");
 
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
-	if (mheight >= 192) matrix->setCursor(trance?2:22, 120);
-	else if (mheight >= 96) matrix->setCursor(trance?2:14, 60);
-	else if (mheight >= 64) matrix->setCursor(trance?2:14, 47);
+	if (mh >= 192) matrix->setCursor(trance?2:22, 120);
+	else if (mh >=128) matrix->setCursor(trance?2:22, 82);
+	else if (mh >= 96) matrix->setCursor(trance?2:14, 60);
+	else if (mh >= 64) matrix->setCursor(trance?2:14, 47);
 	else matrix->setCursor(trance?0:5, 22);
 	if (PANELCONFNUM == 2 || PANELCONFNUM == 3) matrix->print("BURN");
 	else matrix->print(trance?"TRANCE":"RAVE");
 
-	if (mheight >= 192) matrix->setCursor(2, 160);
-	else if (mheight >= 96) matrix->setCursor(2, 82);
-	else if (mheight == 64) matrix->setCursor(2, 63);
+	if (mh >= 192) matrix->setCursor(2, 160);
+	else if (mh >=128) matrix->setCursor(2,107);
+	else if (mh >= 96) matrix->setCursor(2, 82);
+	else if (mh == 64) matrix->setCursor(2, 63);
 	else matrix->setCursor(0, 30);
 	matrix->setPassThruColor(Wheel(((wheel+=24))));
 	matrix->print("REPEAT");
@@ -1768,7 +1793,7 @@ uint8_t display_text(const char *text, int16_t x, int16_t y, uint16_t loopcnt = 
 		    break;
 
 		default:
-		    if (mheight >= 64) {
+		    if (mh >= 64) {
 			    // f = FreeMonoBold9pt7b;
 			    f = (GFXfont *) &Century_Schoolbook_L_Bold_16;
 		    } else {
@@ -1876,9 +1901,9 @@ uint8_t webwc(uint32_t unused) {
     if (! ROTATE_TEXT) spd = displayall+1;
 
     matrix->setTextSize(1);
-    if (mheight >= 192)  {
+    if (mh >= 128)  {
 	matrix->setFont(&Century_Schoolbook_L_Bold_26);
-    } else if (mheight >= 64)  {
+    } else if (mh >= 64)  {
 	//matrix->setFont(FreeMonoBold9pt7b);
 	matrix->setFont(&Century_Schoolbook_L_Bold_12);
     } else {
@@ -1891,9 +1916,10 @@ uint8_t webwc(uint32_t unused) {
     }
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mheight >= 192) matrix->setCursor(22, 25);
-	else if (mheight >= 96) matrix->setCursor(12, 16);
-	else if (mheight >= 64) matrix->setCursor(12, 12);
+	if (mh >= 192) matrix->setCursor(22, 25);
+	else if (mh >=128) matrix->setCursor(22, 20);
+	else if (mh >= 96) matrix->setCursor(12, 16);
+	else if (mh >= 64) matrix->setCursor(12, 12);
 	else matrix->setCursor(5, 6);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("WITH");
@@ -1902,9 +1928,10 @@ uint8_t webwc(uint32_t unused) {
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
 	firstpass = 1;
-	if (mheight >= 192) matrix->setCursor(14, 65);
-	else if (mheight >= 96) matrix->setCursor(7, 32);
-	else if (mheight >= 64) matrix->setCursor(7, 24);
+	if (mh >= 192) matrix->setCursor(14, 65);
+	else if (mh >=128) matrix->setCursor(14,45);
+	else if (mh >= 96) matrix->setCursor(7, 32);
+	else if (mh >= 64) matrix->setCursor(7, 24);
 	else matrix->setCursor(3, 12);
 	// going from 24 to 16 with gamma correction and back to 24 damages the wheel colors enough to make them not usable
 	// 669900  01100110 10011001 00000000
@@ -1916,9 +1943,10 @@ uint8_t webwc(uint32_t unused) {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mheight >= 192) matrix->setCursor(22, 105);
-	else if (mheight >= 96) matrix->setCursor(12, 48);
-	else if (mheight >= 64) matrix->setCursor(12, 36);
+	if (mh >= 192) matrix->setCursor(22, 105);
+	else if (mh >=128) matrix->setCursor(20, 70);
+	else if (mh >= 96) matrix->setCursor(12, 48);
+	else if (mh >= 64) matrix->setCursor(12, 36);
 	else matrix->setCursor(5, 18);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("BEAT");
@@ -1926,9 +1954,10 @@ uint8_t webwc(uint32_t unused) {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd && state < ((l+1)*duration-l*overlap)/spd) || spd > displayall)  {
-	if (mheight >= 192) matrix->setCursor(2, 145);
-	else if (mheight >= 96) matrix->setCursor(4, 64);
-	else if (mheight >= 64) matrix->setCursor(4, 48);
+	if (mh >= 192) matrix->setCursor(2, 145);
+	else if (mh >=128) matrix->setCursor(2, 97);
+	else if (mh >= 96) matrix->setCursor(4, 64);
+	else if (mh >= 64) matrix->setCursor(4, 48);
 	else matrix->setCursor(2, 24);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("WE ARE");
@@ -1936,9 +1965,10 @@ uint8_t webwc(uint32_t unused) {
     l++;
 
     if ((state > (l*duration-l*overlap)/spd || (state < overlap/spd && firstpass)) || spd > displayall)  {
-	if (mheight >= 192) matrix->setCursor(2, 185);
-	else if (mheight >= 96) matrix->setCursor(0, 82);
-	else if (mheight >= 64) matrix->setCursor(0, 60);
+	if (mh >= 192) matrix->setCursor(2, 185);
+	else if (mh >=128) matrix->setCursor(2,123);
+	else if (mh >= 96) matrix->setCursor(0, 82);
+	else if (mh >= 64) matrix->setCursor(0, 60);
 	else matrix->setCursor(0, 30);
 	matrix->setPassThruColor(Wheel(map(l, 0, 5, 0, 255)));
 	matrix->print("CLOSER");
@@ -1988,7 +2018,7 @@ uint8_t scrollText(const char str[], uint8_t len) {
     delayframe = stdelay;
 
     matrix->clear();
-    matrix->setCursor(x, 24);
+    matrix->setCursor(x, mh > 32 ? MATRIX_HEIGHT / 2 + fontsize : 24);
     for (uint8_t c=0; c<len; c++) {
 	//uint16_t txtcolor = matrix->Color24to16(Wheel(map(c, 0, len, 0, 512)));
 	//matrix->setTextColor(txtcolor);
@@ -2215,7 +2245,7 @@ uint8_t GifAnim(uint32_t idx) {
     };
 
     #ifdef ARDUINOONPC
-      #if mheight == 192
+      #if mheight >= 128
           #define ROOT FS_PREFIX "/gifs128x192/"
       #else
           #define ROOT FS_PREFIX "/gifs64/"
@@ -2223,11 +2253,10 @@ uint8_t GifAnim(uint32_t idx) {
     #else
       #define ROOT "/gifs64/"
     #endif
-    #if mheight == 64
-      #define YMUL 10
-    #else
-      #define YMUL 15
-    #endif
+
+    // This is used to stretch 64x64 gifs to 64x96
+    // 128x192 gifs are shrunk to to 128x128 if needed lower down after reading the Y value
+    int8_t YMUL = ( mh==64 ? 10 : 15);
 
     // force the last index to detect too many initializers
     const Animgif animgif[360] = {
@@ -2319,13 +2348,13 @@ uint8_t GifAnim(uint32_t idx) {
 
 
 	#else
-/* 030 */   { ROOT  "AnB_colorballs_black.gif",	10, 0,  0, 10, 10,128,128 },
-	    { ROOT  "AnB_color_bands.gif",	10, 0,  0, 10, 10,128,128 },
-	    { ROOT  "AnB_color_bands_heart.gif",10, 0,  0, 10, 10,128,128 },
-	    { ROOT  "AnB_logo_lgrey.gif",	10, 0,  0, 10, 10,128,128 },
+/* 030 */   { ROOT  "AnB_colorballs_black.gif",	10, 2,  2, 10, 10,136,140 },
+	    { ROOT  "AnB_color_bands.gif",	10, 2,  2, 10, 10,136,140 },
+	    { ROOT  "AnB_color_bands_heart.gif",10, 2,  2, 10, 10,136,140 },
+	    { ROOT  "AnB_logo_lgrey.gif",	10, 2,  2, 10, 10,136,140 },
 	    { ROOT  "AnB_sign_lgrey.gif",	10, 0,  0, 10, 10,128, 64 },
-/* 035 */   { ROOT  "AnB_hand.gif",		10, 0,  0, 10, 10,128,148 },
-	    { ROOT  "7lions_gold.gif",		10, 0,  0, 10, 10,128,128 },
+/* 035 */   { ROOT  "AnB_hand.gif",		10, 2,  2, 10, 10,136,140 },
+	    { ROOT  "7lions_gold.gif",		10, 2,  2, 10, 10,136,140 },
 	    { ROOT  "7lions_colors.gif",	10, 6,  9, 10, 10,140,210 },
 	    { NULL,				10, 0,  0, 10, 10,128,128  },
 	    { NULL,				10, 0,  0, 10, 10,128,128  },
@@ -2718,6 +2747,13 @@ uint8_t GifAnim(uint32_t idx) {
             path = animgif[1].path;
         }
         matrix->clear();
+
+        if (mh == 128 && !scrollx && !scrolly) {
+            // Shrink 128x192 animated GIFs by 1.5 in the Y axis and offset slightly to center
+            FACTY = (FACTY * 2 + 1) / 3;
+            OFFSETY = (OFFSETY * 2) / 3 - 2;
+        }
+
         // initialize x/y by sending the reset flag
         panOrBounce(&x, &y, scrollx, scrolly, true);
         // exit if the gif animation couldn't get setup.
@@ -2735,7 +2771,7 @@ uint8_t GifAnim(uint32_t idx) {
             //Serial.print(" ");
             //Serial.println(y);
         }
-    } else {
+    } else if (scrollx || scrolly) {
         OFFSETX = 0;
         OFFSETY = 0;
     }
@@ -2875,17 +2911,15 @@ uint8_t demoreel100(uint32_t demo) {
 	state = 0;
     }
 
-#if mheight <= 64
     static uint16_t delayframe = demoreeldelay;
     if (--delayframe) {
-	// reset how long a frame is shown before we switch to the next one
-	//Serial.print("delayed frame ");
-	//Serial.println(delayframe);
-	//delay(MX_UPD_TIME); Aiko emulates this delay for us
-	return repeat;
+        // reset how long a frame is shown before we switch to the next one
+        //Serial.print("delayed frame ");
+        //Serial.println(delayframe);
+        //delay(MX_UPD_TIME); Aiko emulates this delay for us
+        return repeat;
     }
     delayframe = demoreeldelay;
-#endif
     state++;
     gHue++;
 
@@ -2893,31 +2927,19 @@ uint8_t demoreel100(uint32_t demo) {
     {
 	if (demo == 1) {
 	    // random colored speckles that blink in and fade smoothly
-#if mheight > 64
-	    fadeToBlackBy( matrixleds, NUMMATRIX, 3);
-#else
-	    fadeToBlackBy( matrixleds, NUMMATRIX, 10);
-#endif
+	    fadeToBlackBy( matrixleds, NUMMATRIX, (mh>64 ? 3 : 10));
 	    int pos = random16(NUMMATRIX);
 	    matrixleds[pos] += CHSV( gHue + random8(64), 200, 255);
 	}
 	if (demo == 2) {
 	    // a colored dot sweeping back and forth, with fading trails
-#if mheight > 64
-	    fadeToBlackBy( matrixleds, NUMMATRIX, 5);
-#else
-	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
-#endif
+	    fadeToBlackBy( matrixleds, NUMMATRIX, mh>64 ? 5 : 20);
 	    int pos = beatsin16( 13, 0, NUMMATRIX-1 );
 	    matrixleds[pos2matrix(pos)] += CHSV( gHue, 255, 192);
 	}
 	if (demo == 3) {
 	    // eight colored dots, weaving in and out of sync with each other
-#if mheight > 64
-	    fadeToBlackBy( matrixleds, NUMMATRIX, 5);
-#else
-	    fadeToBlackBy( matrixleds, NUMMATRIX, 20);
-#endif
+	    fadeToBlackBy( matrixleds, NUMMATRIX, mh>64 ? 5 : 20);
 	    int8_t dothue = 0;
 	    for( int i = 0; i < 8; i++) {
 		int pos = beatsin16( i+7, 0, NUMMATRIX-1 );
@@ -5684,7 +5706,7 @@ void rebuild_main_page(bool show_summary) {
         }
     });
     WebPages->addSelect("Demo Mode", actionProc, PANELCONFNUM, HTML_DEMOLIST_CHOICE);
-    for (uint16_t i=0; i <= 5; i++) {
+    for (uint16_t i=0; i < CONFIGURATIONS; i++) {
 	WebPages->addSelectOption(panelconfnames[i], i);
     }
 
