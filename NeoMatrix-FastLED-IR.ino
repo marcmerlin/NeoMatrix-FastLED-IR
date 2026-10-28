@@ -233,7 +233,7 @@ using namespace Aiko;
                                 Serial.print(Slave_IPs[i].toString().c_str());
                                 if(i < slave_ip_count - 1) Serial.print(", ");
                             }
-                            Serial.println();
+                            Serial.println(")");
                         } else {
                            Serial.println(" (slave IPs unknown)");
                         }
@@ -4184,7 +4184,7 @@ void change_brightness(int8_t change, bool absolute=false) {
 #endif
 
     // rgbpanels are dim, bump up brightness
-    #if defined(GFXDISPLAY_M128BY192ABCPWM)
+    #if defined(GFXDISPLAY_M128BY192ABCPWM) || defined(GFXDISPLAY_128BY128ABC_PWM6373_SR1) || defined(GFXDISPLAY_128BY128ABC_PWM6373)
         // PWM panels are brighter, let's not bump up as much here
         uint8_t rgbpanel_brightness = 31+min( (1 << (brightness)), 224);
     #else
