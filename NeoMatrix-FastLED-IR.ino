@@ -104,7 +104,9 @@ using namespace Aiko;
     // This is limited to 10 by the arduino Wifi Core.
     #define AP_MAX_CLIENTS 10
     // May make things more stable but costs more power
-    // #define WIFINOSLEEP
+    // In my testing on a bit network, the slave can miss the master broadcasts
+    // while it's sleeping
+    #define WIFINOSLEEP
 
     #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
     bool WIFI_SLAVE_MODE = false;
@@ -283,6 +285,14 @@ using namespace Aiko;
                         lastMasterBootToken = receivedToken;
                         slave_ip_sent = false; 
                         send_slave_ip_to_master_tries = 0; 
+                        // Now that we have the master broadcast, we can go to sleep since
+                        // unicast will reach us more reliably.
+                        #ifdef WIFINOSLEEP
+                          Serial.println("Now that we know master, enable WIFI Sleep to save power");
+                          WiFi.setSleep(true);
+                          // do it both ways
+                          esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+                        #endif
                     } else if (!slave_ip_sent) {
                         // Master is still here, but we haven't successfully sent our IP yet. 
                         // Keep our retry counter alive! Not sure when or if this runs.
@@ -5063,7 +5073,7 @@ void IR_Serial_Handler() {
 	add1DGlitter(80);
 	gHue++;
 	leds_show();
-	waitmillis = millis() + wait/5;
+	waitmillis = millis() + wait/20;
     }
 
 
