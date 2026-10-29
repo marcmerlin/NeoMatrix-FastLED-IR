@@ -110,7 +110,9 @@ using namespace Aiko;
     #define WIFINOSLEEP
 
     #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
+    #define WAVESHARE_FORCEAP_PIN 9 // below pin8, force creating AP even when WIFI_SSID is there
     bool WIFI_SLAVE_MODE = false;
+    bool WIFI_FORCEAP_MODE = false;
     // is the wifi client/slave connecting to the home test debug network?
     bool WIFI_CLIENT_TESTING_NETWORK;
     volatile uint32_t send_slave_ip_to_master_tries = 0;
@@ -5927,10 +5929,13 @@ void setup_wifi() {
     
     #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
     if (digitalRead(WAVESHARE_CLIENT_PIN)) {
-        Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi client mode");
+        Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi client (slave) mode");
         WIFI_SLAVE_MODE = true;
+    } else if (digitalRead(WAVESHARE_FORCEAP_PIN)) {
+        Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi ForceAP");
+        WIFI_FORCEAP_MODE = true;
     } else { 
-        Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi AP mode");
+        Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi AP mode but will try WIFI_SSID first");
         Serial.println(">>>>>>>>>>>>>> AP/Slave may not work on some APs unless you configure proxy ARP on the AP");
         WIFI_SLAVE_MODE = false;
     }
@@ -6414,6 +6419,7 @@ void setup() {
 
         #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
             pinMode(WAVESHARE_CLIENT_PIN, INPUT_PULLDOWN);  // top left, client/slave mode
+            pinMode(WAVESHARE_FORCEAP_PIN, INPUT_PULLDOWN);
             pinMode(8, OUTPUT); // used as voltage source for wiring easiness
             digitalWrite(8, HIGH);
         #endif
@@ -6617,9 +6623,15 @@ void setup() {
 
       #ifdef WIFI
         // Make the master look different
-        if (!WIFI_SLAVE_MODE) {
+        if (WIFI_FORCEAP_MODE) {
+            Serial.println(">>>>>>> Detected Master ForceAP, Changing Neopixel to flash");
+            STRIPDEMO = f_flash;   
+        } else if (!WIFI_SLAVE_MODE) {
             Serial.println(">>>>>>> Detected Master, Changing Neopixel to Rainbow");
             STRIPDEMO = f_rainbowCycle;   
+        } else {
+            Serial.println(">>>>>>> Detected Slave, Changing Neopixel to TheatreChase");
+            STRIPDEMO = f_theaterChaseRainbow;
         }
       #endif
 
