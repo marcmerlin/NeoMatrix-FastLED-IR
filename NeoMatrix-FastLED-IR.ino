@@ -114,7 +114,8 @@ using namespace Aiko;
     bool WIFI_SLAVE_MODE = false;
     bool WIFI_FORCEAP_MODE = false;
     // is the wifi client/slave connecting to the home test debug network?
-    bool WIFI_CLIENT_TESTING_NETWORK;
+    // try to connect to the ESP32 AP first
+    bool WIFI_CLIENT_TESTING_NETWORK = false;
     volatile uint32_t send_slave_ip_to_master_tries = 0;
     volatile bool wifi_network_stable = false;
     volatile uint32_t lastMasterBootToken = 0;   // Tracked by Slave to detect Master restarts
@@ -466,6 +467,7 @@ using namespace Aiko;
 void MS_Print() {
 #ifdef WIFI
     if (WIFI_SLAVE_MODE) Serial.print("Slave ");
+    else if (WIFI_FORCEAP_MODE) Serial.print("ForceAP  ");
     else Serial.print("Master ");
 #else
     Serial.print("> ");
@@ -5576,7 +5578,7 @@ void wildcardProc(OmXmlWriter &w, OmWebRequest &request, int ref1, void *ref2) {
 void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
 {
   static uint8_t failure_cnt = 0;
-  static bool ap = false;
+  static bool ap = WIFI_FORCEAP_MODE? true: false;
   const char *what = "?";
 
   if (trying)       { 
@@ -5621,11 +5623,11 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
           failure_cnt = 0;
           if (!WIFI_CLIENT_TESTING_NETWORK) {
               Serial.println(">>>>>>>>>>>>>>>>>>>> Client/Slave mode: Too many failures with AP " WIFI_AP_SSID ", switching to " WIFI_SSID);
-              WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD);
+              WebServer->addWifi(WIFI_SSID, WIFI_PASSWORD); // home test network
               WIFI_CLIENT_TESTING_NETWORK = true;
           } else {
               Serial.println(">>>>>>>>>>>>>>>>>>>> Client/Slave mode: Too many failures with test network " WIFI_SSID ", switching to AP " WIFI_AP_SSID);
-              WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+              WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD); // Back to AP network
               WIFI_CLIENT_TESTING_NETWORK = false;
 
           }
@@ -5946,9 +5948,15 @@ void setup_wifi() {
 
     // Are we using the fallback testing network (by default we use the AP made by the master)
     if (WIFI_SLAVE_MODE) {
+        // try to connect to the ESP32 AP first
         WIFI_CLIENT_TESTING_NETWORK = false;
         Serial.println(">>>>>>>>>>>>>> Wifi slave mode, will try to connect to AP " WIFI_AP_SSID);
-        WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+        WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD); // MarcLED
+    } else if (WIFI_FORCEAP_MODE) { 
+        // Skip trying to connect to home network, force AP mode (switch to pin 9 required)
+        WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
+        // channel 1, hidden no (0)
+        WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS); 
     } else { 
         // Start as a client for home network, if that fails, connectionStatus() will take
         // the next step
@@ -6442,10 +6450,10 @@ void setup() {
 
         if (ESP.getFlashChipSize() > 5000000) {
             Serial.println("More than 4GB of Flash, ArduinoOTA Wifi Updates Supported!");
-            ArduinoOTA.setHostname((String("Marc NFL ") + (WIFI_SLAVE_MODE ? "Slave" : "Master ") + __DATE__ + " " + __TIME__ ).c_str());
+            ArduinoOTA.setHostname((String("Marc NFL ") + (WIFI_SLAVE_MODE ? "Slave" : WIFI_FORCEAP_MODE ? "ForceAP" : "Master ") + __DATE__ + " " + __TIME__ ).c_str());
         } else {
             Serial.println("Only 4GB of Flash, No Flash Partition, No OTAs");
-            ArduinoOTA.setHostname((String("Marc NFL NOFLASH ") + (WIFI_SLAVE_MODE ? "Slave " : "Master ") + __DATE__ + " " + __TIME__ ).c_str());
+            ArduinoOTA.setHostname((String("Marc NFL NOFLASH ") + (WIFI_SLAVE_MODE ? "Slave " : WIFI_FORCEAP_MODE ? "ForceAP" : "Master ") + __DATE__ + " " + __TIME__ ).c_str());
         }
         ArduinoOTA.setPassword(WIFI_OTA_PWD);
         ArduinoOTA.begin();
