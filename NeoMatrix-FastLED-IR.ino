@@ -150,6 +150,8 @@ using namespace Aiko;
     #include <WiFi.h>
     #include <esp_wifi.h> // esp_wifi_get_ps
     #include <esp_netif.h>
+    #include <ESPmDNS.h>
+    #include <mdns.h>
 
     // this may stop udp packets from being processed, turn off when not debugging
     // #define WIFI_SNIFFER
@@ -6474,12 +6476,35 @@ void showip() {
 #endif
 }
 
-void restart_ota_service() {
-    // 1. Terminate existing instance so _initialized resets to false
-    ArduinoOTA.end();
+// Standalone TCP listener for port 3232 on the AP interface (Used only for AP mDNS discovery)
+static WiFiServer ota_tcp_listener(3232);
 
-    // 2. Generate an RFC-compliant hostname (NO SPACES, NO COLONS)
-    // Example: Marc-NFL-Master-Oct-30-11-48-15
+// merlin:~# avahi-browse -rt _arduino._tcp -d local
+// +  wlan0 IPv4 Marc NFL NOFLASH Slave Oct 27 2026 21:41:48   _arduino._tcp        local
+// +  wlan0 IPv4 Marc NFL NOFLASH Slave Oct 27 2026 21:41:48-3 _arduino._tcp        local
+// +  wlan0 IPv4 NOFLASH-Marc-NFL-ForceAP-Oct-30-2026-12-51-48 _arduino._tcp        local
+// =  wlan0 IPv4 Marc NFL NOFLASH Slave Oct 27 2026 21:41:48   _arduino._tcp        local
+// hostname = [Marc\032NFL\032NOFLASH\032Slave\032Oct\03227\0322026\03221\05841\05848.local]
+// address = [192.168.4.3]
+// port = [3232]
+// txt = ["board=waveshare_esp32_s3_zero" "tcp_check=no" "ssh_upload=no" "auth_upload=yes"]
+// wlan0 IPv4 Marc NFL NOFLASH Slave Oct 27 2026 21:41:48-3 _arduino._tcp        local
+// hostname = [Marc\032NFL\032NOFLASH\032Slave\032Oct\03227\0322026\03221\05841\05848-3.local]
+// address = [192.168.4.4]
+// port = [3232]
+// txt = ["board=waveshare_esp32_s3_zero" "tcp_check=no" "ssh_upload=no" "auth_upload=yes"]
+// wlan0 IPv4 NOFLASH-Marc-NFL-ForceAP-Oct-30-2026-12-51-48 _arduino._tcp        local
+// hostname = [NOFLASH-Marc-NFL-ForceAP-Oct-30-2026-12-51-48.local]
+// address = [192.168.4.1]
+// port = [3232]
+// txt = ["board=waveshare_esp32_s3_zero" "auth_upload=no"]
+
+// Note that this does not work if the ESP32 is the AP
+void restart_ota_service() {
+    ArduinoOTA.end();
+    MDNS.end();
+    ota_tcp_listener.end();
+    // 1. Sanitize hostname to strict RFC alphanumeric + hyphen format
     String clean_date = String(__DATE__);
     clean_date.replace(" ", "-");
     String clean_time = String(__TIME__);
@@ -6489,18 +6514,47 @@ void restart_ota_service() {
                      (WIFI_SLAVE_MODE ? "Slave-" : WIFI_FORCEAP_MODE ? "ForceAP-" : "Master-") +
                      clean_date + "-" + clean_time;
 
-    if (ESP.getFlashChipSize() > 5000000) {
-        Serial.println("More than 4GB of Flash, ArduinoOTA Wifi Updates Supported!");
-    } else {
-        Serial.println("Only 4GB of Flash, No Flash Partition, No OTAs");
-        ota_name ="NOFLASH-" + ota_name;
+    if (ESP.getFlashChipSize() <= 5000000) {
+        ota_name = "NOFLASH-" + ota_name;
     }
-    ArduinoOTA.setHostname(ota_name.c_str());
-    ArduinoOTA.setPassword(WIFI_OTA_PWD);
-    
-    // 3. Bind sockets and publish mDNS service
-    ArduinoOTA.begin();
-    Serial.printf(">>>>> [OTA] Broadcast active: %s.local:3232 <<<<<\r\n", ota_name.c_str());
+
+    // 2. Branch logic based on active interface
+    if (WiFi.getMode() == WIFI_STA) {
+        // --- CLIENT MODE (SLAVE) ---
+        // ArduinoOTA works perfectly out-of-the-box on the STA interface
+        ArduinoOTA.setHostname(ota_name.c_str());
+        ArduinoOTA.setPassword(WIFI_OTA_PWD);
+        ArduinoOTA.begin();
+        Serial.printf(">>>>> [OTA] Client STA Broadcast active: %s.local:3232 <<<<<\r\n", ota_name.c_str());
+        
+    } else {
+        // --- ACCESS POINT MODE (MASTER / FORCEAP) ---
+        // ArduinoOTA fails to bind TCP/mDNS to SoftAP. Use manual IDF discovery proxy.
+        if (mdns_init() != ESP_OK) {
+            Serial.println("[mDNS] mdns_init() failed");
+        } else {
+            mdns_hostname_set(ota_name.c_str());
+            mdns_instance_name_set(ota_name.c_str());
+
+            // Force mDNS to bind to the SoftAP netif handle for IPv4
+            esp_netif_t *ap_netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
+            if (ap_netif) {
+                mdns_netif_action(ap_netif, MDNS_EVENT_ENABLE_IP4);
+                Serial.println("[mDNS] Successfully attached to WIFI_AP_DEF");
+            }
+
+            // Add standard Arduino OTA service advertisement for Avahi
+            mdns_service_add(NULL, "_arduino", "_tcp", 3232, NULL, 0);
+            mdns_service_instance_name_set("_arduino", "_tcp", ota_name.c_str());
+            mdns_service_txt_item_set("_arduino", "_tcp", "board", "waveshare_esp32_s3_zero");
+            mdns_service_txt_item_set("_arduino", "_tcp", "auth_upload", "no");
+            Serial.printf("[mDNS] Advertising _arduino._tcp on %s.local\r\n", ota_name.c_str());
+        }
+
+        // Open TCP 3232 listener directly on the AP interface to satisfy avahi-browse / nc -zv
+        ota_tcp_listener.begin();
+        Serial.printf(">>>>> [OTA] AP Dummy Listener & mDNS active on 192.168.4.1:3232 (%s.local) <<<<<\r\n", ota_name.c_str());
+    }
 }
 
 
