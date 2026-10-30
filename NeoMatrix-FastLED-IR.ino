@@ -252,7 +252,7 @@ using namespace Aiko;
             esp_netif_dhcps_option(ap_netif, ESP_NETIF_OP_SET, ESP_NETIF_IP_ADDRESS_LEASE_TIME, &lease_time, sizeof(lease_time));
             
             esp_netif_dhcps_start(ap_netif);
-            Serial.println("[DHCP SERVER] Lease time configured to 5 minutes");
+            Serial.println(">>>>>>>>>> [DHCP SERVER] Lease time configured to 5 minutes <<<<<<<");
         }
     }
 
@@ -266,7 +266,7 @@ using namespace Aiko;
         uint8_t max_sta_configured = AP_MAX_CLIENTS;
         if (esp_wifi_get_config(WIFI_IF_AP, &ap_conf) == ESP_OK) {
             if (ap_conf.ap.max_connection < AP_MAX_CLIENTS) {
-                Serial.printf("\n[AUTO-HEAL] AP max_connection was %d! Re-forcing to %d...\r\n", 
+                Serial.printf("\n>>> [AUTO-HEAL] AP max_connection was %d! Re-forcing to %d...<<<<\r\n", 
                               ap_conf.ap.max_connection, AP_MAX_CLIENTS);
                 WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS);
                 configure_short_dhcp_lease();
@@ -2397,10 +2397,10 @@ uint8_t GifAnim(uint32_t idx) {
 
     // This is used to stretch 64x64 gifs to 64x96
     // 128x192 gifs are shrunk to to 128x128 if needed lower down after reading the Y value
-    int8_t YMUL = ( mh==64 ? 10 : 15);
+    const int8_t YMUL = ( mh==64 ? 10 : 15);
 
     // force the last index to detect too many initializers
-    const Animgif animgif[360] = {
+    static const Animgif animgif[360] = {
         // Less memory, so we have a smaller array
 	#ifdef ESP8266
 /* 000 */   {"/gifs/32anim_photon.gif",			10, -4, 0, 10, 10, 0, 0 },
@@ -5737,7 +5737,9 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
       lastMasterBootToken = 0;    // Forces a fresh sync check via UDP stream
       wifi_network_stable = true;
       Splitter.restart();
-      Serial.printf("|Started wifi, slave mode enabled? %d\n\r", WIFI_SLAVE_MODE); // Send a second |St to rPi in case rPi rebooted via switch
+      Serial.printf("|Started wifi, slave mode enabled? %d\n\r", WIFI_SLAVE_MODE);
+
+      restart_ota_service();
   }
   // Disable WiFi power save to prevent LwIP from dropping broadcasts between DTIM windows 
   // May add around 200mW of power
@@ -5777,19 +5779,11 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
           // Note this forces a 4 client limit, we override in OVERRIDING OmWebServer block
           WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
 
-#if 0
-          // Default lease is 120mn, try to change it to 5mn
-          // #include <esp_netif.h>
-          // #include <dhcpserver/dhcpserver.h>
-          esp_netif_t *ap_netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
-          esp_netif_dhcps_stop(ap_netif);
-          uint32_t lease_time = 5;
-          dhcps_set_option_info(DHCPS_OPT_LEASE_TIME, &lease_time, sizeof(lease_time));
-#endif
-
           // AP is up! Restart Splitter so it binds to the new AP interface (192.168.4.1)
           Splitter.restart();
           failure_cnt = 0;
+
+          restart_ota_service();
       }
   }
 }
@@ -6330,6 +6324,15 @@ void loop() {
       show_free_mem("");
     }
     #ifdef WIFI
+        ArduinoOTA.handle();
+        Splitter.handle(); 
+        listen_for_master_broadcast(); // Slave reads this continuously
+
+        EVERY_N_SECONDS(5) {
+            broadcast_master_presence(); // Master broadcasts presence
+            send_slave_ip_to_master();
+        }
+
         EVERY_N_SECONDS(30) {
             if (!WIFI_SLAVE_MODE) {
                 print_ap_client_table();
@@ -6352,13 +6355,6 @@ void loop() {
               slave_ip_sent = false;
               send_slave_ip_to_master_tries = 0;
           }
-        }
-        ArduinoOTA.handle();
-        Splitter.handle(); 
-        listen_for_master_broadcast(); // Slave reads this continuously
-        EVERY_N_SECONDS(5) {
-            broadcast_master_presence(); // Master broadcasts presence
-            send_slave_ip_to_master();
         }
     #endif
 #endif
@@ -6478,6 +6474,35 @@ void showip() {
 #endif
 }
 
+void restart_ota_service() {
+    // 1. Terminate existing instance so _initialized resets to false
+    ArduinoOTA.end();
+
+    // 2. Generate an RFC-compliant hostname (NO SPACES, NO COLONS)
+    // Example: Marc-NFL-Master-Oct-30-11-48-15
+    String clean_date = String(__DATE__);
+    clean_date.replace(" ", "-");
+    String clean_time = String(__TIME__);
+    clean_time.replace(":", "-");
+
+    String ota_name = String("Marc-NFL-") + 
+                     (WIFI_SLAVE_MODE ? "Slave-" : WIFI_FORCEAP_MODE ? "ForceAP-" : "Master-") +
+                     clean_date + "-" + clean_time;
+
+    if (ESP.getFlashChipSize() > 5000000) {
+        Serial.println("More than 4GB of Flash, ArduinoOTA Wifi Updates Supported!");
+    } else {
+        Serial.println("Only 4GB of Flash, No Flash Partition, No OTAs");
+        ota_name ="NOFLASH-" + ota_name;
+    }
+    ArduinoOTA.setHostname(ota_name.c_str());
+    ArduinoOTA.setPassword(WIFI_OTA_PWD);
+    
+    // 3. Bind sockets and publish mDNS service
+    ArduinoOTA.begin();
+    Serial.printf(">>>>> [OTA] Broadcast active: %s.local:3232 <<<<<\r\n", ota_name.c_str());
+}
+
 
 void setup() {
     Serial.begin(115200);
@@ -6592,24 +6617,14 @@ void setup() {
             delay((uint32_t) 10);
 	}
 
-        if (ESP.getFlashChipSize() > 5000000) {
-            Serial.println("More than 4GB of Flash, ArduinoOTA Wifi Updates Supported!");
-            ArduinoOTA.setHostname((String("Marc NFL ") + (WIFI_SLAVE_MODE ? "Slave" : WIFI_FORCEAP_MODE ? "ForceAP" : "Master ") + __DATE__ + " " + __TIME__ ).c_str());
-        } else {
-            Serial.println("Only 4GB of Flash, No Flash Partition, No OTAs");
-            ArduinoOTA.setHostname((String("Marc NFL NOFLASH ") + (WIFI_SLAVE_MODE ? "Slave " : WIFI_FORCEAP_MODE ? "ForceAP" : "Master ") + __DATE__ + " " + __TIME__ ).c_str());
-        }
-        ArduinoOTA.setPassword(WIFI_OTA_PWD);
-        ArduinoOTA.begin();
-
-        Serial.println("OTA Ready");
-
         // Enforce 10 clients immediately now that OmWebServer has settled
         if (!WIFI_SLAVE_MODE && (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA || WIFI_FORCEAP_MODE)) {
             Serial.printf("\n>>>>>>>>>> Post-Init: Enforcing %d AP Clients & 5m DHCP Lease <<<<<<<<<<\n", AP_MAX_CLIENTS);
             WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS);
             configure_short_dhcp_lease();
         }
+
+        restart_ota_service();
     #endif
 
 #ifdef NEOPIXEL_PIN
