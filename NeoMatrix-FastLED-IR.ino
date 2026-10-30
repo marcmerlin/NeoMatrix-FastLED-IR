@@ -149,12 +149,11 @@ using namespace Aiko;
 
     #include <WiFi.h>
     #include <esp_wifi.h> // esp_wifi_get_ps
-
+    #include <esp_netif.h>
 
     // this may stop udp packets from being processed, turn off when not debugging
     // #define WIFI_SNIFFER
     #ifdef WIFI_SNIFFER
-        #include <esp_wifi.h>
         // Volatile globals to pass data safely from ISR to the main thread
         volatile bool sniffer_caught_packet = false;
         volatile uint16_t sniffer_packet_len = 0;
@@ -178,6 +177,144 @@ using namespace Aiko;
         }
     #endif
 
+    // ---------------------------------------------------------------------------
+    // SoftAP Diagnostic & DHCP Management Utilities
+    // ---------------------------------------------------------------------------
+
+    // Local table to track DHCP leases since ESP-IDF v5.1 hides the lwIP table
+    struct APClient {
+        uint8_t mac[6];
+        uint32_t ip;
+        bool active;
+    };
+    APClient ap_clients[16];
+
+    void onApEvent(WiFiEvent_t event, WiFiEventInfo_t info) {
+        switch (event) {
+            case ARDUINO_EVENT_WIFI_AP_STACONNECTED:
+                Serial.printf("[WIFI AP] Hardware STA Connected | MAC: %02X:%02X:%02X:%02X:%02X:%02X | AID: %d\r\n",
+                              info.wifi_ap_staconnected.mac[0], info.wifi_ap_staconnected.mac[1],
+                              info.wifi_ap_staconnected.mac[2], info.wifi_ap_staconnected.mac[3],
+                              info.wifi_ap_staconnected.mac[4], info.wifi_ap_staconnected.mac[5],
+                              info.wifi_ap_staconnected.aid);
+                
+                for (int i = 0; i < 16; i++) {
+                    if (!ap_clients[i].active || memcmp(ap_clients[i].mac, info.wifi_ap_staconnected.mac, 6) == 0) {
+                        memcpy(ap_clients[i].mac, info.wifi_ap_staconnected.mac, 6);
+                        ap_clients[i].active = true;
+                        if (!ap_clients[i].ip) ap_clients[i].ip = 0; 
+                        break;
+                    }
+                }
+                break;
+
+            case ARDUINO_EVENT_WIFI_AP_STAIPASSIGNED: {
+                const uint8_t *raw_ip = (const uint8_t*)&info.wifi_ap_staipassigned.ip.addr;
+                Serial.printf("[DHCP SERVER] Lease Assigned | IP: %d.%d.%d.%d\r\n",
+                              raw_ip[0], raw_ip[1], raw_ip[2], raw_ip[3]);
+                
+                for (int i = 0; i < 16; i++) {
+                    if (ap_clients[i].active && memcmp(ap_clients[i].mac, info.wifi_ap_staipassigned.mac, 6) == 0) {
+                        ap_clients[i].ip = info.wifi_ap_staipassigned.ip.addr;
+                        break;
+                    }
+                }
+                break;
+            }
+
+            case ARDUINO_EVENT_WIFI_AP_STADISCONNECTED:
+                Serial.printf("[WIFI AP] Hardware STA Disconnected | MAC: %02X:%02X:%02X:%02X:%02X:%02X | AID: %d\r\n",
+                              info.wifi_ap_stadisconnected.mac[0], info.wifi_ap_stadisconnected.mac[1],
+                              info.wifi_ap_stadisconnected.mac[2], info.wifi_ap_stadisconnected.mac[3],
+                              info.wifi_ap_stadisconnected.mac[4], info.wifi_ap_stadisconnected.mac[5],
+                              info.wifi_ap_stadisconnected.aid);
+                
+                for (int i = 0; i < 16; i++) {
+                    if (ap_clients[i].active && memcmp(ap_clients[i].mac, info.wifi_ap_stadisconnected.mac, 6) == 0) {
+                        ap_clients[i].active = false;
+                        ap_clients[i].ip = 0;
+                        break;
+                    }
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    void configure_short_dhcp_lease() {
+        esp_netif_t *ap_netif = esp_netif_get_handle_from_ifkey("WIFI_AP_DEF");
+        if (ap_netif) {
+            esp_netif_dhcps_stop(ap_netif);
+            
+            uint32_t lease_time = 5; 
+            esp_netif_dhcps_option(ap_netif, ESP_NETIF_OP_SET, ESP_NETIF_IP_ADDRESS_LEASE_TIME, &lease_time, sizeof(lease_time));
+            
+            esp_netif_dhcps_start(ap_netif);
+            Serial.println("[DHCP SERVER] Lease time configured to 5 minutes");
+        }
+    }
+
+    void print_ap_client_table() {
+        if (WiFi.getMode() != WIFI_AP && WiFi.getMode() != WIFI_AP_STA) return;
+
+        wifi_sta_list_t wifi_sta_list;
+        if (esp_wifi_ap_get_sta_list(&wifi_sta_list) != ESP_OK) return;
+
+        wifi_config_t ap_conf;
+        uint8_t max_sta_configured = AP_MAX_CLIENTS;
+        if (esp_wifi_get_config(WIFI_IF_AP, &ap_conf) == ESP_OK) {
+            if (ap_conf.ap.max_connection < AP_MAX_CLIENTS) {
+                Serial.printf("\n[AUTO-HEAL] AP max_connection was %d! Re-forcing to %d...\r\n", 
+                              ap_conf.ap.max_connection, AP_MAX_CLIENTS);
+                WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS);
+                configure_short_dhcp_lease();
+                esp_wifi_get_config(WIFI_IF_AP, &ap_conf);
+            }
+            max_sta_configured = ap_conf.ap.max_connection;
+        }
+
+        uint8_t dhcp_max = 8; 
+        
+        int active_leases = 0;
+        for (int i = 0; i < 16; i++) {
+            if (ap_clients[i].active && ap_clients[i].ip != 0) active_leases++;
+        }
+
+        int dhcp_slots_left = (int)dhcp_max - active_leases;
+        int wifi_slots_left = (int)max_sta_configured - (int)wifi_sta_list.num;
+
+        Serial.println("\r\n============================= AP STATUS =============================");
+        Serial.printf("Wi-Fi Associated STAs : %d / %d (Slots Available: %d)\r\n",
+                      wifi_sta_list.num, max_sta_configured, max(0, wifi_slots_left));
+        Serial.printf("Active DHCP IP Leases : %d / %d (Leases Available: %d)\r\n",
+                      active_leases, dhcp_max, max(0, dhcp_slots_left));
+        Serial.println("---------------------------------------------------------------------");
+
+        for (int i = 0; i < wifi_sta_list.num; i++) {
+            wifi_sta_info_t *sta = &wifi_sta_list.sta[i];
+            
+            char ip_str[16] = "No IP / Pending";
+            for (int j = 0; j < 16; j++) {
+                if (ap_clients[j].active && memcmp(sta->mac, ap_clients[j].mac, 6) == 0) {
+                    if (ap_clients[j].ip != 0) {
+                        const uint8_t *raw_ip = (const uint8_t*)&ap_clients[j].ip;
+                        snprintf(ip_str, sizeof(ip_str), "%d.%d.%d.%d", raw_ip[0], raw_ip[1], raw_ip[2], raw_ip[3]);
+                    }
+                    break;
+                }
+            }
+
+            Serial.printf("[%02d] MAC: %02X:%02X:%02X:%02X:%02X:%02X | RSSI: %4d dBm | IP: %s\r\n",
+                          i + 1,
+                          sta->mac[0], sta->mac[1], sta->mac[2], sta->mac[3], sta->mac[4], sta->mac[5],
+                          sta->rssi, ip_str);
+        }
+        Serial.println("=====================================================================\r\n");
+    }
+
+    // ---------------------------------------------------------------------------
     volatile bool slave_ip_sent = false;
 
     void send_slave_ip_to_master() {
@@ -5636,9 +5773,9 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
           ap = true;
           WebServer->clearWifis();
           WiFi.disconnect();
+
+          // Note this forces a 4 client limit, we override in OVERRIDING OmWebServer block
           WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
-          // channel 1, hidden no (0)
-          WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS); 
 
 #if 0
           // Default lease is 120mn, try to change it to 5mn
@@ -5928,6 +6065,9 @@ void register_Text_page() {
 void setup_wifi() {
     WebServer = new OmWebServer();
     WebServer->setStatusCallback(connectionStatus);
+
+    // Register debug/status callbacks
+    WiFi.onEvent(onApEvent);
     
     #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
     if (digitalRead(WAVESHARE_CLIENT_PIN)) {
@@ -5953,10 +6093,8 @@ void setup_wifi() {
         Serial.println(">>>>>>>>>>>>>> Wifi slave mode, will try to connect to AP " WIFI_AP_SSID);
         WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD); // MarcLED
     } else if (WIFI_FORCEAP_MODE) { 
-        // Skip trying to connect to home network, force AP mode (switch to pin 9 required)
+      // Note this forces a 4 client limit, we override in OVERRIDING OmWebServer block
         WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
-        // channel 1, hidden no (0)
-        WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS); 
     } else { 
         // Start as a client for home network, if that fails, connectionStatus() will take
         // the next step
@@ -6192,6 +6330,12 @@ void loop() {
       show_free_mem("");
     }
     #ifdef WIFI
+        EVERY_N_SECONDS(30) {
+            if (!WIFI_SLAVE_MODE) {
+                print_ap_client_table();
+            }
+        }
+
         EVERY_N_SECONDS(60) {
           wifi_ps_type_t ps_type = WIFI_PS_MAX_MODEM;
           esp_wifi_get_ps(&ps_type);
@@ -6432,7 +6576,7 @@ void setup() {
             digitalWrite(8, HIGH);
         #endif
 
-    uint32_t i = 100;
+        uint32_t i = 100;
 	// Bring wifi up early to allow renaming files if they cause a crash
 	show_free_mem("Before Wifi");
 	setup_wifi();
@@ -6459,6 +6603,13 @@ void setup() {
         ArduinoOTA.begin();
 
         Serial.println("OTA Ready");
+
+        // Enforce 10 clients immediately now that OmWebServer has settled
+        if (!WIFI_SLAVE_MODE && (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA || WIFI_FORCEAP_MODE)) {
+            Serial.printf("\n>>>>>>>>>> Post-Init: Enforcing %d AP Clients & 5m DHCP Lease <<<<<<<<<<\n", AP_MAX_CLIENTS);
+            WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS);
+            configure_short_dhcp_lease();
+        }
     #endif
 
 #ifdef NEOPIXEL_PIN
