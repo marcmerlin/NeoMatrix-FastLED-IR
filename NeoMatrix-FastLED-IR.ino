@@ -6799,23 +6799,20 @@ void setup() {
     // Reset to black if an earlier init left colors that could drain a low
     // wattage input (9 to 12V)
     matrix->fillScreen(matrix->Color(0, 0, 0));
-// Disable debug grey screen to prevent reboot on weak batteries
-#if 0
+
     Serial.println("Matrix Test");
-    // init first matrix demo
-    matrix->fillScreen(matrix->Color(0xA0, 0xA0, 0xA0));
-    // more bright
-    //matrix->fillScreen(matrix->Color(0xFF, 0xFF, 0xFF));
+    // init first matrix demo, very low grey
+    matrix->fillScreen(matrix->Color(4, 4, 4));
     matrix_show();
 
-    i = 100;
+    uint16_t i = 100;
     Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
     while (i--) {
       if (check_startup_IR_serial()) {
           Serial.println("Will pause on debug screen");
           i = 60000;
       }
-	    delay((uint32_t) 10);
+      delay((uint32_t) 10);
     }
     Serial.println("Done with debug grey screen, display stats");
 
@@ -6825,7 +6822,6 @@ void setup() {
     #else
     delay((uint32_t) 2000);
     #endif
-#endif
 
     if (DEMO_CNT == 0) {
       // Allow web server to run, create/save rename files to make sure demos exist
