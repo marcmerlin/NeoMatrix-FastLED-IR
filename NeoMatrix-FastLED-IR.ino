@@ -145,6 +145,11 @@ using namespace Aiko;
     IPAddress Slave_IPs[MAX_SLAVES] = { IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0), IPAddress(0, 0, 0, 0) };
     uint8_t slave_ip_count = 0;
 
+
+    // ---------------------------------------------------------------------------
+    // SoftAP Diagnostic & DHCP Management Utilities
+    // ---------------------------------------------------------------------------
+
     #include <ArduinoOTA.h>
 
     #include <WiFi.h>
@@ -152,36 +157,6 @@ using namespace Aiko;
     #include <esp_netif.h>
     #include <ESPmDNS.h>
     #include <mdns.h>
-
-    // this may stop udp packets from being processed, turn off when not debugging
-    // #define WIFI_SNIFFER
-    #ifdef WIFI_SNIFFER
-        // Volatile globals to pass data safely from ISR to the main thread
-        volatile bool sniffer_caught_packet = false;
-        volatile uint16_t sniffer_packet_len = 0;
-
-        void IRAM_ATTR wifi_sniffer_cb(void *buf, wifi_promiscuous_pkt_type_t type) {
-            if (type != WIFI_PKT_DATA) return; 
-
-            wifi_promiscuous_pkt_t *pkt = (wifi_promiscuous_pkt_t *)buf;
-            uint8_t *payload = pkt->payload;
-            uint16_t len = pkt->rx_ctrl.sig_len;
-
-            // Brute-force search for Port 4210 (0x1072)
-            for (uint16_t i = 0; i < len - 1; i++) {
-                if (payload[i] == 0x10 && payload[i+1] == 0x72) {
-                    // NEVER print here. Just capture the state and exit quickly.
-                    sniffer_packet_len = len;
-                    sniffer_caught_packet = true;
-                    break;
-                }
-            }
-        }
-    #endif
-
-    // ---------------------------------------------------------------------------
-    // SoftAP Diagnostic & DHCP Management Utilities
-    // ---------------------------------------------------------------------------
 
     // Local table to track DHCP leases since ESP-IDF v5.1 hides the lwIP table
     struct APClient {
@@ -399,13 +374,6 @@ using namespace Aiko;
         if (!wifi_network_stable) return;
         if (WIFI_SLAVE_MODE) {
             int packetSize;
-
-            #ifdef WIFI_SNIFFER
-                if (sniffer_caught_packet) {
-                    Serial.printf("\r\n[TCPDUMP] HARDWARE MAC RX: Port 4210 frame hit the antenna! (Len: %d)\r\n", sniffer_packet_len);
-                    sniffer_caught_packet = false;
-                }
-            #endif
 
             if (WiFi.status() == WL_CONNECTED) {
                 static bool udpActive = false;
