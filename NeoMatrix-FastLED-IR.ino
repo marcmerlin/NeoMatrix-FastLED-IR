@@ -6445,6 +6445,7 @@ void showip() {
 #endif
 }
 
+#ifdef WIFI
 // Standalone TCP listener for port 3232 on the AP interface (Used only for AP mDNS discovery)
 static WiFiServer ota_tcp_listener(3232);
 
@@ -6525,6 +6526,7 @@ void restart_ota_service() {
         Serial.printf(">>>>> [OTA] AP Dummy Listener & mDNS active on 192.168.4.1:3232 (%s.local) <<<<<\r\n", ota_name.c_str());
     }
 }
+#endif
 
 
 void setup() {
@@ -6771,14 +6773,15 @@ void setup() {
 
     Serial.println("Matrix Test");
     // init first matrix demo, very low grey
-    matrix->fillScreen(matrix->Color(4, 4, 4));
+    matrix->fillScreen(matrix->Color(32, 32, 32));
     matrix_show();
 
+    uint16_t w = 100;
     Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
-    while (i--) {
+    while (w--) {
       if (check_startup_IR_serial()) {
           Serial.println("Will pause on debug screen");
-          i = 60000;
+          w = 60000;
       }
       delay((uint32_t) 10);
     }
