@@ -40,5 +40,6 @@ killscreen:
 
 ready:
 	#dpkg -l python3-serial | grep -q python3 || apt-get install python3-serial
+	ls -l $(PORT) | grep -q /dev
 	@echo "Will sync to port $(PORT) for $(ARCH)"
 	@ln -snf esptool.$(ARCH) esptool
