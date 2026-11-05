@@ -109,7 +109,7 @@ using namespace Aiko;
     // while it's sleeping
     #define WIFINOSLEEP
 
-    #define WAVESHARE_CLIENT_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
+    #define WAVESHARE_MASTER_PIN 7  // top left, client/slave mode after client to WIFI_SSID fails
     #define WAVESHARE_FORCEAP_PIN 9 // below pin8, force creating AP even when WIFI_SSID is there
     bool WIFI_SLAVE_MODE = false;
     bool WIFI_FORCEAP_MODE = false;
@@ -6034,7 +6034,7 @@ void setup_wifi() {
     WiFi.onEvent(onApEvent);
     
     #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
-    if (digitalRead(WAVESHARE_CLIENT_PIN)) {
+    if (!digitalRead(WAVESHARE_MASTER_PIN)) {
         Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi client (slave) mode");
         WIFI_SLAVE_MODE = true;
     } else if (digitalRead(WAVESHARE_FORCEAP_PIN)) {
@@ -6617,7 +6617,7 @@ void setup() {
         masterBootToken = esp_random();
 
         #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
-            pinMode(WAVESHARE_CLIENT_PIN, INPUT_PULLDOWN);  // top left, client/slave mode
+            pinMode(WAVESHARE_MASTER_PIN, INPUT_PULLDOWN);  // top left, client/slave mode
             pinMode(WAVESHARE_FORCEAP_PIN, INPUT_PULLDOWN);
             pinMode(8, OUTPUT); // used as voltage source for wiring easiness
             digitalWrite(8, HIGH);
