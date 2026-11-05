@@ -4411,8 +4411,8 @@ uint8_t check_startup_IR_serial() {
     char readchar;
 
     if (Serial.available()) readchar = Serial.read(); else readchar = 0;
-    if (readchar == 'p') return 1;
-    if (readchar == 'w') return 2;
+    if (readchar == 'p') { Serial.println("Got serial 'p'"); return 1; }
+    if (readchar == 'w') { Serial.println("Got serial 'w'"); return 2; }
 
 #ifdef IR_RECV_PIN
     uint32_t result = 0;
@@ -5776,7 +5776,7 @@ void rebuild_main_page(bool show_summary) {
     WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
     {
 	// Keep track of how many times the web page is rebuilt
-        w.puts(WIFI_SLAVE_MODE ? "Slave" : "Master ");
+        w.puts(WIFI_SLAVE_MODE ? "Slave" : WIFI_FORCEAP_MODE ? "ForceAP" : "Master ");
 	w.puts((String(" Built: ") + __DATE__ + " " + __TIME__ ).c_str());
 	w.puts(". Html Refresh: ");
 	w.puts(String(count).c_str());
@@ -6040,6 +6040,7 @@ void setup_wifi() {
         WIFI_SLAVE_MODE = true;
     } else if (digitalRead(WAVESHARE_FORCEAP_PIN)) {
         Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi ForceAP");
+        WIFI_SLAVE_MODE = false;
         WIFI_FORCEAP_MODE = true;
     } else { 
         Serial.println(">>>>>>>>>>>>>> Waveshare Configured for Wifi AP mode but will try WIFI_SSID first");
@@ -6329,6 +6330,7 @@ void loop() {
         }
     #endif
 #endif
+
     // Run the Aiko event loop, all the magic is in there.
     Events.loop();
     EVERY_N_MILLISECONDS(40) {
@@ -6776,6 +6778,12 @@ void setup() {
     matrix->fillScreen(matrix->Color(32, 32, 32));
     matrix_show();
 
+// Problem is that the rPi can send unexpected stuff over serial at init time.
+// This is guarded by ignoring input until |St is sent, but this bit runs too
+// early for that. There is no way for the ESP32 build to know here if it's 
+// standalone or will be connected to a Pi or linux machine, so sadly I have
+// to disable it altogether here to avoid boot hangs
+#ifndef ESP32
     uint16_t w = 100;
     Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
     while (w--) {
@@ -6785,6 +6793,7 @@ void setup() {
       }
       delay((uint32_t) 10);
     }
+#endif
     Serial.println("Done with debug grey screen, display stats");
 
     display_stats();
