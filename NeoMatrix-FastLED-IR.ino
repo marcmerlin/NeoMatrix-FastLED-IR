@@ -104,6 +104,7 @@ using namespace Aiko;
 #ifdef WIFI
     // This is limited to 10 by the arduino Wifi Core.
     #define AP_MAX_CLIENTS 10
+    #define WIFI_AP_CHANNEL 9
     // May make things more stable but costs more power
     // In my testing on a bit network, the slave can miss the master broadcasts
     // while it's sleeping
@@ -245,7 +246,7 @@ using namespace Aiko;
             if (ap_conf.ap.max_connection < AP_MAX_CLIENTS) {
                 Serial.printf("\n>>> [AUTO-HEAL] AP max_connection was %d! Re-forcing to %d...<<<<\r\n", 
                               ap_conf.ap.max_connection, AP_MAX_CLIENTS);
-                WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS);
+                WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, WIFI_AP_CHANNEL, 0, AP_MAX_CLIENTS);
                 configure_short_dhcp_lease();
                 esp_wifi_get_config(WIFI_IF_AP, &ap_conf);
             }
@@ -5746,7 +5747,7 @@ void connectionStatus(const char *ssid, bool trying, bool failure, bool success)
           WebServer->clearWifis();
           WiFi.disconnect();
 
-          // Note this forces a 4 client limit, we override in OVERRIDING OmWebServer block
+          // Note this forces a 4 client limit, we override in AUTO-HEAL callback
           WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
 
           // AP is up! Restart Splitter so it binds to the new AP interface (192.168.4.1)
@@ -6057,7 +6058,7 @@ void setup_wifi() {
         Serial.println(">>>>>>>>>>>>>> Wifi slave mode, will try to connect to AP " WIFI_AP_SSID);
         WebServer->addWifi(WIFI_AP_SSID, WIFI_AP_PASSWORD); // MarcLED
     } else if (WIFI_FORCEAP_MODE) { 
-      // Note this forces a 4 client limit, we override in OVERRIDING OmWebServer block
+      // Note this forces a 4 client limit, we override in AUTO-HEAL callback
         WebServer->setAccessPoint(WIFI_AP_SSID, WIFI_AP_PASSWORD);
     } else { 
         // Start as a client for home network, if that fails, connectionStatus() will take
@@ -6639,10 +6640,10 @@ void setup() {
             delay((uint32_t) 10);
 	}
 
-        // Enforce 10 clients immediately now that OmWebServer has settled
+        // Enforce 10 clients immediately now that OmWebServer has likely settled
         if (!WIFI_SLAVE_MODE && (WiFi.getMode() == WIFI_AP || WiFi.getMode() == WIFI_AP_STA || WIFI_FORCEAP_MODE)) {
             Serial.printf("\n>>>>>>>>>> Post-Init: Enforcing %d AP Clients & 5m DHCP Lease <<<<<<<<<<\n", AP_MAX_CLIENTS);
-            WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, 1, 0, AP_MAX_CLIENTS);
+            WiFi.softAP(WIFI_AP_SSID, WIFI_AP_PASSWORD, WIFI_AP_CHANNEL, 0, AP_MAX_CLIENTS);
             configure_short_dhcp_lease();
         }
 
@@ -6773,7 +6774,6 @@ void setup() {
     matrix->fillScreen(matrix->Color(4, 4, 4));
     matrix_show();
 
-    uint16_t i = 100;
     Serial.println("Pause to check that all the pixels work ('p' or power to stay here)");
     while (i--) {
       if (check_startup_IR_serial()) {
