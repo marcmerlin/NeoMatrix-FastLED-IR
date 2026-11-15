@@ -1,6 +1,9 @@
 #ifndef aurora_h
 #define aurora_h
 
+// Aurora/PatternCube.h:164:15: warning: 'void fl::blur2d(CRGB*, u8, u8, fract8)' is deprecated: Use blur2d(..., const fl::XYMap& xymap) instead [-Wdeprecated-declarations]
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #include "neomatrix_config.h"
 #include "Aurora/Effects.h"
 #include "Aurora/Drawable.h"
@@ -34,6 +37,7 @@ PatternSpiro spiro;
 PatternSwirl swirl;
 #include "Aurora/PatternWave.h"
 PatternWave wave;
+#pragma GCC diagnostic pop
 
 AuroraDrawable* items[] = {
     &attract,
