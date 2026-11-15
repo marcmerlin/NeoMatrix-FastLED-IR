@@ -3704,12 +3704,12 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
         delay(5);
 	Serial.flush();
         // This really needs to go out, or the rPi will miss it and not change patterns
-	Serial.printf("|D: %3d\r\n", MATRIX_DEMO);
+	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
         Serial.flush();
         delay(5);
         Serial.println("Flushing......");
         delay(5);
-	Serial.printf("|D: %3d\r\n", MATRIX_DEMO);
+	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
         delay(5);
         Serial.println("Flushing2......");
 
