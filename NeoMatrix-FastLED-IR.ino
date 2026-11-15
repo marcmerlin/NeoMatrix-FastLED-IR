@@ -3697,13 +3697,21 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
     Serial.print(demo_list[demoidx(MATRIX_DEMO)].name);
     Serial.print(") loop ");
     Serial.println(MATRIX_LOOP);
+    Serial.println();
     #ifndef ARDUINOONPC
+        // I hate this, but on big updates, I've seen this Serial print being lost and it's essential
 	Serial.flush();
-	Serial.print("|D:");
-	char buf[4];
-	sprintf(buf, "%3d", MATRIX_DEMO);
-	Serial.println(buf);
+        delay(5);
 	Serial.flush();
+        // This really needs to go out, or the rPi will miss it and not change patterns
+	Serial.printf("|D: %3d\r\n", MATRIX_DEMO);
+        Serial.flush();
+        delay(5);
+        Serial.println("Flushing......");
+        delay(5);
+	Serial.printf("|D: %3d\r\n", MATRIX_DEMO);
+        delay(5);
+        Serial.println("Flushing2......");
 
         #ifdef WIFI
             if (!WIFI_SLAVE_MODE) {
