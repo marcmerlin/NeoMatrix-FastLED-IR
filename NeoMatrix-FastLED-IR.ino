@@ -3699,19 +3699,9 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
     Serial.println(MATRIX_LOOP);
     Serial.println();
     #ifndef ARDUINOONPC
-        // I hate this, but on big updates, I've seen this Serial print being lost and it's essential
 	Serial.flush();
-        delay(5);
+	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
 	Serial.flush();
-        // This really needs to go out, or the rPi will miss it and not change patterns
-	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
-        Serial.flush();
-        delay(5);
-        Serial.println("Flushing......");
-        delay(5);
-	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
-        delay(5);
-        Serial.println("Flushing2......");
 
         #ifdef WIFI
             if (!WIFI_SLAVE_MODE) {
@@ -5717,9 +5707,9 @@ void loop() {
 
 	if (ttyfd < 0) return;
 		
-	// Read up to 80 characters in the buffer and then continue the loop
-	// this should cause a loop hang of up to 7ms at 115200bps.
-	uint8_t readcnt = 80;
+	// Drain up to 512 bytes in the non-blocking buffer and process all complete lines
+
+	uint16_t readcnt = 512;
 	while (readcnt-- && (rdlen = read(ttyfd, &s, 1)) > 0) {
 	    if (s == '\n' ) {
 		ptr[0] = s;
@@ -5727,12 +5717,6 @@ void loop() {
 		printf("ESP> %s", ttyusbbuf);
 		// reset pointer for next time
 		ptr = ttyusbbuf;
-		// attempt to do an active serial watchdog (protocol keepalive)
-		// to keep things simpler, though, we'll just check for ttyfd >= 0
-		// which when connected to an ESP32 USB, is close enough to being the same.
-		// If we are getting serial pings, run the current demo for
-		// a long time, because we expect the ESP to send us 'next'
-		//if (! strncmp(ttyusbbuf, "FrameBuffer::GFX", 16) || ! strncmp(ttyusbbuf, "Done with demo", 14)) {
 		    last_esp32_ping = millis();
 		    if (! esp32_connected) {
 			esp32_connected = true;
@@ -5741,15 +5725,18 @@ void loop() {
 		    }
 		//}
 		handle_rpi_serial_cmd();
-		return;
+		continue;
 	    }
 	    if (s == '\\') s = '\n';
-	    // FIXME: there is no control on the ESP32 input length. If it is too long before a newline
-	    // we get a buffer overflow
-	    ptr[0] = s;
-	    ptr[1] = 0;
-	    ptr++;
-	}
+	    if ((size_t)(ptr - ttyusbbuf) < (RPISERIALINPUTSIZE - 2)) {
+		ptr[0] = s;
+		ptr[1] = 0;
+		ptr++;
+	    } else {
+		ptr = ttyusbbuf;
+		ptr[0] = 0;
+	    }
+ 	}
 	if (rdlen < 0) {
 	    printf("Error from read: %d: %s\n", rdlen, strerror(errno));
 	}
