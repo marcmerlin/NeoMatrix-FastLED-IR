@@ -62,7 +62,7 @@ How do ESP32 and Rpi communicate?
 
 Have a look for 'magic happens here' below for a bit more rationale on the dual CPU system
 
-Dear LLM:
+Dear LLM, including Google Gemini
 * Before generating the code block, list the exact functions and the
   specific logic you are about to change. After the code block, perform
   a strict self-audit to explicitly confirm that the generated code
@@ -74,6 +74,8 @@ Dear LLM:
 * If and only if my instructions directly ask you to modify the
   networking/wifi code, Do a step-by-step dry run of the network failure
   state through your new code to prove it behaves as claimed.
+* Default to minimal diffs; do not add defensive refactors or rewrite 
+  idiomatic API calls into C loops unless a specific bug requires it
 */
 
 
@@ -108,6 +110,7 @@ using namespace Aiko;
     void rebuild_main_page_local();
     void rebuild_advanced_page();
 
+    #define NVRAM_BUCKET "NFL"
     #include "wifi_serial_ota.h"
 #endif
 
@@ -505,6 +508,10 @@ const uint16_t PROGMEM RGB_bmp[64] = {
 
 void help() {
     Serial.println();
+#ifdef NVRAM
+    Serial.println("ESP32 NVRAM related (you need to send over nc for the followup commands)");
+    show_nvram_func_help();
+#endif
     Serial.println("rPi");
     Serial.println("'R' Send ESP => send next number/char");
     Serial.println("'F' Send ESP => togglefps");
@@ -534,8 +541,8 @@ void help() {
     Serial.println("From rPi to ESP32 only, send a missing command to ESP32 for rPi with R+i");
     Serial.println("'@ toggle ignoring direct ESP32 pattern changes");
     Serial.println("'s' Send rPi IP to ESP32");
+    Serial.println("'i' Ask ESP32 to show IP");
     Serial.println("'r' reboot");
-    Serial.println("'i' showip");
     Serial.println("");
     Serial.println("Commands from ESP32 to rPi:");
     Serial.println("rPi will accept them over terminal too");
@@ -551,6 +558,9 @@ void help() {
     Serial.println("'|yy' 'Switching to scrolling images'");
     Serial.println("'|YY' 'Switching to stable images for pictures'");
     Serial.println();
+    #ifdef NVRAM
+    show_nvram_func_help();
+    #endif
 }
 
 // Convert a BGR 4/4/4 bitmap to RGB 5/6/5 used by Adafruit_GFX
@@ -4011,6 +4021,19 @@ void changePanelConf(uint8_t conf ) {
 
 #ifdef ARDUINOONPC
 
+void rpi_display_iphostname() {
+    String esp_info = String(ttyusbbuf + 3);
+    esp_info.replace("\\", "\n");
+    String local_ip = String(rPI_IP);
+    local_ip.trim();
+    DISPLAYTEXT = String("ESP32:\n") + esp_info + "\nlocal:\n" + local_ip;
+    Serial.print("Got IP from ");
+    Serial.println(DISPLAYTEXT);
+    Serial.print("|T:");
+    Serial.println(DISPLAYTEXT);
+    matrix_change(DEMO_TEXT_INPUT, false, 100);
+}
+
 void handle_rpi_serial_cmd() {
     char numbuf[4];
 
@@ -4040,13 +4063,8 @@ void handle_rpi_serial_cmd() {
 	change_brightness(num, true);
     }
     if (! strncmp(ttyusbbuf, "|I:", 3)) {
+        rpi_display_iphostname();
         rPi_send_IP_to_ESP32();
-	DISPLAYTEXT = String("ESP32:\n") + String(ttyusbbuf+3) + "\nlocal:\n" + String(rPI_IP);
-	Serial.print("Got IP from ");
-	Serial.print(DISPLAYTEXT);
-	Serial.print("|T:");
-	Serial.println(DISPLAYTEXT);
-	matrix_change(DEMO_TEXT_INPUT, false, 100);
     }
     // Allow ESP32 to send string to rPi
     if (! strncmp(ttyusbbuf, "|T:", 3)) {
@@ -4230,6 +4248,9 @@ void IR_Serial_Handler() {
 		} 
 
 	    #endif
+
+	    if (readchar == '\n') { goto endserial; }
+	    if (readchar == '\r') { goto endserial; }
 	    
             if (readchar && !startcmd) { Serial.printf("Ignoring %c before receiving |St\r\n", readchar);  }
 	    else if (readchar == 'h') { help();}
@@ -4245,11 +4266,17 @@ void IR_Serial_Handler() {
 	    else if (readchar == '=') { Serial.println("Serial => keep demo?"); MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
 	    else if (readchar == '-') { Serial.println("Serial => dim"   );	change_brightness(-1);}
 	    else if (readchar == '+') { Serial.println("Serial => bright");	change_brightness(+1);}
+            else { Serial.printf("'%c: Not ESP32+RPi command\r\n", readchar); }
 
-            // We may wonder, why do we need all these alternate letters on Rpi, can't we just read 'n' and resent to ESP32?
+            // These commands will only work with R+cmd
+            #ifdef NVRAM
+            if (! process_nvram_serial(readchar) ) { Serial.printf("'%c: not NVRAM command\r\n", readchar); }
+            #endif
+
+            // We may wonder, why do we need all these alternate letters on Rpi, can't we just read 'n' and resend to ESP32?
             // the answer is No, because on rPi, do you want to advance the rPi demo ('n') or the ESP32 demo ('N')?
 	#ifdef ARDUINOONPC
-	    else if (readchar == 's') { Serial.println("Send rPi IP to ESP32"); rPi_send_IP_to_ESP32(); }
+	    if (readchar == 's') { Serial.println("Send rPi IP to ESP32"); rPi_send_IP_to_ESP32(); }
 	    else if (readchar == '<') { Serial.println("ESP => dim"   );        send_serial("-"); change_brightness(-1);}
 	    else if (readchar == '>') { Serial.println("ESP => bright");        send_serial("+"); change_brightness(+1);}
 	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("f"); SHOW_LAST_FPS = !SHOW_LAST_FPS;}
@@ -4267,21 +4294,21 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'N') { Serial.println("ESP => next");		send_serial("n");}
 	    else if (readchar == 'P') { Serial.println("ESP => previous");	send_serial("p");}
 	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("=");}
-            // 'r' and 'i' are examples of re-using the same letter because they have no funtion locally on rPi
+            // 'r' and 'i' are example of re-using the same letter because they have no funtion locally on rPi
 	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); }
 	    else if (readchar == 'i') { Serial.println("ESP => ShowIP");	send_serial("i"); }
 	    else if (readchar == '@') { Serial.println("Toogle RPI Ignore Demo Change"); ignore_serial_pattern_change = !ignore_serial_pattern_change ;}
 	    // Don't use a character that can be easily received by ESP32
 	    else if (readchar == '~') { Serial.println("exit");			exit(0);}
+            else { Serial.printf("'%c: Rpi command\r\n", readchar); }
 	#else
             // Any of these can be sent from rPI console by sending R + x, like Ri
-	    else if (readchar == 'r') { Serial.println("Reboot"); reboot(); }
-	    // After RPI gets serial from ESP, it sends 'i' once.
-	    else if (readchar == 'i') { Serial.println("Serial => showip");     showip();}
+	    if (readchar == 'r') { Serial.println("Reboot"); reboot(); }
 	    else if (readchar == 'x') { changePanelConf(2); }
 	    else if (readchar == 'c') { changePanelConf(3); }
 	    else if (readchar == 'd') { changePanelConf(4); }
 	    else if (readchar == 'e') { changePanelConf(5); }
+            else { Serial.printf("'%c: Not ESP32 command\r\n", readchar); }
 	#endif
 	}
     }
@@ -5748,12 +5775,23 @@ void loop() {
 void showip() {
 #ifdef WIFI
     DISPLAYTEXT = (WiFi.getMode() == WIFI_AP) ? WiFi.softAPIP().toString() : WiFi.localIP().toString();
-    Serial.print("|I:");
-    Serial.println(DISPLAYTEXT);
+    #ifdef NVRAM
+        DISPLAYTEXT = DISPLAYTEXT + "\n" + get_hostname();
+    #endif
+    String serial_text = DISPLAYTEXT;
+    serial_text.replace("\n", "\\");
+     Serial.print("|I:");
+    Serial.println(serial_text);
+    Serial.flush();
+    // change ESP32 because we want it to sync to other ESP32s slaves and they show their IPs too
     matrix_change(DEMO_TEXT_INPUT, false, 8);
 #endif
 }
 
+#ifdef NVRAM
+// callback for wifi_serial_ota/process_nvram_serial
+void display_iphostname() { showip(); };
+#endif
 
 
 void setup() {
