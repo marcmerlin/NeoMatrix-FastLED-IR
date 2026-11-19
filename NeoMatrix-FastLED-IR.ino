@@ -4019,15 +4019,15 @@ void changePanelConf(uint8_t conf ) {
 #endif
 }
 
-#ifdef ARDUINOONPC
 
+#ifdef ARDUINOONPC
 void rpi_display_iphostname() {
     String esp_info = String(ttyusbbuf + 3);
     esp_info.replace("\\", "\n");
     String local_ip = String(rPI_IP);
     local_ip.trim();
     DISPLAYTEXT = String("ESP32:\n") + esp_info + "\nlocal:\n" + local_ip;
-    Serial.print("Got IP from ");
+    Serial.print("Got IP & Hostname from: ");
     Serial.println(DISPLAYTEXT);
     Serial.print("|T:");
     Serial.println(DISPLAYTEXT);
@@ -4270,7 +4270,7 @@ void IR_Serial_Handler() {
 
             // These commands will only work with R+cmd
             #ifdef NVRAM
-            if (! process_nvram_serial(readchar) ) { Serial.printf("'%c: not NVRAM command\r\n", readchar); }
+            if (process_nvram_serial(readchar) ) { Serial.printf("'%c: not NVRAM command\r\n", readchar); }
             #endif
 
             // We may wonder, why do we need all these alternate letters on Rpi, can't we just read 'n' and resend to ESP32?
@@ -5780,8 +5780,15 @@ void showip() {
     #endif
     String serial_text = DISPLAYTEXT;
     serial_text.replace("\n", "\\");
-     Serial.print("|I:");
+    Serial.print("|I:");
     Serial.println(serial_text);
+    // Bug, I've seen this happen with hostname "Spare"
+    // ESP> |I:192.168.205.205
+    // SpareSlave got matrix_change code 91, switching to index 91, mapped to matrix demo 91  / demoidx map: 91) (Web Text Input) loop 8
+    Serial.flush();
+    Serial.println();
+    Serial.flush();
+    Serial.println("-");
     Serial.flush();
     // change ESP32 because we want it to sync to other ESP32s slaves and they show their IPs too
     matrix_change(DEMO_TEXT_INPUT, false, 8);
