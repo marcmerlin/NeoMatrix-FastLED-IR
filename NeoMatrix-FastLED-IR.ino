@@ -5292,7 +5292,7 @@ void rebuild_main_page_local() {
 }
 
 void rebuild_advanced_page() {
-    WebPages->beginPage("Advanced");
+    WebPages->beginPage("Adv");
 
     WebPages->addButton("Reboot ESP32", actionProc, HTML_REBOOTESP32);
     if (PANELCONFNUM > 3) {
@@ -5335,7 +5335,7 @@ void register_text_page() {
 
 
 void register_config_page() {
-    WebPages->beginPage("Config");
+    WebPages->beginPage("Cfg");
 
     // This lamba function is re-run every time /Config is called
     WebPages->addHtml([] (OmXmlWriter & w, int ref1, void *ref2)
