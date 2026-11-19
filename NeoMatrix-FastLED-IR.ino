@@ -4253,61 +4253,62 @@ void IR_Serial_Handler() {
 	    if (readchar == '\r') { goto endserial; }
 	    
             if (readchar && !startcmd) { Serial.printf("Ignoring %c before receiving |St\r\n", readchar);  }
-	    else if (readchar == 'h') { help();}
-	    else if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT);}
-	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV);}
-	    else if (readchar == 'y') { Serial.println("Serial => Bestof2");	changeBestOf(2); }
-	    else if (readchar == 'b') { Serial.println("Serial => Bestof1");	changeBestOf(1); }
-	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(0);}
-	    else if (readchar == 'z') { Serial.println("Serial => Rotating Text"); ROTATE_TEXT = true; }
-	    else if (readchar == 'Z') { Serial.println("Serial => Stable Text");   ROTATE_TEXT = false;}
-	    else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU);}
-	    else if (readchar == 'f') { SHOW_LAST_FPS = !SHOW_LAST_FPS; }
-	    else if (readchar == '=') { Serial.println("Serial => keep demo?"); MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
-	    else if (readchar == '-') { Serial.println("Serial => dim"   );	change_brightness(-1);}
-	    else if (readchar == '+') { Serial.println("Serial => bright");	change_brightness(+1);}
+	    else if (readchar == 'h') { help(); goto endserial; }
+	    else if (readchar == 'n') { Serial.println("Serial => next");	matrix_change(DEMO_NEXT); goto endserial; }
+	    else if (readchar == 'p') { Serial.println("Serial => previous");   matrix_change(DEMO_PREV); goto endserial; }
+	    else if (readchar == 'y') { Serial.println("Serial => Bestof2");	changeBestOf(2); goto endserial; }
+	    else if (readchar == 'b') { Serial.println("Serial => Bestof1");	changeBestOf(1); goto endserial; }
+	    else if (readchar == 'a') { Serial.println("Serial => All Demos");  changeBestOf(0); goto endserial; }
+	    else if (readchar == 'z') { Serial.println("Serial => Rotating Text"); ROTATE_TEXT = true; goto endserial; }
+	    else if (readchar == 'Z') { Serial.println("Serial => Stable Text");   ROTATE_TEXT = false; goto endserial; }
+	    else if (readchar == 't') { Serial.println("Serial => text thankyou"); matrix_change(DEMO_TEXT_THANKYOU); goto endserial; }
+	    else if (readchar == 'f') { SHOW_LAST_FPS = !SHOW_LAST_FPS; goto endserial; }
+	    else if (readchar == '=') { Serial.println("Serial => keep demo?"); MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; goto endserial; }
+	    else if (readchar == '-') { Serial.println("Serial => dim"   );	change_brightness(-1); goto endserial; }
+	    else if (readchar == '+') { Serial.println("Serial => bright");	change_brightness(+1); goto endserial; }
             else { Serial.printf("'%c': Not ESP32+RPi command\r\n", readchar); }
 
             // These commands will only work with R+cmd
             #ifdef NVRAM
-            if (! process_nvram_serial(readchar) ) { Serial.printf("'%c': not NVRAM command\r\n", readchar); }
+            if (process_nvram_serial(readchar)) goto endserial;
+            Serial.printf("'%c': Not NVRAM command\r\n", readchar);
             #endif
 
             // We may wonder, why do we need all these alternate letters on Rpi, can't we just read 'n' and resend to ESP32?
             // the answer is No, because on rPi, do you want to advance the rPi demo ('n') or the ESP32 demo ('N')?
 	#ifdef ARDUINOONPC
-	    if (readchar == 's') { Serial.println("Send rPi IP to ESP32"); rPi_send_IP_to_ESP32(); }
-	    else if (readchar == '<') { Serial.println("ESP => dim"   );        send_serial("-"); change_brightness(-1);}
-	    else if (readchar == '>') { Serial.println("ESP => bright");        send_serial("+"); change_brightness(+1);}
-	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("f"); SHOW_LAST_FPS = !SHOW_LAST_FPS;}
-	    else if (readchar == 'Y') { Serial.println("ESP => Bestof2");	send_serial("y"); changeBestOf(2); }
-	    else if (readchar == 'B') { Serial.println("ESP => Bestof1");	send_serial("b"); changeBestOf(1); }
-	    else if (readchar == 'A') { Serial.println("ESP => All Demos");	send_serial("a"); changeBestOf(0); }
-	    else if (readchar == 'X') { Serial.println("ESP => ChangePanel2");  changePanelConf(2); send_serial("x");}
-	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  changePanelConf(3); send_serial("c");}
-	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  changePanelConf(4); send_serial("d");}
-	    else if (readchar == 'E') { Serial.println("ESP => ChangePanel5");  changePanelConf(5); send_serial("e");}
+	    if (readchar == 's') { Serial.println("Send rPi IP to ESP32"); rPi_send_IP_to_ESP32(); goto endserial; }
+	    else if (readchar == '<') { Serial.println("ESP => dim"   );        send_serial("-"); change_brightness(-1); goto endserial; }
+	    else if (readchar == '>') { Serial.println("ESP => bright");        send_serial("+"); change_brightness(+1); goto endserial; }
+	    else if (readchar == 'F') { Serial.println("ESP => togglefps");	send_serial("f"); SHOW_LAST_FPS = !SHOW_LAST_FPS; goto endserial; }
+	    else if (readchar == 'Y') { Serial.println("ESP => Bestof2");	send_serial("y"); changeBestOf(2); goto endserial; }
+	    else if (readchar == 'B') { Serial.println("ESP => Bestof1");	send_serial("b"); changeBestOf(1); goto endserial; }
+	    else if (readchar == 'A') { Serial.println("ESP => All Demos");	send_serial("a"); changeBestOf(0); goto endserial; }
+	    else if (readchar == 'X') { Serial.println("ESP => ChangePanel2");  changePanelConf(2); send_serial("x"); goto endserial; }
+	    else if (readchar == 'C') { Serial.println("ESP => ChangePanel3");  changePanelConf(3); send_serial("c"); goto endserial; }
+	    else if (readchar == 'D') { Serial.println("ESP => ChangePanel4");  changePanelConf(4); send_serial("d"); goto endserial; }
+	    else if (readchar == 'E') { Serial.println("ESP => ChangePanel5");  changePanelConf(5); send_serial("e"); goto endserial; }
 
             // Any unmapped ESP32 command on Pi can be sent with R+cmd
-	    else if (readchar == 'R') { Serial.println("ESP => send next number/char");  remotesend = true;}
+	    else if (readchar == 'R') { Serial.println("ESP => send next number/char");  remotesend = true; goto endserial; }
 
-	    else if (readchar == 'N') { Serial.println("ESP => next");		send_serial("n");}
-	    else if (readchar == 'P') { Serial.println("ESP => previous");	send_serial("p");}
-	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("=");}
+	    else if (readchar == 'N') { Serial.println("ESP => next");		send_serial("n"); goto endserial; }
+	    else if (readchar == 'P') { Serial.println("ESP => previous");	send_serial("p"); goto endserial; }
+	    else if (readchar == '_') { Serial.println("ESP => Keep Demo?");    send_serial("="); goto endserial; }
             // 'r' and 'i' are example of re-using the same letter because they have no funtion locally on rPi
-	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); }
-	    else if (readchar == 'i') { Serial.println("ESP => ShowIP");	send_serial("i"); }
-	    else if (readchar == '@') { Serial.println("Toogle RPI Ignore Demo Change"); ignore_serial_pattern_change = !ignore_serial_pattern_change ;}
+	    else if (readchar == 'r') { Serial.println("ESP => Reboot");	send_serial("r"); goto endserial; }
+	    else if (readchar == 'i') { Serial.println("ESP => ShowIP");	send_serial("i"); goto endserial; }
+	    else if (readchar == '@') { Serial.println("Toogle RPI Ignore Demo Change"); ignore_serial_pattern_change = !ignore_serial_pattern_change ; goto endserial; }
 	    // Don't use a character that can be easily received by ESP32
-	    else if (readchar == '~') { Serial.println("exit");			exit(0);}
+	    else if (readchar == '~') { Serial.println("exit");			exit(0); goto endserial; }
             else { Serial.printf("'%c': Not an Rpi command\r\n", readchar); }
 	#else
             // Any of these can be sent from rPI console by sending R + x, like Ri
-	    if (readchar == 'r') { Serial.println("Reboot"); reboot(); }
-	    else if (readchar == 'x') { changePanelConf(2); }
-	    else if (readchar == 'c') { changePanelConf(3); }
-	    else if (readchar == 'd') { changePanelConf(4); }
-	    else if (readchar == 'e') { changePanelConf(5); }
+	    if (readchar == 'r') { Serial.println("Reboot"); reboot(); goto endserial; }
+	    else if (readchar == 'x') { changePanelConf(2); goto endserial; }
+	    else if (readchar == 'c') { changePanelConf(3); goto endserial; }
+	    else if (readchar == 'd') { changePanelConf(4); goto endserial; }
+	    else if (readchar == 'e') { changePanelConf(5); goto endserial; }
             else { Serial.printf("'%c': Not ESP32 command\r\n", readchar); }
 	#endif
 	}
