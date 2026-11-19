@@ -4266,11 +4266,11 @@ void IR_Serial_Handler() {
 	    else if (readchar == '=') { Serial.println("Serial => keep demo?"); MATRIX_LOOP = MATRIX_LOOP > 1000 ? 3 : 9999; }
 	    else if (readchar == '-') { Serial.println("Serial => dim"   );	change_brightness(-1);}
 	    else if (readchar == '+') { Serial.println("Serial => bright");	change_brightness(+1);}
-            else { Serial.printf("'%c: Not ESP32+RPi command\r\n", readchar); }
+            else { Serial.printf("'%c': Not ESP32+RPi command\r\n", readchar); }
 
             // These commands will only work with R+cmd
             #ifdef NVRAM
-            if (process_nvram_serial(readchar) ) { Serial.printf("'%c: not NVRAM command\r\n", readchar); }
+            if (! process_nvram_serial(readchar) ) { Serial.printf("'%c': not NVRAM command\r\n", readchar); }
             #endif
 
             // We may wonder, why do we need all these alternate letters on Rpi, can't we just read 'n' and resend to ESP32?
@@ -4300,7 +4300,7 @@ void IR_Serial_Handler() {
 	    else if (readchar == '@') { Serial.println("Toogle RPI Ignore Demo Change"); ignore_serial_pattern_change = !ignore_serial_pattern_change ;}
 	    // Don't use a character that can be easily received by ESP32
 	    else if (readchar == '~') { Serial.println("exit");			exit(0);}
-            else { Serial.printf("'%c: Rpi command\r\n", readchar); }
+            else { Serial.printf("'%c': Not an Rpi command\r\n", readchar); }
 	#else
             // Any of these can be sent from rPI console by sending R + x, like Ri
 	    if (readchar == 'r') { Serial.println("Reboot"); reboot(); }
@@ -4308,7 +4308,7 @@ void IR_Serial_Handler() {
 	    else if (readchar == 'c') { changePanelConf(3); }
 	    else if (readchar == 'd') { changePanelConf(4); }
 	    else if (readchar == 'e') { changePanelConf(5); }
-            else { Serial.printf("'%c: Not ESP32 command\r\n", readchar); }
+            else { Serial.printf("'%c': Not ESP32 command\r\n", readchar); }
 	#endif
 	}
     }
