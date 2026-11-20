@@ -3703,6 +3703,7 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
     Serial.println(MATRIX_LOOP);
     Serial.println();
     #ifndef ARDUINOONPC
+        Serial.println();
 	Serial.flush();
 	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
 	Serial.flush();
@@ -3716,6 +3717,8 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
         #endif
 
         // So we print a 2nd time.
+        Serial.println();
+	Serial.flush();
 	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
 	Serial.flush();
 
