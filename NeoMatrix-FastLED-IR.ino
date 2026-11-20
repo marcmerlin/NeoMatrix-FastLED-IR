@@ -5844,7 +5844,7 @@ void setup() {
     #ifndef LINUX_RENDERER_SDL
         FastLED.addLeds<WS2813,NEOPIXEL_PIN>(leds, STRIP_NUM_LEDS);
         #ifdef ARDUINO_WAVESHARE_ESP32_S3_ZERO
-            Serial.println("Detected Waveshare ESP32 S3 Zero: Trying to disable builtin control of pin 21\n");
+            Serial.println("Detected Waveshare ESP32 S3 Zero: Trying to disable builtin control of pin 21");
             // This did not seem to work afterall and I had to edit 
             // .arduino15/packages/esp32/hardware/esp32/3.3.5/variants/waveshare_esp32_s3_zero/pins_arduino.h
             // to kill LED_BUILTIN / 
@@ -5856,7 +5856,7 @@ void setup() {
             digitalWrite(21, LOW);
             delay(10);
             #pragma message "Building on ESP32 S3 Waveshare Zero, enabling dual Neopixel output"
-            Serial.println("Detected Waveshare ESP32 S3 Zero: Enabling Dual Neopixel output on 13 and builtin 21\n");
+            Serial.println("Detected Waveshare ESP32 S3 Zero: Enabling Dual Neopixel output on 13 and builtin 21");
             // initialize 2 outputs for the same strip (external strip and built in neopixel)
             FastLED.addLeds<WS2813,21>(leds, STRIP_NUM_LEDS);
         #endif
