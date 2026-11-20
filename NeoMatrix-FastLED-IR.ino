@@ -6142,7 +6142,11 @@ void setup() {
 
     // When ESP32 sends |St..., RPI eventually receives this on serial 
     // Serial.println("|Starting loop");
-    // Do not start sync now, only start after Wifi is setup on ESP32 and success sends |Start
+    // Do not start sync here anymore, only start after Wifi is setup on ESP32 and success sends |Start
+    // wifi_serial.ota.h:
+    // Serial.printf("|Started WIFI AP successfully! IP: %s on channel ", WiFi.softAPIP().toString().c_str());
+    // and
+    // Serial.printf("|Started wifi, slave mode enabled? %d\n\r", WIFI_SLAVE_MODE);
     Serial.println("Starting loop");
 }
 
