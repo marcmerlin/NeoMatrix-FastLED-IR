@@ -659,8 +659,6 @@ uint32_t Wheel(uint8_t WheelPos) {
 
 
 void display_stats() {
-    static uint16_t cnt=1;
-
     // Reset to default font
     matrix->setFont();
     matrix->setTextSize(1);
@@ -714,21 +712,17 @@ void display_stats() {
 
     if (mh >=31) {
 	matrix->setTextColor(matrix->Color(128,255,128));
-	matrix->setCursor(0, mh-21);
+	matrix->setCursor(0, mh-14);
 	matrix->print(DEMO_CNT);
 	matrix->print(" demos");
     }
     if (mh >= 35) {
 	matrix->setTextColor(matrix->Color(255,128,128));
-	matrix->setCursor(0, mh-28);
+	matrix->setCursor(0, mh-21);
 	matrix->print(BEST_CNT);
 	matrix->print(" best");
     }
 
-    matrix->setTextColor(matrix->Color(255,0,255));
-    matrix->setCursor(0, mh-14);
-    matrix->print(cnt++);
-    if (cnt == 10000) cnt=1;
     matrix_show();
 }
 
