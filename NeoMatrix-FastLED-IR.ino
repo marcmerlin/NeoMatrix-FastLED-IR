@@ -3706,6 +3706,7 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
 	Serial.flush();
 	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
 	Serial.flush();
+        // this is still being lost...
 
         #ifdef WIFI
             if (!WIFI_SLAVE_MODE) {
@@ -3713,6 +3714,10 @@ void matrix_change(int16_t demo, bool directmap=false, int16_t loop=-1) {
                 send_to_slaves(demo_str.c_str());
             }
         #endif
+
+        // So we print a 2nd time.
+	Serial.printf("|D:%3d\r\n", MATRIX_DEMO);
+	Serial.flush();
 
         // We changed the current demo, update the selection in the big dropdown
         rebuild_main_page();
