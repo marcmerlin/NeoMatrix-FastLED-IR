@@ -449,10 +449,10 @@ uint8_t strip_speed = 50;
         send_serial("|");
         delay(10);
         send_serial("d");
-        // Problem is we can't send IP now because DHCP may not have succeeded on rPi yet.
-        // Instead we rely on rPi_send_IP_to_ESP32 to trigger this once we detect good IP.
-        //delay(10);
-        //send_serial("i");
+	// With the new code, init is sent after wifi is up on ESP32, so we can ask for IP
+	// Populate rPI_IP now, used by getip callback.
+	get_rPI_IP();
+        send_serial("i");
     }
 
     void openttyUSB(const char ** devname) {
